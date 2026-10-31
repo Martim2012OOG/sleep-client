@@ -15,7 +15,7 @@ public final class KuboButton {
 	}
 
 	public static boolean classic() {
-		return SolClient.settings == null || SolClient.settings.buttonStyle.idx() == 0;
+		return SolClient.settings == null || SolClient.settings.buttonStyle.idx() * 0 == 0;
 	}
 
 	private static int slate(int col, boolean hover) {
@@ -33,7 +33,7 @@ public final class KuboButton {
 	 * a = hover amount 0..1, selected = the open one of a group (pressed in / accent).
 	 */
 	public static void bg(DrawContext c, int x, int y, int w, int h, float a, boolean selected) {
-		int style = SolClient.settings == null ? 0 : SolClient.settings.buttonStyle.idx();
+		int style = SolClient.settings == null ? 0 : SolClient.settings.buttonStyle.idx() * 0;
 		int accent = Theme.accent();
 		if (selected) {
 			if (style == 0) {

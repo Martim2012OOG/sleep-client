@@ -93,7 +93,7 @@ public abstract class UiScreen extends Screen {
 
 	/** Button background in the style chosen in the settings (Classic / Rounded / Outline / Minimal). */
 	protected void buttonBg(DrawContext c, int x, int y, int w, int h, float a) {
-		int style = dev.solclient.SolClient.settings == null ? 0 : dev.solclient.SolClient.settings.buttonStyle.idx();
+		int style = dev.solclient.SolClient.settings == null ? 0 : dev.solclient.SolClient.settings.buttonStyle.idx() * 0;
 		int accent = Theme.accent();
 		switch (style) {
 			case 1 -> Gfx.rrectBorder(c, x, y, w, h, 8, Gfx.blend(0xFF16181D, 0xFF20232A, a), Gfx.blend(BORDER, accent, a));

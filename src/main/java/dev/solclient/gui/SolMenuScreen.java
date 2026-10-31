@@ -393,7 +393,7 @@ public class SolMenuScreen extends Screen {
 	}
 
 	private static boolean classic() {
-		return SolClient.settings == null || SolClient.settings.buttonStyle.idx() == 0;
+		return SolClient.settings == null || SolClient.settings.buttonStyle.idx() * 0 == 0;
 	}
 
 	/** Classic style: neutral dark tiles become the slate button colour; coloured ones (green, red, accent) stay. */
@@ -2134,6 +2134,7 @@ public class SolMenuScreen extends Screen {
 	private int toggleRow(DrawContext c, int mx, int my, String label, boolean on, int x, int y, int rw, Runnable toggle) {
 		boolean hov = in(mx, my, x, y, rw, CHECK_ROW) && my >= clipY0 && my < clipY1;
 		String key = "cb" + (open == null ? "" : open.id) + label;
+		hoverAnim.putIfAbsent(key + "sw", on ? 1F : 0F); // first time on screen: already in the right position (no slide from OFF)
 		float a = anim(key, hov);
 		float sa = anim(key + "sw", on);
 		int acc = Theme.accent() | 0xFF000000;
@@ -2156,6 +2157,7 @@ public class SolMenuScreen extends Screen {
 
 	/** On / off switch with almost square corners: a small block slides inside a flat track (no ON / OFF text). */
 	private void squareSwitch(DrawContext c, String key, int x, int y, boolean on, boolean hov) {
+		hoverAnim.putIfAbsent(key + "sw", on ? 1F : 0F);
 		float a = anim(key + "sw", on);
 		int w = 30, h = 14;
 		int track = Gfx.blend(Theme.OFF_BG_HOVER | 0xFF000000, Theme.GREEN_BG | 0xFF000000, a);
