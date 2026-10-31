@@ -15,7 +15,7 @@ public abstract class VanillaButtonStyleMixin {
 
 	@Inject(method = "drawButton", at = @At("HEAD"), cancellable = true, require = 0)
 	private void plegumo$style(DrawContext c, CallbackInfo ci) {
-		if (!dev.solclient.gui.VanillaStyle.on()) {
+		if (!dev.solclient.gui.VanillaStyle.on() || dev.solclient.SolClient.settings == null || !dev.solclient.SolClient.settings.restyleButtons.on()) {
 			return;
 		}
 		ClickableWidget w = (ClickableWidget) (Object) this;

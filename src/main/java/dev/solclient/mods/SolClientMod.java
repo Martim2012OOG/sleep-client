@@ -44,6 +44,7 @@ public class SolClientMod extends Mod {
 	public final Option.Bool seasonalMusic;
 	public final Option.Bool seasonalBackground;
 	public final Option.Bool restyleMenus;
+	public final Option.Bool restyleButtons;
 	public final Option.Bool homeShowcase;
 	public final Option.Bool hudInF3;
 	public final Option.Choice toastPosition;
@@ -211,6 +212,8 @@ public class SolClientMod extends Mod {
 		seasonalBackground = bool("Seasonal Home Background", true);
 		restyleMenus = bool("Sleep Style For Minecraft Menus", true);
 		restyleMenus.tip("Gives Minecraft's own menus (options, worlds, servers) Sleep's look.");
+		restyleButtons = bool("Sleep Buttons In Minecraft Menus", false);
+		restyleButtons.tip("Off: the buttons in Minecraft's own menus stay the normal Minecraft ones. On: they get the Sleep look.");
 		homeShowcase = bool("Shop Banner On Home Screen", true);
 		buttonStyle = choice("Button Style", 0, "Classic", "Rounded", "Outline", "Minimal");
 		buttonAnimations = bool("Button Animations", false);
