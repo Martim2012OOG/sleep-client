@@ -1,0 +1,11 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "dev.solclient.mixin.display",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "TextDisplayDataMixin",
+    "TextDisplayTextDataMixin"
+  ],
+  "injectors": { "defaultRequire": 0 }
+}

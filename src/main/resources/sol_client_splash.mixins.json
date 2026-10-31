@@ -1,0 +1,10 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "dev.solclient.mixin.splash",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "SplashOverlayMixin"
+  ],
+  "injectors": { "defaultRequire": 0 }
+}

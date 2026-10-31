@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "kubo_ext_friends",
+  "version": "${version}",
+  "name": "Sleep – Friends",
+  "description": "Party HUD, Pings (mark places for friends) and Sonar.",
+  "authors": [
+    "Sleep"
+  ],
+  "license": "GPL-3.0-only",
+  "environment": "client",
+  "entrypoints": {
+    "kubo": [
+      "dev.kuboext.friends.FriendsExtension"
+    ]
+  },
+  "depends": {
+    "sol_client": "*",
+    "minecraft": "~1.21.11",
+    "fabricloader": ">=0.18.1"
+  },
+  "custom": {
+    "kubo:extension": true
+  }
+}

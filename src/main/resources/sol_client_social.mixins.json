@@ -1,0 +1,33 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "dev.solclient.mixin.social",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "PlayerSkinMixin",
+    "NametagBadgeMixin",
+    "TntTimerMixin",
+    "TabBadgeMixin",
+    "SetScreenMixin",
+    "PauseClassicMixin",
+    "NotifyScreenMixin",
+    "ChatNickMixin",
+    "OwnNametagMixin",
+    "BubbleStateMixin",
+    "ChatBubbleRenderMixin",
+    "ChatBubbleMessageMixin",
+    "ChatBubbleHudMixin",
+    "PlayerRendererSkinMixin",
+    "NametagHealthMixin",
+    "HostWorldConnectMixin",
+    "ServerAddressValidMixin",
+    "MultiplayerScreenAccessor",
+    "SmoothFishingLineMixin",
+    "TransparentPlayersMixin",
+    "MobHealthMixin",
+    "ScoreboardNickMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 0
+  }
+}

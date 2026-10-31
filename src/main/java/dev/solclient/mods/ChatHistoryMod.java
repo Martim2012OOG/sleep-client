@@ -1,0 +1,39 @@
+package dev.solclient.mods;
+
+import dev.solclient.option.Option;
+
+/** Keeps your chat when you leave a server or join another one (Minecraft normally clears it). */
+public class ChatHistoryMod extends Mod {
+
+	public static ChatHistoryMod instance;
+	public final Option.Bool separator = bool("Show Server Separator", true);
+
+	public ChatHistoryMod() {
+		super("Chat History", "chat_history", "Keeps the chat when you switch servers, with a line showing where each server starts.", Category.UTILITY);
+		instance = this;
+	}
+
+	@Override
+	public boolean enabledByDefault() {
+		return true;
+	}
+
+	private String lastServer;
+
+	@Override
+	public void tick() {
+		net.minecraft.client.MinecraftClient mc = net.minecraft.client.MinecraftClient.getInstance();
+		var e = mc.getCurrentServerEntry();
+		String now = e == null ? (mc.isInSingleplayer() ? "Singleplayer" : null) : (e.name == null || e.name.isBlank() ? e.address : e.name);
+		if (now != null && !now.equals(lastServer)) {
+			if (lastServer != null && separator.on()) {
+				mc.inGameHud.getChatHud().addMessage(net.minecraft.text.Text.literal("\u00a78\u00a7m          \u00a7r \u00a77" + now + " \u00a78\u00a7m          "));
+			}
+			lastServer = now;
+		}
+	}
+
+	public static boolean on() {
+		return instance != null && instance.enabled;
+	}
+}

@@ -1,0 +1,29 @@
+name = "endlock"
+main = "worker.js"
+compatibility_date = "2025-01-01"
+
+# your own domain (endlock.net must be on Cloudflare): home page + Host World
+routes = [
+  { pattern = "endlock.net", custom_domain = true },
+  { pattern = "host.endlock.net", custom_domain = true },
+]
+
+[[durable_objects.bindings]]
+name = "ROOMS"
+class_name = "Room"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Room"]
+
+[[durable_objects.bindings]]
+name = "VOICE"
+class_name = "VoiceRoom"
+
+[[durable_objects.bindings]]
+name = "INBOX"
+class_name = "Inbox"
+
+[[migrations]]
+tag = "v2"
+new_sqlite_classes = ["VoiceRoom", "Inbox"]

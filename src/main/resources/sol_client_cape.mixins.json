@@ -1,0 +1,10 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "dev.solclient.mixin.cape",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "PlayerCapeModelMixin"
+  ],
+  "injectors": { "defaultRequire": 0 }
+}

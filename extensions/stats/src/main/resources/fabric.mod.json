@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "kubo_ext_stats",
+  "version": "${version}",
+  "name": "Sleep – Stats & Missions",
+  "description": "Session Stats, Daily Quests, Achievements and Fight Recap.",
+  "authors": [
+    "Sleep"
+  ],
+  "license": "GPL-3.0-only",
+  "environment": "client",
+  "entrypoints": {
+    "kubo": [
+      "dev.kuboext.stats.StatsExtension"
+    ]
+  },
+  "depends": {
+    "sol_client": "*",
+    "minecraft": "~1.21.11",
+    "fabricloader": ">=0.18.1"
+  },
+  "custom": {
+    "kubo:extension": true
+  }
+}

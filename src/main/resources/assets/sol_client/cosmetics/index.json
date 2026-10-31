@@ -1,0 +1,2378 @@
+[
+ {
+  "id": "pirate_hat",
+  "name": "Pirate Hat",
+  "category": "Headwear",
+  "geometry": "pirate_hat",
+  "texture": "pirate",
+  "credit": "Minecraft Pirate Hat by JTheStargazer (CC-BY-4.0, https://sketchfab.com/3d-models/minecraft-pirate-hat-d94e61e9ff58409da7d96cf61b293d1e)",
+  "textureSize": [
+   64,
+   64
+  ]
+ },
+ {
+  "id": "mushroom_cap",
+  "name": "Mushroom Cap",
+  "category": "Headwear",
+  "geometry": "mushroom_cap",
+  "texture": "pack1",
+  "credit": "Minecraft Hats Mini-pack 1 by VoxelBear (CC-BY-4.0, https://sketchfab.com/3d-models/minecraft-hats-mini-pack-1-7d78cb557cdd44c2b6dbe86c5596cece)",
+  "textureSize": [
+   128,
+   128
+  ]
+ },
+ {
+  "id": "blue_cap",
+  "name": "Blue Cap",
+  "category": "Headwear",
+  "geometry": "blue_cap",
+  "texture": "pack1",
+  "credit": "Minecraft Hats Mini-pack 1 by VoxelBear (CC-BY-4.0, https://sketchfab.com/3d-models/minecraft-hats-mini-pack-1-7d78cb557cdd44c2b6dbe86c5596cece)",
+  "textureSize": [
+   128,
+   128
+  ]
+ },
+ {
+  "id": "top_hat",
+  "name": "Top Hat",
+  "category": "Headwear",
+  "geometry": "top_hat",
+  "texture": "pack1",
+  "credit": "Minecraft Hats Mini-pack 1 by VoxelBear (CC-BY-4.0, https://sketchfab.com/3d-models/minecraft-hats-mini-pack-1-7d78cb557cdd44c2b6dbe86c5596cece)",
+  "textureSize": [
+   128,
+   128
+  ]
+ },
+ {
+  "id": "paper_bag",
+  "name": "Paper Bag",
+  "category": "Headwear",
+  "geometry": "paper_bag",
+  "texture": "pack4",
+  "credit": "Minecraft Hats Mini-pack 4 by VoxelBear (CC-BY-4.0, https://sketchfab.com/3d-models/minecraft-hats-mini-pack-4-3f13617b0103429e98d796b3ccb32a96)",
+  "textureSize": [
+   64,
+   256
+  ]
+ },
+ {
+  "id": "santa_hat",
+  "name": "Santa Hat",
+  "category": "Headwear",
+  "geometry": "santa_hat",
+  "texture": "pack4",
+  "credit": "Minecraft Hats Mini-pack 4 by VoxelBear (CC-BY-4.0, https://sketchfab.com/3d-models/minecraft-hats-mini-pack-4-3f13617b0103429e98d796b3ccb32a96)",
+  "textureSize": [
+   64,
+   256
+  ]
+ },
+ {
+  "id": "leprechaun_hat",
+  "name": "Leprechaun Hat",
+  "category": "Headwear",
+  "geometry": "leprechaun_hat",
+  "texture": "pack4",
+  "credit": "Minecraft Hats Mini-pack 4 by VoxelBear (CC-BY-4.0, https://sketchfab.com/3d-models/minecraft-hats-mini-pack-4-3f13617b0103429e98d796b3ccb32a96)",
+  "textureSize": [
+   64,
+   256
+  ]
+ },
+ {
+  "id": "straw_hat",
+  "name": "Straw Hat",
+  "category": "Headwear",
+  "geometry": "straw_hat",
+  "texture": "pack4",
+  "credit": "Minecraft Hats Mini-pack 4 by VoxelBear (CC-BY-4.0, https://sketchfab.com/3d-models/minecraft-hats-mini-pack-4-3f13617b0103429e98d796b3ccb32a96)",
+  "textureSize": [
+   64,
+   256
+  ]
+ },
+ {
+  "id": "chef_hat",
+  "name": "Chef Hat",
+  "category": "Headwear",
+  "geometry": "chef_hat",
+  "texture": "pack4",
+  "credit": "Minecraft Hats Mini-pack 4 by VoxelBear (CC-BY-4.0, https://sketchfab.com/3d-models/minecraft-hats-mini-pack-4-3f13617b0103429e98d796b3ccb32a96)",
+  "textureSize": [
+   64,
+   256
+  ]
+ },
+ {
+  "id": "golden_crown",
+  "name": "Golden Crown",
+  "category": "Headwear",
+  "geometry": "golden_crown",
+  "texture": "pack4",
+  "credit": "Minecraft Hats Mini-pack 4 by VoxelBear (CC-BY-4.0, https://sketchfab.com/3d-models/minecraft-hats-mini-pack-4-3f13617b0103429e98d796b3ccb32a96)",
+  "textureSize": [
+   64,
+   256
+  ]
+ },
+ {
+  "id": "firefighter_helmet",
+  "name": "Firefighter Helmet",
+  "category": "Headwear",
+  "geometry": "firefighter_helmet",
+  "texture": "pack5",
+  "credit": "Minecraft Hats Mini-pack 5 by VoxelBear (CC-BY-4.0, https://sketchfab.com/3d-models/minecraft-hats-mini-pack-5-d519572882954172849dba4d73479312)",
+  "textureSize": [
+   64,
+   352
+  ]
+ },
+ {
+  "id": "striped_top_hat",
+  "name": "Striped Top Hat",
+  "category": "Headwear",
+  "geometry": "striped_top_hat",
+  "texture": "pack5",
+  "credit": "Minecraft Hats Mini-pack 5 by VoxelBear (CC-BY-4.0, https://sketchfab.com/3d-models/minecraft-hats-mini-pack-5-d519572882954172849dba4d73479312)",
+  "textureSize": [
+   64,
+   352
+  ]
+ },
+ {
+  "id": "panda_hood",
+  "name": "Panda Hood",
+  "category": "Headwear",
+  "geometry": "panda_hood",
+  "texture": "pack5",
+  "credit": "Minecraft Hats Mini-pack 5 by VoxelBear (CC-BY-4.0, https://sketchfab.com/3d-models/minecraft-hats-mini-pack-5-d519572882954172849dba4d73479312)",
+  "textureSize": [
+   64,
+   352
+  ]
+ },
+ {
+  "id": "headphones",
+  "name": "Headphones",
+  "category": "Headwear",
+  "geometry": "headphones",
+  "texture": "pack5",
+  "credit": "Minecraft Hats Mini-pack 5 by VoxelBear (CC-BY-4.0, https://sketchfab.com/3d-models/minecraft-hats-mini-pack-5-d519572882954172849dba4d73479312)",
+  "textureSize": [
+   64,
+   352
+  ]
+ },
+ {
+  "id": "cardboard_box",
+  "name": "Cardboard Box",
+  "category": "Headwear",
+  "geometry": "cardboard_box",
+  "texture": "pack5",
+  "credit": "Minecraft Hats Mini-pack 5 by VoxelBear (CC-BY-4.0, https://sketchfab.com/3d-models/minecraft-hats-mini-pack-5-d519572882954172849dba4d73479312)",
+  "textureSize": [
+   64,
+   352
+  ]
+ },
+ {
+  "id": "hard_hat",
+  "name": "Hard Hat",
+  "category": "Headwear",
+  "geometry": "hard_hat",
+  "texture": "pack5",
+  "credit": "Minecraft Hats Mini-pack 5 by VoxelBear (CC-BY-4.0, https://sketchfab.com/3d-models/minecraft-hats-mini-pack-5-d519572882954172849dba4d73479312)",
+  "textureSize": [
+   64,
+   352
+  ]
+ },
+ {
+  "id": "fox_ears",
+  "name": "Fox Ears",
+  "category": "Headwear",
+  "geometry": "fox_ears",
+  "texture": "fox2",
+  "credit": "Accessory Fox Ears by state_L (CC-BY-4.0, https://sketchfab.com/3d-models/accessory-fox-ears-37c1cf02ff6348ee8e9305f73887bbe7)",
+  "textureSize": [
+   32,
+   32
+  ],
+  "group": "fox_ears",
+  "groupName": "Fox Ears",
+  "variant": "Orange",
+  "swatch": "#e8801f"
+ },
+ {
+  "id": "dark_fox_ears",
+  "name": "Dark Fox Ears",
+  "category": "Headwear",
+  "geometry": "fox_ears",
+  "texture": "fox1",
+  "credit": "Accessory Fox Ears by state_L (CC-BY-4.0, https://sketchfab.com/3d-models/accessory-fox-ears-82f5a2d637cd462795ca33168f2fe1b0)",
+  "textureSize": [
+   32,
+   32
+  ],
+  "group": "fox_ears",
+  "groupName": "Fox Ears",
+  "variant": "Dark",
+  "swatch": "#3b3552"
+ },
+ {
+  "id": "ram_horns",
+  "name": "Ram Horns",
+  "category": "Headwear",
+  "geometry": "ram_horns",
+  "texture": "horn",
+  "credit": "Horn Accessory by state_L (CC-BY-4.0, https://sketchfab.com/3d-models/horn-accessory-3f21dc21a10e49008e770aa3ad4e5fd9)",
+  "textureSize": [
+   64,
+   64
+  ],
+  "group": "ram_horns",
+  "groupName": "Ram Horns",
+  "variant": "I",
+  "swatch": "#d9c7a3"
+ },
+ {
+  "id": "ram_horns_ii",
+  "name": "Ram Horns II",
+  "category": "Headwear",
+  "geometry": "ram_horns",
+  "texture": "horn1",
+  "credit": "Horn Accessory by state_L (CC-BY-4.0, https://sketchfab.com/3d-models/horn-accessory-57279f5e5fb54003b64eba3db6967cbb)",
+  "textureSize": [
+   64,
+   64
+  ],
+  "group": "ram_horns",
+  "groupName": "Ram Horns",
+  "variant": "II",
+  "swatch": "#6c7a99"
+ },
+ {
+  "id": "ram_horns_iii",
+  "name": "Ram Horns III",
+  "category": "Headwear",
+  "geometry": "ram_horns",
+  "texture": "horn2",
+  "credit": "Horn Accessory by state_L (CC-BY-4.0, https://sketchfab.com/3d-models/horn-accessory-53c576ba9e224713bee44ec718c19977)",
+  "textureSize": [
+   64,
+   64
+  ],
+  "group": "ram_horns",
+  "groupName": "Ram Horns",
+  "variant": "III",
+  "swatch": "#b5253f"
+ },
+ {
+  "id": "demon_horns",
+  "name": "Demon Horns",
+  "category": "Headwear",
+  "geometry": "demon_horns",
+  "texture": "horn3",
+  "credit": "Horn Accessory by state_L (CC-BY-4.0, https://sketchfab.com/3d-models/horn-accessory-4532c2f82f0d4760845c8fe4242e042c)",
+  "textureSize": [
+   32,
+   32
+  ]
+ },
+ {
+  "id": "angel_wings",
+  "name": "Angel Wings",
+  "category": "Wings",
+  "geometry": "wings",
+  "texture": "angel",
+  "anim": "wings",
+  "credit": "Wings Angel - Port of Wings Mod Minecraft by playswolrdgames (CC-BY-4.0, https://sketchfab.com/3d-models/wings-angel-port-of-wings-mod-minecraft-9bb48d4ff4b14f38bdb4502a3839593c)",
+  "textureSize": [
+   64,
+   64
+  ]
+ },
+ {
+  "id": "black_wings",
+  "name": "Black Wings",
+  "category": "Wings",
+  "geometry": "wings",
+  "texture": "black",
+  "anim": "wings",
+  "credit": "Black Wings - Wings Mod by playswolrdgames (CC-BY-4.0, https://sketchfab.com/3d-models/black-wings-wings-mod-61ef5b6be0534dad93d03639a5376c57)",
+  "textureSize": [
+   64,
+   64
+  ]
+ },
+ {
+  "id": "dragon_wings",
+  "name": "Dragon Wings",
+  "category": "Wings",
+  "geometry": "wings",
+  "texture": "dragon",
+  "anim": "wings",
+  "credit": "Dragon Wings - Wings Mod by playswolrdgames (CC-BY-4.0, https://sketchfab.com/3d-models/dragon-wings-wings-mod-c7eb1e4b8a0d4367be56fbc5cd8d21e8)",
+  "textureSize": [
+   64,
+   64
+  ]
+ },
+ {
+  "id": "parrot_wings",
+  "name": "Parrot Wings",
+  "category": "Wings",
+  "geometry": "wings",
+  "texture": "parrot",
+  "anim": "wings",
+  "credit": "Parrot Wings - Wings Mod by playswolrdgames (CC-BY-4.0, https://sketchfab.com/3d-models/parrot-wings-wings-mod-e172886dbe534610b33001264890ce1c)",
+  "textureSize": [
+   64,
+   64
+  ]
+ },
+ {
+  "id": "mage_robe",
+  "name": "Mage Robe",
+  "category": "Bodywear",
+  "geometry": "mage_robe",
+  "texture": "robe",
+  "credit": "Mage Robe by Anesteva Miru (CC-BY-4.0, https://sketchfab.com/3d-models/mage-robe-8f79fa92cb804276ab34ed88fe8cf619)",
+  "textureSize": [
+   64,
+   64
+  ]
+ },
+ {
+  "id": "pug",
+  "name": "Pug",
+  "category": "Pets",
+  "geometry": "pet_pug",
+  "texture": "pug",
+  "anim": "pet",
+  "pet": "pug",
+  "credit": "Minecraft Pug by Th3CrazyPng (CC-BY-4.0, https://sketchfab.com/3d-models/minecraft-pug-3f54ca18dfad4ebeb6be1e6e1c82b354)",
+  "textureSize": [
+   64,
+   64
+  ]
+ },
+ {
+  "id": "mowo",
+  "name": "Mowo",
+  "category": "Pets",
+  "geometry": "pet_mowo",
+  "texture": "mobloom",
+  "anim": "pet",
+  "pet": "mowo",
+  "credit": "Mobloom Mowo by IMO (CC-BY-4.0, https://sketchfab.com/3d-models/mobloom-mowo-a662f916ba134c2bafdd6411eee9310f)",
+  "textureSize": [
+   64,
+   128
+  ]
+ },
+ {
+  "id": "pumpkin_hat",
+  "name": "Pumpkin Hat",
+  "category": "Headwear",
+  "geometry": "pumpkin_hat",
+  "texture": "685f8975-halloween_props",
+  "credit": "Halloween props by Nyux xi (CC-BY-4.0, https://sketchfab.com/3d-models/halloween-props-b969eebfd6024a9ab4be861f75fd4571)",
+  "textureSize": [
+   128,
+   384
+  ]
+ },
+ {
+  "id": "head_spider",
+  "name": "Head Spider",
+  "category": "Headwear",
+  "geometry": "head_spider",
+  "texture": "685f8975-halloween_props",
+  "credit": "Halloween props by Nyux xi (CC-BY-4.0, https://sketchfab.com/3d-models/halloween-props-b969eebfd6024a9ab4be861f75fd4571)",
+  "textureSize": [
+   128,
+   384
+  ]
+ },
+ {
+  "id": "frankenstein_bolts",
+  "name": "Frankenstein Bolts",
+  "category": "Headwear",
+  "geometry": "frankenstein_bolts",
+  "texture": "685f8975-halloween_props",
+  "credit": "Halloween props by Nyux xi (CC-BY-4.0, https://sketchfab.com/3d-models/halloween-props-b969eebfd6024a9ab4be861f75fd4571)",
+  "textureSize": [
+   128,
+   384
+  ]
+ },
+ {
+  "id": "christmas_hat",
+  "name": "Christmas Hat",
+  "category": "Headwear",
+  "geometry": "christmas_hat",
+  "texture": "63bbbd4a-christmas_cosmetics",
+  "credit": "Christmas Cosmetics by Nyux xi (CC-BY-4.0, https://sketchfab.com/3d-models/christmas-cosmetics-46b662f5db2847d4845ba328803b4076)",
+  "textureSize": [
+   64,
+   256
+  ]
+ },
+ {
+  "id": "christmas_scarf",
+  "name": "Christmas Scarf",
+  "category": "Bodywear",
+  "geometry": "christmas_scarf",
+  "texture": "63bbbd4a-christmas_cosmetics",
+  "credit": "Christmas Cosmetics by Nyux xi (CC-BY-4.0, https://sketchfab.com/3d-models/christmas-cosmetics-46b662f5db2847d4845ba328803b4076)",
+  "textureSize": [
+   64,
+   256
+  ]
+ },
+ {
+  "id": "reindeer_antlers",
+  "name": "Reindeer Antlers",
+  "category": "Headwear",
+  "geometry": "reindeer_antlers",
+  "texture": "63bbbd4a-christmas_cosmetics",
+  "credit": "Christmas Cosmetics by Nyux xi (CC-BY-4.0, https://sketchfab.com/3d-models/christmas-cosmetics-46b662f5db2847d4845ba328803b4076)",
+  "textureSize": [
+   64,
+   256
+  ]
+ },
+ {
+  "id": "amongus_hat_white",
+  "name": "Among Us Hat (White)",
+  "category": "Headwear",
+  "geometry": "amongus_hat_white",
+  "texture": "amongus_hat_white",
+  "credit": "AmongUs Hat by HappyKrazy",
+  "textureSize": [
+   32,
+   32
+  ],
+  "source": "pack",
+  "group": "amongus_hat",
+  "groupName": "Among Us Hat",
+  "variant": "White",
+  "swatch": "#f2f2f2"
+ },
+ {
+  "id": "amongus_hat_red",
+  "name": "Among Us Hat (Red)",
+  "category": "Headwear",
+  "geometry": "amongus_hat_red",
+  "texture": "amongus_hat_red",
+  "credit": "AmongUs Hat by HappyKrazy",
+  "textureSize": [
+   32,
+   32
+  ],
+  "source": "pack",
+  "group": "amongus_hat",
+  "groupName": "Among Us Hat",
+  "variant": "Red",
+  "swatch": "#d62f2f"
+ },
+ {
+  "id": "amongus_hat_blue",
+  "name": "Among Us Hat (Blue)",
+  "category": "Headwear",
+  "geometry": "amongus_hat_blue",
+  "texture": "amongus_hat_blue",
+  "credit": "AmongUs Hat by HappyKrazy",
+  "textureSize": [
+   32,
+   32
+  ],
+  "source": "pack",
+  "group": "amongus_hat",
+  "groupName": "Among Us Hat",
+  "variant": "Blue",
+  "swatch": "#2f5fd6"
+ },
+ {
+  "id": "amongus_hat_green",
+  "name": "Among Us Hat (Green)",
+  "category": "Headwear",
+  "geometry": "amongus_hat_green",
+  "texture": "amongus_hat_green",
+  "credit": "AmongUs Hat by HappyKrazy",
+  "textureSize": [
+   32,
+   32
+  ],
+  "source": "pack",
+  "group": "amongus_hat",
+  "groupName": "Among Us Hat",
+  "variant": "Green",
+  "swatch": "#3fae4a"
+ },
+ {
+  "id": "amongus_hat_pink",
+  "name": "Among Us Hat (Pink)",
+  "category": "Headwear",
+  "geometry": "amongus_hat_pink",
+  "texture": "amongus_hat_pink",
+  "credit": "AmongUs Hat by HappyKrazy",
+  "textureSize": [
+   32,
+   32
+  ],
+  "source": "pack",
+  "group": "amongus_hat",
+  "groupName": "Among Us Hat",
+  "variant": "Pink",
+  "swatch": "#e64ab8"
+ },
+ {
+  "id": "amongus_hat_purple",
+  "name": "Among Us Hat (Purple)",
+  "category": "Headwear",
+  "geometry": "amongus_hat_purple",
+  "texture": "amongus_hat_purple",
+  "credit": "AmongUs Hat by HappyKrazy",
+  "textureSize": [
+   32,
+   32
+  ],
+  "source": "pack",
+  "group": "amongus_hat",
+  "groupName": "Among Us Hat",
+  "variant": "Purple",
+  "swatch": "#7d3fc4"
+ },
+ {
+  "id": "amongus_hat_yellow",
+  "name": "Among Us Hat (Yellow)",
+  "category": "Headwear",
+  "geometry": "amongus_hat_yellow",
+  "texture": "amongus_hat_yellow",
+  "credit": "AmongUs Hat by HappyKrazy",
+  "textureSize": [
+   32,
+   32
+  ],
+  "source": "pack",
+  "group": "amongus_hat",
+  "groupName": "Among Us Hat",
+  "variant": "Yellow",
+  "swatch": "#f2d13a"
+ },
+ {
+  "id": "hp_trailblazer",
+  "name": "Trailblazer",
+  "category": "Headwear",
+  "geometry": "hp_trailblazer",
+  "texture": "hp_trailblazer",
+  "credit": "Hat Parade free hats pack",
+  "textureSize": [
+   512,
+   512
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "hp_midnight_wizard",
+  "name": "Midnight Wizard",
+  "category": "Headwear",
+  "geometry": "hp_midnight_wizard",
+  "texture": "hp_midnight_wizard",
+  "credit": "Hat Parade free hats pack",
+  "textureSize": [
+   512,
+   512
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "hp_frog_bucket",
+  "name": "Frog Bucket Hat",
+  "category": "Headwear",
+  "geometry": "hp_frog_bucket",
+  "texture": "hp_frog_bucket",
+  "credit": "Hat Parade free hats pack",
+  "textureSize": [
+   512,
+   512
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "hp_axolotl_hood",
+  "name": "Axolotl Hood",
+  "category": "Headwear",
+  "geometry": "hp_axolotl_hood",
+  "texture": "hp_axolotl_hood",
+  "credit": "Hat Parade free hats pack",
+  "textureSize": [
+   512,
+   512
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "hp_fox_ears",
+  "name": "Fox Cap",
+  "category": "Headwear",
+  "geometry": "hp_fox_ears",
+  "texture": "hp_fox_ears",
+  "credit": "Hat Parade free hats pack",
+  "textureSize": [
+   512,
+   512
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "hp_bunny_beanie",
+  "name": "Bunny Beanie",
+  "category": "Headwear",
+  "geometry": "hp_bunny_beanie",
+  "texture": "hp_bunny_beanie",
+  "credit": "Hat Parade free hats pack",
+  "textureSize": [
+   512,
+   512
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "hp_panda_cap",
+  "name": "Panda Cap",
+  "category": "Headwear",
+  "geometry": "hp_panda_cap",
+  "texture": "hp_panda_cap",
+  "credit": "Hat Parade free hats pack",
+  "textureSize": [
+   512,
+   512
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "hp_bumblebee",
+  "name": "Bumblebee Hat",
+  "category": "Headwear",
+  "geometry": "hp_bumblebee",
+  "texture": "hp_bumblebee",
+  "credit": "Hat Parade free hats pack",
+  "textureSize": [
+   512,
+   512
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "hp_toadstool",
+  "name": "Toadstool",
+  "category": "Headwear",
+  "geometry": "hp_toadstool",
+  "texture": "hp_toadstool",
+  "credit": "Hat Parade free hats pack",
+  "textureSize": [
+   512,
+   512
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "hp_royal_crown",
+  "name": "Royal Crown",
+  "category": "Headwear",
+  "geometry": "hp_royal_crown",
+  "texture": "hp_royal_crown",
+  "credit": "Hat Parade free hats pack",
+  "textureSize": [
+   512,
+   512
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "hp_corsair",
+  "name": "Corsair",
+  "category": "Headwear",
+  "geometry": "hp_corsair",
+  "texture": "hp_corsair",
+  "credit": "Hat Parade free hats pack",
+  "textureSize": [
+   512,
+   512
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "hp_steam_topper",
+  "name": "Steampunk Top Hat",
+  "category": "Headwear",
+  "geometry": "hp_steam_topper",
+  "texture": "hp_steam_topper",
+  "credit": "Hat Parade free hats pack",
+  "textureSize": [
+   512,
+   512
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "hp_dusty_cowboy",
+  "name": "Dusty Cowboy",
+  "category": "Headwear",
+  "geometry": "hp_dusty_cowboy",
+  "texture": "hp_dusty_cowboy",
+  "credit": "Hat Parade free hats pack",
+  "textureSize": [
+   512,
+   512
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "hp_fiesta",
+  "name": "Fiesta Sombrero",
+  "category": "Headwear",
+  "geometry": "hp_fiesta",
+  "texture": "hp_fiesta",
+  "credit": "Hat Parade free hats pack",
+  "textureSize": [
+   512,
+   512
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "hp_straw_garden",
+  "name": "Garden Straw Hat",
+  "category": "Headwear",
+  "geometry": "hp_straw_garden",
+  "texture": "hp_straw_garden",
+  "credit": "Hat Parade free hats pack",
+  "textureSize": [
+   512,
+   512
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "hp_street_cap",
+  "name": "Street Cap",
+  "category": "Headwear",
+  "geometry": "hp_street_cap",
+  "texture": "hp_street_cap",
+  "credit": "Hat Parade free hats pack",
+  "textureSize": [
+   512,
+   512
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "hp_cozy_pom",
+  "name": "Cozy Pom Beanie",
+  "category": "Headwear",
+  "geometry": "hp_cozy_pom",
+  "texture": "hp_cozy_pom",
+  "credit": "Hat Parade free hats pack",
+  "textureSize": [
+   512,
+   512
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "hp_chef",
+  "name": "Chef Hat",
+  "category": "Headwear",
+  "geometry": "hp_chef",
+  "texture": "hp_chef",
+  "credit": "Hat Parade free hats pack",
+  "textureSize": [
+   512,
+   512
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "hp_miner",
+  "name": "Miner Helmet",
+  "category": "Headwear",
+  "geometry": "hp_miner",
+  "texture": "hp_miner",
+  "credit": "Hat Parade free hats pack",
+  "textureSize": [
+   512,
+   512
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "hp_aviator",
+  "name": "Aviator Cap",
+  "category": "Headwear",
+  "geometry": "hp_aviator",
+  "texture": "hp_aviator",
+  "credit": "Hat Parade free hats pack",
+  "textureSize": [
+   512,
+   512
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "hp_sea_captain",
+  "name": "Sea Captain",
+  "category": "Headwear",
+  "geometry": "hp_sea_captain",
+  "texture": "hp_sea_captain",
+  "credit": "Hat Parade free hats pack",
+  "textureSize": [
+   512,
+   512
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "hp_ufo",
+  "name": "UFO",
+  "category": "Headwear",
+  "geometry": "hp_ufo",
+  "texture": "hp_ufo",
+  "credit": "Hat Parade free hats pack",
+  "textureSize": [
+   512,
+   512
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "hp_retro_tv",
+  "name": "Retro TV",
+  "category": "Headwear",
+  "geometry": "hp_retro_tv",
+  "texture": "hp_retro_tv",
+  "credit": "Hat Parade free hats pack",
+  "textureSize": [
+   512,
+   512
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "hp_parcel",
+  "name": "Parcel Hat",
+  "category": "Headwear",
+  "geometry": "hp_parcel",
+  "texture": "hp_parcel",
+  "credit": "Hat Parade free hats pack",
+  "textureSize": [
+   512,
+   512
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "hp_jellyfish",
+  "name": "Jellyfish Hat",
+  "category": "Headwear",
+  "geometry": "hp_jellyfish",
+  "texture": "hp_jellyfish",
+  "credit": "Hat Parade free hats pack",
+  "textureSize": [
+   512,
+   512
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "hp_bloom_crown",
+  "name": "Flower Crown",
+  "category": "Headwear",
+  "geometry": "hp_bloom_crown",
+  "texture": "hp_bloom_crown",
+  "credit": "Hat Parade free hats pack",
+  "textureSize": [
+   512,
+   512
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "hp_frost_diadem",
+  "name": "Frost Diadem",
+  "category": "Headwear",
+  "geometry": "hp_frost_diadem",
+  "texture": "hp_frost_diadem",
+  "credit": "Hat Parade free hats pack",
+  "textureSize": [
+   512,
+   512
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "hp_little_dragon",
+  "name": "Little Dragon",
+  "category": "Headwear",
+  "geometry": "hp_little_dragon",
+  "texture": "hp_little_dragon",
+  "credit": "Hat Parade free hats pack",
+  "textureSize": [
+   512,
+   512
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "hp_sushi",
+  "name": "Salmon Sushi",
+  "category": "Headwear",
+  "geometry": "hp_sushi",
+  "texture": "hp_sushi",
+  "credit": "Hat Parade free hats pack",
+  "textureSize": [
+   512,
+   512
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "hp_rubber_duck",
+  "name": "Rubber Duck",
+  "category": "Headwear",
+  "geometry": "hp_rubber_duck",
+  "texture": "hp_rubber_duck",
+  "credit": "Hat Parade free hats pack",
+  "textureSize": [
+   512,
+   512
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "ax_diving_helmet",
+  "name": "Diving Helmet",
+  "category": "Headwear",
+  "geometry": "ax_diving_helmet",
+  "texture": "ax_diving_helmet",
+  "credit": "Free Hats Pack by Artillex-Studios",
+  "textureSize": [
+   64,
+   96
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "ax_chicken_hat",
+  "name": "Chicken Hat",
+  "category": "Headwear",
+  "geometry": "ax_chicken_hat",
+  "texture": "ax_chicken_hat",
+  "credit": "Free Hats Pack by Artillex-Studios",
+  "textureSize": [
+   64,
+   80
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "ax_flight_hat",
+  "name": "Flight Hat",
+  "category": "Headwear",
+  "geometry": "ax_flight_hat",
+  "texture": "ax_flight_hat",
+  "credit": "Free Hats Pack by Artillex-Studios",
+  "textureSize": [
+   64,
+   112
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "ax_military_helmet",
+  "name": "Military Helmet",
+  "category": "Headwear",
+  "geometry": "ax_military_helmet",
+  "texture": "ax_military_helmet",
+  "credit": "Free Hats Pack by Artillex-Studios",
+  "textureSize": [
+   64,
+   64
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "ax_motorcycle_helmet",
+  "name": "Motorcycle Helmet",
+  "category": "Headwear",
+  "geometry": "ax_motorcycle_helmet",
+  "texture": "ax_motorcycle_helmet",
+  "credit": "Free Hats Pack by Artillex-Studios",
+  "textureSize": [
+   64,
+   64
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "ax_pot_hat",
+  "name": "Pot Hat",
+  "category": "Headwear",
+  "geometry": "ax_pot_hat",
+  "texture": "ax_pot_hat",
+  "credit": "Free Hats Pack by Artillex-Studios",
+  "textureSize": [
+   64,
+   64
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "hats_tophat",
+  "name": "Classic Top Hat",
+  "category": "Headwear",
+  "geometry": "hats_tophat",
+  "texture": "hats_tophat",
+  "credit": "Hats pack",
+  "textureSize": [
+   64,
+   64
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "hats_dimmadome",
+  "name": "Dimmadome Hat",
+  "category": "Headwear",
+  "geometry": "hats_dimmadome",
+  "texture": "hats_dimmadome",
+  "credit": "Hats pack",
+  "textureSize": [
+   64,
+   64
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "hats_propeller_hat",
+  "name": "Propeller Hat",
+  "category": "Headwear",
+  "geometry": "hats_propeller_hat",
+  "texture": "hats_propeller_hat",
+  "credit": "Hats pack",
+  "textureSize": [
+   32,
+   32
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "hats_crown",
+  "name": "Royal Gold Crown",
+  "category": "Headwear",
+  "geometry": "hats_crown",
+  "texture": "hats_crown",
+  "credit": "Hats pack",
+  "textureSize": [
+   32,
+   32
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "hats_sstraw_hat",
+  "name": "Summer Straw Hat",
+  "category": "Headwear",
+  "geometry": "hats_sstraw_hat",
+  "texture": "hats_sstraw_hat",
+  "credit": "Hats pack",
+  "textureSize": [
+   64,
+   64
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "hats_clown_mask",
+  "name": "Clown Mask",
+  "category": "Headwear",
+  "geometry": "hats_clown_mask",
+  "texture": "hats_clown_mask",
+  "credit": "Hats pack",
+  "textureSize": [
+   32,
+   32
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "winter_santa",
+  "name": "Santa Beard Hat",
+  "category": "Headwear",
+  "geometry": "winter_santa",
+  "texture": "winter_santa",
+  "credit": "Winter Hats by HeisDev's",
+  "textureSize": [
+   128,
+   128
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "winter_santahat",
+  "name": "Winter Santa Hat",
+  "category": "Headwear",
+  "geometry": "winter_santahat",
+  "texture": "winter_santahat",
+  "credit": "Winter Hats by HeisDev's",
+  "textureSize": [
+   128,
+   128
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "winter_deer",
+  "name": "Reindeer Hood",
+  "category": "Headwear",
+  "geometry": "winter_deer",
+  "texture": "winter_deer",
+  "credit": "Winter Hats by HeisDev's",
+  "textureSize": [
+   64,
+   64
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "winter_deerhat",
+  "name": "Reindeer Hat",
+  "category": "Headwear",
+  "geometry": "winter_deerhat",
+  "texture": "winter_deerhat",
+  "credit": "Winter Hats by HeisDev's",
+  "textureSize": [
+   64,
+   64
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "winter_light_elf",
+  "name": "Light Elf Hat",
+  "category": "Headwear",
+  "geometry": "winter_light_elf",
+  "texture": "winter_light_elf",
+  "credit": "Winter Hats by HeisDev's",
+  "textureSize": [
+   128,
+   128
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "winter_dark_elf",
+  "name": "Dark Elf Hat",
+  "category": "Headwear",
+  "geometry": "winter_dark_elf",
+  "texture": "winter_dark_elf",
+  "credit": "Winter Hats by HeisDev's",
+  "textureSize": [
+   128,
+   128
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "winter_snowman",
+  "name": "Snowman Head",
+  "category": "Headwear",
+  "geometry": "winter_snowman",
+  "texture": "winter_snowman",
+  "credit": "Winter Hats by HeisDev's",
+  "textureSize": [
+   128,
+   128
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "winter_scarf",
+  "name": "Winter Scarf",
+  "category": "Bodywear",
+  "geometry": "winter_scarf",
+  "texture": "winter_scarf",
+  "credit": "Winter Hats by HeisDev's",
+  "textureSize": [
+   64,
+   64
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "cactus_hat",
+  "name": "Cactus Hat",
+  "category": "Headwear",
+  "geometry": "cactus_hat",
+  "texture": "cactus_hat",
+  "credit": "Cactus Hat",
+  "textureSize": [
+   128,
+   128
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "bucket_in_head_black",
+  "name": "Bucket Head (Black)",
+  "category": "Headwear",
+  "geometry": "bucket_in_head_black",
+  "texture": "bucket_in_head_black",
+  "credit": "Rehiga (free to edit and use in servers/content with credit, not for resale)",
+  "textureSize": [
+   64,
+   64
+  ],
+  "source": "pack",
+  "group": "bucket_head",
+  "groupName": "Bucket Head",
+  "variant": "Black",
+  "swatch": "#2b2b30"
+ },
+ {
+  "id": "bucket_in_head_red",
+  "name": "Bucket Head (Red)",
+  "category": "Headwear",
+  "geometry": "bucket_in_head_red",
+  "texture": "bucket_in_head_red",
+  "credit": "Rehiga (free to edit and use in servers/content with credit, not for resale)",
+  "textureSize": [
+   64,
+   64
+  ],
+  "source": "pack",
+  "group": "bucket_head",
+  "groupName": "Bucket Head",
+  "variant": "Red",
+  "swatch": "#d62f2f"
+ },
+ {
+  "id": "bucket_in_head_blue",
+  "name": "Bucket Head (Blue)",
+  "category": "Headwear",
+  "geometry": "bucket_in_head_blue",
+  "texture": "bucket_in_head_blue",
+  "credit": "Rehiga (free to edit and use in servers/content with credit, not for resale)",
+  "textureSize": [
+   64,
+   64
+  ],
+  "source": "pack",
+  "group": "bucket_head",
+  "groupName": "Bucket Head",
+  "variant": "Blue",
+  "swatch": "#2f5fd6"
+ },
+ {
+  "id": "bucket_in_head_purple",
+  "name": "Bucket Head (Purple)",
+  "category": "Headwear",
+  "geometry": "bucket_in_head_purple",
+  "texture": "bucket_in_head_purple",
+  "credit": "Rehiga (free to edit and use in servers/content with credit, not for resale)",
+  "textureSize": [
+   64,
+   64
+  ],
+  "source": "pack",
+  "group": "bucket_head",
+  "groupName": "Bucket Head",
+  "variant": "Purple",
+  "swatch": "#7d3fc4"
+ },
+ {
+  "id": "bucket_in_head_orange",
+  "name": "Bucket Head (Orange)",
+  "category": "Headwear",
+  "geometry": "bucket_in_head_orange",
+  "texture": "bucket_in_head_orange",
+  "credit": "Rehiga (free to edit and use in servers/content with credit, not for resale)",
+  "textureSize": [
+   64,
+   64
+  ],
+  "source": "pack",
+  "group": "bucket_head",
+  "groupName": "Bucket Head",
+  "variant": "Orange",
+  "swatch": "#e8801f"
+ },
+ {
+  "id": "bucket_in_head_gray",
+  "name": "Bucket Head (Gray)",
+  "category": "Headwear",
+  "geometry": "bucket_in_head_gray",
+  "texture": "bucket_in_head_gray",
+  "credit": "Rehiga (free to edit and use in servers/content with credit, not for resale)",
+  "textureSize": [
+   64,
+   64
+  ],
+  "source": "pack",
+  "group": "bucket_head",
+  "groupName": "Bucket Head",
+  "variant": "Gray",
+  "swatch": "#8a8f99"
+ },
+ {
+  "id": "bucket_in_head_brown",
+  "name": "Bucket Head (Brown)",
+  "category": "Headwear",
+  "geometry": "bucket_in_head_brown",
+  "texture": "bucket_in_head_brown",
+  "credit": "Rehiga (free to edit and use in servers/content with credit, not for resale)",
+  "textureSize": [
+   64,
+   64
+  ],
+  "source": "pack",
+  "group": "bucket_head",
+  "groupName": "Bucket Head",
+  "variant": "Brown",
+  "swatch": "#8b5a2b"
+ },
+ {
+  "id": "halo_white",
+  "name": "Halo (White)",
+  "category": "Headwear",
+  "geometry": "halo_white",
+  "texture": "halo_white",
+  "credit": "Rehiga (free to edit and use in servers/content with credit, not for resale)",
+  "textureSize": [
+   16,
+   16
+  ],
+  "source": "pack",
+  "group": "halo",
+  "groupName": "Halo",
+  "variant": "White",
+  "swatch": "#f2f2f2"
+ },
+ {
+  "id": "halo_red",
+  "name": "Halo (Red)",
+  "category": "Headwear",
+  "geometry": "halo_red",
+  "texture": "halo_red",
+  "credit": "Rehiga (free to edit and use in servers/content with credit, not for resale)",
+  "textureSize": [
+   16,
+   16
+  ],
+  "source": "pack",
+  "group": "halo",
+  "groupName": "Halo",
+  "variant": "Red",
+  "swatch": "#d62f2f"
+ },
+ {
+  "id": "halo_blue",
+  "name": "Halo (Blue)",
+  "category": "Headwear",
+  "geometry": "halo_blue",
+  "texture": "halo_blue",
+  "credit": "Rehiga (free to edit and use in servers/content with credit, not for resale)",
+  "textureSize": [
+   16,
+   16
+  ],
+  "source": "pack",
+  "group": "halo",
+  "groupName": "Halo",
+  "variant": "Blue",
+  "swatch": "#2f5fd6"
+ },
+ {
+  "id": "halo_green",
+  "name": "Halo (Green)",
+  "category": "Headwear",
+  "geometry": "halo_green",
+  "texture": "halo_green",
+  "credit": "Rehiga (free to edit and use in servers/content with credit, not for resale)",
+  "textureSize": [
+   16,
+   16
+  ],
+  "source": "pack",
+  "group": "halo",
+  "groupName": "Halo",
+  "variant": "Green",
+  "swatch": "#3fae4a"
+ },
+ {
+  "id": "halo_yellow",
+  "name": "Halo (Yellow)",
+  "category": "Headwear",
+  "geometry": "halo_yellow",
+  "texture": "halo_yellow",
+  "credit": "Rehiga (free to edit and use in servers/content with credit, not for resale)",
+  "textureSize": [
+   16,
+   16
+  ],
+  "source": "pack",
+  "group": "halo",
+  "groupName": "Halo",
+  "variant": "Yellow",
+  "swatch": "#f2d13a"
+ },
+ {
+  "id": "halo_orange",
+  "name": "Halo (Orange)",
+  "category": "Headwear",
+  "geometry": "halo_orange",
+  "texture": "halo_orange",
+  "credit": "Rehiga (free to edit and use in servers/content with credit, not for resale)",
+  "textureSize": [
+   16,
+   16
+  ],
+  "source": "pack",
+  "group": "halo",
+  "groupName": "Halo",
+  "variant": "Orange",
+  "swatch": "#e8801f"
+ },
+ {
+  "id": "halo_pink",
+  "name": "Halo (Pink)",
+  "category": "Headwear",
+  "geometry": "halo_pink",
+  "texture": "halo_pink",
+  "credit": "Rehiga (free to edit and use in servers/content with credit, not for resale)",
+  "textureSize": [
+   16,
+   16
+  ],
+  "source": "pack",
+  "group": "halo",
+  "groupName": "Halo",
+  "variant": "Pink",
+  "swatch": "#e64ab8"
+ },
+ {
+  "id": "short_hat_white",
+  "name": "Short Hat (White)",
+  "category": "Headwear",
+  "geometry": "short_hat_white",
+  "texture": "short_hat_white",
+  "credit": "Rehiga (free to edit and use in servers/content with credit, not for resale)",
+  "textureSize": [
+   32,
+   32
+  ],
+  "source": "pack",
+  "group": "short_hat",
+  "groupName": "Short Hat",
+  "variant": "White",
+  "swatch": "#f2f2f2"
+ },
+ {
+  "id": "short_hat_black",
+  "name": "Short Hat (Black)",
+  "category": "Headwear",
+  "geometry": "short_hat_black",
+  "texture": "short_hat_black",
+  "credit": "Rehiga (free to edit and use in servers/content with credit, not for resale)",
+  "textureSize": [
+   32,
+   32
+  ],
+  "source": "pack",
+  "group": "short_hat",
+  "groupName": "Short Hat",
+  "variant": "Black",
+  "swatch": "#2b2b30"
+ },
+ {
+  "id": "short_hat_red",
+  "name": "Short Hat (Red)",
+  "category": "Headwear",
+  "geometry": "short_hat_red",
+  "texture": "short_hat_red",
+  "credit": "Rehiga (free to edit and use in servers/content with credit, not for resale)",
+  "textureSize": [
+   32,
+   32
+  ],
+  "source": "pack",
+  "group": "short_hat",
+  "groupName": "Short Hat",
+  "variant": "Red",
+  "swatch": "#d62f2f"
+ },
+ {
+  "id": "short_hat_blue",
+  "name": "Short Hat (Blue)",
+  "category": "Headwear",
+  "geometry": "short_hat_blue",
+  "texture": "short_hat_blue",
+  "credit": "Rehiga (free to edit and use in servers/content with credit, not for resale)",
+  "textureSize": [
+   32,
+   32
+  ],
+  "source": "pack",
+  "group": "short_hat",
+  "groupName": "Short Hat",
+  "variant": "Blue",
+  "swatch": "#2f5fd6"
+ },
+ {
+  "id": "short_hat_green",
+  "name": "Short Hat (Green)",
+  "category": "Headwear",
+  "geometry": "short_hat_green",
+  "texture": "short_hat_green",
+  "credit": "Rehiga (free to edit and use in servers/content with credit, not for resale)",
+  "textureSize": [
+   32,
+   32
+  ],
+  "source": "pack",
+  "group": "short_hat",
+  "groupName": "Short Hat",
+  "variant": "Green",
+  "swatch": "#3fae4a"
+ },
+ {
+  "id": "short_hat_purple",
+  "name": "Short Hat (Purple)",
+  "category": "Headwear",
+  "geometry": "short_hat_purple",
+  "texture": "short_hat_purple",
+  "credit": "Rehiga (free to edit and use in servers/content with credit, not for resale)",
+  "textureSize": [
+   32,
+   32
+  ],
+  "source": "pack",
+  "group": "short_hat",
+  "groupName": "Short Hat",
+  "variant": "Purple",
+  "swatch": "#7d3fc4"
+ },
+ {
+  "id": "short_hat_gray",
+  "name": "Short Hat (Gray)",
+  "category": "Headwear",
+  "geometry": "short_hat_gray",
+  "texture": "short_hat_gray",
+  "credit": "Rehiga (free to edit and use in servers/content with credit, not for resale)",
+  "textureSize": [
+   32,
+   32
+  ],
+  "source": "pack",
+  "group": "short_hat",
+  "groupName": "Short Hat",
+  "variant": "Gray",
+  "swatch": "#8a8f99"
+ },
+ {
+  "id": "elven_wings_elf",
+  "name": "Elven Ranger Wings (Elf)",
+  "category": "Wings",
+  "geometry": "elven_wings_elf",
+  "texture": "elven_wings_elf",
+  "credit": "Rehiga (free to edit and use in servers/content with credit, not for resale)",
+  "textureSize": [
+   256,
+   256
+  ],
+  "source": "pack",
+  "anim": "wings",
+  "group": "elven_wings",
+  "groupName": "Elven Ranger Wings",
+  "variant": "Elf",
+  "swatch": "#4ddf24"
+ },
+ {
+  "id": "elven_wings_forest",
+  "name": "Elven Ranger Wings (Forest)",
+  "category": "Wings",
+  "geometry": "elven_wings_forest",
+  "texture": "elven_wings_forest",
+  "credit": "Rehiga (free to edit and use in servers/content with credit, not for resale)",
+  "textureSize": [
+   256,
+   256
+  ],
+  "source": "pack",
+  "anim": "wings",
+  "group": "elven_wings",
+  "groupName": "Elven Ranger Wings",
+  "variant": "Forest",
+  "swatch": "#44fa03"
+ },
+ {
+  "id": "elven_wings_leaf",
+  "name": "Elven Ranger Wings (Leaf)",
+  "category": "Wings",
+  "geometry": "elven_wings_leaf",
+  "texture": "elven_wings_leaf",
+  "credit": "Rehiga (free to edit and use in servers/content with credit, not for resale)",
+  "textureSize": [
+   256,
+   256
+  ],
+  "source": "pack",
+  "anim": "wings",
+  "group": "elven_wings",
+  "groupName": "Elven Ranger Wings",
+  "variant": "Leaf",
+  "swatch": "#00ea16"
+ },
+ {
+  "id": "elven_wings_river",
+  "name": "Elven Ranger Wings (River)",
+  "category": "Wings",
+  "geometry": "elven_wings_river",
+  "texture": "elven_wings_river",
+  "credit": "Rehiga (free to edit and use in servers/content with credit, not for resale)",
+  "textureSize": [
+   256,
+   256
+  ],
+  "source": "pack",
+  "anim": "wings",
+  "group": "elven_wings",
+  "groupName": "Elven Ranger Wings",
+  "variant": "River",
+  "swatch": "#0723f7"
+ },
+ {
+  "id": "elven_wings_royal",
+  "name": "Elven Ranger Wings (Royal)",
+  "category": "Wings",
+  "geometry": "elven_wings_royal",
+  "texture": "elven_wings_royal",
+  "credit": "Rehiga (free to edit and use in servers/content with credit, not for resale)",
+  "textureSize": [
+   256,
+   256
+  ],
+  "source": "pack",
+  "anim": "wings",
+  "group": "elven_wings",
+  "groupName": "Elven Ranger Wings",
+  "variant": "Royal",
+  "swatch": "#fbed01"
+ },
+ {
+  "id": "elven_wings_waterfall",
+  "name": "Elven Ranger Wings (Waterfall)",
+  "category": "Wings",
+  "geometry": "elven_wings_waterfall",
+  "texture": "elven_wings_waterfall",
+  "credit": "Rehiga (free to edit and use in servers/content with credit, not for resale)",
+  "textureSize": [
+   256,
+   256
+  ],
+  "source": "pack",
+  "anim": "wings",
+  "group": "elven_wings",
+  "groupName": "Elven Ranger Wings",
+  "variant": "Waterfall",
+  "swatch": "#05e8f7"
+ },
+ {
+  "id": "elven_wings_corrupt",
+  "name": "Elven Ranger Wings (Corrupt)",
+  "category": "Wings",
+  "geometry": "elven_wings_corrupt",
+  "texture": "elven_wings_corrupt",
+  "credit": "Rehiga (free to edit and use in servers/content with credit, not for resale)",
+  "textureSize": [
+   256,
+   256
+  ],
+  "source": "pack",
+  "anim": "wings",
+  "group": "elven_wings",
+  "groupName": "Elven Ranger Wings",
+  "variant": "Corrupt",
+  "swatch": "#424242"
+ },
+ {
+  "id": "fairy_wings",
+  "name": "Fairy Wings",
+  "category": "Wings",
+  "geometry": "fairy_wings",
+  "texture": "fairy_wings",
+  "credit": "Fairy Wings by SheepModels (ciaran_sh)",
+  "textureSize": [
+   256,
+   680
+  ],
+  "source": "pack",
+  "anim": "wings"
+ },
+ {
+  "id": "feral_bear_ears",
+  "name": "Bear Ears",
+  "category": "Headwear",
+  "geometry": "feral_bear_ears",
+  "texture": "feral_bear_ears",
+  "credit": "Feral Fantasy Set by Erocavontic",
+  "textureSize": [
+   48,
+   48
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "feral_bear_tail",
+  "name": "Bear Tail",
+  "category": "Tails",
+  "geometry": "feral_bear_tail",
+  "texture": "feral_bear_tail",
+  "credit": "Feral Fantasy Set by Erocavontic",
+  "textureSize": [
+   48,
+   48
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "feral_cat_ears",
+  "name": "Cat Ears",
+  "category": "Headwear",
+  "geometry": "feral_cat_ears",
+  "texture": "feral_cat_ears",
+  "credit": "Feral Fantasy Set by Erocavontic",
+  "textureSize": [
+   48,
+   48
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "feral_cat_tail",
+  "name": "Cat Tail",
+  "category": "Tails",
+  "geometry": "feral_cat_tail",
+  "texture": "feral_cat_tail",
+  "credit": "Feral Fantasy Set by Erocavontic",
+  "textureSize": [
+   48,
+   48
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "feral_fox_ears",
+  "name": "Fox Ears",
+  "category": "Headwear",
+  "geometry": "feral_fox_ears",
+  "texture": "feral_fox_ears",
+  "credit": "Feral Fantasy Set by Erocavontic",
+  "textureSize": [
+   48,
+   48
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "feral_fox_tail",
+  "name": "Fox Tail",
+  "category": "Tails",
+  "geometry": "feral_fox_tail",
+  "texture": "feral_fox_tail",
+  "credit": "Feral Fantasy Set by Erocavontic",
+  "textureSize": [
+   48,
+   48
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "feral_rabbit_ears",
+  "name": "Rabbit Ears",
+  "category": "Headwear",
+  "geometry": "feral_rabbit_ears",
+  "texture": "feral_rabbit_ears",
+  "credit": "Feral Fantasy Set by Erocavontic",
+  "textureSize": [
+   48,
+   48
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "feral_rabbit_tail",
+  "name": "Rabbit Tail",
+  "category": "Tails",
+  "geometry": "feral_rabbit_tail",
+  "texture": "feral_rabbit_tail",
+  "credit": "Feral Fantasy Set by Erocavontic",
+  "textureSize": [
+   32,
+   32
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "feral_tiger_ears",
+  "name": "Tiger Ears",
+  "category": "Headwear",
+  "geometry": "feral_tiger_ears",
+  "texture": "feral_tiger_ears",
+  "credit": "Feral Fantasy Set by Erocavontic",
+  "textureSize": [
+   48,
+   48
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "feral_tiger_tail",
+  "name": "Tiger Tail",
+  "category": "Tails",
+  "geometry": "feral_tiger_tail",
+  "texture": "feral_tiger_tail",
+  "credit": "Feral Fantasy Set by Erocavontic",
+  "textureSize": [
+   64,
+   64
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "feral_wolf_ears",
+  "name": "Wolf Ears",
+  "category": "Headwear",
+  "geometry": "feral_wolf_ears",
+  "texture": "feral_wolf_ears",
+  "credit": "Feral Fantasy Set by Erocavontic",
+  "textureSize": [
+   48,
+   48
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "feral_wolf_tail",
+  "name": "Wolf Tail",
+  "category": "Tails",
+  "geometry": "feral_wolf_tail",
+  "texture": "feral_wolf_tail",
+  "credit": "Feral Fantasy Set by Erocavontic",
+  "textureSize": [
+   48,
+   48
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "feral_cow_ears",
+  "name": "Cow Ears",
+  "category": "Headwear",
+  "geometry": "feral_cow_ears",
+  "texture": "feral_cow_ears",
+  "credit": "Feral Fantasy Set Vol 2 by Erocavontic",
+  "textureSize": [
+   32,
+   32
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "feral_cow_horns",
+  "name": "Cow Horns",
+  "category": "Headwear",
+  "geometry": "feral_cow_horns",
+  "texture": "feral_cow_horns",
+  "credit": "Feral Fantasy Set Vol 2 by Erocavontic",
+  "textureSize": [
+   32,
+   32
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "feral_cow_tail",
+  "name": "Cow Tail",
+  "category": "Tails",
+  "geometry": "feral_cow_tail",
+  "texture": "feral_cow_tail",
+  "credit": "Feral Fantasy Set Vol 2 by Erocavontic",
+  "textureSize": [
+   32,
+   32
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "feral_deer_ears",
+  "name": "Deer Ears",
+  "category": "Headwear",
+  "geometry": "feral_deer_ears",
+  "texture": "feral_deer_ears",
+  "credit": "Feral Fantasy Set Vol 2 by Erocavontic",
+  "textureSize": [
+   32,
+   32
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "feral_deer_horns",
+  "name": "Deer Horns",
+  "category": "Headwear",
+  "geometry": "feral_deer_horns",
+  "texture": "feral_deer_horns",
+  "credit": "Feral Fantasy Set Vol 2 by Erocavontic",
+  "textureSize": [
+   64,
+   64
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "feral_deer_tail",
+  "name": "Deer Tail",
+  "category": "Tails",
+  "geometry": "feral_deer_tail",
+  "texture": "feral_deer_tail",
+  "credit": "Feral Fantasy Set Vol 2 by Erocavontic",
+  "textureSize": [
+   32,
+   32
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "feral_goat_ears",
+  "name": "Goat Ears",
+  "category": "Headwear",
+  "geometry": "feral_goat_ears",
+  "texture": "feral_goat_ears",
+  "credit": "Feral Fantasy Set Vol 2 by Erocavontic",
+  "textureSize": [
+   32,
+   32
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "feral_goat_horns",
+  "name": "Goat Horns",
+  "category": "Headwear",
+  "geometry": "feral_goat_horns",
+  "texture": "feral_goat_horns",
+  "credit": "Feral Fantasy Set Vol 2 by Erocavontic",
+  "textureSize": [
+   64,
+   64
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "feral_goat_tail",
+  "name": "Goat Tail",
+  "category": "Tails",
+  "geometry": "feral_goat_tail",
+  "texture": "feral_goat_tail",
+  "credit": "Feral Fantasy Set Vol 2 by Erocavontic",
+  "textureSize": [
+   32,
+   32
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "feral_horse_ears",
+  "name": "Horse Ears",
+  "category": "Headwear",
+  "geometry": "feral_horse_ears",
+  "texture": "feral_horse_ears",
+  "credit": "Feral Fantasy Set Vol 2 by Erocavontic",
+  "textureSize": [
+   64,
+   64
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "feral_horse_horns",
+  "name": "Horse Horns",
+  "category": "Headwear",
+  "geometry": "feral_horse_horns",
+  "texture": "feral_horse_horns",
+  "credit": "Feral Fantasy Set Vol 2 by Erocavontic",
+  "textureSize": [
+   32,
+   32
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "feral_horse_tail",
+  "name": "Horse Tail",
+  "category": "Tails",
+  "geometry": "feral_horse_tail",
+  "texture": "feral_horse_tail",
+  "credit": "Feral Fantasy Set Vol 2 by Erocavontic",
+  "textureSize": [
+   64,
+   64
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "feral_sheep_ears",
+  "name": "Sheep Ears",
+  "category": "Headwear",
+  "geometry": "feral_sheep_ears",
+  "texture": "feral_sheep_ears",
+  "credit": "Feral Fantasy Set Vol 2 by Erocavontic",
+  "textureSize": [
+   32,
+   32
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "feral_sheep_horns",
+  "name": "Sheep Horns",
+  "category": "Headwear",
+  "geometry": "feral_sheep_horns",
+  "texture": "feral_sheep_horns",
+  "credit": "Feral Fantasy Set Vol 2 by Erocavontic",
+  "textureSize": [
+   32,
+   32
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "feral_sheep_tail",
+  "name": "Sheep Tail",
+  "category": "Tails",
+  "geometry": "feral_sheep_tail",
+  "texture": "feral_sheep_tail",
+  "credit": "Feral Fantasy Set Vol 2 by Erocavontic",
+  "textureSize": [
+   32,
+   32
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "corgi",
+  "name": "Corgi",
+  "category": "Pets",
+  "geometry": "pet3d_corgi",
+  "texture": "pet_corgi",
+  "anim": "pet",
+  "pet": "corgi",
+  "credit": "Corgi by its Blockbench author (corgi_stand)",
+  "textureSize": [
+   32,
+   176
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "plush_freddy",
+  "name": "Freddy Plush",
+  "category": "Pets",
+  "geometry": "pet3d_plush_freddy",
+  "texture": "pet_plush_freddy",
+  "anim": "pet",
+  "pet": "plush_freddy",
+  "credit": "FNAF Plushies (free version) resource pack",
+  "textureSize": [
+   64,
+   64
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "plush_bonnie",
+  "name": "Bonnie Plush",
+  "category": "Pets",
+  "geometry": "pet3d_plush_bonnie",
+  "texture": "pet_plush_bonnie",
+  "anim": "pet",
+  "pet": "plush_bonnie",
+  "credit": "FNAF Plushies (free version) resource pack",
+  "textureSize": [
+   64,
+   64
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "plush_chica",
+  "name": "Chica Plush",
+  "category": "Pets",
+  "geometry": "pet3d_plush_chica",
+  "texture": "pet_plush_chica",
+  "anim": "pet",
+  "pet": "plush_chica",
+  "credit": "FNAF Plushies (free version) resource pack",
+  "textureSize": [
+   64,
+   64
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "plush_foxy",
+  "name": "Foxy Plush",
+  "category": "Pets",
+  "geometry": "pet3d_plush_foxy",
+  "texture": "pet_plush_foxy",
+  "anim": "pet",
+  "pet": "plush_foxy",
+  "credit": "FNAF Plushies (free version) resource pack",
+  "textureSize": [
+   64,
+   64
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "plush_golden_freddy",
+  "name": "Golden Freddy Plush",
+  "category": "Pets",
+  "geometry": "pet3d_plush_golden_freddy",
+  "texture": "pet_plush_golden_freddy",
+  "anim": "pet",
+  "pet": "plush_golden_freddy",
+  "credit": "FNAF Plushies (free version) resource pack",
+  "textureSize": [
+   64,
+   64
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "plush_puppet",
+  "name": "Puppet Plush",
+  "category": "Pets",
+  "geometry": "pet3d_plush_puppet",
+  "texture": "pet_plush_puppet",
+  "anim": "pet",
+  "pet": "plush_puppet",
+  "credit": "FNAF Plushies (free version) resource pack",
+  "textureSize": [
+   64,
+   64
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "mini_sus_white",
+  "name": "Mini Crewmate (White)",
+  "category": "Pets",
+  "geometry": "pet3d_mini_sus_white",
+  "texture": "pet_mini_sus_white",
+  "anim": "pet",
+  "pet": "mini_sus_white",
+  "credit": "Rehiga (free to edit and use in servers/content with credit, not for resale)",
+  "textureSize": [
+   32,
+   32
+  ],
+  "source": "pack",
+  "group": "mini_crewmate",
+  "groupName": "Mini Crewmate",
+  "variant": "White",
+  "swatch": "#f2f2f2"
+ },
+ {
+  "id": "mini_sus_black",
+  "name": "Mini Crewmate (Black)",
+  "category": "Pets",
+  "geometry": "pet3d_mini_sus_black",
+  "texture": "pet_mini_sus_black",
+  "anim": "pet",
+  "pet": "mini_sus_black",
+  "credit": "Rehiga (free to edit and use in servers/content with credit, not for resale)",
+  "textureSize": [
+   32,
+   32
+  ],
+  "source": "pack",
+  "group": "mini_crewmate",
+  "groupName": "Mini Crewmate",
+  "variant": "Black",
+  "swatch": "#2b2b30"
+ },
+ {
+  "id": "mini_sus_red",
+  "name": "Mini Crewmate (Red)",
+  "category": "Pets",
+  "geometry": "pet3d_mini_sus_red",
+  "texture": "pet_mini_sus_red",
+  "anim": "pet",
+  "pet": "mini_sus_red",
+  "credit": "Rehiga (free to edit and use in servers/content with credit, not for resale)",
+  "textureSize": [
+   32,
+   32
+  ],
+  "source": "pack",
+  "group": "mini_crewmate",
+  "groupName": "Mini Crewmate",
+  "variant": "Red",
+  "swatch": "#d62f2f"
+ },
+ {
+  "id": "mini_sus_blue",
+  "name": "Mini Crewmate (Blue)",
+  "category": "Pets",
+  "geometry": "pet3d_mini_sus_blue",
+  "texture": "pet_mini_sus_blue",
+  "anim": "pet",
+  "pet": "mini_sus_blue",
+  "credit": "Rehiga (free to edit and use in servers/content with credit, not for resale)",
+  "textureSize": [
+   32,
+   32
+  ],
+  "source": "pack",
+  "group": "mini_crewmate",
+  "groupName": "Mini Crewmate",
+  "variant": "Blue",
+  "swatch": "#2f5fd6"
+ },
+ {
+  "id": "mini_sus_green",
+  "name": "Mini Crewmate (Green)",
+  "category": "Pets",
+  "geometry": "pet3d_mini_sus_green",
+  "texture": "pet_mini_sus_green",
+  "anim": "pet",
+  "pet": "mini_sus_green",
+  "credit": "Rehiga (free to edit and use in servers/content with credit, not for resale)",
+  "textureSize": [
+   32,
+   32
+  ],
+  "source": "pack",
+  "group": "mini_crewmate",
+  "groupName": "Mini Crewmate",
+  "variant": "Green",
+  "swatch": "#3fae4a"
+ },
+ {
+  "id": "mini_sus_purple",
+  "name": "Mini Crewmate (Purple)",
+  "category": "Pets",
+  "geometry": "pet3d_mini_sus_purple",
+  "texture": "pet_mini_sus_purple",
+  "anim": "pet",
+  "pet": "mini_sus_purple",
+  "credit": "Rehiga (free to edit and use in servers/content with credit, not for resale)",
+  "textureSize": [
+   32,
+   32
+  ],
+  "source": "pack",
+  "group": "mini_crewmate",
+  "groupName": "Mini Crewmate",
+  "variant": "Purple",
+  "swatch": "#7d3fc4"
+ },
+ {
+  "id": "mini_sus_yellow",
+  "name": "Mini Crewmate (Yellow)",
+  "category": "Pets",
+  "geometry": "pet3d_mini_sus_yellow",
+  "texture": "pet_mini_sus_yellow",
+  "anim": "pet",
+  "pet": "mini_sus_yellow",
+  "credit": "Rehiga (free to edit and use in servers/content with credit, not for resale)",
+  "textureSize": [
+   32,
+   32
+  ],
+  "source": "pack",
+  "group": "mini_crewmate",
+  "groupName": "Mini Crewmate",
+  "variant": "Yellow",
+  "swatch": "#f2d13a"
+ },
+ {
+  "id": "bee",
+  "name": "Buzzy Bee",
+  "category": "Pets",
+  "geometry": "pet3d_bee",
+  "texture": "pet_bee",
+  "anim": "pet",
+  "pet": "bee",
+  "credit": "Original Sleep art",
+  "textureSize": [
+   64,
+   64
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "baby_dragon",
+  "name": "Baby Dragon",
+  "category": "Pets",
+  "geometry": "pet3d_baby_dragon",
+  "texture": "pet_baby_dragon",
+  "anim": "pet",
+  "pet": "baby_dragon",
+  "credit": "Original Sleep art",
+  "textureSize": [
+   64,
+   64
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "bat",
+  "name": "Night Bat",
+  "category": "Pets",
+  "geometry": "pet3d_bat",
+  "texture": "pet_bat",
+  "anim": "pet",
+  "pet": "bat",
+  "credit": "Original Sleep art",
+  "textureSize": [
+   64,
+   64
+  ],
+  "source": "pack"
+ },
+ {
+  "id": "ghost",
+  "name": "Boo the Ghost",
+  "category": "Pets",
+  "geometry": "pet3d_ghost",
+  "texture": "pet_ghost",
+  "anim": "pet",
+  "pet": "ghost",
+  "credit": "Original Sleep art",
+  "textureSize": [
+   64,
+   64
+  ],
+  "source": "pack"
+ }
+]

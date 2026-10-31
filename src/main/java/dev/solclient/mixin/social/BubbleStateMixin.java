@@ -1,0 +1,25 @@
+package dev.solclient.mixin.social;
+
+import dev.solclient.chatx.BubbleHolder;
+import dev.solclient.mods.ChatBubblesMod;
+import java.util.List;
+import net.minecraft.client.render.entity.state.EntityRenderState;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
+
+@Mixin(EntityRenderState.class)
+public class BubbleStateMixin implements BubbleHolder {
+
+	@Unique
+	private List<ChatBubblesMod.Bubble> plegumo$bubbles;
+
+	@Override
+	public List<ChatBubblesMod.Bubble> plegumo$bubbles() {
+		return plegumo$bubbles;
+	}
+
+	@Override
+	public void plegumo$setBubbles(List<ChatBubblesMod.Bubble> bubbles) {
+		this.plegumo$bubbles = bubbles;
+	}
+}

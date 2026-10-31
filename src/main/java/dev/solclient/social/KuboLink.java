@@ -1,0 +1,216 @@
+package dev.solclient.social;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import net.minecraft.client.MinecraftClient;
+
+/**
+ * Small live link between Sleep players on the same server (through the presence room): your health / hunger /
+ * position for the Party HUD, and pings ("enemy here", "come here"). Sent about once a second while something
+ * needs it, and only to people in that server's room.
+ */
+public final class KuboLink {
+
+	/** What we know about another Sleep player on this server. */
+	public static final class State {
+		public String uuid, nick = "", dim = "";
+		public float hp = 20, maxHp = 20, food = 20, armor;
+		public double x, y, z;
+		public long seen;
+	}
+
+	/** A ping in the world. */
+	public static final class Ping {
+		public String from = "", fromUuid = "", dim = "";
+		public double x, y, z;
+		public int type; // 0 look, 1 enemy, 2 come, 3 danger, 4 loot
+		public long at, seq;
+		public boolean mine;
+	}
+
+	public static final String[] PING_NAMES = {"Look here", "Enemy", "Come here", "Danger", "Loot"};
+	public static final int[] PING_COLOURS = {0xFF7DD3FC, 0xFFFF4D5E, 0xFF4ADE80, 0xFFFFB020, 0xFFC084FC};
+
+	public static final Map<String, State> STATES = new ConcurrentHashMap<>();
+	public static final List<Ping> PINGS = new ArrayList<>();
+	private static final Map<String, Long> LAST_SEQ = new ConcurrentHashMap<>();
+
+	/** Who wants the link running (Party HUD, pings). */
+	public static volatile boolean wantParty, wantPings;
+	private static Ping outgoing;
+	private static String lastBadge = "";
+	private static long lastBadgeAt;
+	private static long lastSend, seq = System.currentTimeMillis() % 100000;
+
+	private KuboLink() {
+	}
+
+	private static String me() {
+		var id = MinecraftClient.getInstance().getSession().getUuidOrNull();
+		return id == null ? "" : id.toString().replace("-", "").toLowerCase(Locale.ROOT);
+	}
+
+	/** Places a ping where you look (shown to you at once, to the others with the next message). */
+	public static void ping(double x, double y, double z, int type) {
+		MinecraftClient mc = MinecraftClient.getInstance();
+		Ping p = new Ping();
+		p.x = x;
+		p.y = y;
+		p.z = z;
+		p.type = type;
+		p.at = System.currentTimeMillis();
+		p.seq = ++seq;
+		p.mine = true;
+		p.from = mc.getSession().getUsername();
+		p.fromUuid = me();
+		p.dim = mc.world == null ? "" : mc.world.getRegistryKey().getValue().toString();
+		synchronized (PINGS) {
+			PINGS.removeIf(o -> o.mine);
+			PINGS.add(p);
+		}
+		outgoing = p;
+		lastSend = 0; // send now
+		dev.solclient.stats.KuboStats.add("pings", 1);
+	}
+
+	/** Every client tick. */
+	public static void tick(MinecraftClient mc) {
+		long now = System.currentTimeMillis();
+		synchronized (PINGS) {
+			PINGS.removeIf(p -> now - p.at > 9000L);
+		}
+		STATES.values().removeIf(s -> now - s.seen > 8000L);
+		String myBadge = ProfileBadges.myId();
+		String myLook = dev.solclient.mods.NameColourMod.encodeMine();
+		String myFlag = ProfileBadges.myFlagCode();
+		String sig = myBadge + "|" + myLook + "|" + ProfileBadges.myColourOn() + "|" + myFlag;
+		boolean badgeDue = mc.player != null && (!sig.equals(lastBadge) ? now - lastBadgeAt > 1500L
+				: (!myBadge.isEmpty() || !myLook.isEmpty() || !myFlag.isEmpty()) && now - lastBadgeAt > 12_000L);
+		if (mc.player == null || mc.world == null || !(wantParty || wantPings && outgoing != null || badgeDue)) {
+			return;
+		}
+		if (outgoing != null && now - outgoing.at > 3500L) {
+			outgoing = null; // repeated for a few seconds so nobody misses it, then dropped
+		}
+		long every = outgoing != null ? 700L : 1500L;
+		if (now - lastSend < every) {
+			return;
+		}
+		JsonObject kx = new JsonObject();
+		kx.addProperty("n", mc.getSession().getUsername());
+		if (wantParty) {
+			kx.addProperty("hp", Math.round(mc.player.getHealth() * 10) / 10.0);
+			kx.addProperty("mh", Math.round(mc.player.getMaxHealth()));
+			kx.addProperty("f", mc.player.getHungerManager().getFoodLevel());
+			kx.addProperty("a", mc.player.getArmor());
+			kx.addProperty("x", Math.round(mc.player.getX()));
+			kx.addProperty("y", Math.round(mc.player.getY()));
+			kx.addProperty("z", Math.round(mc.player.getZ()));
+			kx.addProperty("d", mc.world.getRegistryKey().getValue().toString());
+		}
+		kx.addProperty("bd", myBadge);
+		kx.addProperty("bc", ProfileBadges.myColourOn() ? 1 : 0);
+		kx.addProperty("nn", myLook);
+		kx.addProperty("fl", myFlag);
+		if (outgoing != null) {
+			JsonArray a = new JsonArray();
+			a.add(Math.round(outgoing.x * 10) / 10.0);
+			a.add(Math.round(outgoing.y * 10) / 10.0);
+			a.add(Math.round(outgoing.z * 10) / 10.0);
+			a.add(outgoing.type);
+			a.add(outgoing.seq);
+			a.add(outgoing.dim);
+			kx.add("pg", a);
+		}
+		if (Presence.sendLink(kx)) {
+			lastSend = now;
+			lastBadge = sig;
+			lastBadgeAt = now;
+		}
+	}
+
+	/** From the presence room (client thread). */
+	static void onRemote(String uuid, JsonObject kx) {
+		if (uuid == null || uuid.equals(me())) {
+			return;
+		}
+		long now = System.currentTimeMillis();
+		String nick = Json.str(kx, "n");
+		if (kx.has("bd") && nick != null) {
+			ProfileBadges.onRemote(nick, Json.str(kx, "bd"));
+			ProfileBadges.onRemoteLook(nick, Json.str(kx, "nn"));
+			ProfileBadges.onRemoteFlag(nick, Json.str(kx, "fl"));
+			if (kx.has("bc")) {
+				ProfileBadges.onRemoteColour(nick, kx.get("bc").getAsInt() != 0);
+			}
+		}
+		if (kx.has("hp")) {
+			State s = STATES.computeIfAbsent(uuid, k -> new State());
+			s.uuid = uuid;
+			s.nick = nick == null ? s.nick : nick;
+			s.hp = (float) dbl(kx, "hp", 20);
+			s.maxHp = Math.max(1F, (float) dbl(kx, "mh", 20));
+			s.food = (float) dbl(kx, "f", 20);
+			s.armor = (float) dbl(kx, "a", 0);
+			s.x = dbl(kx, "x", 0);
+			s.y = dbl(kx, "y", 0);
+			s.z = dbl(kx, "z", 0);
+			String d = Json.str(kx, "d");
+			s.dim = d == null ? "" : d;
+			s.seen = now;
+		}
+		if (kx.has("pg") && kx.get("pg").isJsonArray()) {
+			try {
+				JsonArray a = kx.getAsJsonArray("pg");
+				long sq = a.get(4).getAsLong();
+				Long last = LAST_SEQ.get(uuid);
+				if (last != null && last >= sq) {
+					return; // already have this one
+				}
+				LAST_SEQ.put(uuid, sq);
+				Ping p = new Ping();
+				p.x = a.get(0).getAsDouble();
+				p.y = a.get(1).getAsDouble();
+				p.z = a.get(2).getAsDouble();
+				p.type = Math.max(0, Math.min(PING_NAMES.length - 1, a.get(3).getAsInt()));
+				p.seq = sq;
+				p.dim = a.size() > 5 ? a.get(5).getAsString() : "";
+				p.from = nick == null ? "?" : nick;
+				p.fromUuid = uuid;
+				p.at = now;
+				synchronized (PINGS) {
+					PINGS.removeIf(o -> uuid.equals(o.fromUuid));
+					PINGS.add(p);
+				}
+				dev.solclient.ext.KuboApi.friendPing(p);
+			} catch (RuntimeException ignored) {
+			}
+		}
+	}
+
+	private static double dbl(JsonObject o, String k, double def) {
+		try {
+			return o.has(k) ? o.get(k).getAsDouble() : def;
+		} catch (RuntimeException e) {
+			return def;
+		}
+	}
+
+	/** True if this account uuid (no dashes) belongs to one of your Sleep friends. */
+	public static boolean isFriend(String uuid, String nick) {
+		for (Social.User u : Social.friends) {
+			if (u.mcUuid != null && u.mcUuid.replace("-", "").equalsIgnoreCase(uuid)) {
+				return true;
+			}
+			if (nick != null && u.mcUsername != null && u.mcUsername.equalsIgnoreCase(nick)) {
+				return true;
+			}
+		}
+		return false;
+	}
+}

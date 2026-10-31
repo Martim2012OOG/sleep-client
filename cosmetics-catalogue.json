@@ -1,0 +1,1456 @@
+{
+ "count": 128,
+ "note": "Items with 'variants' are ONE item with a colour picker; variants[0] is the default colour.",
+ "cosmetics": [
+  {
+   "id": "pirate_hat",
+   "name": "Pirate Hat",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/pirate_hat.png"
+  },
+  {
+   "id": "mushroom_cap",
+   "name": "Mushroom Cap",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/mushroom_cap.png"
+  },
+  {
+   "id": "blue_cap",
+   "name": "Blue Cap",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/blue_cap.png"
+  },
+  {
+   "id": "top_hat",
+   "name": "Top Hat",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/top_hat.png"
+  },
+  {
+   "id": "paper_bag",
+   "name": "Paper Bag",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/paper_bag.png"
+  },
+  {
+   "id": "santa_hat",
+   "name": "Santa Hat",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/santa_hat.png"
+  },
+  {
+   "id": "leprechaun_hat",
+   "name": "Leprechaun Hat",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/leprechaun_hat.png"
+  },
+  {
+   "id": "straw_hat",
+   "name": "Straw Hat",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/straw_hat.png"
+  },
+  {
+   "id": "chef_hat",
+   "name": "Chef Hat",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/chef_hat.png"
+  },
+  {
+   "id": "golden_crown",
+   "name": "Golden Crown",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/golden_crown.png"
+  },
+  {
+   "id": "firefighter_helmet",
+   "name": "Firefighter Helmet",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/firefighter_helmet.png"
+  },
+  {
+   "id": "striped_top_hat",
+   "name": "Striped Top Hat",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/striped_top_hat.png"
+  },
+  {
+   "id": "panda_hood",
+   "name": "Panda Hood",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/panda_hood.png"
+  },
+  {
+   "id": "headphones",
+   "name": "Headphones",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/headphones.png"
+  },
+  {
+   "id": "cardboard_box",
+   "name": "Cardboard Box",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/cardboard_box.png"
+  },
+  {
+   "id": "hard_hat",
+   "name": "Hard Hat",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/hard_hat.png"
+  },
+  {
+   "id": "fox_ears",
+   "name": "Fox Ears",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/fox_ears.png",
+   "variants": [
+    {
+     "id": "fox_ears",
+     "name": "Orange",
+     "hex": "#e8801f",
+     "image": "images/cosmetics/fox_ears.png"
+    },
+    {
+     "id": "dark_fox_ears",
+     "name": "Dark",
+     "hex": "#3b3552",
+     "image": "images/cosmetics/dark_fox_ears.png"
+    }
+   ]
+  },
+  {
+   "id": "ram_horns",
+   "name": "Ram Horns",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/ram_horns.png",
+   "variants": [
+    {
+     "id": "ram_horns",
+     "name": "I",
+     "hex": "#d9c7a3",
+     "image": "images/cosmetics/ram_horns.png"
+    },
+    {
+     "id": "ram_horns_ii",
+     "name": "II",
+     "hex": "#6c7a99",
+     "image": "images/cosmetics/ram_horns_ii.png"
+    },
+    {
+     "id": "ram_horns_iii",
+     "name": "III",
+     "hex": "#b5253f",
+     "image": "images/cosmetics/ram_horns_iii.png"
+    }
+   ]
+  },
+  {
+   "id": "demon_horns",
+   "name": "Demon Horns",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/demon_horns.png"
+  },
+  {
+   "id": "angel_wings",
+   "name": "Angel Wings",
+   "category": "Wings",
+   "price": 900,
+   "rarity": "legendary",
+   "live_pet": false,
+   "image": "images/cosmetics/angel_wings.png"
+  },
+  {
+   "id": "black_wings",
+   "name": "Black Wings",
+   "category": "Wings",
+   "price": 900,
+   "rarity": "legendary",
+   "live_pet": false,
+   "image": "images/cosmetics/black_wings.png"
+  },
+  {
+   "id": "dragon_wings",
+   "name": "Dragon Wings",
+   "category": "Wings",
+   "price": 900,
+   "rarity": "legendary",
+   "live_pet": false,
+   "image": "images/cosmetics/dragon_wings.png"
+  },
+  {
+   "id": "parrot_wings",
+   "name": "Parrot Wings",
+   "category": "Wings",
+   "price": 900,
+   "rarity": "legendary",
+   "live_pet": false,
+   "image": "images/cosmetics/parrot_wings.png"
+  },
+  {
+   "id": "mage_robe",
+   "name": "Mage Robe",
+   "category": "Bodywear",
+   "price": 600,
+   "rarity": "epic",
+   "live_pet": false,
+   "image": "images/cosmetics/mage_robe.png"
+  },
+  {
+   "id": "pug",
+   "name": "Pug",
+   "category": "Pets",
+   "price": 1500,
+   "rarity": "legendary",
+   "live_pet": true,
+   "image": "images/cosmetics/pug.png"
+  },
+  {
+   "id": "mowo",
+   "name": "Mowo",
+   "category": "Pets",
+   "price": 1500,
+   "rarity": "legendary",
+   "live_pet": true,
+   "image": "images/cosmetics/mowo.png"
+  },
+  {
+   "id": "pumpkin_hat",
+   "name": "Pumpkin Hat",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/pumpkin_hat.png"
+  },
+  {
+   "id": "head_spider",
+   "name": "Head Spider",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/head_spider.png"
+  },
+  {
+   "id": "frankenstein_bolts",
+   "name": "Frankenstein Bolts",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/frankenstein_bolts.png"
+  },
+  {
+   "id": "christmas_hat",
+   "name": "Christmas Hat",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/christmas_hat.png"
+  },
+  {
+   "id": "christmas_scarf",
+   "name": "Christmas Scarf",
+   "category": "Bodywear",
+   "price": 600,
+   "rarity": "epic",
+   "live_pet": false,
+   "image": "images/cosmetics/christmas_scarf.png"
+  },
+  {
+   "id": "reindeer_antlers",
+   "name": "Reindeer Antlers",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/reindeer_antlers.png"
+  },
+  {
+   "id": "amongus_hat_white",
+   "name": "Among Us Hat",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/amongus_hat_white.png",
+   "variants": [
+    {
+     "id": "amongus_hat_white",
+     "name": "White",
+     "hex": "#f2f2f2",
+     "image": "images/cosmetics/amongus_hat_white.png"
+    },
+    {
+     "id": "amongus_hat_red",
+     "name": "Red",
+     "hex": "#d62f2f",
+     "image": "images/cosmetics/amongus_hat_red.png"
+    },
+    {
+     "id": "amongus_hat_blue",
+     "name": "Blue",
+     "hex": "#2f5fd6",
+     "image": "images/cosmetics/amongus_hat_blue.png"
+    },
+    {
+     "id": "amongus_hat_green",
+     "name": "Green",
+     "hex": "#3fae4a",
+     "image": "images/cosmetics/amongus_hat_green.png"
+    },
+    {
+     "id": "amongus_hat_pink",
+     "name": "Pink",
+     "hex": "#e64ab8",
+     "image": "images/cosmetics/amongus_hat_pink.png"
+    },
+    {
+     "id": "amongus_hat_purple",
+     "name": "Purple",
+     "hex": "#7d3fc4",
+     "image": "images/cosmetics/amongus_hat_purple.png"
+    },
+    {
+     "id": "amongus_hat_yellow",
+     "name": "Yellow",
+     "hex": "#f2d13a",
+     "image": "images/cosmetics/amongus_hat_yellow.png"
+    }
+   ]
+  },
+  {
+   "id": "hp_trailblazer",
+   "name": "Trailblazer",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/hp_trailblazer.png"
+  },
+  {
+   "id": "hp_midnight_wizard",
+   "name": "Midnight Wizard",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/hp_midnight_wizard.png"
+  },
+  {
+   "id": "hp_frog_bucket",
+   "name": "Frog Bucket Hat",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/hp_frog_bucket.png"
+  },
+  {
+   "id": "hp_axolotl_hood",
+   "name": "Axolotl Hood",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/hp_axolotl_hood.png"
+  },
+  {
+   "id": "hp_fox_ears",
+   "name": "Fox Cap",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/hp_fox_ears.png"
+  },
+  {
+   "id": "hp_bunny_beanie",
+   "name": "Bunny Beanie",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/hp_bunny_beanie.png"
+  },
+  {
+   "id": "hp_panda_cap",
+   "name": "Panda Cap",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/hp_panda_cap.png"
+  },
+  {
+   "id": "hp_bumblebee",
+   "name": "Bumblebee Hat",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/hp_bumblebee.png"
+  },
+  {
+   "id": "hp_toadstool",
+   "name": "Toadstool",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/hp_toadstool.png"
+  },
+  {
+   "id": "hp_royal_crown",
+   "name": "Royal Crown",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/hp_royal_crown.png"
+  },
+  {
+   "id": "hp_corsair",
+   "name": "Corsair",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/hp_corsair.png"
+  },
+  {
+   "id": "hp_steam_topper",
+   "name": "Steampunk Top Hat",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/hp_steam_topper.png"
+  },
+  {
+   "id": "hp_dusty_cowboy",
+   "name": "Dusty Cowboy",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/hp_dusty_cowboy.png"
+  },
+  {
+   "id": "hp_fiesta",
+   "name": "Fiesta Sombrero",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/hp_fiesta.png"
+  },
+  {
+   "id": "hp_straw_garden",
+   "name": "Garden Straw Hat",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/hp_straw_garden.png"
+  },
+  {
+   "id": "hp_street_cap",
+   "name": "Street Cap",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/hp_street_cap.png"
+  },
+  {
+   "id": "hp_cozy_pom",
+   "name": "Cozy Pom Beanie",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/hp_cozy_pom.png"
+  },
+  {
+   "id": "hp_chef",
+   "name": "Chef Hat",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/hp_chef.png"
+  },
+  {
+   "id": "hp_miner",
+   "name": "Miner Helmet",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/hp_miner.png"
+  },
+  {
+   "id": "hp_aviator",
+   "name": "Aviator Cap",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/hp_aviator.png"
+  },
+  {
+   "id": "hp_sea_captain",
+   "name": "Sea Captain",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/hp_sea_captain.png"
+  },
+  {
+   "id": "hp_ufo",
+   "name": "UFO",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/hp_ufo.png"
+  },
+  {
+   "id": "hp_retro_tv",
+   "name": "Retro TV",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/hp_retro_tv.png"
+  },
+  {
+   "id": "hp_parcel",
+   "name": "Parcel Hat",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/hp_parcel.png"
+  },
+  {
+   "id": "hp_jellyfish",
+   "name": "Jellyfish Hat",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/hp_jellyfish.png"
+  },
+  {
+   "id": "hp_bloom_crown",
+   "name": "Flower Crown",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/hp_bloom_crown.png"
+  },
+  {
+   "id": "hp_frost_diadem",
+   "name": "Frost Diadem",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/hp_frost_diadem.png"
+  },
+  {
+   "id": "hp_little_dragon",
+   "name": "Little Dragon",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/hp_little_dragon.png"
+  },
+  {
+   "id": "hp_sushi",
+   "name": "Salmon Sushi",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/hp_sushi.png"
+  },
+  {
+   "id": "hp_rubber_duck",
+   "name": "Rubber Duck",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/hp_rubber_duck.png"
+  },
+  {
+   "id": "ax_diving_helmet",
+   "name": "Diving Helmet",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/ax_diving_helmet.png"
+  },
+  {
+   "id": "ax_chicken_hat",
+   "name": "Chicken Hat",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/ax_chicken_hat.png"
+  },
+  {
+   "id": "ax_flight_hat",
+   "name": "Flight Hat",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/ax_flight_hat.png"
+  },
+  {
+   "id": "ax_military_helmet",
+   "name": "Military Helmet",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/ax_military_helmet.png"
+  },
+  {
+   "id": "ax_motorcycle_helmet",
+   "name": "Motorcycle Helmet",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/ax_motorcycle_helmet.png"
+  },
+  {
+   "id": "ax_pot_hat",
+   "name": "Pot Hat",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/ax_pot_hat.png"
+  },
+  {
+   "id": "hats_tophat",
+   "name": "Classic Top Hat",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/hats_tophat.png"
+  },
+  {
+   "id": "hats_dimmadome",
+   "name": "Dimmadome Hat",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/hats_dimmadome.png"
+  },
+  {
+   "id": "hats_propeller_hat",
+   "name": "Propeller Hat",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/hats_propeller_hat.png"
+  },
+  {
+   "id": "hats_crown",
+   "name": "Royal Gold Crown",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/hats_crown.png"
+  },
+  {
+   "id": "hats_sstraw_hat",
+   "name": "Summer Straw Hat",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/hats_sstraw_hat.png"
+  },
+  {
+   "id": "hats_clown_mask",
+   "name": "Clown Mask",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/hats_clown_mask.png"
+  },
+  {
+   "id": "winter_santa",
+   "name": "Santa Beard Hat",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/winter_santa.png"
+  },
+  {
+   "id": "winter_santahat",
+   "name": "Winter Santa Hat",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/winter_santahat.png"
+  },
+  {
+   "id": "winter_deer",
+   "name": "Reindeer Hood",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/winter_deer.png"
+  },
+  {
+   "id": "winter_deerhat",
+   "name": "Reindeer Hat",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/winter_deerhat.png"
+  },
+  {
+   "id": "winter_light_elf",
+   "name": "Light Elf Hat",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/winter_light_elf.png"
+  },
+  {
+   "id": "winter_dark_elf",
+   "name": "Dark Elf Hat",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/winter_dark_elf.png"
+  },
+  {
+   "id": "winter_snowman",
+   "name": "Snowman Head",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/winter_snowman.png"
+  },
+  {
+   "id": "winter_scarf",
+   "name": "Winter Scarf",
+   "category": "Bodywear",
+   "price": 600,
+   "rarity": "epic",
+   "live_pet": false,
+   "image": "images/cosmetics/winter_scarf.png"
+  },
+  {
+   "id": "cactus_hat",
+   "name": "Cactus Hat",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/cactus_hat.png"
+  },
+  {
+   "id": "bucket_in_head_black",
+   "name": "Bucket Head",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/bucket_in_head_black.png",
+   "variants": [
+    {
+     "id": "bucket_in_head_black",
+     "name": "Black",
+     "hex": "#2b2b30",
+     "image": "images/cosmetics/bucket_in_head_black.png"
+    },
+    {
+     "id": "bucket_in_head_red",
+     "name": "Red",
+     "hex": "#d62f2f",
+     "image": "images/cosmetics/bucket_in_head_red.png"
+    },
+    {
+     "id": "bucket_in_head_blue",
+     "name": "Blue",
+     "hex": "#2f5fd6",
+     "image": "images/cosmetics/bucket_in_head_blue.png"
+    },
+    {
+     "id": "bucket_in_head_purple",
+     "name": "Purple",
+     "hex": "#7d3fc4",
+     "image": "images/cosmetics/bucket_in_head_purple.png"
+    },
+    {
+     "id": "bucket_in_head_orange",
+     "name": "Orange",
+     "hex": "#e8801f",
+     "image": "images/cosmetics/bucket_in_head_orange.png"
+    },
+    {
+     "id": "bucket_in_head_gray",
+     "name": "Gray",
+     "hex": "#8a8f99",
+     "image": "images/cosmetics/bucket_in_head_gray.png"
+    },
+    {
+     "id": "bucket_in_head_brown",
+     "name": "Brown",
+     "hex": "#8b5a2b",
+     "image": "images/cosmetics/bucket_in_head_brown.png"
+    }
+   ]
+  },
+  {
+   "id": "halo_white",
+   "name": "Halo",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/halo_white.png",
+   "variants": [
+    {
+     "id": "halo_white",
+     "name": "White",
+     "hex": "#f2f2f2",
+     "image": "images/cosmetics/halo_white.png"
+    },
+    {
+     "id": "halo_red",
+     "name": "Red",
+     "hex": "#d62f2f",
+     "image": "images/cosmetics/halo_red.png"
+    },
+    {
+     "id": "halo_blue",
+     "name": "Blue",
+     "hex": "#2f5fd6",
+     "image": "images/cosmetics/halo_blue.png"
+    },
+    {
+     "id": "halo_green",
+     "name": "Green",
+     "hex": "#3fae4a",
+     "image": "images/cosmetics/halo_green.png"
+    },
+    {
+     "id": "halo_yellow",
+     "name": "Yellow",
+     "hex": "#f2d13a",
+     "image": "images/cosmetics/halo_yellow.png"
+    },
+    {
+     "id": "halo_orange",
+     "name": "Orange",
+     "hex": "#e8801f",
+     "image": "images/cosmetics/halo_orange.png"
+    },
+    {
+     "id": "halo_pink",
+     "name": "Pink",
+     "hex": "#e64ab8",
+     "image": "images/cosmetics/halo_pink.png"
+    }
+   ]
+  },
+  {
+   "id": "short_hat_white",
+   "name": "Short Hat",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/short_hat_white.png",
+   "variants": [
+    {
+     "id": "short_hat_white",
+     "name": "White",
+     "hex": "#f2f2f2",
+     "image": "images/cosmetics/short_hat_white.png"
+    },
+    {
+     "id": "short_hat_black",
+     "name": "Black",
+     "hex": "#2b2b30",
+     "image": "images/cosmetics/short_hat_black.png"
+    },
+    {
+     "id": "short_hat_red",
+     "name": "Red",
+     "hex": "#d62f2f",
+     "image": "images/cosmetics/short_hat_red.png"
+    },
+    {
+     "id": "short_hat_blue",
+     "name": "Blue",
+     "hex": "#2f5fd6",
+     "image": "images/cosmetics/short_hat_blue.png"
+    },
+    {
+     "id": "short_hat_green",
+     "name": "Green",
+     "hex": "#3fae4a",
+     "image": "images/cosmetics/short_hat_green.png"
+    },
+    {
+     "id": "short_hat_purple",
+     "name": "Purple",
+     "hex": "#7d3fc4",
+     "image": "images/cosmetics/short_hat_purple.png"
+    },
+    {
+     "id": "short_hat_gray",
+     "name": "Gray",
+     "hex": "#8a8f99",
+     "image": "images/cosmetics/short_hat_gray.png"
+    }
+   ]
+  },
+  {
+   "id": "elven_wings_elf",
+   "name": "Elven Ranger Wings",
+   "category": "Wings",
+   "price": 900,
+   "rarity": "legendary",
+   "live_pet": false,
+   "image": "images/cosmetics/elven_wings_elf.png",
+   "variants": [
+    {
+     "id": "elven_wings_elf",
+     "name": "Elf",
+     "hex": "#4ddf24",
+     "image": "images/cosmetics/elven_wings_elf.png"
+    },
+    {
+     "id": "elven_wings_forest",
+     "name": "Forest",
+     "hex": "#44fa03",
+     "image": "images/cosmetics/elven_wings_forest.png"
+    },
+    {
+     "id": "elven_wings_leaf",
+     "name": "Leaf",
+     "hex": "#00ea16",
+     "image": "images/cosmetics/elven_wings_leaf.png"
+    },
+    {
+     "id": "elven_wings_river",
+     "name": "River",
+     "hex": "#0723f7",
+     "image": "images/cosmetics/elven_wings_river.png"
+    },
+    {
+     "id": "elven_wings_royal",
+     "name": "Royal",
+     "hex": "#fbed01",
+     "image": "images/cosmetics/elven_wings_royal.png"
+    },
+    {
+     "id": "elven_wings_waterfall",
+     "name": "Waterfall",
+     "hex": "#05e8f7",
+     "image": "images/cosmetics/elven_wings_waterfall.png"
+    },
+    {
+     "id": "elven_wings_corrupt",
+     "name": "Corrupt",
+     "hex": "#424242",
+     "image": "images/cosmetics/elven_wings_corrupt.png"
+    }
+   ]
+  },
+  {
+   "id": "fairy_wings",
+   "name": "Fairy Wings",
+   "category": "Wings",
+   "price": 900,
+   "rarity": "legendary",
+   "live_pet": false,
+   "image": "images/cosmetics/fairy_wings.png"
+  },
+  {
+   "id": "feral_bear_ears",
+   "name": "Bear Ears",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/feral_bear_ears.png"
+  },
+  {
+   "id": "feral_bear_tail",
+   "name": "Bear Tail",
+   "category": "Tails",
+   "price": 500,
+   "rarity": "epic",
+   "live_pet": false,
+   "image": "images/cosmetics/feral_bear_tail.png"
+  },
+  {
+   "id": "feral_cat_ears",
+   "name": "Cat Ears",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/feral_cat_ears.png"
+  },
+  {
+   "id": "feral_cat_tail",
+   "name": "Cat Tail",
+   "category": "Tails",
+   "price": 500,
+   "rarity": "epic",
+   "live_pet": false,
+   "image": "images/cosmetics/feral_cat_tail.png"
+  },
+  {
+   "id": "feral_fox_ears",
+   "name": "Fox Ears",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/feral_fox_ears.png"
+  },
+  {
+   "id": "feral_fox_tail",
+   "name": "Fox Tail",
+   "category": "Tails",
+   "price": 500,
+   "rarity": "epic",
+   "live_pet": false,
+   "image": "images/cosmetics/feral_fox_tail.png"
+  },
+  {
+   "id": "feral_rabbit_ears",
+   "name": "Rabbit Ears",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/feral_rabbit_ears.png"
+  },
+  {
+   "id": "feral_rabbit_tail",
+   "name": "Rabbit Tail",
+   "category": "Tails",
+   "price": 500,
+   "rarity": "epic",
+   "live_pet": false,
+   "image": "images/cosmetics/feral_rabbit_tail.png"
+  },
+  {
+   "id": "feral_tiger_ears",
+   "name": "Tiger Ears",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/feral_tiger_ears.png"
+  },
+  {
+   "id": "feral_tiger_tail",
+   "name": "Tiger Tail",
+   "category": "Tails",
+   "price": 500,
+   "rarity": "epic",
+   "live_pet": false,
+   "image": "images/cosmetics/feral_tiger_tail.png"
+  },
+  {
+   "id": "feral_wolf_ears",
+   "name": "Wolf Ears",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/feral_wolf_ears.png"
+  },
+  {
+   "id": "feral_wolf_tail",
+   "name": "Wolf Tail",
+   "category": "Tails",
+   "price": 500,
+   "rarity": "epic",
+   "live_pet": false,
+   "image": "images/cosmetics/feral_wolf_tail.png"
+  },
+  {
+   "id": "feral_cow_ears",
+   "name": "Cow Ears",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/feral_cow_ears.png"
+  },
+  {
+   "id": "feral_cow_horns",
+   "name": "Cow Horns",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/feral_cow_horns.png"
+  },
+  {
+   "id": "feral_cow_tail",
+   "name": "Cow Tail",
+   "category": "Tails",
+   "price": 500,
+   "rarity": "epic",
+   "live_pet": false,
+   "image": "images/cosmetics/feral_cow_tail.png"
+  },
+  {
+   "id": "feral_deer_ears",
+   "name": "Deer Ears",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/feral_deer_ears.png"
+  },
+  {
+   "id": "feral_deer_horns",
+   "name": "Deer Horns",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/feral_deer_horns.png"
+  },
+  {
+   "id": "feral_deer_tail",
+   "name": "Deer Tail",
+   "category": "Tails",
+   "price": 500,
+   "rarity": "epic",
+   "live_pet": false,
+   "image": "images/cosmetics/feral_deer_tail.png"
+  },
+  {
+   "id": "feral_goat_ears",
+   "name": "Goat Ears",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/feral_goat_ears.png"
+  },
+  {
+   "id": "feral_goat_horns",
+   "name": "Goat Horns",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/feral_goat_horns.png"
+  },
+  {
+   "id": "feral_goat_tail",
+   "name": "Goat Tail",
+   "category": "Tails",
+   "price": 500,
+   "rarity": "epic",
+   "live_pet": false,
+   "image": "images/cosmetics/feral_goat_tail.png"
+  },
+  {
+   "id": "feral_horse_ears",
+   "name": "Horse Ears",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/feral_horse_ears.png"
+  },
+  {
+   "id": "feral_horse_horns",
+   "name": "Horse Horns",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/feral_horse_horns.png"
+  },
+  {
+   "id": "feral_horse_tail",
+   "name": "Horse Tail",
+   "category": "Tails",
+   "price": 500,
+   "rarity": "epic",
+   "live_pet": false,
+   "image": "images/cosmetics/feral_horse_tail.png"
+  },
+  {
+   "id": "feral_sheep_ears",
+   "name": "Sheep Ears",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/feral_sheep_ears.png"
+  },
+  {
+   "id": "feral_sheep_horns",
+   "name": "Sheep Horns",
+   "category": "Headwear",
+   "price": 300,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/feral_sheep_horns.png"
+  },
+  {
+   "id": "feral_sheep_tail",
+   "name": "Sheep Tail",
+   "category": "Tails",
+   "price": 500,
+   "rarity": "epic",
+   "live_pet": false,
+   "image": "images/cosmetics/feral_sheep_tail.png"
+  },
+  {
+   "id": "corgi",
+   "name": "Corgi",
+   "category": "Pets",
+   "price": 1500,
+   "rarity": "legendary",
+   "live_pet": true,
+   "image": "images/cosmetics/corgi.png"
+  },
+  {
+   "id": "plush_freddy",
+   "name": "Freddy Plush",
+   "category": "Pets",
+   "price": 1500,
+   "rarity": "legendary",
+   "live_pet": true,
+   "image": "images/cosmetics/plush_freddy.png"
+  },
+  {
+   "id": "plush_bonnie",
+   "name": "Bonnie Plush",
+   "category": "Pets",
+   "price": 1500,
+   "rarity": "legendary",
+   "live_pet": true,
+   "image": "images/cosmetics/plush_bonnie.png"
+  },
+  {
+   "id": "plush_chica",
+   "name": "Chica Plush",
+   "category": "Pets",
+   "price": 1500,
+   "rarity": "legendary",
+   "live_pet": true,
+   "image": "images/cosmetics/plush_chica.png"
+  },
+  {
+   "id": "plush_foxy",
+   "name": "Foxy Plush",
+   "category": "Pets",
+   "price": 1500,
+   "rarity": "legendary",
+   "live_pet": true,
+   "image": "images/cosmetics/plush_foxy.png"
+  },
+  {
+   "id": "plush_golden_freddy",
+   "name": "Golden Freddy Plush",
+   "category": "Pets",
+   "price": 1500,
+   "rarity": "legendary",
+   "live_pet": true,
+   "image": "images/cosmetics/plush_golden_freddy.png"
+  },
+  {
+   "id": "plush_puppet",
+   "name": "Puppet Plush",
+   "category": "Pets",
+   "price": 1500,
+   "rarity": "legendary",
+   "live_pet": true,
+   "image": "images/cosmetics/plush_puppet.png"
+  },
+  {
+   "id": "mini_sus_white",
+   "name": "Mini Crewmate",
+   "category": "Pets",
+   "price": 1500,
+   "rarity": "legendary",
+   "live_pet": true,
+   "image": "images/cosmetics/mini_sus_white.png",
+   "variants": [
+    {
+     "id": "mini_sus_white",
+     "name": "White",
+     "hex": "#f2f2f2",
+     "image": "images/cosmetics/mini_sus_white.png"
+    },
+    {
+     "id": "mini_sus_black",
+     "name": "Black",
+     "hex": "#2b2b30",
+     "image": "images/cosmetics/mini_sus_black.png"
+    },
+    {
+     "id": "mini_sus_red",
+     "name": "Red",
+     "hex": "#d62f2f",
+     "image": "images/cosmetics/mini_sus_red.png"
+    },
+    {
+     "id": "mini_sus_blue",
+     "name": "Blue",
+     "hex": "#2f5fd6",
+     "image": "images/cosmetics/mini_sus_blue.png"
+    },
+    {
+     "id": "mini_sus_green",
+     "name": "Green",
+     "hex": "#3fae4a",
+     "image": "images/cosmetics/mini_sus_green.png"
+    },
+    {
+     "id": "mini_sus_purple",
+     "name": "Purple",
+     "hex": "#7d3fc4",
+     "image": "images/cosmetics/mini_sus_purple.png"
+    },
+    {
+     "id": "mini_sus_yellow",
+     "name": "Yellow",
+     "hex": "#f2d13a",
+     "image": "images/cosmetics/mini_sus_yellow.png"
+    }
+   ]
+  },
+  {
+   "id": "bee",
+   "name": "Buzzy Bee",
+   "category": "Pets",
+   "price": 1500,
+   "rarity": "legendary",
+   "live_pet": true,
+   "image": "images/cosmetics/bee.png"
+  },
+  {
+   "id": "baby_dragon",
+   "name": "Baby Dragon",
+   "category": "Pets",
+   "price": 1500,
+   "rarity": "legendary",
+   "live_pet": true,
+   "image": "images/cosmetics/baby_dragon.png"
+  },
+  {
+   "id": "bat",
+   "name": "Night Bat",
+   "category": "Pets",
+   "price": 1500,
+   "rarity": "legendary",
+   "live_pet": true,
+   "image": "images/cosmetics/bat.png"
+  },
+  {
+   "id": "ghost",
+   "name": "Boo the Ghost",
+   "category": "Pets",
+   "price": 1500,
+   "rarity": "legendary",
+   "live_pet": true,
+   "image": "images/cosmetics/ghost.png"
+  }
+ ]
+}

@@ -1,0 +1,17 @@
+package dev.solclient.mixin.overlay;
+
+import dev.solclient.mods.TpsDisplayMod;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+/** TPS Display: notes when the server's world time packet arrives. */
+@Mixin(targets = "net.minecraft.client.network.ClientPlayNetworkHandler")
+public abstract class TpsMixin {
+
+	@Inject(method = "onWorldTimeUpdate", at = @At("HEAD"), require = 0)
+	private void kubo$tps(CallbackInfo ci) {
+		TpsDisplayMod.packet();
+	}
+}

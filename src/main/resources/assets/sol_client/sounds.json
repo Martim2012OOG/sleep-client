@@ -1,0 +1,67 @@
+{
+  "music.silence": {
+    "sounds": [
+      {
+        "name": "sol_client:music/silence",
+        "stream": true
+      }
+    ]
+  },
+  "notify": {
+    "sounds": [
+      {
+        "name": "sol_client:notify"
+      }
+    ]
+  },
+  "crate_open": {
+    "sounds": [
+      {
+        "name": "sol_client:crate_open"
+      }
+    ]
+  },
+  "crate_coins": {
+    "sounds": [
+      {
+        "name": "sol_client:crate_coins"
+      }
+    ]
+  },
+  "crate_ching": {
+    "sounds": [
+      {
+        "name": "sol_client:crate_ching"
+      }
+    ]
+  },
+  "patpat.pat": {
+    "sounds": [
+      {
+        "name": "sol_client:patpat/pat"
+      },
+      {
+        "name": "sol_client:patpat/pat1"
+      },
+      {
+        "name": "sol_client:patpat/pat2"
+      }
+    ]
+  },
+  "patpat.lopi": {
+    "sounds": [
+      {
+        "name": "sol_client:patpat/lopi"
+      },
+      {
+        "name": "sol_client:patpat/lopi1"
+      },
+      {
+        "name": "sol_client:patpat/lopi2"
+      },
+      {
+        "name": "sol_client:patpat/lopi3"
+      }
+    ]
+  }
+}

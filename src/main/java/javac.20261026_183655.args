@@ -1,0 +1,6 @@
+-proc:none
+-Xmaxerrs
+20000
+-d
+/tmp/out
+dev/solclient/mods/SolClientMod.java

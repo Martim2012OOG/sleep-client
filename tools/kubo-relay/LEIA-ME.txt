@@ -1,0 +1,73 @@
+EndLock.net — página inicial + Kubo Host World
+==============================================
+
+O que isto põe online (um só Worker da Cloudflare, de graça):
+  • https://endlock.net                  → página inicial minimalista
+  • https://host.endlock.net/<nick>      → página "o <nick> está a hospedar?" com o endereço para copiar
+  • o relay do Host World                → os amigos entram no teu mundo com  host.endlock.net/<o teu nick>
+                                            de qualquer casa, sem router e sem estar no mesmo Wi-Fi
+
+PORQUE NÃO É SÓ FAZER UPLOAD DO ZIP NO "WORKERS & PAGES"
+  O upload de zip/pasta no painel só serve para páginas estáticas. O Host World precisa de
+  ligar o anfitrião aos amigos em tempo real (Durable Objects), e isso só se publica com o
+  Wrangler. Por isso há o ficheiro Publicar.command: dás dois cliques e ele faz tudo.
+
+PASSO 1 — Pôr o endlock.net na Cloudflare (só uma vez)
+  1. dash.cloudflare.com → "Add a domain" (Adicionar domínio) → endlock.net → plano Free.
+  2. A Cloudflare copia os registos DNS que já tens. Se o endlock.net já tem um site noutro lado
+     e queres que a página nova o substitua, apaga na Cloudflare o registo A / CNAME de "endlock.net"
+     (o Worker cria o dele). Se quiseres manter o site antigo, diz-me e mudo a página para outro sítio.
+  3. A Cloudflare mostra 2 nameservers (tipo  xxx.ns.cloudflare.com).
+  4. Porkbun → endlock.net → NS → apaga os da Porkbun, mete os 2 da Cloudflare → Save.
+  5. Espera até a Cloudflare dizer "Active" (minutos, às vezes umas horas).
+
+PASSO 2 — Publicar (no Mac)
+  1. Descompacta este zip.
+  2. Dá dois cliques em Publicar.command
+     (se o Mac disser que não pode abrir: botão direito → Abrir → Abrir).
+  3. Da primeira vez abre o browser para entrares na Cloudflare: aceita.
+  4. No fim abre https://endlock.net — deve aparecer a página do EndLock.
+
+Pelo Terminal é o mesmo:
+    cd pasta-deste-zip
+    npx wrangler login
+    npx wrangler deploy
+
+DEPOIS, NO JOGO
+  Mundo singleplayer → Esc → botão do globo → HOSPEDAR MUNDO.
+  O teu endereço é host.endlock.net/<o teu nick>. Os amigos (com o Kubo) metem-no na lista de
+  servidores ou carregam em "Entrar" no convite.
+  Ninguém pode usar o teu endereço: o relay confirma com a Mojang que o nick é mesmo teu.
+
+Custos: cabe no plano grátis da Cloudflare para uso normal com amigos.
+
+v99 — VOICE CHAT E "ESTÁ A ESCREVER..."
+  Este Worker agora também tem:
+    • /voice  → salas de voz (grupos de voz e voz por servidor / Host World)
+    • /live   → "está a escrever..." no chat de amigos e convites para grupos de voz
+  Publicar outra vez é obrigatório: dá dois cliques em Publicar.command (como da primeira vez).
+  O Wrangler cria sozinho as duas coisas novas (migração "v2"). Não é preciso mudar nada no site da Cloudflare.
+  Sem isto o voice chat do Kubo v99 diz "Can't reach the voice server".
+
+COMO SABER SE O SERVIDOR JÁ ESTÁ ATUALIZADO
+  Dá dois cliques em Testar-voz.command: diz "OK" se o /voice e o /live existem online, ou "FALHA" se ainda é a versão antiga.
+  No jogo, o erro "Voice server is out of date (HTTP 200)" / "Servidor de voz desatualizado" e o convite "Convite não enviado"
+  querem dizer a mesma coisa: corre o Publicar.command outra vez (só se publica da tua conta da Cloudflare, mais ninguém o pode fazer).
+
+v112 — VOICE CHAT E AMIGOS PARA TODAS AS CONTAS (não só Microsoft)
+  O /voice e o /live aceitavam só contas originais (prova com a Mojang). Agora também aceitam contas
+  não-Microsoft:
+    • conta original  → continua a ser provada com a Mojang (ninguém fala como tu);
+    • conta pirata    → o Kubo cria uma chave secreta (config/kubo/claim-key.txt). O primeiro a usar um nick fica
+                        com ele; mais ninguém pode falar nem receber convites como esse nick.
+                        Se o nick não for usado durante 30 dias fica livre outra vez (chave perdida / mods reinstalados).
+    • se o dono original (Microsoft) do mesmo nick estiver ligado, os convites vão só para ele.
+  PUBLICAR OUTRA VEZ É OBRIGATÓRIO: Publicar.command. Sem isto, quem não é Microsoft continua a ver
+  "Servidor de voz desatualizado para contas não-Microsoft".
+  O /host (Host World) NÃO mudou: continua a exigir conta original, porque o endereço host.endlock.net/<nick> é teu.
+
+v118 — VOICE: "NÃO CONSIGO VERIFICAR A CONTA MICROSOFT"
+  O jogo deixa de falhar quando a Mojang não confirma o login: entra com a chave do nick (config/kubo/claim-key.txt),
+  como as outras contas. O Worker ganhou /kubo-version: se o jogo disser "Servidor de voz desatualizado: corre o
+  Publicar.command outra vez", é mesmo isso (o Worker online é o antigo). Publicar outra vez é obrigatório.
+  Testar: abre https://host.endlock.net/kubo-version no browser: tem de aparecer "kubo-relay 118".

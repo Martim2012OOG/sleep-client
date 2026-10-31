@@ -1,0 +1,92 @@
+package dev.solclient.voice;
+
+import com.google.gson.JsonObject;
+import com.mojang.serialization.JsonOps;
+import dev.solclient.Gfx;
+import java.util.UUID;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.DrawContext;
+import net.minecraft.text.Text;
+import net.minecraft.text.TextCodecs;
+
+/** Voice icons: after names above heads (talking / muted / deafened) and your own mic in the corner. */
+public final class VoiceIcons {
+
+	private VoiceIcons() {
+	}
+
+	private static Text glyph(String ch) {
+		JsonObject o = new JsonObject();
+		o.addProperty("text", ch);
+		o.addProperty("font", "sol_client:voice");
+		o.addProperty("color", "white");
+		return TextCodecs.CODEC.parse(JsonOps.INSTANCE, o).result().orElse(Text.literal(""));
+	}
+
+	private static boolean on() {
+		VoiceChatMod m = VoiceChatMod.instance;
+		return m != null && m.enabled && m.showIcons.on() && VoiceEngine.INSTANCE.running;
+	}
+
+	/** The name with a voice icon after it, or the name unchanged. */
+	public static Text decorate(UUID id, Text name) {
+		if (!on() || id == null || name == null) {
+			return name;
+		}
+		String ch = null;
+		MinecraftClient mc = MinecraftClient.getInstance();
+		VoiceChatMod m = VoiceChatMod.instance;
+		if (mc.player != null && id.equals(mc.player.getUuid())) {
+			// voice on: grey speaker, green while talking
+			ch = m.deafened.on() ? "" : m.muted.on() ? "" : VoiceEngine.INSTANCE.talking ? "" : m.connected() ? "" : null;
+		} else {
+			String u = id.toString().replace("-", "");
+			VoiceEngine.Peer p = VoiceEngine.INSTANCE.peer(u);
+			if (p != null) {
+				ch = VoiceEngine.INSTANCE.isTalking(u) ? "" : p.on && p.deafened ? "" : p.on && p.muted ? "" : p.on ? "" : null;
+			}
+		}
+		if (ch == null) {
+			return name;
+		}
+		return Text.empty().append(name).append(Text.literal(" ")).append(glyph(ch));
+	}
+
+	/** True when something of voice chat is drawn bottom-left (notifications sit above it). */
+	public static boolean visible() {
+		VoiceChatMod m = VoiceChatMod.instance;
+		return m != null && m.enabled && m.hudIcon.on() && VoiceEngine.INSTANCE.running && (VoiceNet.groupMode() || !m.connected()
+				|| m.deafened.on() || m.muted.on() || VoiceEngine.INSTANCE.talking);
+	}
+
+	/** Your own mic state, bottom-left of the screen; in a voice group also everyone's heads (green frame = talking). */
+	public static void drawHud(DrawContext c) {
+		VoiceChatMod m = VoiceChatMod.instance;
+		if (m == null || !m.enabled || !m.hudIcon.on() || !VoiceEngine.INSTANCE.running) {
+			return;
+		}
+		if (VoiceNet.groupMode() && VoiceNet.ready()) {
+			int h0 = MinecraftClient.getInstance().getWindow().getScaledHeight();
+			java.util.List<dev.solclient.gui.AvatarStack.Person> people = new java.util.ArrayList<>();
+			for (VoiceNet.Member mm : VoiceNet.list()) {
+				boolean me = mm.uuid().equals(VoiceNet.you());
+				people.add(new dev.solclient.gui.AvatarStack.Person(mm.uuid(), mm.name(), me ? VoiceEngine.INSTANCE.talking : VoiceEngine.INSTANCE.isTalking(mm.uuid())));
+			}
+			dev.solclient.gui.AvatarStack.draw(c, "hudvoice", 26, h0 - 23, 18, 6, people, 6);
+		}
+		String icon;
+		if (!m.connected()) {
+			icon = "disconnected";
+		} else if (m.deafened.on()) {
+			icon = "speaker_off";
+		} else if (m.muted.on()) {
+			icon = "microphone_off";
+		} else if (VoiceEngine.INSTANCE.talking || VoiceNet.groupMode()) {
+			icon = "microphone";
+		} else {
+			return;
+		}
+		int h = MinecraftClient.getInstance().getWindow().getScaledHeight();
+		Gfx.tex(c, Gfx.id("textures/voice/" + icon + ".png"), 6, h - 22, 16, 16, 16, 16, 0xFFFFFFFF);
+	}
+}
