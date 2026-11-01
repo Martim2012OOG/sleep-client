@@ -42,8 +42,8 @@ public final class SolarBadge {
 		}
 		// Only people using the client RIGHT NOW: connected to the presence Worker in this server's room.
 		// (The site's /players/lookup lists everyone who ever made an account, so it is not used here.)
-		if (Presence.inServerRoom(id, nick)) {
-			return true;
+		if (Presence.inServerRoom(id, nick) || Presence.inLobby(id, nick)) {
+			return true; // the lobby is the global room: it also finds players who joined this server by another address
 		}
 		// you: always (you ARE using Plegumo), even while the presence connection is down
 		MinecraftClient mc = MinecraftClient.getInstance();
