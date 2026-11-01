@@ -434,6 +434,8 @@ public final class Presence {
 			SolarApi.Res r = SolarApi.post("/issue-token", new JsonObject());
 			if (r.status() == 429) {
 				problem = "Presence: too many token requests, trying later";
+				// do NOT keep knocking every 6 minutes (that is exactly the limit, so it never frees up): wait a long time
+				nextTokenAt = System.currentTimeMillis() + 25L * 60_000L;
 				return;
 			}
 			if (!r.ok()) {
