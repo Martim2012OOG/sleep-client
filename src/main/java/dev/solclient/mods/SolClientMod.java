@@ -212,7 +212,7 @@ public class SolClientMod extends Mod {
 		seasonalBackground = bool("Seasonal Home Background", true);
 		restyleMenus = bool("Sleep Style For Minecraft Menus", true);
 		restyleMenus.tip("Gives Minecraft's own menus (options, worlds, servers) Sleep's look.");
-		restyleButtons = bool("Sleep Buttons In Minecraft Menus", true);
+		restyleButtons = bool("Sleep Look For Menu Buttons", true);
 		restyleButtons.tip("On: the buttons in Minecraft's own menus get the same look as Sleep's menus. Off: they stay the normal Minecraft ones.");
 		homeShowcase = bool("Shop Banner On Home Screen", true);
 		buttonStyle = choice("Button Style", 0, "Classic", "Rounded", "Outline", "Minimal");
