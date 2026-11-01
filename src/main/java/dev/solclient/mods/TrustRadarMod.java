@@ -154,7 +154,7 @@ public class TrustRadarMod extends Mod {
 
 	@Override
 	public void tick() {
-		TrustEngine.strictness = strict.idx() == 0 ? 0.7 : strict.idx() == 1 ? 1.0 : 1.5;
+		TrustEngine.strictness = strict.idx() == 0 ? 0.35 : strict.idx() == 1 ? 0.7 : 1.1;
 		TrustEngine.tick(mc);
 		if (mc.player == null || mc.world == null || ++clock % 20 != 0) {
 			return;
@@ -169,7 +169,7 @@ public class TrustRadarMod extends Mod {
 			}
 			int t = combined(p);
 			// share a report once the picture is clear enough
-			if (share.on() && p.suspicion() >= 55 && p.observedSeconds() >= 20 && now - p.lastReportMs > 600_000L && p.suspicion() > p.lastReportScore + 10) {
+			if (share.on() && p.suspicion() >= 70 && p.observedSeconds() >= 60 && now - p.lastReportMs > 600_000L && p.suspicion() > p.lastReportScore + 10) {
 				Map<String, Integer> cs = new LinkedHashMap<>();
 				for (Check c : Check.values()) {
 					cs.put(c.name(), (int) Math.round(p.pts[c.ordinal()]));

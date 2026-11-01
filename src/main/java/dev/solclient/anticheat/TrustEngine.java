@@ -86,7 +86,7 @@ public final class TrustEngine {
 		public List<Check> flagged() {
 			List<Check> out = new ArrayList<>();
 			for (Check c : Check.values()) {
-				if (pts[c.ordinal()] >= 12) {
+				if (pts[c.ordinal()] >= 25) {
 					out.add(c);
 				}
 			}
@@ -97,7 +97,7 @@ public final class TrustEngine {
 
 	private static final Map<UUID, Profile> PROFILES = new HashMap<>();
 	/** Multiplier of the points added (the Careful / Normal / Strict setting). */
-	public static volatile double strictness = 0.7;
+	public static volatile double strictness = 0.35;
 	private static final double[] DECAY = {0.9990, 0.9990, 0.9997, 0.9997, 0.9990};
 
 	private TrustEngine() {
@@ -165,7 +165,7 @@ public final class TrustEngine {
 		if (p.hurtTime > 0) {
 			f.lastHurtAge = f.ticks;
 		}
-		boolean laggy = f.ping > 280;
+		boolean laggy = f.ping > 160;
 		double dx = p.getX() - f.px, dy = p.getY() - f.py, dz = p.getZ() - f.pz;
 		boolean moved = f.havePos;
 		if (f.havePos && Math.sqrt(dx * dx + dy * dy + dz * dz) > 8) {
@@ -187,7 +187,8 @@ public final class TrustEngine {
 			f.bigTurnAge = f.ticks;
 		}
 
-		if (!exempt && moved && !laggy) {
+		boolean warm = f.ticks > 200; // the first 10 seconds only watch: respawns, joins and chunk loading look odd
+		if (!exempt && moved && !laggy && warm) {
 			double hs = Math.hypot(dx, dz);
 			boolean busy = p.hasVehicle() || p.isGliding() || p.isSleeping() || p.isClimbing() || p.isTouchingWater() || p.isInLava() || p.isUsingRiptide()
 					|| p.isInsideWall() || f.ticks - f.lastHurtAge < 24 || p.isRemoved();
@@ -196,15 +197,17 @@ public final class TrustEngine {
 			boolean slippery = under.isIn(BlockTags.ICE) || under.isOf(net.minecraft.block.Blocks.SLIME_BLOCK) || under.isOf(net.minecraft.block.Blocks.HONEY_BLOCK)
 					|| under.isOf(net.minecraft.block.Blocks.SOUL_SAND) || under.isOf(net.minecraft.block.Blocks.SOUL_SOIL);
 			// ---- flying: hanging in the air without falling, or going up and up
-			if (!busy && !floaty && !p.isOnGround()) {
+			boolean solidBelow = !mc.world.getBlockState(p.getBlockPos().down()).isAir() || !mc.world.getBlockState(p.getBlockPos()).isAir()
+					|| !mc.world.isSpaceEmpty(p, p.getBoundingBox().offset(0, -0.6, 0));
+			if (!busy && !floaty && !p.isOnGround() && !solidBelow) {
 				boolean still = Math.abs(dy) < 0.008;
 				f.hover = still && (hs > 0.08 || f.hover > 0) ? f.hover + 1 : still ? f.hover : 0;
 				f.rise = dy > 0.04 ? f.rise + 1 : 0;
-				if (f.hover >= 12) {
-					add(f, Check.FLY, Math.min(6, 1.0 + (f.hover - 12) * 0.35));
+				if (f.hover >= 45) {
+					add(f, Check.FLY, Math.min(4, 0.6 + (f.hover - 45) * 0.15));
 				}
-				if (f.rise >= 14) {
-					add(f, Check.FLY, Math.min(6, 1.0 + (f.rise - 14) * 0.4));
+				if (f.rise >= 40) {
+					add(f, Check.FLY, Math.min(4, 0.6 + (f.rise - 40) * 0.2));
 				}
 			} else {
 				f.hover = Math.max(0, f.hover - 2);
@@ -213,11 +216,11 @@ public final class TrustEngine {
 			// ---- speed: faster than sprint-jumping with their potion effect allows, for several ticks in a row
 			var speed = p.getStatusEffect(StatusEffects.SPEED);
 			double mult = 1 + (speed == null ? 0 : 0.2 * (speed.getAmplifier() + 1));
-			double limit = 0.46 * mult + 0.06;
+			double limit = 0.66 * mult + 0.10;
 			if (!busy && !slippery && hs > limit) {
 				f.fast++;
-				if (f.fast >= 5) {
-					add(f, Check.SPEED, Math.min(8, 1.5 + (hs / limit - 1) * 18));
+				if (f.fast >= 12) {
+					add(f, Check.SPEED, Math.min(5, 0.8 + (hs / limit - 1) * 10));
 				}
 			} else {
 				f.fast = Math.max(0, f.fast - 1);
@@ -254,10 +257,10 @@ public final class TrustEngine {
 				cps++;
 			}
 		}
-		if (cps >= 19) {
-			add(f, Check.CLICK, 9);
-		} else if (cps >= 17) {
-			add(f, Check.CLICK, 1.5);
+		if (cps >= 26) {
+			add(f, Check.CLICK, 6);
+		} else if (cps >= 22) {
+			add(f, Check.CLICK, 0.8);
 		}
 		// a long run of identical gaps (a machine, not a hand)
 		if (f.swings.size() >= 30) {
@@ -269,7 +272,7 @@ public final class TrustEngine {
 				}
 			}
 			if (n > 0 && same >= n - 1 && a[a.length - 1] - a[a.length - 2] <= 3) {
-				add(f, Check.CLICK, 1.2);
+				add(f, Check.CLICK, 0.5);
 			}
 		}
 	}
@@ -294,18 +297,18 @@ public final class TrustEngine {
 			}
 		}
 		f.hits++;
-		boolean slow = f.ping > 200;
+		boolean slow = f.ping > 110 || f.hits < 3; // lag and the first hits are not reliable
 		// distance from the eyes to the closest point of the target's box
 		double cx = MathHelper.clamp(eye.x, box.minX, box.maxX), cy = MathHelper.clamp(eye.y, box.minY, box.maxY), cz = MathHelper.clamp(eye.z, box.minZ, box.maxZ);
 		double reach = Math.sqrt((eye.x - cx) * (eye.x - cx) + (eye.y - cy) * (eye.y - cy) + (eye.z - cz) * (eye.z - cz));
-		if (!slow && reach > 3.65) {
-			add(f, Check.REACH, reach > 4.2 ? 26 : reach > 3.9 ? 18 : 10);
+		if (!slow && reach > 4.1) {
+			add(f, Check.REACH, reach > 5.0 ? 22 : reach > 4.5 ? 12 : 5);
 		}
-		if (!slow && angle > 75 && reach > 0.8) {
-			add(f, Check.AIM, 16); // hit somebody who was not even in front of them
+		if (!slow && angle > 115 && reach > 1.6) {
+			add(f, Check.AIM, 8); // hit somebody who was not even in front of them
 		}
-		if (!slow && f.ticks - f.bigTurnAge <= 2 && angle < 5 && Math.abs(f.yawStep) < 8) {
-			add(f, Check.AIM, 6); // a big instant turn that lands exactly on the target
+		if (!slow && f.ticks - f.bigTurnAge <= 2 && angle < 3 && Math.abs(f.yawStep) < 4) {
+			add(f, Check.AIM, 2); // a big instant turn that lands exactly on the target
 		}
 	}
 
