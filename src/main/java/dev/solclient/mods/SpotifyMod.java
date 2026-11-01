@@ -44,7 +44,7 @@ public class SpotifyMod extends HudMod {
 	private Option.Bool lyricsOn, lyricsBar, lyricsWorld, lyricsOnlyPlaying, lyricsScript;
 	private Option.Num lyricsSpread, lyricsSize, lyricsHeight, lyricsSync, lyricsBarSize, lyricsOpacity, lyricsDepth, lyricsSway;
 	private Option.Col lyricsHighlight, lyricsText, lyricsText2, lyricsText3, lyricsText4;
-	private Option.Choice lyricsColours, lyricsPosition, lyricsPlace;
+	private Option.Choice lyricsColours, lyricsPosition, lyricsPlace, lyricsFont;
 	private Option.Bool lyricsBehind;
 	private Option.Num lyricsPalette;
 	private final LyricsView.Cfg lyricsCfg = new LyricsView.Cfg();
@@ -161,6 +161,10 @@ public class SpotifyMod extends HudMod {
 		lyricsWorld = bool("Lyrics In The Sky", true);
 		lyricsOnlyPlaying = bool("Lyrics Only While Playing", true);
 		lyricsScript = bool("Lyrics Handwriting Font", true);
+		lyricsFont = tabs("Lyrics Font", 0, "Handwriting", "Minecraft", "My font");
+		lyricsFont.tip("My font: use a font you imported (button below, or the Custom Font mod).");
+		action("Lyrics font file", "Import font", () -> dev.solclient.CustomFont.openFolder(), () -> dev.solclient.CustomFont.installed() ? "Font ready" : "Put a .ttf / .otf in the folder, then Use");
+		action("Use the font in the folder", "Use", () -> dev.solclient.CustomFont.useFolder(), () -> "");
 		lyricsSize = num("Lyrics Size", 100, 50, 200, 5, "%");
 		lyricsPlace = tabs("Lyrics Where", 1, "Screen (flat)", "Real Sky (in the world)");
 		lyricsBehind = bool("Hidden Behind Mountains", false).tip("Off: always visible. On: hills and buildings can cover the sky words.");
@@ -268,7 +272,8 @@ public class SpotifyMod extends HudMod {
 		boolean sky = lyricsWorld.on() && lyricsPlace.idx() == 1;
 		k.world = lyricsWorld.on() && !sky; // the flat screen sheet only when the sky is not used
 		k.onlyPlaying = lyricsOnlyPlaying.on();
-		k.script = lyricsScript.on();
+		k.script = lyricsFont.idx() == 0 && lyricsScript.on();
+		k.fontOverride = lyricsFont.idx() == 2 && dev.solclient.CustomFont.installed() ? new net.minecraft.text.StyleSpriteSource.Font(net.minecraft.util.Identifier.of("sol_client", "ui_custom")) : null;
 		k.size = lyricsSize.f() / 100F;
 		k.height = lyricsHeight.f();
 		k.depth = lyricsDepth.f() / 100F;

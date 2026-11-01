@@ -193,7 +193,7 @@ public final class SkyLyrics {
 
 		var layer = behindTerrain ? TextRenderer.TextLayerType.POLYGON_OFFSET : TextRenderer.TextLayerType.SEE_THROUGH;
 		int light = 0xF000F0;
-		int layers = Math.round(5F * Math.max(0F, Math.min(1F, c.depth)));
+		int layers = Math.min(2, Math.round(3F * Math.max(0F, Math.min(1F, c.depth)))); // few copies: the old 5 + glow made 10 draws per letter and lagged
 		for (int i = 0; i < n; i++) {
 			long since = pos - ch.get(i).start();
 			if (since < 0) {
@@ -207,6 +207,48 @@ public final class SkyLyrics {
 			String text = ch.get(i).text();
 			int base0 = LyricsView.wordColour(c, i, time);
 			int col = Gfx.blend(base0, 0xFFFFFFFF, sung ? (c.colourMode == 0 ? 0.4F : 0.25F) : 0F);
+			if (since > text.length() * 22L + 320L && !text.isBlank()) {
+				// the word is fully in: draw it as ONE text (not letter by letter), a fraction of the draw calls
+				Text wt = LyricsView.styled(text, c);
+				float wraw = tr.getWidth(wt);
+				float wcu = u0 + wraw / 2F;
+				float wur = rw <= 1F ? 0F : (wcu + rw / 2F) / (rw / 2F) - 1F;
+				float wcv = vRow + wur * wur * 3F + (float) Math.sin(time * 1.5 + (i * 3) * 0.5) * 0.9F;
+				float wal = fade * (sung ? 1F : 0.85F) * c.opacity;
+				m.push();
+				m.translate(wcu, wcv, 0);
+				float wg = sung ? 1.1F : 1F;
+				m.scale(wg, wg, 1F);
+				m.translate(-wraw / 2F, -4F, 0);
+				if (layers > 0) {
+					int dark = Gfx.blend(base0, 0xFF000000, 0.72F);
+					for (int l = layers; l >= 1; l--) {
+						int a8 = LyricsView.alphaOf(dark, wal * (0.75F - 0.08F * l));
+						if (((a8 >>> 24) & 255) < 6) {
+							continue;
+						}
+						m.push();
+						m.translate(0, 0, -0.55F * l);
+						queue.submitText(m, 0, 0, wt.asOrderedText(), false, layer, light, a8, 0, 0);
+						m.pop();
+					}
+				}
+				if (sung) {
+					int gl = LyricsView.alphaOf(c.colourMode == 0 ? c.highlight : base0, (c.script ? 0.30F : 0.22F) * wal);
+					for (int[] o : new int[][] {{-1, 0}, {1, 0}}) {
+						m.push();
+						m.translate(o[0] * 0.9F, o[1] * 0.9F, -0.2F);
+						queue.submitText(m, 0, 0, wt.asOrderedText(), false, layer, light, gl, 0, 0);
+						m.pop();
+					}
+				}
+				int wa8 = LyricsView.alphaOf(col, wal);
+				if (((wa8 >>> 24) & 255) >= 8) {
+					queue.submitText(m, 0, 0, wt.asOrderedText(), !c.script, layer, light, wa8, 0, 0);
+				}
+				m.pop();
+				continue;
+			}
 			for (int g = 0; g < text.length(); g++) {
 				char chr = text.charAt(g);
 				if (chr == ' ') {
@@ -246,7 +288,7 @@ public final class SkyLyrics {
 				if (sung) {
 					// glow: soft coloured copies around the letter
 					int gl = LyricsView.alphaOf(c.colourMode == 0 ? c.highlight : base0, (c.script ? 0.30F : 0.22F) * alpha);
-					for (int[] o : new int[][] {{-1, 0}, {1, 0}, {0, -1}, {0, 1}}) {
+					for (int[] o : new int[][] {{-1, 0}, {1, 0}}) {
 						m.push();
 						m.translate(o[0] * 0.9F, o[1] * 0.9F, -0.2F);
 						queue.submitText(m, 0, 0, t.asOrderedText(), false, layer, light, gl, 0, 0);

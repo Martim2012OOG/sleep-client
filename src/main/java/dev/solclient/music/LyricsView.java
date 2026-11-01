@@ -24,6 +24,8 @@ public final class LyricsView {
 		public boolean bar = true, world = true, onlyPlaying = true;
 		/** handwritten font (like Neonlyrics) for the big words; false = the normal game font in italics */
 		public boolean script = true;
+		/** the font the player imported (Custom Font), or null */
+		public StyleSpriteSource fontOverride;
 		/** size multiplier, height of the lines above the horizon in degrees, sync offset in ms */
 		public float size = 1F, height = 18F, offsetMs;
 		public int highlight = 0xFF8B5CF6, text = 0xFFFFFFFF;
@@ -409,7 +411,7 @@ public final class LyricsView {
 	}
 
 	static Text styled(String s, Cfg cfg) {
-		return Text.literal(s).setStyle(cfg.script ? Style.EMPTY.withFont(FONT) : Style.EMPTY.withItalic(true));
+		return Text.literal(s).setStyle(cfg.fontOverride != null ? Style.EMPTY.withFont(cfg.fontOverride) : cfg.script ? Style.EMPTY.withFont(FONT) : Style.EMPTY.withItalic(true));
 	}
 
 	static int alphaOf(int color, float a) {
