@@ -69,7 +69,7 @@ public final class SolarBadge {
 			return true;
 		}
 		String nick = p.getName().getString();
-		return Presence.inServerRoom(p.getUuid(), nick) || Presence.inServerRoom(Presence.backendId(p), nick);
+		return Presence.inServerRoom(p.getUuid(), nick) || Presence.inServerRoom(Presence.backendId(p), nick) || Presence.inLobby(p.getUuid(), nick);
 	}
 
 	public static Text decorate(Text name) {

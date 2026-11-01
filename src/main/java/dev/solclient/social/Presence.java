@@ -184,6 +184,28 @@ public final class Presence {
 	}
 
 	/**
+	 * This player is online with the client anywhere (the global lobby room), by account uuid or game nick. Used as a
+	 * second chance when the two of you reached the same server through different addresses (different server rooms).
+	 */
+	public static boolean inLobby(UUID id, String nick) {
+		Room r = lobby;
+		if (r == null) {
+			return false;
+		}
+		if (id != null && r.players.containsKey(id.toString().replace("-", ""))) {
+			return true;
+		}
+		if (nick != null) {
+			for (Player p : r.players.values()) {
+				if (p.nick().equalsIgnoreCase(nick)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	/**
 	 * The account uuid (no dashes) of the player with this game nick, if they are in one of your presence rooms.
 	 * Bridges the offline-mode gap: presence knows account uuids, the world only knows server-assigned uuids.
 	 */
@@ -255,7 +277,10 @@ public final class Presence {
 			return;
 		}
 
-		// token (JWT HS256, 24 h; the site allows 10 per hour)
+		// token (JWT HS256, 24 h; the site allows 10 per hour): reuse the one saved by the last launch so restarts do not use it up
+		if (jwt == null) {
+			loadSavedToken(uuid);
+		}
 		if (jwt == null || now > jwtExpires - 3_600_000L) {
 			if (!tokenBusy && now >= nextTokenAt) {
 				tokenBusy = true;
@@ -366,6 +391,44 @@ public final class Presence {
 		nextTokenAt = 0;
 	}
 
+	private static java.nio.file.Path tokenFile() {
+		return net.fabricmc.loader.api.FabricLoader.getInstance().getConfigDir().resolve("kubo-presence-token.json");
+	}
+
+	/** Keeps the token on this computer so the next launch does not ask for a new one (the site only gives 10 per hour). */
+	private static void saveToken(String t, long exp) {
+		try {
+			UUID me = MinecraftClient.getInstance().getSession().getUuidOrNull();
+			JsonObject o = new JsonObject();
+			o.addProperty("token", t);
+			o.addProperty("exp", exp);
+			o.addProperty("nick", jwtNick == null ? "" : jwtNick);
+			o.addProperty("uuid", me == null ? "" : me.toString().replace("-", ""));
+			java.nio.file.Files.writeString(tokenFile(), o.toString());
+		} catch (Exception ignored) {
+			// not important
+		}
+	}
+
+	private static void loadSavedToken(UUID uuid) {
+		try {
+			if (!java.nio.file.Files.exists(tokenFile())) {
+				return;
+			}
+			JsonObject o = JsonParser.parseString(java.nio.file.Files.readString(tokenFile())).getAsJsonObject();
+			long exp = o.get("exp").getAsLong();
+			if (!uuid.toString().replace("-", "").equals(o.get("uuid").getAsString()) || exp - System.currentTimeMillis() < 3_600_000L) {
+				return;
+			}
+			jwtNick = o.get("nick").getAsString();
+			jwtExpires = exp;
+			jwt = o.get("token").getAsString();
+			problem = null;
+		} catch (Exception ignored) {
+			// no saved token: a new one is requested
+		}
+	}
+
 	private static void issueToken() {
 		try {
 			SolarApi.Res r = SolarApi.post("/issue-token", new JsonObject());
@@ -396,6 +459,7 @@ public final class Presence {
 			jwtExpires = exp;
 			jwt = t;
 			problem = null;
+			saveToken(t, exp);
 		} finally {
 			tokenBusy = false;
 		}
