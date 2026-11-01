@@ -37,9 +37,9 @@ public class RealisticLiquidsMod extends Mod {
 	// per level: radius (blocks), glints / foam / lava / motes per tick, how much of the clear colour is mixed in
 	private static final int[] RADIUS = {12, 18, 26, 34};
 	private static final float[] GLINT = {1F, 3F, 6F, 11F}, FOAM = {1.5F, 5F, 10F, 20F}, LAVA = {1F, 2.5F, 5F, 9F}, MOTE = {1F, 2F, 4F, 7F};
-	private static final float[] MIX = {0.20F, 0.35F, 0.50F, 0.62F};
+	private static final float[] MIX = {0.30F, 0.50F, 0.62F, 0.72F};
 	/** The colour water drifts towards: a clear blue with a touch of green. */
-	private static final int CLEAR = 0x2F93CC;
+	private static final int CLEAR = 0x5CC4F0;
 
 	private static boolean hooked;
 	private int applied = -1;
