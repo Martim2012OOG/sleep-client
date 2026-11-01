@@ -14,7 +14,7 @@ public abstract class ForcedGlowMixin {
 
 	@Inject(method = "hasOutline", at = @At("HEAD"), cancellable = true, require = 0)
 	private void kubo$glow(Entity e, CallbackInfoReturnable<Boolean> cir) {
-		if (e != null && ForcedGlow.has(e.getId())) {
+		if (e != null && ForcedGlow.has(e)) {
 			cir.setReturnValue(true);
 		}
 	}

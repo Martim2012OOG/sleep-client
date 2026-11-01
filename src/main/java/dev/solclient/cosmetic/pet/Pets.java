@@ -162,6 +162,15 @@ public final class Pets {
 		if (useNow) {
 			boolean food = mc.player.getMainHandStack().contains(DataComponentTypes.FOOD);
 			best.pet(world, food);
+			// PatPat: every click is a pat as fast as you click, with the squish, the pat sound and hearts
+			long now = System.currentTimeMillis();
+			best.combo = now - best.patAt < 1500L ? best.combo + 1 : 1;
+			best.patAt = now;
+			float pitch = 0.9F + (float) Math.random() * 0.25F;
+			world.playSoundClient(best.x, best.y + 0.4, best.z, dev.solclient.mods.PatPatMod.PAT, net.minecraft.sound.SoundCategory.NEUTRAL, 0.8F, pitch, false);
+			if (best.combo % 3 == 0) {
+				world.playSoundClient(best.x, best.y + 0.4, best.z, dev.solclient.mods.PatPatMod.HAPPY, net.minecraft.sound.SoundCategory.NEUTRAL, 0.7F, pitch, false);
+			}
 			mc.player.swingHand(net.minecraft.util.Hand.MAIN_HAND);
 		} else {
 			best.boop(world);
@@ -226,6 +235,12 @@ public final class Pets {
 				matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(-tilt));
 				matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(bank));
 				matrices.translate(0, -mid, 0);
+			}
+			float pk = (System.currentTimeMillis() - p.patAt) / 260F;
+			if (pk >= 0F && pk < 1F) {
+				// squished under the hand, then it springs back
+				float sq = (float) Math.sin(Math.PI * pk);
+				matrices.scale(1F + 0.10F * sq, 1F - 0.22F * sq, 1F + 0.10F * sq);
 			}
 			matrices.scale(s, s, s);
 			RenderLayer layer = RenderLayers.entityCutoutNoCull(m.texture);

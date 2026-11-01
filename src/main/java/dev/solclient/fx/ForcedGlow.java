@@ -8,6 +8,9 @@ public final class ForcedGlow {
 
 	private static final Map<Integer, Integer> COLOURS = new ConcurrentHashMap<>();
 
+	/** RGB the dropped items glow with, or -1 when item glow is off (Item Finder). */
+	public static volatile int itemRgb = -1;
+
 	private ForcedGlow() {
 	}
 
@@ -21,6 +24,15 @@ public final class ForcedGlow {
 
 	public static boolean has(int entityId) {
 		return !COLOURS.isEmpty() && COLOURS.containsKey(entityId);
+	}
+
+	public static boolean has(net.minecraft.entity.Entity e) {
+		return has(e.getId()) || itemRgb >= 0 && e instanceof net.minecraft.entity.ItemEntity;
+	}
+
+	public static Integer colour(net.minecraft.entity.Entity e) {
+		Integer c = colour(e.getId());
+		return c != null ? c : itemRgb >= 0 && e instanceof net.minecraft.entity.ItemEntity ? Integer.valueOf(itemRgb) : null;
 	}
 
 	public static Integer colour(int entityId) {

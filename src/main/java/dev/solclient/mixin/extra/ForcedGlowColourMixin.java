@@ -13,7 +13,7 @@ public abstract class ForcedGlowColourMixin {
 
 	@Inject(method = "getTeamColorValue", at = @At("HEAD"), cancellable = true, require = 0)
 	private void kubo$colour(CallbackInfoReturnable<Integer> cir) {
-		Integer c = ForcedGlow.colour(((Entity) (Object) this).getId());
+		Integer c = ForcedGlow.colour((Entity) (Object) this);
 		if (c != null) {
 			cir.setReturnValue(c);
 		}

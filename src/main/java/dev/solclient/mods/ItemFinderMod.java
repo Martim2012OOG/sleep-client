@@ -24,13 +24,20 @@ public class ItemFinderMod extends Mod {
 	private final Option.Bool distance = bool("Distance", true);
 	private final Option.Num maxMarkers = num("Max Markers", 12, 3, 30, 1, "");
 	private final Option.Col colour = colour("Colour", 0xFFFFD24A);
+	private final Option.Bool glow = bool("Glow Items", true).tip("Dropped items get a coloured glowing outline you can see through walls and from far away.");
 
 	public ItemFinderMod() {
 		super("Item Finder", "item_finder", "Marks dropped items that are far away, with their picture and distance, so you never lose them.", Category.UTILITY);
 		instance = this;
 	}
 
+	@Override
+	protected void onDisable() {
+		dev.solclient.fx.ForcedGlow.itemRgb = -1;
+	}
+
 	public void draw(DrawContext c) {
+		dev.solclient.fx.ForcedGlow.itemRgb = enabled && glow.on() ? colour.c() & 0xFFFFFF : -1;
 		if (mc.player == null || mc.world == null || !Project.begin()) {
 			return;
 		}

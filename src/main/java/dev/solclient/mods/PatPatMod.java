@@ -35,7 +35,7 @@ public class PatPatMod extends Mod {
 	/** entity id -> pats in a row (a happy sound every few pats). */
 	private static final Map<Integer, Integer> COMBO = new HashMap<>();
 	private static final long PAT_MS = 220L;
-	private static final SoundEvent PAT = SoundEvent.of(Gfx.id("patpat.pat")), HAPPY = SoundEvent.of(Gfx.id("patpat.lopi"));
+	public static final SoundEvent PAT = SoundEvent.of(Gfx.id("patpat.pat")), HAPPY = SoundEvent.of(Gfx.id("patpat.lopi"));
 
 	public PatPatMod() {
 		super("PatPat", "pat_pat", "Crouch + right-click a dog with an empty hand to pat it.", Category.VISUAL);

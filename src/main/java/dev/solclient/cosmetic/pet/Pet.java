@@ -700,6 +700,10 @@ public final class Pet {
 
 	// ================================================================ interaction
 	/** Right click on the pet. */
+	/** PatPat on this pet: when the last pat was (ms) and how many in a row. */
+	public long patAt;
+	public int combo;
+
 	void pet(ClientWorld world, boolean food) {
 		setMode(Mode.HAPPY);
 		if (!flies() && onGround) {
