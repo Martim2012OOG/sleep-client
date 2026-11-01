@@ -38,30 +38,51 @@ public final class SkinPreview {
 
 	private static net.minecraft.util.Identifier greySkin;
 
-	/** A plain grey player skin (made here, no image from anywhere): lighter body, darker head, like a mannequin. */
+	/** A grey Minecraft skin (made here, no image from anywhere): dark hair, light face, grey shirt, darker trousers and shoes. */
 	private static net.minecraft.util.Identifier greySkin() {
 		if (greySkin == null) {
 			net.minecraft.client.texture.NativeImage img = new net.minecraft.client.texture.NativeImage(64, 64, true);
 			for (int y = 0; y < 64; y++) {
 				for (int x = 0; x < 64; x++) {
-					int g = 0x8C;
-					if (y < 16 && x < 32) {
-						g = 0x6A; // head
-					} else if ((x >= 16 && x < 40 && y >= 16 && y < 32)) {
-						g = 0xA0; // body
-					} else if (y >= 16 && (x < 16 || x >= 32 || y >= 48)) {
-						g = 0x84; // limbs
+					int g = 0x9C; // skin
+					boolean head = y < 16 && x < 32, body = x >= 16 && x < 40 && y >= 16 && y < 32;
+					boolean rArm = x >= 40 && x < 56 && y >= 16 && y < 32, lArm = x >= 32 && x < 48 && y >= 48 && y < 64;
+					boolean rLeg = x < 16 && y >= 16 && y < 32, lLeg = x >= 16 && x < 32 && y >= 48 && y < 64;
+					if (head) {
+						boolean top = y < 8 && x >= 8 && x < 16;
+						boolean hairRow = y >= 8 && y < 10; // fringe + hair on the sides and back
+						boolean sides = (x < 8 || x >= 16) && y >= 8;
+						g = top || hairRow || sides ? 0x4A4A52 : 0xB4B4BC;
+						if (x >= 24 && y >= 8) {
+							g = 0x4A4A52; // back of the head
+						}
+					} else if (body) {
+						g = 0xBCBEC8;
+					} else if (rArm || lArm) {
+						int row = rArm ? y - 16 : y - 48;
+						g = row >= 4 && row < 8 || row < 4 ? 0xBCBEC8 : 0xB4B4BC; // sleeve, then hand
+						if (row < 4) {
+							g = 0xBCBEC8;
+						}
+					} else if (rLeg || lLeg) {
+						int row = rLeg ? y - 16 : y - 48;
+						g = row >= 9 ? 0x3A3A42 : 0x5C5E6C; // shoes, trousers
 					}
-					// a little shade at the edges of every 8 px patch so the cubes read
-					int shade = ((x % 8 == 0) || (y % 8 == 0)) ? -10 : 0;
-					int v = Math.max(0, g + shade);
-					img.setColorArgb(x, y, 0xFF000000 | v << 16 | v << 8 | v);
+					int noise = ((x * 7 + y * 13) % 5) - 2;
+					int v = Math.max(0, Math.min(255, g + noise * 3));
+					int tint = head && g == 0x4A4A52 ? 0 : 0;
+					img.setColorArgb(x, y, 0xFF000000 | v << 16 | v << 8 | Math.min(255, v + tint + 4));
 				}
 			}
-			// face: two dark eyes on the head front (8..16, 8..16)
-			for (int ey = 11; ey < 13; ey++) {
-				img.setColorArgb(10, ey, 0xFF2A2A2E);
-				img.setColorArgb(13, ey, 0xFF2A2A2E);
+			// face on the head front (8..16, 8..16): eyes with a white, mouth
+			for (int ex : new int[]{9, 13}) {
+				img.setColorArgb(ex, 11, 0xFFE8E8F0);
+				img.setColorArgb(ex + 1, 11, 0xFF22222A);
+				img.setColorArgb(ex, 12, 0xFF2E2E36);
+				img.setColorArgb(ex + 1, 12, 0xFF22222A);
+			}
+			for (int mx = 11; mx < 13; mx++) {
+				img.setColorArgb(mx, 14, 0xFF6A6A74);
 			}
 			net.minecraft.util.Identifier id = dev.solclient.Gfx.id("textures/solar/grey_mannequin.png");
 			net.minecraft.client.texture.NativeImageBackedTexture tex = new net.minecraft.client.texture.NativeImageBackedTexture(() -> "kubo_grey_mannequin", img);
@@ -80,8 +101,9 @@ public final class SkinPreview {
 		}
 	};
 
-	private static Model cardModel(String id) {
-		return CARD_MODELS.computeIfAbsent(id, k -> new Model(TexturedModelData.of(PlayerEntityModel.getTexturedModelData(Dilation.NONE, false), 64, 64).createModel(), false));
+	private static Model cardModel(String id, boolean slimArms) {
+		return CARD_MODELS.computeIfAbsent(id + (slimArms ? "|s" : "|w"),
+				k -> new Model(TexturedModelData.of(PlayerEntityModel.getTexturedModelData(Dilation.NONE, slimArms), 64, 64).createModel(), slimArms));
 	}
 
 	private static long cardHoverStart;
@@ -96,7 +118,7 @@ public final class SkinPreview {
 			return false;
 		}
 		try {
-			Model m = cardModel(info.id());
+			Model m = cardModel(info.id(), false);
 			m.wear = List.of();
 			m.head.resetTransform();
 			m.body.resetTransform();
@@ -107,7 +129,8 @@ public final class SkinPreview {
 			dev.solclient.emote.EmoteRig.resetBends(m.rightArm, m.leftArm, m.rightLeg, m.leftLeg);
 			dev.solclient.emote.Animation anim = dev.solclient.emote.EmoteLibrary.animation(info);
 			if (anim != null) {
-				float len = Math.max(1, anim.lengthTicks());
+				// very long emotes (hold a pose for minutes, rise slowly) are only shown for their first seconds
+				float len = Math.max(1, Math.min(anim.lengthTicks(), 120));
 				float ticks;
 				if (play) {
 					if (cardHover != info) {
@@ -119,12 +142,12 @@ public final class SkinPreview {
 					if (cardHover == info) {
 						cardHover = null;
 					}
-					ticks = len * (anim.loop ? 0.3F : 0.4F); // a pose that tells the emote apart from standing
+					ticks = Math.min(len * (anim.loop ? 0.3F : 0.4F), 40F); // a pose that tells the emote apart from standing
 				}
 				dev.solclient.emote.EmoteRig.apply(anim, anim.animTime(Math.min(ticks, len)), 1F, m.head, m.body, m.rightArm, m.leftArm, m.rightLeg, m.leftLeg);
 			}
-			float perBlock = (h - 6) / 2.25F;
-			float cx = x + w / 2F, feetY = y + h - 3;
+			float perBlock = (h - 6) / 2.7F; // leaves room for jumps and flips
+			float cx = x + w / 2F, feetY = y + h - 6;
 			float centerY = feetY - 1.0625F * perBlock;
 			int half = Math.round(perBlock * 1.6F);
 			c.addPlayerSkin(m, greySkin(), perBlock, -4F, -28F, -1.0625F, Math.round(cx - half), Math.round(centerY - half), Math.round(cx + half),

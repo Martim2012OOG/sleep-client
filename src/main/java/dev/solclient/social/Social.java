@@ -2123,31 +2123,28 @@ public final class Social {
 		boolean anyEmote = false;
 		for (Item it : all) {
 			if (it.category != null && it.category.equalsIgnoreCase("Emotes")) {
-				anyEmote = true;
+				String key = (it.modelId != null && !it.modelId.isBlank() ? it.modelId : it.id).toLowerCase(Locale.ROOT);
+				anyEmote |= localEmote(key); // a site that still lists other emotes (not ours) counts as "no emotes sold yet"
 				if (it.owned) {
-					out.add((it.modelId != null && !it.modelId.isBlank() ? it.modelId : it.id).toLowerCase(Locale.ROOT));
+					out.add(key);
 				}
 			}
 		}
 		return anyEmote ? out : null;
 	}
 
-	/** True when the site sells emotes (category "Emotes" exists in the shop). */
-	public static boolean sellsEmotes() {
-		for (String c : categories) {
-			if (c.equalsIgnoreCase("Emotes")) {
+	private static boolean localEmote(String id) {
+		for (dev.solclient.emote.EmoteLibrary.Info i : dev.solclient.emote.EmoteLibrary.all()) {
+			if (i.id().equals(id)) {
 				return true;
 			}
 		}
-		List<Item> all = SHOP_CACHE.get("All");
-		if (all != null) {
-			for (Item it : all) {
-				if (it.category != null && it.category.equalsIgnoreCase("Emotes")) {
-					return true;
-				}
-			}
-		}
 		return false;
+	}
+
+	/** True when the site sells emotes (category "Emotes" exists in the shop). */
+	public static boolean sellsEmotes() {
+		return ownedEmotes() != null;
 	}
 
 	private static List<Item> emoteIndexOf;

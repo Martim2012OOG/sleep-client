@@ -103,7 +103,7 @@ public class CosmeticFeatureRenderer extends FeatureRenderer<PlayerEntityRenderS
 				for (CosmeticModels.Part part : CosmeticModels.geometry(d)) {
 					matrices.push();
 					boolean air = state.glidingTicks > 0 || state.isGliding;
-					if (!place(matrices, model, part.attach(), state.age, air)) {
+					if (!place(matrices, model, part.attach(), state.age, air, elytraSpread(state))) {
 						matrices.pop();
 						continue;
 					}
@@ -134,8 +134,56 @@ public class CosmeticFeatureRenderer extends FeatureRenderer<PlayerEntityRenderS
 		}
 	}
 
+	/** True when this player wears 3D wings: they take the place of the elytra (the vanilla elytra is not drawn). */
+	public static boolean wingsReplaceElytra(Object renderState) {
+		try {
+			if (!(renderState instanceof PlayerEntityRenderState state) || state.invisible || SolClient.settings == null || !SolClient.settings.cosmetics.on()) {
+				return false;
+			}
+			UUID id = uuidOf(state.id);
+			if (id == null) {
+				return false;
+			}
+			for (CosmeticModels.Def d : Cosmetics.worn(id)) {
+				if (d.livePet()) {
+					continue;
+				}
+				for (CosmeticModels.Part part : CosmeticModels.geometry(d)) {
+					if (part.attach() == CosmeticModels.WING_LEFT || part.attach() == CosmeticModels.WING_RIGHT) {
+						return true;
+					}
+				}
+			}
+		} catch (Throwable ignored) {
+		}
+		return false;
+	}
+
+	/**
+	 * How open the wings are when they act as the elytra: -1 = not wearing an elytra (they flap on their own), 0 = folded on the back
+	 * (standing), up to 1 = fully spread (gliding).
+	 */
+	private static float elytraSpread(PlayerEntityRenderState state) {
+		net.minecraft.item.ItemStack chest = state.equippedChestStack;
+		boolean worn = chest != null && !chest.isEmpty() && (chest.isOf(net.minecraft.item.Items.ELYTRA)
+				|| chest.contains(net.minecraft.component.DataComponentTypes.GLIDER));
+		if (!worn && !state.isGliding) {
+			return -1F;
+		}
+		if (state.isGliding) {
+			float open = Math.min(1F, Math.max(0.25F, state.glidingTicks / 8F));
+			return open;
+		}
+		return state.isInSneakingPose ? 0.12F : 0F;
+	}
+
 	/** Moves the matrices to the body part a piece follows (+ wing flapping / pet floating). */
 	public static boolean place(MatrixStack m, PlayerEntityModel model, int attach, float t, boolean air) {
+		return place(m, model, attach, t, air, -1F);
+	}
+
+	/** Same, with the wings posed like an elytra when {@code spread} is 0..1 (see {@link #elytraSpread}). */
+	public static boolean place(MatrixStack m, PlayerEntityModel model, int attach, float t, boolean air, float spread) {
 		ModelPart part = switch (attach) {
 			case CosmeticModels.HEAD -> model.head;
 			case CosmeticModels.RIGHT_ARM -> model.rightArm;
@@ -153,6 +201,10 @@ public class CosmeticFeatureRenderer extends FeatureRenderer<PlayerEntityRenderS
 			float speed = air ? 0.22F : 0.045F, amp = air ? 22F : 7F;
 			float wave = ((float) Math.sin(t * speed) + 1F) / 2F; // 0..1
 			float a = -(4F + wave * amp); // negative = away from the body
+			if (spread >= 0F) {
+				// elytra mode: folded and still on the back, opening wide while gliding (a little life in the air)
+				a = -(5F + spread * (58F + (air ? wave * 6F : 0F)));
+			}
 			m.translate(0F, 0F, 2F / 16F);
 			m.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(attach == CosmeticModels.WING_LEFT ? -a : a));
 			m.translate(0F, 0F, -2F / 16F);

@@ -37,7 +37,7 @@ public class SpotifyMod extends HudMod {
 	private Option.Col bg, accent, textColour, artistColour, trackColour;
 	private Option.Num tintStrength, glow;
 	// animation
-	private Option.Bool showBars, spin, pulse, smooth;
+	private Option.Bool showBars, spin, pulse, smooth, cinematic;
 	private Option.Choice barsStyle, songAnim;
 	private Option.Num barCount, scrollSpeed, spinSpeed;
 	// lyrics (in the sky + top capsule)
@@ -131,6 +131,8 @@ public class SpotifyMod extends HudMod {
 		smooth.visibleIf = anim;
 		scrollSpeed = num("Text scroll speed", 50, 10, 100, 1, "%");
 		scrollSpeed.visibleIf = anim;
+		cinematic = bool("Cinematic Mode", false);
+		cinematic.visibleIf = anim;
 
 		// --------------------------------------------------------------- Account
 		header("Any player (automatic)").showIf(acc);
@@ -260,10 +262,90 @@ public class SpotifyMod extends HudMod {
 		return e;
 	}
 
+	private float cineT, cineIn;
+	private long cineLast, cineTitleAt;
+	private String cineKey = "";
+
+	/**
+	 * Cinematic mode: while a song plays the screen gets film bars that slide in, a soft vignette and, at every new song, a title card
+	 * that opens like movie credits (spaced letters + a line that draws itself), with a thin progress line in the bottom bar.
+	 */
+	private void drawCinematic(DrawContext c) {
+		long now = System.currentTimeMillis();
+		float dt = cineLast == 0 ? 0F : Math.min(0.1F, (now - cineLast) / 1000F);
+		cineLast = now;
+		boolean show = cinematic.on() && MusicHub.hasTrack && MusicHub.playing;
+		cineT += ((show ? 1F : 0F) - cineT) * Math.min(1F, dt * 2.6F);
+		if (cineT < 0.01F) {
+			cineKey = "";
+			return;
+		}
+		String key = MusicHub.title + "|" + MusicHub.artist;
+		if (!key.equals(cineKey)) {
+			cineKey = key;
+			cineTitleAt = now;
+		}
+		float e = cineT * cineT * (3F - 2F * cineT);
+		int w = c.getScaledWindowWidth(), h = c.getScaledWindowHeight();
+		int bar = Math.round(h * 0.105F * e);
+		// vignette: dark corners and edges
+		int edge = Math.round(h * 0.28F);
+		Gfx.gradientV(c, 0, 0, w, edge, Gfx.withAlpha(0x000000, Math.round(120 * e)), 0x00000000);
+		Gfx.gradientV(c, 0, h - edge, w, edge, 0x00000000, Gfx.withAlpha(0x000000, Math.round(120 * e)));
+		int side = Math.round(w * 0.16F);
+		Gfx.gradientH(c, 0, 0, side, h, Gfx.withAlpha(0x000000, Math.round(90 * e)), 0x00000000);
+		Gfx.gradientH(c, w - side, 0, side, h, 0x00000000, Gfx.withAlpha(0x000000, Math.round(90 * e)));
+		// film bars
+		Gfx.fill(c, 0, 0, w, bar, 0xFF000000);
+		Gfx.fill(c, 0, h - bar, w, h, 0xFF000000);
+		// progress hairline inside the bottom bar
+		if (bar > 6 && MusicHub.durationMs > 0) {
+			long pos = Math.max(0, Math.min(MusicHub.durationMs, MusicHub.progressMs + (MusicHub.playing ? now - MusicHub.fetchedAt : 0)));
+			int x0 = Math.round(w * 0.12F), x1 = Math.round(w * 0.88F), y = h - bar / 2;
+			Gfx.fill(c, x0, y, x1, y + 1, Gfx.withAlpha(0xFFFFFF, Math.round(40 * e)));
+			Gfx.fill(c, x0, y, x0 + Math.round((x1 - x0) * (pos / (float) MusicHub.durationMs)), y + 1, Gfx.withAlpha(0xFFFFFF, Math.round(210 * e)));
+		}
+		// title card: 0..6 s after a new song
+		float t = (now - cineTitleAt) / 1000F;
+		if (t < 6.4F) {
+			float in = Math.min(1F, t / 1.4F), out = t > 5.4F ? 1F - (t - 5.4F) / 1F : 1F;
+			float a = Math.max(0F, Math.min(1F, in)) * Math.max(0F, out) * e;
+			String title = MusicHub.title.toUpperCase(java.util.Locale.ROOT);
+			StringBuilder sp = new StringBuilder();
+			float spacing = 3.2F - 2.4F * in; // letters start far apart and close in
+			for (int i = 0; i < title.length(); i++) {
+				sp.append(title.charAt(i));
+				if (i < title.length() - 1 && spacing > 0.5F) {
+					sp.append(' ');
+				}
+			}
+			String shown = spacing > 1.8F ? sp.toString() : title;
+			float sc = 2F;
+			int tw = Math.round(Gfx.tw(shown) * sc);
+			int ty = h - bar - Math.round(h * 0.17F) + Math.round((1F - in) * 8F);
+			int al = Math.round(255 * a);
+			if (al > 4) {
+				c.getMatrices().pushMatrix();
+				c.getMatrices().translate((w - tw) / 2F, ty);
+				c.getMatrices().scale(sc, sc);
+				Gfx.textRaw(c, shown, 0, 0, Gfx.withAlpha(0xFFFFFF, al));
+				c.getMatrices().popMatrix();
+				int lw = Math.round(Math.min(1F, t / 2.2F) * Math.max(tw, 80) * 0.6F);
+				Gfx.fill(c, w / 2 - lw / 2, ty + 22, w / 2 + lw / 2, ty + 23, Gfx.withAlpha(0xFFFFFF, Math.round(150 * a)));
+				String art = MusicHub.artist;
+				int aw = Gfx.tw(art);
+				Gfx.textRaw(c, art, (w - aw) / 2, ty + 29, Gfx.withAlpha(0xFFFFFF, Math.round(190 * a)));
+			}
+		}
+	}
+
 	/** The widget itself, plus the lyrics (top capsule + words floating in the sky), which do not depend on the widget being visible. */
 	@Override
 	public void draw(DrawContext c, boolean edit) {
 		super.draw(c, edit);
+		if (!edit && cinematic != null) {
+			drawCinematic(c);
+		}
 		if (edit || !lyricsOn.on()) {
 			return;
 		}

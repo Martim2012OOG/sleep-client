@@ -9,7 +9,8 @@
     "SpecialGuiElementRendererAccessor",
     "InventoryScreenAccessor",
     "LivingEntityRendererAccessor",
-    "PlayerRendererCosmeticsMixin"
+    "PlayerRendererCosmeticsMixin",
+    "ElytraHiddenByWingsMixin"
   ],
   "injectors": { "defaultRequire": 0 }
 }

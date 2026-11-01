@@ -43,6 +43,24 @@ public final class EmoteSlots {
 		} catch (Exception e) {
 			System.err.println("[Sleep] could not read the emote wheel: " + e);
 		}
+		if (ok) {
+			// emotes that no longer exist (the library was replaced) leave the wheel
+			boolean any = false, changed = false;
+			for (int i = 0; i < SLOTS; i++) {
+				if (IDS[i] != null && !exists(IDS[i])) {
+					IDS[i] = null;
+					changed = true;
+				}
+				any |= IDS[i] != null;
+			}
+			if (any) {
+				if (changed) {
+					save();
+				}
+				return;
+			}
+			ok = false;
+		}
 		if (!ok) {
 			// first start: the first 8 emotes you own
 			List<EmoteLibrary.Info> all = EmoteLibrary.mine();
@@ -51,6 +69,15 @@ public final class EmoteSlots {
 			}
 			save();
 		}
+	}
+
+	private static boolean exists(String id) {
+		for (EmoteLibrary.Info i : EmoteLibrary.all()) {
+			if (i.id().equals(id)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private static void save() {
