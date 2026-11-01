@@ -1143,6 +1143,18 @@ public final class Social {
 				r = SolarApi.post("/messages", b);
 			}
 			JsonObject mo = r.ok() ? Json.obj(r.obj(), "message") : null;
+			if (mo != null && !isGroup(userId)) {
+				// a card like "X is online" so you see the message really went out
+				String nick = userId;
+				for (User fu : friends) {
+					if (userId.equals(fu.id)) {
+						nick = fu.display();
+						break;
+					}
+				}
+				dev.solclient.gui.Notify.show(dev.solclient.gui.Notify.Kind.MSG, dev.solclient.Lang.tr("Message sent", "Mensagem enviada"),
+						dev.solclient.Lang.tr("to ", "para ") + nick, nick);
+			}
 			synchronized (MESSAGES) {
 				List<Msg> l = new ArrayList<>(messages(userId));
 				l.remove(p);
