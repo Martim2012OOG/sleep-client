@@ -2,7 +2,11 @@ package dev.solclient.mods;
 
 import dev.solclient.fx.LiquidFx;
 import dev.solclient.option.Option;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
+import net.minecraft.entity.Entity;
+import net.minecraft.fluid.FlowableFluid;
 import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandlerRegistry;
 import net.fabricmc.fabric.api.client.render.fluid.v1.SimpleFluidRenderHandler;
 import net.minecraft.client.color.world.BiomeColors;
@@ -32,6 +36,7 @@ public class RealisticLiquidsMod extends Mod {
 	private final Option.Bool foam = bool("Foam On Currents", true);
 	private final Option.Bool lava = bool("Lava Embers And Heat", true);
 	private final Option.Bool motes = bool("Underwater Motes", true);
+	private final Option.Bool physics = bool("Water Physics", true).tip("Waterfalls throw spray, things that fall in splash and make rings, rivers carry droplets.");
 	private final Option.Bool auto = bool("Protect My FPS", true).tip("Shows less when the game drops below 40 fps, and nothing below 25.");
 
 	// per level: radius (blocks), glints / foam / lava / motes per tick, how much of the clear colour is mixed in
@@ -178,6 +183,9 @@ public class RealisticLiquidsMod extends Mod {
 				}
 			}
 		}
+		if (physics.on()) {
+			physics(w, rnd, px, py, pz, lv, radius, q);
+		}
 		if (motes.on() && mc.player.isSubmergedInWater()) {
 			for (int i = tries(MOTE[lv] * q); i > 0; i--) {
 				double x = px + (rnd.nextDouble() * 2 - 1) * 8, y = mc.player.getEyeY() + (rnd.nextDouble() * 2 - 1) * 5, z = pz + (rnd.nextDouble() * 2 - 1) * 8;
@@ -189,5 +197,87 @@ public class RealisticLiquidsMod extends Mod {
 				}
 			}
 		}
+	}
+
+	// ------------------------------------------------------------------ physics (particles that fall, bounce and splash)
+	private final Map<Integer, Boolean> wasWet = new HashMap<>();
+	private int wetSweep;
+
+	private void physics(ClientWorld w, ThreadLocalRandom rnd, double px, double py, double pz, int lv, int radius, float q) {
+		// 1) waterfalls: falling water sheds droplets and, where it lands, throws spray up and spreads rings
+		int tries = tries((2F + lv * 3F) * q);
+		for (int i = 0; i < tries; i++) {
+			BlockPos bp = BlockPos.ofFloored(px + (rnd.nextDouble() * 2 - 1) * radius, py + rnd.nextInt(-10, 11), pz + (rnd.nextDouble() * 2 - 1) * radius);
+			FluidState fs = w.getFluidState(bp);
+			if (!fs.isIn(FluidTags.WATER) || fs.isStill() || !fs.contains(FlowableFluid.FALLING) || !fs.get(FlowableFluid.FALLING)) {
+				continue;
+			}
+			double x = bp.getX() + 0.2 + rnd.nextDouble() * 0.6, z = bp.getZ() + 0.2 + rnd.nextDouble() * 0.6;
+			// droplets that peel off the sheet and fall with gravity
+			w.addParticleClient(ParticleTypes.FALLING_WATER, x, bp.getY() + rnd.nextDouble(), z, 0, 0, 0);
+			// the bottom of the column: where the water stops falling
+			BlockPos b = bp;
+			int guard = 0;
+			while (guard++ < 40 && w.getFluidState(b.down()).isIn(FluidTags.WATER) && w.getFluidState(b.down()).contains(FlowableFluid.FALLING)
+					&& w.getFluidState(b.down()).get(FlowableFluid.FALLING)) {
+				b = b.down();
+			}
+			double sy = b.getY() + Math.max(0.1, w.getFluidState(b).getHeight(w, b));
+			int n = 1 + lv;
+			for (int k = 0; k < n; k++) {
+				double a = rnd.nextDouble() * Math.PI * 2, sp = 0.05 + rnd.nextDouble() * 0.09;
+				w.addParticleClient(ParticleTypes.SPLASH, x, sy, z, Math.cos(a) * sp, 0.12 + rnd.nextDouble() * 0.16, Math.sin(a) * sp);
+			}
+			if (lv >= 1 && rnd.nextInt(3) == 0) {
+				w.addParticleClient(ParticleTypes.BUBBLE_POP, x, sy + 0.1, z, 0, 0.04, 0); // mist
+				w.addParticleClient(LiquidFx.RIPPLE, x, sy + 0.02, z, 0.9 + rnd.nextDouble() * 0.6, 22, 0);
+			}
+		}
+		// 2) things that fall in: a splash as big as the impact, plus rings, and a wake while they swim at the surface
+		if (++wetSweep % 2 != 0) {
+			return;
+		}
+		double r2 = (double) radius * radius;
+		for (Entity e : w.getEntities()) {
+			if (e == null || e.squaredDistanceTo(px, py, pz) > r2) {
+				continue;
+			}
+			boolean wet = e.isTouchingWater();
+			Boolean before = wasWet.put(e.getId(), wet);
+			if (before == null) {
+				continue;
+			}
+			Vec3d v = e.getVelocity();
+			double speed = Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+			if (wet && !before && speed > 0.08) {
+				int n = (int) Math.min(40, 4 + speed * 36 * (1 + lv * 0.4F));
+				double sy = surfaceY(w, e);
+				for (int k = 0; k < n; k++) {
+					double a = rnd.nextDouble() * Math.PI * 2, sp = 0.04 + rnd.nextDouble() * 0.06 * (1 + speed * 3);
+					w.addParticleClient(ParticleTypes.SPLASH, e.getX(), sy, e.getZ(), Math.cos(a) * sp, 0.1 + rnd.nextDouble() * 0.3 * (1 + speed * 2), Math.sin(a) * sp);
+				}
+				w.addParticleClient(LiquidFx.RIPPLE, e.getX(), sy + 0.02, e.getZ(), 1.4 + speed * 2.0, 30, 0);
+				if (speed > 0.5 && lv >= 1) {
+					w.addParticleClient(LiquidFx.RIPPLE, e.getX(), sy + 0.02, e.getZ(), 2.4 + speed * 2.5, 42, 0);
+				}
+			} else if (wet && speed > 0.06 && rnd.nextInt(3) == 0 && !e.isSubmergedInWater()) {
+				double sy = surfaceY(w, e);
+				w.addParticleClient(ParticleTypes.SPLASH, e.getX() + (rnd.nextDouble() - 0.5) * 0.5, sy, e.getZ() + (rnd.nextDouble() - 0.5) * 0.5, v.x * 0.3, 0.1, v.z * 0.3);
+			}
+		}
+		if (wasWet.size() > 600) {
+			wasWet.clear();
+		}
+	}
+
+	private static double surfaceY(ClientWorld w, Entity e) {
+		BlockPos bp = e.getBlockPos();
+		for (int i = 0; i < 4; i++) {
+			if (w.getFluidState(bp.up()).isEmpty()) {
+				break;
+			}
+			bp = bp.up();
+		}
+		return bp.getY() + Math.max(0.2, w.getFluidState(bp).getHeight(w, bp));
 	}
 }
