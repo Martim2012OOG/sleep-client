@@ -13,6 +13,7 @@
     "ChatHistoryClientMixin",
     "AutoReconnectMixin",
     "VanillaButtonStyleMixin",
+    "VanillaSliderStyleMixin",
     "VanillaListStyleMixin",
     "VanillaTextFieldStyleMixin",
     "VanillaScreenBgMixin",
