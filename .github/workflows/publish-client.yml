@@ -27,6 +27,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.LAUNCHER_REPO_TOKEN }}
           REPO: ${{ vars.LAUNCHER_REPO }}
+          SRC: ${{ vars.LAUNCHER_SRC_REPO }}
         run: |
           MC=$(grep '^minecraft_version=' gradle.properties | cut -d= -f2 | tr -d '[:space:]')
           mkdir -p out
@@ -36,4 +37,4 @@ jobs:
           [ -n "$comb" ] && cp "$comb" "out/kubo-combat__${MC}.jar"
           gh release view mods-src --repo "$REPO" >/dev/null 2>&1 || gh release create mods-src --repo "$REPO" --prerelease --title "Mod sources" --notes "Jars do client, publicados pelo CI do mod."
           gh release upload mods-src out/*.jar --repo "$REPO" --clobber
-          gh workflow run mods.yml --repo "$REPO"
+          gh workflow run mods.yml --repo "$SRC"
