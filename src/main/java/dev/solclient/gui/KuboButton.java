@@ -62,9 +62,16 @@ public final class KuboButton {
 	/** Draws the button (hover = the mouse is on it). */
 	public static void draw(DrawContext c, int x, int y, int w, int h, String label, boolean hover, int bg, int bgHover, int textCol) {
 		if (classic()) {
-			Gfx.buttonBody(c, x, y, w, h, hover ? slate(bgHover, true) : slate(bg, false), false);
-			if (textCol == Theme.DIM && (bg == Theme.TILE || bg == Theme.OFF_BG)) {
-				textCol = Theme.TEXT;
+			// same buttons as the launcher: white-grey for normal ones (navy text), blue for the main action (white text)
+			float hv = hover ? 1F : 0F;
+			if (bg == Theme.TILE || bg == Theme.OFF_BG || bg == Theme.SUB || bg == Theme.CARD) {
+				Gfx.lightButton(c, x, y, w, h, hv, false);
+				textCol = textCol == 0xFF5E6272 ? 0xFF8A8EA3 : Gfx.BTN_LIGHT_TEXT;
+			} else if (bg == Theme.accent() || bg == (Theme.accent() | 0xFF000000)) {
+				Gfx.blueButton(c, x, y, w, h, Theme.accent(), hv, false);
+				textCol = 0xFFFFFFFF;
+			} else {
+				Gfx.buttonBody(c, x, y, w, h, hover ? slate(bgHover, true) : slate(bg, false), false);
 			}
 		} else {
 			Gfx.rrect(c, x, y, w, h, 7, hover ? bgHover : bg);

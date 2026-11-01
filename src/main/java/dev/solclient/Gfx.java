@@ -565,6 +565,31 @@ public final class Gfx {
 		}
 	}
 
+	/** Text colour on the light launcher button. */
+	public static final int BTN_LIGHT_TEXT = 0xFF1B2766;
+
+	/** The launcher's white-grey button: dark outline, white top edge, a grey lip underneath (gone when pressed). */
+	public static void lightButton(DrawContext c, int x, int y, int w, int h, float hover, boolean pressed) {
+		solidButton(c, x, y, w, h, blend(0xFFE6E7ED, 0xFFFFFFFF, 0.5F * hover), 0xFFA9ABBA, 0xC0FFFFFF, pressed);
+	}
+
+	/** The launcher's blue button (accent colour): same shape, light top edge, darker lip. */
+	public static void blueButton(DrawContext c, int x, int y, int w, int h, int accent, float hover, boolean pressed) {
+		int body = blend(accent | 0xFF000000, 0xFFFFFFFF, 0.14F * hover);
+		solidButton(c, x, y, w, h, body, blend(accent | 0xFF000000, 0xFF000000, 0.38F), 0x55FFFFFF, pressed);
+	}
+
+	private static void solidButton(DrawContext c, int x, int y, int w, int h, int body, int lip, int shine, boolean pressed) {
+		if (w < 6 || h < 6) {
+			return;
+		}
+		rrect(c, x, y, w, h, 3, 0xFF07080F);
+		int dy = pressed ? 2 : 0;
+		rrect(c, x + 1, y + 1 + dy, w - 2, h - 2 - dy, 2, lip);
+		rrect(c, x + 1, y + 1 + dy, w - 2, h - 2 - dy - (pressed ? 1 : 3), 2, body);
+		c.fill(x + 3, y + 1 + dy, x + w - 3, y + 2 + dy, shine);
+	}
+
 	// ---------------------------------------------------------------- coin
 	private static final int[] COIN_SPIN = {3, 4, 5, 6, 0, 1, 2, 3};
 

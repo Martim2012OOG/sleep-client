@@ -1738,15 +1738,12 @@ public class SolMenuScreen extends Screen {
 	// ------------------------------------------------------------- settings
 	private void drawSettingsHeader(DrawContext c, int mx, int my, int cx0, int cx1, int y) {
 		String backLbl = dev.solclient.Lang.tr("Back", "Voltar");
-		int bw = Gfx.tw(backLbl) + 34, bh = 22;
+		int bw = Gfx.tw(backLbl) + 40, bh = 22;
 		boolean bhov = in(mx, my, cx0, y, bw, bh) && my >= clipY0 && my < clipY1;
 		float ba = anim("backBtn", bhov);
-		KuboButton.bg(c, cx0, y, bw, bh, ba, false);
-		// the label fades out while a lighter panel with the arrow grows from the left over the whole button
-		Gfx.textMid(c, backLbl, cx0 + 17, y, bh, Gfx.withAlpha(Theme.TEXT, Math.round(255 * (1F - ba))));
-		int pw = Math.round(bw / 4F + (bw - bw / 4F) * ba);
-		Gfx.rrect(c, cx0 + 2, y + 2, pw - 4, bh - 4, 3, 0x00FFFFFF | (Math.round(0x1A + 0x14 * ba) << 24));
-		Gfx.tex(c, Theme.icon2("back"), cx0 + 2 + (pw - 4) / 2 - 7, y + 4, 14, 14, 64, 64, 0xFFFFFFFF);
+		Gfx.lightButton(c, cx0, y, bw, bh, ba, false);
+		Gfx.tex(c, Theme.icon2("back"), cx0 + 8, y + 4, 14, 14, 64, 64, Gfx.BTN_LIGHT_TEXT);
+		Gfx.textMid(c, backLbl, cx0 + 26, y, bh, Gfx.BTN_LIGHT_TEXT);
 		region(cx0, y, bw, bh, () -> {
 			open = null;
 			scroll = 0;
@@ -2843,7 +2840,11 @@ public class SolMenuScreen extends Screen {
 		boolean neutralBg = bg == TILE || bg == Theme.OFF_BG || bg == SUB || bg == Theme.CARD;
 		if (neutralBg) {
 			boolean hv = in(mx, my, x, y, w, h) && my >= clipY0 && my < clipY1;
-			KuboButton.bg(c, x, y, w, h, anim(id, hv), false);
+			Gfx.lightButton(c, x, y, w, h, anim(id, hv), false); // the launcher's white-grey button
+			textCol = Gfx.BTN_LIGHT_TEXT;
+		} else if (classic() && (bg == Theme.accent() || bg == (Theme.accent() | 0xFF000000))) {
+			boolean hv = in(mx, my, x, y, w, h) && my >= clipY0 && my < clipY1;
+			Gfx.blueButton(c, x, y, w, h, Theme.accent(), anim(id, hv), false); // the launcher's blue button
 			textCol = 0xFFFFFFFF;
 		} else if (classic()) {
 			boolean hov = in(mx, my, x, y, w, h) && my >= clipY0 && my < clipY1;
