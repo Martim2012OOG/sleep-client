@@ -1886,37 +1886,27 @@ public class SolMenuScreen extends Screen {
 
 	/** The pages of a mod's settings as a row of small blue buttons (like Lunar). Returns its height. */
 	private int tabBar(DrawContext c, int mx, int my, Mod m, List<Page> pages, int sel, String sq, int x, int y, int rw) {
-		int h = 24, gap = 4, n = pages.size();
-		int[] ws = new int[n];
-		int total = gap * (n - 1);
-		for (int i = 0; i < n; i++) {
-			ws[i] = Gfx.tw(dev.solclient.Lang.t(pages.get(i).title)) + 26;
-			total += ws[i];
-		}
-		if (total > rw) {
-			int avail = rw - gap * (n - 1);
-			int sum = total - gap * (n - 1);
-			for (int i = 0; i < n; i++) {
-				ws[i] = Math.max(30, ws[i] * avail / sum);
-			}
-		}
-		int px = x;
+		// chips that wrap onto more rows when they do not fit (they used to be squeezed until the names overlapped)
+		int h = 26, gapX = 6, gapY = 6, n = pages.size();
+		int px = x, py = y;
 		for (int i = 0; i < n; i++) {
 			Page pg = pages.get(i);
-			int w = ws[i];
-			boolean selected = i == sel;
-			boolean hov = in(mx, my, px, y, w, h) && my >= clipY0 && my < clipY1;
-			float a = anim("pgh" + m.id + i, hov);
-			// modern flat tabs: soft accent tint + underline for the open page, faint light on hover
-			int acc = Theme.accent() | 0xFF000000;
-			if (selected) {
-				Gfx.rrect(c, px, y, w, h, 7, Gfx.withAlpha(0xFFFFFF, 0x14));
-			} else if (a > 0.01F) {
-				Gfx.rrect(c, px, y, w, h, 7, Gfx.withAlpha(0xFFFFFF, Math.round(0x12 * a)));
+			String title = dev.solclient.Lang.t(pg.title);
+			int w = Math.min(rw, Gfx.tw(title) + 30);
+			if (px > x && px + w > x + rw) {
+				px = x;
+				py += h + gapY;
 			}
+			boolean selected = i == sel;
+			boolean hov = in(mx, my, px, py, w, h) && my >= clipY0 && my < clipY1;
+			float a = anim("pgh" + m.id + i, hov);
+			int acc = Theme.accent() | 0xFF000000;
 			boolean off = pg.child != null && !pg.child.enabled;
-			int col = selected ? 0xFFFFFFFF : pageHasMatch(m, pg, sq) ? acc : off ? Gfx.blend(Theme.DIM, Theme.PANEL | 0xFF000000, 0.45F) : Gfx.blend(Theme.DIM, Theme.TEXT, 0.35F + 0.65F * a);
-			Gfx.textFit(c, dev.solclient.Lang.t(pg.title), px + w / 2, w - 10, y + 7, col);
+			// soft chips: filled with a tint of the accent when open, a faint card otherwise (no lines under or beside anything)
+			int fill = selected ? Gfx.blend(0xFF1B1E29, acc, 0.42F) : Gfx.blend(Theme.ROW | 0xFF000000, 0xFF2A2E3F, a);
+			Gfx.rrect(c, px, py, w, h, 8, fill);
+			int col = selected ? 0xFFFFFFFF : pageHasMatch(m, pg, sq) ? acc : off ? Gfx.blend(Theme.DIM, Theme.PANEL | 0xFF000000, 0.45F) : Gfx.blend(Theme.DIM, Theme.TEXT, 0.45F + 0.55F * a);
+			Gfx.textFit(c, title, px + w / 2, w - 10, py + 9, col);
 			String info = SECTION_INFO.get(pg.title);
 			if (info != null && hov) {
 				tooltipText = dev.solclient.Lang.t(info);
@@ -1924,16 +1914,16 @@ public class SolMenuScreen extends Screen {
 				tooltipText = dev.solclient.Lang.tr("Off", "Desligado");
 			}
 			final int idx = i;
-			region(px, y, w, h, () -> {
+			region(px, py, w, h, () -> {
 				PAGE_SEL.put(m.id, idx);
 				scroll = 0;
 				scrollTarget = 0;
 				colourOpen = null;
 				listening = null;
 			});
-			px += w + gap;
+			px += w + gapX;
 		}
-		return h;
+		return py + h - y;
 	}
 
 	/** A mod with only a few options keeps everything on one page: tabs would just be in the way. */
@@ -2098,7 +2088,7 @@ public class SolMenuScreen extends Screen {
 		for (int i = 0; i < opts.size(); i++) {
 			Option<?> o = opts.get(i);
 			if (matchesSearch(o, sq)) {
-				c.fill(cx0 - 5, y + 3, cx0 - 3, y + 19, Theme.accent()); // the option you searched for
+				Gfx.rrect(c, cx0 - 3, y - 2, rw + 6, 26, 9, Gfx.withAlpha(Theme.accent() & 0xFFFFFF, 0x30)); // the option you searched for
 			}
 			// two on/off options next to each other (like Lunar)
 			if (o instanceof Option.Bool b1 && i + 1 < opts.size() && opts.get(i + 1) instanceof Option.Bool b2) {
