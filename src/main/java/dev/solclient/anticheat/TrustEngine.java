@@ -214,12 +214,17 @@ public final class TrustEngine {
 				f.rise = 0;
 			}
 			// ---- speed: faster than sprint-jumping with their potion effect allows, for several ticks in a row
-			var speed = p.getStatusEffect(StatusEffects.SPEED);
-			double mult = 1 + (speed == null ? 0 : 0.2 * (speed.getAmplifier() + 1));
-			double limit = 0.66 * mult + 0.10;
+			// the REAL speed attribute of that player (speed potion, items and enchants with attributes, soul speed, dolphin's grace,
+			// sprint...: everything the server gave them is in it), so only moving faster than that allows counts
+			double attr = p.getAttributeValue(net.minecraft.entity.attribute.EntityAttributes.MOVEMENT_SPEED);
+			double mult = Math.max(1.0, attr / 0.1);
+			if (p.hasStatusEffect(StatusEffects.SPEED) || p.hasStatusEffect(StatusEffects.DOLPHINS_GRACE)) {
+				mult = Math.max(mult, 1.0 + 0.2 * (p.hasStatusEffect(StatusEffects.SPEED) ? p.getStatusEffect(StatusEffects.SPEED).getAmplifier() + 1 : 1));
+			}
+			double limit = 0.72 * mult + 0.12;
 			if (!busy && !slippery && hs > limit) {
 				f.fast++;
-				if (f.fast >= 12) {
+				if (f.fast >= 25) {
 					add(f, Check.SPEED, Math.min(5, 0.8 + (hs / limit - 1) * 10));
 				}
 			} else {

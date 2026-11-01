@@ -179,7 +179,7 @@ public class TrustRadarMod extends Mod {
 				p.lastReportMs = now;
 				p.lastReportScore = p.suspicion();
 			}
-			if (warn.on() && dist < 24 && t <= warnAt.get() && p.observedSeconds() >= 3 && now - warned.getOrDefault(p.id, 0L) > 180_000L) {
+			if (warn.on() && dist < 24 && t <= warnAt.get() && p.observedSeconds() >= 40 && now - warned.getOrDefault(p.id, 0L) > 180_000L) {
 				warned.put(p.id, now);
 				Notify.show(Notify.Kind.ERROR, (Lang.pt() ? "Cuidado: " : "Careful: ") + p.name + " " + t + "%",
 						Lang.pt() ? "Pode estar a usar hacks (" + summary(p) + "). /suspect " + p.name : "May be using hacks (" + summary(p) + "). /suspect " + p.name);

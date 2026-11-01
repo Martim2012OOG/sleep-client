@@ -2176,6 +2176,59 @@ public class SolMenuScreen extends Screen {
 	 * Toggle #17: a rectangular switch whose coloured block slides from left (OFF, red) to right (ON, green)
 	 * with a small bounce, carrying its label. The track turns a light tint of the block colour.
 	 */
+	private String editFor = "";
+	private static final int[] TINTS = {0, 0xFF5A5A, 0xFFA64D, 0xFFE066, 0x6BDB7A, 0x5AC8FF, 0x6B8CFF, 0xB57BFF, 0xFF7AC8};
+
+	/**
+	 * "Edit" above Buy / Equip: nudge the accessory up/down, left/right, forward/back and turn it a little (like Roblox, so it fits any
+	 * skin), plus a colour tint. Limited so it never drifts off the body. Works before you buy it (try-on).
+	 */
+	private void cosmeticEditor(DrawContext c, int mx, int my, int w, int x, int bx, int bw, int by, Social.Item it) {
+		var pd = dev.solclient.cosmetic.Variants.resolve(dev.solclient.cosmetic.Cosmetics.modelFor(it));
+		if (pd == null) {
+			return;
+		}
+		boolean ed = it.id.equals(editFor);
+		int ey = by - 26;
+		button(c, mx, my, bx, ey, bw, 20, ed ? "Done" : "Edit", "ledit", Theme.OFF_BG, Theme.OFF_BG_HOVER, 0xFFFFFFFF, () -> editFor = ed ? "" : it.id);
+		if (!ed) {
+			return;
+		}
+		int rowH = 19, rows = 4, top = ey - 8 - rows * rowH - 26;
+		Gfx.rrect(c, bx - 4, top - 18, bw + 8, ey - top + 12, 6, 0x66000000);
+		Gfx.text(c, "Position", bx + 2, top - 13, Theme.DIM);
+		int rw = Gfx.tw("Reset") + 14;
+		button(c, mx, my, bx + bw - rw, top - 16, rw, 14, "Reset", "lpreset", Theme.OFF_BG, Theme.OFF_BG_HOVER, 0xFFFFFFFF, () -> dev.solclient.cosmetic.Offsets.reset(pd));
+		int[] v = dev.solclient.cosmetic.Offsets.get(pd);
+		String[] lab = {"Up / Down", "Left / Right", "Forward / Back", "Turn"};
+		int[] idx = {dev.solclient.cosmetic.Offsets.UP, dev.solclient.cosmetic.Offsets.SIDE, dev.solclient.cosmetic.Offsets.FWD, dev.solclient.cosmetic.Offsets.ROT};
+		int[] step = {1, 1, 1, 5};
+		for (int r = 0; r < rows; r++) {
+			final int ix = idx[r], st = step[r];
+			int y0 = top + r * rowH;
+			Gfx.text(c, lab[r], bx + 2, y0 + 4, Theme.TEXT);
+			button(c, mx, my, bx + bw - 70, y0, 20, 16, "-", "lpm" + r, Theme.OFF_BG, Theme.OFF_BG_HOVER, 0xFFFFFFFF, () -> dev.solclient.cosmetic.Offsets.nudge(pd, ix, -st));
+			Gfx.textFit(c, String.valueOf(v[ix]), bx + bw - 35, 22, y0 + 4, Theme.TEXT);
+			button(c, mx, my, bx + bw - 20, y0, 20, 16, "+", "lpp" + r, Theme.OFF_BG, Theme.OFF_BG_HOVER, 0xFFFFFFFF, () -> dev.solclient.cosmetic.Offsets.nudge(pd, ix, st));
+		}
+		int cy = top + rows * rowH + 2;
+		Gfx.text(c, "Colour", bx + 2, cy + 3, Theme.TEXT);
+		int sw = 13, gap = 4, n = TINTS.length, sx0 = bx + bw - n * (sw + gap) + gap;
+		for (int k = 0; k < n; k++) {
+			final int col = TINTS[k];
+			int sx = sx0 + k * (sw + gap);
+			boolean cur = (v[dev.solclient.cosmetic.Offsets.TINT] & 0xFFFFFF) == col;
+			Gfx.rrect(c, sx - 1, cy - 1, sw + 2, sw + 2, 3, cur ? 0xFFFFFFFF : 0x55FFFFFF);
+			if (col == 0) {
+				Gfx.rrect(c, sx, cy, sw, sw, 2, 0xFF3A3F4F);
+				Gfx.text(c, "x", sx + 4, cy + 3, 0xFFFFFFFF);
+			} else {
+				Gfx.rrect(c, sx, cy, sw, sw, 2, col | 0xFF000000);
+			}
+			region(sx - 1, cy - 1, sw + 2, sw + 2, () -> dev.solclient.cosmetic.Offsets.setTint(pd, col));
+		}
+	}
+
 	private void toggle17(DrawContext c, String key, int x, int y, int w, int h, boolean on) {
 		float[] st = toggleAnim.computeIfAbsent(key, k -> new float[]{on ? 1F : 0F, on ? 1F : 0F});
 		float target = on ? 1F : 0F;
@@ -4006,28 +4059,8 @@ public class SolMenuScreen extends Screen {
 		}
 		int by = y + h - 30, bx = x + 8, bw = w - 16;
 		final Social.Item fi = it;
-		if (it.owned && it.wearable()) {
-			// small position tweak (up/down, forward/back), limited so a piece never drifts away from the body
-			var pd = dev.solclient.cosmetic.Variants.resolve(dev.solclient.cosmetic.Cosmetics.modelFor(it));
-			if (pd != null) {
-				int[] off = dev.solclient.cosmetic.Offsets.get(pd);
-				int ry = by - 40;
-				Gfx.textFit(c, "Position  up " + off[0] + "  front " + off[1], x + w / 2, w - 6, ry - 11, Theme.DIM);
-				int bw5 = (bw - 4 * 3) / 5;
-				String[] lab = {"Up", "Down", "Front", "Back", "Reset"};
-				for (int k = 0; k < 5; k++) {
-					final int kk = k;
-					button(c, mx, my, bx + k * (bw5 + 3), ry, bw5, 16, lab[k], "lpos" + k, Theme.OFF_BG, Theme.OFF_BG_HOVER, 0xFFFFFFFF, () -> {
-						switch (kk) {
-							case 0 -> dev.solclient.cosmetic.Offsets.nudge(pd, 1, 0);
-							case 1 -> dev.solclient.cosmetic.Offsets.nudge(pd, -1, 0);
-							case 2 -> dev.solclient.cosmetic.Offsets.nudge(pd, 0, 1);
-							case 3 -> dev.solclient.cosmetic.Offsets.nudge(pd, 0, -1);
-							default -> dev.solclient.cosmetic.Offsets.reset(pd);
-						}
-					});
-				}
-			}
+		if (it.wearable()) {
+			cosmeticEditor(c, mx, my, w, x, bx, bw, by, it);
 		}
 		if (!it.owned) {
 			String price = String.valueOf(it.finalPrice);
@@ -4748,7 +4781,7 @@ public class SolMenuScreen extends Screen {
 				region(sx - r - 1, sy - r - 1, 2 * r + 2, 2 * r + 2, () -> dev.solclient.cosmetic.Variants.choose(gid, did));
 			}
 		}
-		if (it.description != null && !it.description.isEmpty()) {
+		if (it.description != null && !it.description.isEmpty() && !it.id.equals(editFor)) {
 			int dy = ty + 25 + (swatchRows > 0 ? 18 + swatchRows * 17 : 0);
 			for (String l : wrap(it.description, w - 20, 3)) {
 				if (dy > y + h - 82) {
@@ -4760,28 +4793,8 @@ public class SolMenuScreen extends Screen {
 		}
 		int by = y + h - 30, bx = x + 8, bw = w - 16;
 		final Social.Item fi = it;
-		if (it.owned && it.wearable()) {
-			// small position tweak (up/down, forward/back), limited so a piece never drifts away from the body
-			var pd = dev.solclient.cosmetic.Variants.resolve(dev.solclient.cosmetic.Cosmetics.modelFor(it));
-			if (pd != null) {
-				int[] off = dev.solclient.cosmetic.Offsets.get(pd);
-				int ry = by - 40;
-				Gfx.textFit(c, "Position  up " + off[0] + "  front " + off[1], x + w / 2, w - 6, ry - 11, Theme.DIM);
-				int bw5 = (bw - 4 * 3) / 5;
-				String[] lab = {"Up", "Down", "Front", "Back", "Reset"};
-				for (int k = 0; k < 5; k++) {
-					final int kk = k;
-					button(c, mx, my, bx + k * (bw5 + 3), ry, bw5, 16, lab[k], "lpos" + k, Theme.OFF_BG, Theme.OFF_BG_HOVER, 0xFFFFFFFF, () -> {
-						switch (kk) {
-							case 0 -> dev.solclient.cosmetic.Offsets.nudge(pd, 1, 0);
-							case 1 -> dev.solclient.cosmetic.Offsets.nudge(pd, -1, 0);
-							case 2 -> dev.solclient.cosmetic.Offsets.nudge(pd, 0, 1);
-							case 3 -> dev.solclient.cosmetic.Offsets.nudge(pd, 0, -1);
-							default -> dev.solclient.cosmetic.Offsets.reset(pd);
-						}
-					});
-				}
-			}
+		if (it.wearable()) {
+			cosmeticEditor(c, mx, my, w, x, bx, bw, by, it);
 		}
 		if (!it.owned) {
 			String price = it.discountPct > 0 && it.finalPrice != it.price ? it.price + " > " + it.finalPrice : String.valueOf(it.finalPrice);

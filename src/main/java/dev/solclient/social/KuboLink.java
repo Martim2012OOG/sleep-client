@@ -78,6 +78,16 @@ public final class KuboLink {
 		dev.solclient.stats.KuboStats.add("pings", 1);
 	}
 
+	/** My colour choices and position tweaks of the cosmetics I wear (empty when there is nothing to send). */
+	private static JsonObject myCosmetics(MinecraftClient mc) {
+		try {
+			var id = mc.getSession().getUuidOrNull();
+			return id == null ? new JsonObject() : dev.solclient.cosmetic.Offsets.mine(dev.solclient.cosmetic.Cosmetics.worn(id));
+		} catch (RuntimeException e) {
+			return new JsonObject();
+		}
+	}
+
 	/** Every client tick. */
 	public static void tick(MinecraftClient mc) {
 		long now = System.currentTimeMillis();
@@ -88,9 +98,10 @@ public final class KuboLink {
 		String myBadge = ProfileBadges.myId();
 		String myLook = dev.solclient.mods.NameColourMod.encodeMine();
 		String myFlag = ProfileBadges.myFlagCode();
-		String sig = myBadge + "|" + myLook + "|" + ProfileBadges.myColourOn() + "|" + myFlag;
+		JsonObject myCx = myCosmetics(mc);
+		String sig = myBadge + "|" + myLook + "|" + ProfileBadges.myColourOn() + "|" + myFlag + "|" + myCx;
 		boolean badgeDue = mc.player != null && (!sig.equals(lastBadge) ? now - lastBadgeAt > 1500L
-				: (!myBadge.isEmpty() || !myLook.isEmpty() || !myFlag.isEmpty()) && now - lastBadgeAt > 12_000L);
+				: (!myBadge.isEmpty() || !myLook.isEmpty() || !myFlag.isEmpty() || myCx.size() > 0) && now - lastBadgeAt > 12_000L);
 		if (mc.player == null || mc.world == null || !(wantParty || wantPings && outgoing != null || badgeDue)) {
 			return;
 		}
@@ -117,6 +128,9 @@ public final class KuboLink {
 		kx.addProperty("bc", ProfileBadges.myColourOn() ? 1 : 0);
 		kx.addProperty("nn", myLook);
 		kx.addProperty("fl", myFlag);
+		if (myCx.size() > 0) {
+			kx.add("cx", myCx);
+		}
 		if (outgoing != null) {
 			JsonArray a = new JsonArray();
 			a.add(Math.round(outgoing.x * 10) / 10.0);
@@ -148,6 +162,11 @@ public final class KuboLink {
 			if (kx.has("bc")) {
 				ProfileBadges.onRemoteColour(nick, kx.get("bc").getAsInt() != 0);
 			}
+		}
+		if (kx.has("cx") && kx.get("cx").isJsonObject()) {
+			dev.solclient.cosmetic.Offsets.onRemote(uuid, kx.getAsJsonObject("cx"));
+		} else if (kx.has("bd")) {
+			dev.solclient.cosmetic.Offsets.onRemote(uuid, null);
 		}
 		if (kx.has("hp")) {
 			State s = STATES.computeIfAbsent(uuid, k -> new State());

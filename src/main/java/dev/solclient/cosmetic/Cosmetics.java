@@ -47,7 +47,9 @@ public final class Cosmetics {
 			}
 		}
 		if (player.equals(net.minecraft.client.MinecraftClient.getInstance().getSession().getUuidOrNull())) {
-			out.replaceAll(Variants::resolve); // your own colour choices (other players show their item as it is)
+			out.replaceAll(Variants::resolve); // your own colour choices
+		} else {
+			out.replaceAll(d -> Offsets.remoteVariant(player, d)); // the colour the other player picked (sent through the presence room)
 		}
 		CACHE.put(player, new Cached(now, out));
 		return out;

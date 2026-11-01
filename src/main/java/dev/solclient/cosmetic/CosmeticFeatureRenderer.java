@@ -107,15 +107,19 @@ public class CosmeticFeatureRenderer extends FeatureRenderer<PlayerEntityRenderS
 						matrices.pop();
 						continue;
 					}
-					int[] off = Offsets.get(d);
-					if (off[0] != 0 || off[1] != 0) {
-						// model space: y points down, z points to the front of the player
-						matrices.translate(0F, -off[0] / 16F, off[1] / 16F);
+					int[] off = Offsets.get(d, id);
+					if (off[0] != 0 || off[1] != 0 || off[2] != 0) {
+						// model space: y points down, z points to the front of the player, x to the player's left
+						matrices.translate(off[2] / 16F, -off[0] / 16F, off[1] / 16F);
+					}
+					if (off[3] != 0) {
+						matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(off[3]));
 					}
 					matrices.scale(1F / 16F, 1F / 16F, 1F / 16F);
 					final CosmeticModels.Part p = part;
 					final int l = light;
-					queue.submitCustom(matrices, layer, (entry, vc) -> emit(p, entry, vc, l));
+					final int tint = off[4] == 0 ? 0xFFFFFFFF : off[4] | 0xFF000000;
+					queue.submitCustom(matrices, layer, (entry, vc) -> emit(p, entry, vc, l, tint));
 					lastDrawn = System.currentTimeMillis();
 					matrices.pop();
 				}
@@ -161,6 +165,10 @@ public class CosmeticFeatureRenderer extends FeatureRenderer<PlayerEntityRenderS
 	}
 
 	public static void emit(CosmeticModels.Part p, MatrixStack.Entry entry, VertexConsumer vc, int light) {
+		emit(p, entry, vc, light, 0xFFFFFFFF);
+	}
+
+	public static void emit(CosmeticModels.Part p, MatrixStack.Entry entry, VertexConsumer vc, int light, int tint) {
 		float[] v = p.verts(), n = p.normals();
 		int tris = p.triangles();
 		int overlay = OverlayTexture.DEFAULT_UV;
@@ -170,7 +178,7 @@ public class CosmeticFeatureRenderer extends FeatureRenderer<PlayerEntityRenderS
 			// entity layers draw quads: a triangle is a quad with its last corner repeated
 			for (int k = 0; k < 4; k++) {
 				int i = o + Math.min(k, 2) * 5;
-				vc.vertex(entry, v[i], v[i + 1], v[i + 2]).color(0xFFFFFFFF).texture(v[i + 3], v[i + 4]).overlay(overlay).light(light)
+				vc.vertex(entry, v[i], v[i + 1], v[i + 2]).color(tint).texture(v[i + 3], v[i + 4]).overlay(overlay).light(light)
 						.normal(entry, nx, ny, nz);
 			}
 		}
