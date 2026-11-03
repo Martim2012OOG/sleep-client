@@ -483,6 +483,30 @@ public class SolClient implements ClientModInitializer {
 		}
 	}
 
+	/** Only the real "Minecraft is loading" screen counts: some other mod's overlay that never closes must not hide our HUD for good. */
+	public static boolean loadingScreenUp(MinecraftClient mc) {
+		return mc.getOverlay() instanceof net.minecraft.client.gui.screen.SplashOverlay;
+	}
+
+	private static boolean hudWhyTold;
+
+	/** If the HUD still has not drawn anything ~10 s into a world, say why in the chat (so a friend can read it out). */
+	private static void hudWhy(MinecraftClient mc, int n) {
+		if (hudWhyTold || mc.player == null || hudRan > 0) {
+			return;
+		}
+		if (++hudWorldFrames < 600) {
+			return;
+		}
+		hudWhyTold = true;
+		String m = "[Sleep] HUD did not draw: " + hudDiag() + " | hudHidden=" + mc.options.hudHidden + " F3=" + mc.getDebugHud().shouldShowDebugHud() + " overlay="
+				+ (mc.getOverlay() == null ? "none" : mc.getOverlay().getClass().getName());
+		System.out.println(m);
+		mc.inGameHud.getChatHud().addMessage(net.minecraft.text.Text.literal(m));
+	}
+
+	private static int hudWorldFrames;
+
 	private static void renderHudInner(DrawContext context) {
 		MinecraftClient mc = MinecraftClient.getInstance();
 		int n = ++hudCalls;
@@ -490,8 +514,23 @@ public class SolClient implements ClientModInitializer {
 			System.out.println("[Sleep] HUD status #" + n + " (player " + (mc.player != null) + ", screen " + (mc.currentScreen == null ? "none" : mc.currentScreen.getClass().getName())
 					+ ", overlay " + (mc.getOverlay() != null) + "): " + hudDiag());
 		}
-		frame();
-		CinematicAfkMod.drawOverlay(context); // cinema bars + hint: before the "HUD hidden" check
+		try {
+			frame();
+		} catch (Throwable t) {
+			if (hudErr == null) {
+				hudErr = "frame: " + t;
+				t.printStackTrace();
+			}
+		}
+		try {
+			CinematicAfkMod.drawOverlay(context); // cinema bars + hint: before the "HUD hidden" check
+		} catch (Throwable t) {
+			if (hudErr == null) {
+				hudErr = "cinematic: " + t;
+				t.printStackTrace();
+			}
+		}
+		hudWhy(mc, n);
 		if (mc.player == null || mc.options.hudHidden || mc.currentScreen instanceof MoveHudsScreen) {
 			if (mc.player != null && mc.options.hudHidden) {
 				hudSkipHidden++;
@@ -500,7 +539,7 @@ public class SolClient implements ClientModInitializer {
 		}
 		// while Minecraft reloads resources (e.g. after picking a resource pack) our textures/fonts are being
 		// reloaded too: drawing the HUD then is what glitches on the loading screen
-		if (mc.getOverlay() != null && settings.hideHudWhileLoading.on() && !dev.solclient.gui.SplashLogo.quietReload) {
+		if (loadingScreenUp(mc) && settings.hideHudWhileLoading.on() && !dev.solclient.gui.SplashLogo.quietReload) {
 			hudSkipLoading++;
 			return;
 		}

@@ -21,7 +21,7 @@ public class InGameHudMixin {
 	@Inject(method = "render", at = @At("HEAD"), cancellable = true, require = 0)
 	private void kubo$noHudWhileLoading(CallbackInfo ci) {
 		var mc = net.minecraft.client.MinecraftClient.getInstance();
-		if (mc.getOverlay() != null && dev.solclient.SolClient.settings != null && dev.solclient.SolClient.settings.hideHudWhileLoading.on()) {
+		if (dev.solclient.SolClient.loadingScreenUp(mc) && dev.solclient.SolClient.settings != null && dev.solclient.SolClient.settings.hideHudWhileLoading.on()) {
 			ci.cancel();
 		}
 	}
@@ -30,7 +30,7 @@ public class InGameHudMixin {
 	@Inject(method = "render", at = @At("TAIL"), require = 0)
 	private void kubo$hudBackup(net.minecraft.client.gui.DrawContext context, net.minecraft.client.render.RenderTickCounter tickCounter, CallbackInfo ci) {
 		var mc = net.minecraft.client.MinecraftClient.getInstance();
-		if (mc.getOverlay() == null) {
+		if (!dev.solclient.SolClient.loadingScreenUp(mc)) {
 			dev.solclient.SolClient.hudBackup(context);
 		}
 	}
