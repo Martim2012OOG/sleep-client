@@ -2650,3 +2650,16 @@ When the server says you are not registered, creates the account with your passw
 Different password on some servers: address=password, separated by ;	Palavra-passe diferente em alguns servidores: endereço=palavra-passe, separados por ;
 Leave empty to use it on every multiplayer server.	Deixa vazio para usar em todos os servidores multijogador.
 Most servers say how many times to type the password. This is used when they do not.	A maioria dos servidores diz quantas vezes escrever a palavra-passe. Isto é usado quando não dizem.
+Water Physics	Física da água
+Waterfalls throw spray, things that fall in splash and make rings, rivers carry droplets.	As cascatas lançam salpicos, o que cai na água faz respingos e ondas, e os rios levam gotas.
+Shows less when the game drops below 40 fps, and nothing below 25.	Mostra menos quando o jogo desce dos 40 fps, e nada abaixo dos 25.
+Ocean Waves	Ondas do mar
+Soft crests of light drift over open water with the wind, stronger in rain. Boats leave a wake.	Cristas de luz suaves deslizam sobre a água aberta com o vento, mais fortes com chuva. Os barcos deixam rasto.
+In front of me (3D)	À minha frente (3D)
+Lyrics Distance Ahead	Distância das letras à frente
+Lyrics Fade Distance	Distância para as letras desaparecerem
+Lines Left Behind	Linhas que ficam para trás
+How far in front of you each line appears. You keep walking and it stays where it was.	A que distância à tua frente aparece cada linha. Tu continuas a andar e ela fica onde estava.
+How far behind you a line is when it has completely faded away.	A que distância atrás de ti a linha já desapareceu por completo.
+HUD status	Estado do HUD
+What the in-game HUD is doing. "frames" must grow while you play. If it stays at 0 the HUD is not being drawn at all.	O que o HUD está a fazer em jogo. Os "frames" têm de aumentar enquanto jogas. Se ficarem a 0, o HUD não está a ser desenhado de todo.

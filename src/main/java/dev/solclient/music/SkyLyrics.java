@@ -33,7 +33,16 @@ public final class SkyLyrics {
 		long leftAt;
 		float yaw, pitch, tiltYaw, tiltPitch, tiltRoll;
 		int rows;
+		/** "in front of me": the sheet stays at this place in the WORLD (you walk past it), at this distance from where you stood */
+		boolean world;
+		double wx, wy, wz;
+		float dist = DIST;
+		long bornAt;
 	}
+
+	private static final java.util.ArrayList<Anchor> trail = new java.util.ArrayList<>();
+	private static int frontLine = -2, frontVersion;
+	private static double camX, camY, camZ;
 
 	private static Anchor cur = new Anchor(), old = new Anchor();
 
@@ -80,6 +89,15 @@ public final class SkyLyrics {
 		long now = System.currentTimeMillis();
 		long pos = MusicHub.progressMs + (MusicHub.playing ? now - MusicHub.fetchedAt : 0) + Math.round(c.offsetMs);
 		int idx = Lyrics.indexAt(lines, pos);
+		net.minecraft.util.math.Vec3d cam = mc.player.getCameraPosVec(mc.getRenderTickCounter().getTickProgress(true));
+		camX = cam.x;
+		camY = cam.y;
+		camZ = cam.z;
+		if (c.front) {
+			renderFront(m, queue, mc, c, lines, pos, now, idx);
+			return;
+		}
+		trail.clear();
 		if (idx >= 0) {
 			Lyrics.Line line = lines.get(idx);
 			boolean over = !line.blank() && pos > line.chunks().get(line.chunks().size() - 1).end() + 1800;
@@ -104,6 +122,63 @@ public final class SkyLyrics {
 				draw(m, queue, mc, c, lines.get(old.line), old, pos, now, k * k);
 			} else {
 				old.line = -2;
+			}
+		}
+	}
+
+	/**
+	 * "In front of me": every line appears a few blocks ahead of you and STAYS there in the world. You keep walking, the line stays
+	 * behind you and fades out with the distance (and with time); the next line appears ahead again, so the words trail behind you.
+	 */
+	private static void renderFront(MatrixStack m, OrderedRenderCommandQueue queue, MinecraftClient mc, LyricsView.Cfg c, List<Lyrics.Line> lines, long pos, long now, int idx) {
+		boolean live = false;
+		if (idx >= 0) {
+			Lyrics.Line line = lines.get(idx);
+			boolean over = !line.blank() && pos > line.chunks().get(line.chunks().size() - 1).end() + 1800;
+			live = !line.blank() && !over;
+			if (live && (frontLine != idx || frontVersion != Lyrics.version)) {
+				frontLine = idx;
+				frontVersion = Lyrics.version;
+				Anchor a = place(idx, mc, c);
+				float py = mc.player.getYaw();
+				a.yaw = py + (a.yaw - py) * 0.45F; // not as wide as in the sky
+				a.pitch = -(float) (java.util.concurrent.ThreadLocalRandom.current().nextDouble() * 7.0 - 1.5);
+				a.dist = Math.max(3F, Math.min(20F, c.frontDist));
+				double yr = Math.toRadians(a.yaw), pr = Math.toRadians(a.pitch);
+				a.world = true;
+				a.wx = camX - Math.sin(yr) * Math.cos(pr) * a.dist;
+				a.wy = camY - Math.sin(pr) * a.dist - 0.2;
+				a.wz = camZ + Math.cos(yr) * Math.cos(pr) * a.dist;
+				a.bornAt = now;
+				trail.add(a);
+				while (trail.size() > Math.max(1, Math.min(8, c.frontKeep)) + 1) {
+					trail.remove(0);
+				}
+			}
+		}
+		float maxD = Math.max(8F, c.frontFade);
+		for (int i = trail.size() - 1; i >= 0; i--) {
+			Anchor a = trail.get(i);
+			if (a.version != Lyrics.version || a.line >= lines.size()) {
+				trail.remove(i);
+				continue;
+			}
+			boolean current = live && a.line == frontLine && a.version == frontVersion;
+			if (current) {
+				a.leftAt = 0;
+			} else if (a.leftAt == 0) {
+				a.leftAt = now;
+			}
+			float age = current ? 1F : 1F - (now - a.leftAt - 7000L) / 3000F; // stays 7 s, then fades for 3 s
+			double dx = a.wx - camX, dz = a.wz - camZ, d = Math.sqrt(dx * dx + dz * dz);
+			float far = (float) ((maxD - d) / (maxD * 0.45));
+			float k = Math.max(0F, Math.min(1F, Math.min(age, far)));
+			if (age <= 0F) {
+				trail.remove(i);
+				continue;
+			}
+			if (k > 0.01F) {
+				draw(m, queue, mc, c, lines.get(a.line), a, pos, now, k * k);
 			}
 		}
 	}
@@ -176,7 +251,8 @@ public final class SkyLyrics {
 		}
 		// size: the widest row spans this many degrees of the sky
 		float widthDeg = (c.script ? 34F : 28F) * c.size;
-		float s = (float) (2 * DIST * Math.tan(Math.toRadians(widthDeg / 2))) / widest;
+		float dist = a.world ? a.dist : DIST;
+		float s = (float) (2 * dist * Math.tan(Math.toRadians(widthDeg / 2))) / widest;
 		float rowH = 11F * (c.script ? 1.35F : 1.25F);
 
 		// the sheet: hangs at its direction, breathes a little, faces you, then leans by its own tilt
@@ -185,7 +261,11 @@ public final class SkyLyrics {
 		double yr = Math.toRadians(yawD), pr = Math.toRadians(pitchD);
 		double dx = -Math.sin(yr) * Math.cos(pr), dy = -Math.sin(pr), dz = Math.cos(yr) * Math.cos(pr);
 		m.push();
-		m.translate(dx * DIST, dy * DIST, dz * DIST);
+		if (a.world) {
+			m.translate(a.wx - camX, a.wy - camY - (1F - fade) * 0.3F, a.wz - camZ); // stays in the world; rises a little as it fades
+		} else {
+			m.translate(dx * DIST, dy * DIST, dz * DIST);
+		}
 		m.multiply(new Quaternionf().rotateY((float) (Math.PI - yr)).rotateX((float) -pr));
 		m.multiply(new Quaternionf().rotateY((float) Math.toRadians(a.tiltYaw)).rotateX((float) Math.toRadians(a.tiltPitch))
 				.rotateZ((float) Math.toRadians(a.tiltRoll)));

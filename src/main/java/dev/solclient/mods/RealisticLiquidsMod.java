@@ -37,11 +37,13 @@ public class RealisticLiquidsMod extends Mod {
 	private final Option.Bool lava = bool("Lava Embers And Heat", true);
 	private final Option.Bool motes = bool("Underwater Motes", true);
 	private final Option.Bool physics = bool("Water Physics", true).tip("Waterfalls throw spray, things that fall in splash and make rings, rivers carry droplets.");
+	private final Option.Bool waves = bool("Ocean Waves", false).tip("Soft crests of light drift over open water with the wind, stronger in rain. Boats leave a wake.");
 	private final Option.Bool auto = bool("Protect My FPS", true).tip("Shows less when the game drops below 40 fps, and nothing below 25.");
 
 	// per level: radius (blocks), glints / foam / lava / motes per tick, how much of the clear colour is mixed in
 	private static final int[] RADIUS = {12, 18, 26, 34};
 	private static final float[] GLINT = {1F, 3F, 6F, 11F}, FOAM = {1.5F, 5F, 10F, 20F}, LAVA = {1F, 2.5F, 5F, 9F}, MOTE = {1F, 2F, 4F, 7F};
+	private static final float[] WAVE = {0.6F, 1.6F, 3.2F, 5.5F};
 	private static final float[] MIX = {0.30F, 0.50F, 0.62F, 0.72F};
 	/** The colour water drifts towards: a clear blue with a touch of green. */
 	private static final int CLEAR = 0x5CC4F0;
@@ -147,6 +149,25 @@ public class RealisticLiquidsMod extends Mod {
 				if (fs.isIn(FluidTags.WATER) && Math.abs(wp.getY() - py) < 24) {
 					w.addParticleClient(LiquidFx.GLINT, x, wp.getY() + fs.getHeight(w, wp) + 0.03, z, 0.05 + rnd.nextDouble() * 0.07, 0, 0);
 				}
+			}
+		}
+		if (waves.on()) {
+			float wind = 0.012F + w.getRainGradient(1F) * 0.02F;
+			for (int i = tries(WAVE[lv] * q); i > 0; i--) {
+				double a = rnd.nextDouble() * Math.PI * 2, r = radius * Math.sqrt(rnd.nextDouble());
+				int bx = (int) Math.floor(px + Math.cos(a) * r), bz = (int) Math.floor(pz + Math.sin(a) * r);
+				BlockPos wp = new BlockPos(bx, w.getTopY(Heightmap.Type.MOTION_BLOCKING, bx, bz) - 1, bz);
+				FluidState fs = w.getFluidState(wp);
+				if (!fs.isIn(FluidTags.WATER) || !fs.isStill() || Math.abs(wp.getY() - py) > 20) {
+					continue;
+				}
+				// open water only (not a puddle): water two blocks away on every side
+				if (!w.getFluidState(wp.east(2)).isIn(FluidTags.WATER) || !w.getFluidState(wp.west(2)).isIn(FluidTags.WATER)
+						|| !w.getFluidState(wp.north(2)).isIn(FluidTags.WATER) || !w.getFluidState(wp.south(2)).isIn(FluidTags.WATER)) {
+					continue;
+				}
+				w.addParticleClient(LiquidFx.WAVE, bx + rnd.nextDouble(), wp.getY() + fs.getHeight(w, wp) + 0.02, bz + rnd.nextDouble(),
+						0.9 + rnd.nextDouble() * 0.9 + lv * 0.25, 0, wind);
 			}
 		}
 		if (foam.on()) {

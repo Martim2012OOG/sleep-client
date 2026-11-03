@@ -24,7 +24,7 @@ import org.joml.Quaternionf;
  */
 public final class LiquidFx {
 
-	public static SimpleParticleType PUDDLE, RIPPLE, GLINT, FOAM;
+	public static SimpleParticleType PUDDLE, RIPPLE, GLINT, FOAM, WAVE;
 
 	private LiquidFx() {
 	}
@@ -37,7 +37,9 @@ public final class LiquidFx {
 		/** vx, vz = the current's speed (blocks / tick). A bit of foam carried along the surface. */
 		FOAM(true),
 		/** vx = size. A little star of sunlight that flashes and goes. */
-		GLINT(false);
+		GLINT(false),
+		/** vx = size in blocks, vz = wind speed (blocks / tick, along z). A soft crest of light that drifts over open water and fades. */
+		WAVE(true);
 
 		final boolean flat;
 
@@ -51,11 +53,13 @@ public final class LiquidFx {
 		RIPPLE = register("liquid_ripple");
 		GLINT = register("liquid_glint");
 		FOAM = register("liquid_foam");
+		WAVE = register("liquid_wave");
 		ParticleFactoryRegistry r = ParticleFactoryRegistry.getInstance();
 		r.register(PUDDLE, sp -> new Factory(sp, Kind.PUDDLE));
 		r.register(RIPPLE, sp -> new Factory(sp, Kind.RIPPLE));
 		r.register(GLINT, sp -> new Factory(sp, Kind.GLINT));
 		r.register(FOAM, sp -> new Factory(sp, Kind.FOAM));
+		r.register(WAVE, sp -> new Factory(sp, Kind.WAVE));
 	}
 
 	private static SimpleParticleType register(String name) {
@@ -97,6 +101,12 @@ public final class LiquidFx {
 					life = 38 + w.random.nextInt(24);
 					alpha = 0F;
 				}
+				case WAVE -> {
+					scale = size * 0.7F;
+					velocityZ = c;
+					life = 60 + w.random.nextInt(50);
+					alpha = 0F;
+				}
 				default -> {
 					scale = size;
 					life = 10 + w.random.nextInt(6);
@@ -123,6 +133,10 @@ public final class LiquidFx {
 					alpha = 0.85F * (float) Math.pow(1F - t, 1.4);
 				}
 				case FOAM -> alpha = 0.75F * (float) Math.sin(Math.PI * t);
+				case WAVE -> {
+					scale = size * (0.7F + 0.5F * t); // swells as it travels
+					alpha = 0.5F * (float) Math.pow(Math.sin(Math.PI * t), 1.3);
+				}
 				default -> alpha = 0.95F * (float) Math.sin(Math.PI * t);
 			}
 		}

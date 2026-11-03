@@ -43,7 +43,7 @@ public class SpotifyMod extends HudMod {
 	private Option.Num barCount, scrollSpeed, spinSpeed;
 	// lyrics (in the sky + top capsule)
 	private Option.Bool lyricsOn, lyricsBar, lyricsWorld, lyricsOnlyPlaying, lyricsScript;
-	private Option.Num lyricsSpread, lyricsSize, lyricsHeight, lyricsSync, lyricsBarSize, lyricsOpacity, lyricsDepth, lyricsSway;
+	private Option.Num lyricsFrontDist, lyricsFrontFade, lyricsFrontKeep, lyricsSpread, lyricsSize, lyricsHeight, lyricsSync, lyricsBarSize, lyricsOpacity, lyricsDepth, lyricsSway;
 	private Option.Col lyricsHighlight, lyricsText, lyricsText2, lyricsText3, lyricsText4;
 	private Option.Choice lyricsColours, lyricsPosition, lyricsPlace, lyricsFont;
 	private Option.Bool lyricsBehind;
@@ -181,7 +181,12 @@ public class SpotifyMod extends HudMod {
 		action("Lyrics font file", "Import font", () -> dev.solclient.CustomFont.openFolder(), () -> dev.solclient.CustomFont.installed() ? "Font ready" : "Put a .ttf / .otf in the folder, then Use");
 		action("Use the font in the folder", "Use", () -> dev.solclient.CustomFont.useFolder(), () -> "");
 		lyricsSize = num("Lyrics Size", 100, 50, 200, 5, "%");
-		lyricsPlace = tabs("Lyrics Where", 1, "Screen (flat)", "Real Sky (in the world)");
+		lyricsPlace = tabs("Lyrics Where", 1, "Screen (flat)", "Real Sky (in the world)", "In front of me (3D)");
+		lyricsFrontDist = num("Lyrics Distance Ahead", 8, 3, 20, 1, " blocks");
+		lyricsFrontFade = num("Lyrics Fade Distance", 24, 8, 60, 2, " blocks");
+		lyricsFrontKeep = num("Lines Left Behind", 3, 0, 8, 1, "");
+		lyricsFrontDist.tip("How far in front of you each line appears. You keep walking and it stays where it was.");
+		lyricsFrontFade.tip("How far behind you a line is when it has completely faded away.");
 		lyricsBehind = bool("Hidden Behind Mountains", false).tip("Off: always visible. On: hills and buildings can cover the sky words.");
 		lyricsHeight = num("Lyrics Height", 18, 0, 45, 1, "\u00b0");
 		lyricsPosition = tabs("Lyrics Position", 0, "Centre", "Left", "Right", "Left and right", "Random");
@@ -207,14 +212,17 @@ public class SpotifyMod extends HudMod {
 		lyricsUpper = bool("Lyrics Capital Letters", false);
 		lyricsGlow = num("Lyrics Glow", 100, 0, 150, 5, "%");
 		lyricsAnim = tabs("Lyrics Animation", 0, "Letters pop", "Fade", "Rise", "Zoom");
-		for (Option<?> o : new Option<?>[] {lyricsPlace, lyricsBehind, lyricsOn, lyricsBar, lyricsWorld, lyricsOnlyPlaying, lyricsScript, lyricsSize, lyricsHeight, lyricsSync, lyricsBarSize, lyricsOpacity, lyricsDepth, lyricsSway, lyricsPosition, lyricsSpread,
+		for (Option<?> o : new Option<?>[] {lyricsPlace, lyricsFrontDist, lyricsFrontFade, lyricsFrontKeep, lyricsBehind, lyricsOn, lyricsBar, lyricsWorld, lyricsOnlyPlaying, lyricsScript, lyricsSize, lyricsHeight, lyricsSync, lyricsBarSize, lyricsOpacity, lyricsDepth, lyricsSway, lyricsPosition, lyricsSpread,
 				lyricsHighlight, lyricsText, lyricsColours, lyricsPalette, lyricsText2, lyricsText3, lyricsText4}) {
 			o.visibleIf = lyr;
 		}
 		lyricsBar.visibleIf = () -> lyr.getAsBoolean() && lyricsOn.on();
 		lyricsWorld.visibleIf = lyricsBar.visibleIf;
 		lyricsPlace.visibleIf = () -> lyr.getAsBoolean() && lyricsOn.on() && lyricsWorld.on();
-		lyricsBehind.visibleIf = () -> lyricsPlace.visibleIf.getAsBoolean() && lyricsPlace.idx() == 1;
+		lyricsBehind.visibleIf = () -> lyricsPlace.visibleIf.getAsBoolean() && lyricsPlace.idx() >= 1;
+		lyricsFrontDist.visibleIf = () -> lyricsPlace.visibleIf.getAsBoolean() && lyricsPlace.idx() == 2;
+		lyricsFrontFade.visibleIf = lyricsFrontDist.visibleIf;
+		lyricsFrontKeep.visibleIf = lyricsFrontDist.visibleIf;
 		lyricsOnlyPlaying.visibleIf = lyricsBar.visibleIf;
 		lyricsScript.visibleIf = () -> lyr.getAsBoolean() && lyricsOn.on() && lyricsWorld.on();
 		lyricsSize.visibleIf = () -> lyr.getAsBoolean() && lyricsOn.on() && lyricsWorld.on();
@@ -475,7 +483,7 @@ public class SpotifyMod extends HudMod {
 		}
 		LyricsView.Cfg k = lyricsCfg;
 		k.bar = lyricsBar.on();
-		boolean sky = lyricsWorld.on() && lyricsPlace.idx() == 1;
+		boolean sky = lyricsWorld.on() && lyricsPlace.idx() >= 1;
 		k.world = lyricsWorld.on() && !sky; // the flat screen sheet only when the sky is not used
 		k.onlyPlaying = lyricsOnlyPlaying.on();
 		dev.solclient.music.LyricFonts.apply(k, lyricsFont.idx());
@@ -485,6 +493,10 @@ public class SpotifyMod extends HudMod {
 		k.gradFlow = lyricsGradFlow.f() / 100F;
 		k.grad = dev.solclient.music.Gradients.stops(lyricsGradient.idx(), new int[] {lyricsGradA.c(), lyricsGradB.c(), lyricsGradC.c()}, lyricsGradN.i());
 		k.size = lyricsSize.f() / 100F;
+		k.front = lyricsPlace.idx() == 2;
+		k.frontDist = lyricsFrontDist.f();
+		k.frontFade = lyricsFrontFade.f();
+		k.frontKeep = lyricsFrontKeep.i();
 		k.height = lyricsHeight.f();
 		k.depth = lyricsDepth.f() / 100F;
 		k.sway = lyricsSway.f() / 100F;

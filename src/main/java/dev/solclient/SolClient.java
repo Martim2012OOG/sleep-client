@@ -441,16 +441,52 @@ public class SolClient implements ClientModInitializer {
 		}
 	}
 
+	// ---- HUD diagnostics: what the in-game HUD is doing (shown in Sleep settings > HUD status, and printed to the log once)
+	private static volatile long hudAt;
+	private static int hudCalls, hudFallbacks, hudSkipHidden, hudSkipLoading, hudSkipF3, hudRan, hudWidgets;
+	private static String hudErr;
+
+	public static String hudDiag() {
+		return "frames " + hudCalls + " (backup " + hudFallbacks + "), drawn " + hudRan + ", widgets " + hudWidgets + ", skipped: hidden " + hudSkipHidden + " loading "
+				+ hudSkipLoading + " F3 " + hudSkipF3 + (hudErr == null ? "" : ", error " + hudErr);
+	}
+
+	public static void hudDiagReset() {
+		hudCalls = hudFallbacks = hudSkipHidden = hudSkipLoading = hudSkipF3 = hudRan = hudWidgets = 0;
+		hudErr = null;
+	}
+
+	/** Called at the end of InGameHud.render (mixin): draws the HUD itself if the Fabric callback did not run in the last moment. */
+	public static void hudBackup(DrawContext context) {
+		if (System.currentTimeMillis() - hudAt < 800L) {
+			return;
+		}
+		hudFallbacks++;
+		renderHudBody(context);
+	}
+
 	private static void renderHud(DrawContext context) {
+		hudAt = System.currentTimeMillis();
+		renderHudBody(context);
+	}
+
+	private static void renderHudBody(DrawContext context) {
 		MinecraftClient mc = MinecraftClient.getInstance();
+		if (++hudCalls == 900) {
+			System.out.println("[Sleep] HUD status: " + hudDiag());
+		}
 		frame();
 		CinematicAfkMod.drawOverlay(context); // cinema bars + hint: before the "HUD hidden" check
 		if (mc.player == null || mc.options.hudHidden || mc.currentScreen instanceof MoveHudsScreen) {
+			if (mc.player != null && mc.options.hudHidden) {
+				hudSkipHidden++;
+			}
 			return;
 		}
 		// while Minecraft reloads resources (e.g. after picking a resource pack) our textures/fonts are being
 		// reloaded too: drawing the HUD then is what glitches on the loading screen
 		if (mc.getOverlay() != null && settings.hideHudWhileLoading.on() && !dev.solclient.gui.SplashLogo.quietReload) {
+			hudSkipLoading++;
 			return;
 		}
 		dev.solclient.ext.KuboApi.drawF3(context);
@@ -458,6 +494,7 @@ public class SolClient implements ClientModInitializer {
 			if (TabListMod.replacesVanilla() && mc.options.playerListKey.isPressed()) {
 				TabListMod.instance.draw(context); // the tab list still shows in F3, like vanilla
 			}
+			hudSkipF3++;
 			return; // like Lunar's "Show HUD in F3" off
 		}
 		if (dev.solclient.mods.ItemFinderMod.instance != null && dev.solclient.mods.ItemFinderMod.instance.enabled) {
@@ -472,17 +509,30 @@ public class SolClient implements ClientModInitializer {
 		if (TntTimerMod.instance != null && TntTimerMod.instance.enabled) {
 			TntTimerMod.instance.draw(context);
 		}
+		hudRan++;
 		dev.solclient.ext.KuboApi.drawHud(context, false);
+		int widgets = 0;
 		for (Mod m : MODS) {
 			if (m.enabled && m instanceof HudMod h) {
 				if (dev.solclient.ext.KuboApi.hidesHud(m)) {
 					continue;
 				}
 				long t0 = System.nanoTime();
-				h.draw(context, false);
+				try {
+					h.draw(context, false);
+					widgets++;
+				} catch (Throwable t) {
+					// one broken widget must not stop the others
+					if (hudErr == null) {
+						hudErr = m.name + ": " + t;
+						System.err.println("[Sleep] HUD widget failed: " + m.name);
+						t.printStackTrace();
+					}
+				}
 				m.addCost(System.nanoTime() - t0);
 			}
 		}
+		hudWidgets = widgets;
 		if (ScoreboardMod.replacesVanilla()) {
 			ScoreboardMod.instance.draw(context);
 		}

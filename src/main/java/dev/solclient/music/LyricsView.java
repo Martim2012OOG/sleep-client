@@ -50,6 +50,10 @@ public final class LyricsView {
 		/** gradient colours (colourMode 3), how many are used, and how fast they slide along (0 = still) */
 		public int[] grad = {0xFF8B5CF6, 0xFFEC4899};
 		public float gradFlow;
+		/** "in front of me" mode: how far ahead a line appears (blocks), how far away it fades out (blocks), how many old lines stay behind */
+		public boolean front;
+		public float frontDist = 8F, frontFade = 24F;
+		public int frontKeep = 3;
 	}
 
 	/** Where a line was placed when it started: side of the screen and its own 3D pose (each line leans differently, like the reference). */

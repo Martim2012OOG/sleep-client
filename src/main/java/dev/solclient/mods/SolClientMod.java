@@ -264,6 +264,8 @@ public class SolClientMod extends Mod {
 		cosmetics = bool("Show 3D Cosmetics", true);
 		cosmetics.tip("3D accessories (hats, wings...) on players.");
 		action("3D cosmetics status", "Refresh", () -> { }, dev.solclient.cosmetic.CosmeticFeatureRenderer::status);
+		action("HUD status", "Reset", dev.solclient.SolClient::hudDiagReset, dev.solclient.SolClient::hudDiag)
+				.tip("What the in-game HUD is doing. \"frames\" must grow while you play. If it stays at 0 the HUD is not being drawn at all.");
 		action("Badge sync status", "Send again", dev.solclient.social.KuboLink::resendNow, dev.solclient.social.KuboLink::diag)
 				.tip("Crown, badges and name colour reach other players through here. If \"got\" says nothing yet, nobody is sending to you.");
 
