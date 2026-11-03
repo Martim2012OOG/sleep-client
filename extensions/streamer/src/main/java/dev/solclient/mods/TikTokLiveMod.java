@@ -65,7 +65,7 @@ public class TikTokLiveMod extends HudMod {
 	private final Option.Header hChat = header("Live chat on screen");
 	private final Option.Bool showChat = bool("Show Chat", true);
 	private final Option.Num chatLines = num("Max Lines", 8, 3, 16, 1, "");
-	private final Option.Num chatWidth = num("Width", 230, 120, 420, 5, "");
+	private final Option.Num chatWidth = num("Width", 230, 60, 800, 5, "");
 	private final Option.Num chatSeconds = num("Message Time", 20, 4, 120, 1, "s");
 	private final Option.Num chatBg = num("Background", 35, 0, 90, 5, "%");
 	private final Option.Bool hideCommands = bool("Hide !commands", true);
@@ -75,7 +75,7 @@ public class TikTokLiveMod extends HudMod {
 	private final Option.Header hAlert = header("Gift alerts");
 	private final Option.Bool alerts = bool("Gift Alert Banner", true);
 	private final Option.Num alertSeconds = num("Alert Time", 5, 2, 12, 1, "s");
-	private final Option.Num alertScale = num("Alert Size", 100, 60, 200, 5, "%");
+	private final Option.Num alertScale = num("Alert Size", 100, 20, 400, 5, "%");
 
 	private final Option.Header hFx = header("Screen effects");
 	private final Option.Bool effects = bool("Effects", true);

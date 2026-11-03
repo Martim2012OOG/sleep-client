@@ -38,7 +38,7 @@ import net.fabricmc.loader.api.ModContainer;
  *  2. the same file name somewhere else in the same asset type, when the old and the new folder are related
  *     (one inside the other, or the same last folder name).
  * Textures that moved are also fixed inside the pack's own model / blockstate JSON files. pack.mcmeta gets the game's
- * pack format. The original pack is never touched: the result is a new zip next to it.
+ * pack format. The pack is updated in place; the original is kept in config/kubo-pack-backups.
  *
  * Written from scratch, no third-party code.
  */
@@ -61,6 +61,8 @@ public final class PackMigrator {
 		public String formatInfo = "";
 		public boolean dryRun;
 		public Path output;
+		/** Where the original was kept before it was replaced. */
+		public Path backup;
 		public Path report;
 		public String error;
 	}
@@ -570,11 +572,10 @@ public final class PackMigrator {
 				// 2) write the new zip
 				String name = pack.getFileName().toString();
 				String base = name.toLowerCase(Locale.ROOT).endsWith(".zip") ? name.substring(0, name.length() - 4) : name;
-				Path dir = pack.toAbsolutePath().getParent();
-				Path out = dir.resolve(base + " (updated).zip");
-				for (int i = 2; Files.exists(out); i++) {
-					out = dir.resolve(base + " (updated " + i + ").zip");
-				}
+				// built in a temp folder, then put in the place of the original (no "(updated)" copy next to it)
+				Path tmpDir = FabricLoader.getInstance().getConfigDir().resolve("kubo-pack-updates").resolve("tmp");
+				Files.createDirectories(tmpDir);
+				Path out = tmpDir.resolve(java.util.UUID.randomUUID() + ".zip");
 				Set<String> written = new HashSet<>();
 				try (OutputStream os = Files.newOutputStream(out); ZipOutputStream zo = new ZipOutputStream(os)) {
 					if (newMeta != null) {
@@ -621,7 +622,9 @@ public final class PackMigrator {
 								.getBytes(StandardCharsets.UTF_8));
 					}
 				}
-				r.output = out;
+				src.close(); // the zip must be closed before it can be replaced (Windows keeps open files locked)
+				install(pack, out, r);
+				r.output = pack;
 				writeReport(pack, r);
 				if (rootF.isEmpty() && r.moved.isEmpty() && !r.formatUpdated) {
 					r.notes.add("Nothing needed changing");
@@ -631,6 +634,74 @@ public final class PackMigrator {
 		} catch (Throwable t) {
 			r.error = t.getClass().getSimpleName() + ": " + t.getMessage();
 			return r;
+		}
+	}
+
+	/**
+	 * Puts the updated pack in the place of the original (same name, nothing new next to it). The original is first kept
+	 * in config/kubo-pack-backups (outside the resourcepacks folder, so it never shows up as a second pack).
+	 */
+	private static void install(Path pack, Path built, Result r) throws IOException {
+		Path bdir = FabricLoader.getInstance().getConfigDir().resolve("kubo-pack-backups");
+		Files.createDirectories(bdir);
+		String stamp = new java.text.SimpleDateFormat("yyyyMMdd-HHmmss").format(new java.util.Date());
+		Path backup = bdir.resolve(stamp + "-" + pack.getFileName());
+		if (Files.isDirectory(pack)) {
+			copyTree(pack, backup);
+			try (java.util.stream.Stream<Path> w = Files.walk(pack)) {
+				for (Path f : (Iterable<Path>) w.sorted(java.util.Comparator.reverseOrder())::iterator) {
+					if (!f.equals(pack)) {
+						Files.delete(f);
+					}
+				}
+			}
+			try (ZipFile z = new ZipFile(built.toFile())) {
+				var en = z.entries();
+				while (en.hasMoreElements()) {
+					ZipEntry e = en.nextElement();
+					Path target = pack.resolve(e.getName()).normalize();
+					if (!target.startsWith(pack)) {
+						continue; // never write outside the pack folder
+					}
+					if (e.isDirectory()) {
+						Files.createDirectories(target);
+					} else {
+						Files.createDirectories(target.getParent());
+						try (InputStream in = z.getInputStream(e)) {
+							Files.copy(in, target, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+						}
+					}
+				}
+			}
+			Files.deleteIfExists(built);
+		} else {
+			Files.copy(pack, backup, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+			try {
+				Files.move(built, pack, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+			} catch (IOException e) {
+				try {
+					Files.copy(built, pack, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+					Files.deleteIfExists(built);
+				} catch (IOException e2) {
+					Files.deleteIfExists(built);
+					throw new IOException("the pack is in use (close the game's resource pack or restart, then try again): " + e2.getMessage());
+				}
+			}
+		}
+		r.backup = backup;
+	}
+
+	private static void copyTree(Path from, Path to) throws IOException {
+		try (java.util.stream.Stream<Path> w = Files.walk(from)) {
+			for (Path f : (Iterable<Path>) w::iterator) {
+				Path t = to.resolve(from.relativize(f).toString());
+				if (Files.isDirectory(f)) {
+					Files.createDirectories(t);
+				} else {
+					Files.createDirectories(t.getParent());
+					Files.copy(f, t, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+				}
+			}
 		}
 	}
 
@@ -656,7 +727,7 @@ public final class PackMigrator {
 			Files.createDirectories(dir);
 			Path f = dir.resolve(pack.getFileName().toString().replaceAll("[^A-Za-z0-9._ -]", "_") + ".txt");
 			StringBuilder sb = new StringBuilder();
-			sb.append(r.dryRun ? "CHECK ONLY (nothing was written)\n" : "UPDATED COPY: " + r.output + "\n");
+			sb.append(r.dryRun ? "CHECK ONLY (nothing was written)\n" : "UPDATED IN PLACE: " + r.output + (r.backup != null ? "  (original kept in " + r.backup + ")" : "") + "\n");
 			sb.append("Pack format: ").append(r.formatInfo.isEmpty() ? "unchanged" : r.formatInfo).append("\n");
 			sb.append("Files already correct: ").append(r.unchanged).append("\n");
 			sb.append("JSON files fixed: ").append(r.jsonFixed).append("\n\n");

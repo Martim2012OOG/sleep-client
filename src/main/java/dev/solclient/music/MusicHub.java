@@ -17,6 +17,14 @@ public final class MusicHub {
 	public static volatile long durationMs, progressMs, fetchedAt;
 	/** One line for the settings: where the song comes from, or what to do when nothing is found. */
 	public static volatile String status = "Open a song in any player";
+	/** Why the player gave no cover for the song on screen ("" when it did); see {@link CoverFinder}. */
+	public static volatile String playerArtError = "";
+
+	/** The settings line: where the song comes from, plus what is wrong with its cover (if anything). */
+	public static String statusLine() {
+		String e = CoverFinder.error;
+		return e == null || e.isEmpty() || !hasTrack ? status : status + "  |  Cover: " + e;
+	}
 
 	private static final Object LOCK = new Object();
 	private static volatile boolean running;
@@ -156,6 +164,10 @@ public final class MusicHub {
 			status = hint.isEmpty() ? "Nothing is playing: start a song in any player or browser" : hint;
 			return;
 		}
+		if (!pick.id().equals(lastId)) {
+			CoverFinder.error = "";
+		}
+		playerArtError = pick.artError() == null ? "" : pick.artError();
 		lastId = pick.id();
 		shown = pick.ctl();
 		title = pick.title();

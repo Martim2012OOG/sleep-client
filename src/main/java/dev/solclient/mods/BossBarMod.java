@@ -7,7 +7,7 @@ public class BossBarMod extends Mod {
 
 	public static BossBarMod instance;
 	public final Option.Bool hide = bool("Hide Boss Bar", false);
-	public final Option.Num scale = num("Scale", 100, 50, 150, 5, "%");
+	public final Option.Num scale = num("Scale", 100, 20, 300, 5, "%");
 	public final Option.Num offset = num("Move Down", 0, 0, 100, 2, "px");
 
 	public BossBarMod() {

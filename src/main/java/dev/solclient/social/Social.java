@@ -265,7 +265,10 @@ public final class Social {
 	public static volatile long flashAt;
 
 	// timers (client thread only)
-	private static volatile long nextLogin, nextNotif, nextInbox, nextFriends, nextChat, nextLookup, nextCatalogue;
+	private static volatile long nextLogin, nextNotif, nextInbox, nextFriends, nextChat, nextLookup, nextCatalogue, nextGroupPoll;
+	/** Id of the last message seen in each friend conversation / time of the last one seen in each group (to pop up only new ones). */
+	private static final Map<String, String> LAST_MSG = new ConcurrentHashMap<>();
+	private static final Map<String, Long> MY_GROUP_SEND = new ConcurrentHashMap<>();
 	private static final AtomicInteger busy = new AtomicInteger();
 	private static final Set<String> running = ConcurrentHashMap.newKeySet();
 	private static final Set<Long> seenNotifs = ConcurrentHashMap.newKeySet();
@@ -399,6 +402,10 @@ public final class Social {
 			nextInbox = now + 6_000L; // new friend messages and invites pop up quickly
 			job("inbox", Social::loadInbox);
 		}
+		if (groupsSupported && now >= nextGroupPoll) {
+			nextGroupPoll = now + 15_000L; // new group messages pop up too (the full group list is only refreshed every 2 minutes)
+			job("groups-poll", Social::loadGroups);
+		}
 		if (now >= nextFriends) {
 			nextFriends = now + (menuOpen ? 30_000L : 120_000L);
 			job("friends", Social::loadFriends);
@@ -462,6 +469,9 @@ public final class Social {
 
 	public static void onMenuClosed() {
 		menuOpen = false;
+		// the chat that was open is not open any more: its new messages must pop up like everybody else's
+		// (before, messages from the last friend you chatted with never showed up until you opened their chat again)
+		chatUserId = null;
 	}
 
 	/** Game closing: report play time (short, blocking call). */
@@ -1137,6 +1147,7 @@ public final class Social {
 			b.addProperty("body", body);
 			SolarApi.Res r;
 			if (isGroup(userId)) {
+				MY_GROUP_SEND.put(groupId(userId), System.currentTimeMillis());
 				r = SolarApi.post("/groups/" + SolarApi.enc(groupId(userId)) + "/messages", b);
 			} else {
 				b.addProperty("userId", userId);
@@ -1200,11 +1211,20 @@ public final class Social {
 			JsonObject co = Json.obj(e);
 			User u = User.parse(Json.obj(co, "user"));
 			long n = Json.num(co, "unread", 0);
+			JsonObject last = Json.obj(co, "lastMessage");
+			String lastId = last == null ? null : Json.str(last, "id", "createdAt", "created_at");
+			String prevId = u == null || u.id == null ? null : LAST_MSG.get(u.id);
+			if (u != null && u.id != null && lastId != null) {
+				LAST_MSG.put(u.id, lastId);
+			}
 			if (u != null && u.id != null && n > 0) {
 				map.put(u.id, (int) n);
-				// a new message from this friend (not the chat you have open): pop-up with their head, like Discord
-				if (!first && n > before.getOrDefault(u.id, 0) && !u.id.equals(chatUserId)) {
-					JsonObject last = Json.obj(co, "lastMessage");
+				// a new message from this friend: pop-up with their head, like Discord. Only the chat you are looking at right
+				// now is left out (the menu is open on it). A new message is spotted by its id as well as by the unread count,
+				// so it is not missed when the count did not go up.
+				boolean chatOpen = menuOpen && u.id.equals(chatUserId);
+				boolean fresh = n > before.getOrDefault(u.id, 0) || (lastId != null && prevId != null && !lastId.equals(prevId));
+				if (!first && fresh && !chatOpen) {
 					String body = last == null ? null : Json.str(last, "body");
 					if (body == null || body.isBlank()) {
 						body = dev.solclient.Lang.tr("sent you a message", "enviou-te uma mensagem");
@@ -1511,9 +1531,52 @@ public final class Social {
 		return localItems;
 	}
 
+	// ---- presents from the client itself (e.g. the Christmas card): bundled cosmetics that are yours for free, kept in config/kubo/gifts.txt
+	private static java.util.Set<String> gifts;
+
+	private static synchronized java.util.Set<String> gifts() {
+		if (gifts == null) {
+			gifts = new java.util.LinkedHashSet<>();
+			try {
+				java.nio.file.Path f = net.fabricmc.loader.api.FabricLoader.getInstance().getConfigDir().resolve("kubo").resolve("gifts.txt");
+				if (java.nio.file.Files.exists(f)) {
+					for (String l : java.nio.file.Files.readAllLines(f)) {
+						if (!l.isBlank()) {
+							gifts.add(l.strip());
+						}
+					}
+				}
+			} catch (Exception ignored) {
+			}
+		}
+		return gifts;
+	}
+
+	/**
+	 * Gives you a bundled cosmetic for free (shows as owned in the Locker). It is local: the site does not know it, so other players
+	 * only see it if the client shares it. Returns the item (to equip it), or null if the client has no such cosmetic.
+	 */
+	public static synchronized Item gift(String id) {
+		gifts().add(id);
+		try {
+			java.nio.file.Path f = net.fabricmc.loader.api.FabricLoader.getInstance().getConfigDir().resolve("kubo").resolve("gifts.txt");
+			java.nio.file.Files.createDirectories(f.getParent());
+			java.nio.file.Files.write(f, gifts());
+		} catch (Exception ignored) {
+		}
+		for (Item it : localItems()) {
+			if (id.equals(it.id)) {
+				it.badge = "Gift";
+				CATALOGUE.put(it.id, it);
+				return it;
+			}
+		}
+		return null;
+	}
+
 	/** The site's list plus the bundled cosmetics that belong in this section (the site's own copy wins, but it is shown as owned). */
 	private static List<Item> withLocal(String category, List<Item> list) {
-		if (!UNLOCK_ALL || category == null || category.equalsIgnoreCase("Emotes") || category.equalsIgnoreCase("Capes")) {
+		if ((!UNLOCK_ALL && gifts().isEmpty()) || category == null || category.equalsIgnoreCase("Emotes") || category.equalsIgnoreCase("Capes")) {
 			return list;
 		}
 		List<Item> out = new ArrayList<>(list);
@@ -1527,6 +1590,9 @@ public final class Social {
 			}
 		}
 		for (Item it : localItems()) {
+			if (!UNLOCK_ALL && !gifts().contains(it.id)) {
+				continue; // only the presents you were given
+			}
 			if (!have.contains(it.id) && (category.equals("All") || category.equalsIgnoreCase(it.category))) {
 				if (MY_EQUIP.get(it.category) != null && MY_EQUIP.get(it.category).equals(it.id)) {
 					it.equipped = true;
@@ -1544,7 +1610,7 @@ public final class Social {
 		if (now == null) {
 			now = localFilter(category);
 		}
-		if (UNLOCK_ALL && (now == null || SHOP_CACHE.get(category) == null)) {
+		if ((UNLOCK_ALL || !gifts().isEmpty()) && (now == null || SHOP_CACHE.get(category) == null)) {
 			now = withLocal(category, now == null ? List.of() : now);
 		}
 		if (now != null) {
@@ -2044,8 +2110,25 @@ public final class Social {
 				out.add(g);
 			}
 		}
+		boolean firstGroups = !groupsLoadedOnce;
+		groupsLoadedOnce = true;
+		for (Group g : out) {
+			String prev = LAST_MSG.put("g:" + g.id, String.valueOf(g.lastAt));
+			if (firstGroups || prev == null || String.valueOf(g.lastAt).equals(prev) || g.lastBody == null || g.lastBody.isBlank()) {
+				continue;
+			}
+			Long mine = MY_GROUP_SEND.get(g.id);
+			boolean iSent = mine != null && System.currentTimeMillis() - mine < 20_000L; // my own message just sent
+			boolean looking = menuOpen && g.key().equals(chatUserId);
+			if (!iSent && !looking) {
+				String body = g.lastBody.startsWith("[kubo-wp] ") ? dev.solclient.Lang.tr("sent a location", "enviou uma localização")
+						: dev.solclient.chat.Gifs.isGif(g.lastBody) ? "GIF" : g.lastBody;
+				dev.solclient.gui.Notify.show(dev.solclient.gui.Notify.Kind.MSG, dev.solclient.Lang.tr("Message in ", "Mensagem em ") + g.name, body, g.name);
+			}
+		}
 		groups = Collections.unmodifiableList(out);
 	}
+	private static volatile boolean groupsLoadedOnce;
 
 	public static void refreshGroups() {
 		job("groups", Social::loadGroups);

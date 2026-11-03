@@ -21,7 +21,7 @@ public class TntTimerMod extends Mod {
 	public final Option.Choice format = choice("Format", 0, "2.05", "2.1s", "3s");
 	public final Option.Bool colourByTime = bool("Colour By Time", true);
 	public final Option.Bool bar = bool("Fuse Bar", true);
-	public final Option.Num scale = num("Size", 100, 50, 200, 10, "%");
+	public final Option.Num scale = num("Size", 100, 20, 400, 10, "%");
 	public final Option.Num range = num("Max Distance", 48, 8, 128, 4, "");
 	/** Kept for old configs: "Show Decimals" off = whole seconds. */
 	public final Option.Bool decimals = bool("Show Decimals", true);

@@ -194,7 +194,7 @@ public final class Notify {
 	/** The size setting (Settings > HUD Options > Notification Size): 0.5 .. 1.5. */
 	private static float sizeScale() {
 		var st = dev.solclient.SolClient.settings;
-		return st == null ? 1F : Math.max(0.5F, Math.min(1.5F, st.notifySize.f() / 100F));
+		return st == null ? 1F : Math.max(0.2F, Math.min(3F, st.notifySize.f() / 100F));
 	}
 
 	public static void draw(DrawContext c) {

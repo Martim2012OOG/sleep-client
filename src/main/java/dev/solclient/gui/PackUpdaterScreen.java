@@ -19,9 +19,9 @@ import net.minecraft.client.input.KeyInput;
 import net.minecraft.text.Text;
 
 /**
- * Pick a resource pack from your resourcepacks folder and bring it up to the version of the game you are running
- * (textures that Minecraft moved or renamed are found again). "Check only" shows what would change without writing
- * anything; "Update" writes a new copy next to the original, which is never touched.
+ * Pick resource packs from your resourcepacks folder (one, several or all) and bring them up to the version of the game
+ * you are running (textures that Minecraft moved or renamed are found again). "Check only" shows what would change without
+ * writing anything; "Update" changes the pack itself (no copy next to it); its original is kept in config/kubo-pack-backups.
  */
 public class PackUpdaterScreen extends Screen {
 
@@ -30,12 +30,14 @@ public class PackUpdaterScreen extends Screen {
 
 	private final Screen parent;
 	private final List<Path> packs = new ArrayList<>();
-	private int selected = -1;
+	private final java.util.Set<Integer> sel = new java.util.LinkedHashSet<>();
 	private float scroll, scrollTarget, maxScroll;
 
 	private volatile boolean running;
-	private volatile PackMigrator.Result done;
-	private String runningName = "";
+	private volatile List<PackMigrator.Result> done;
+	private volatile List<String> doneNames;
+	private volatile int progress, total;
+	private volatile String runningName = "";
 	private List<Line> report;
 	private boolean showReport;
 
@@ -103,39 +105,93 @@ public class PackUpdaterScreen extends Screen {
 	}
 
 	// ---- work
-	private void start(boolean dryRun) {
-		if (running || selected < 0 || selected >= packs.size()) {
+	private void start(boolean dryRun, boolean all) {
+		if (running) {
 			return;
 		}
-		Path p = packs.get(selected);
-		runningName = p.getFileName().toString();
+		List<Path> targets = new ArrayList<>();
+		if (all) {
+			targets.addAll(packs);
+		} else {
+			for (int i : sel) {
+				if (i >= 0 && i < packs.size()) {
+					targets.add(packs.get(i));
+				}
+			}
+		}
+		if (targets.isEmpty()) {
+			return;
+		}
+		total = targets.size();
+		progress = 0;
+		runningName = targets.get(0).getFileName().toString();
 		running = true;
 		done = null;
 		Thread t = new Thread(() -> {
-			PackMigrator.Result r;
-			try {
-				r = PackMigrator.run(p, dryRun);
-			} catch (Throwable e) {
-				r = new PackMigrator.Result();
-				r.error = String.valueOf(e);
+			List<PackMigrator.Result> out = new ArrayList<>();
+			List<String> names = new ArrayList<>();
+			for (Path p : targets) {
+				runningName = p.getFileName().toString();
+				PackMigrator.Result r;
+				try {
+					r = PackMigrator.run(p, dryRun);
+				} catch (Throwable e) {
+					r = new PackMigrator.Result();
+					r.error = String.valueOf(e);
+				}
+				out.add(r);
+				names.add(p.getFileName().toString());
+				progress++;
 			}
-			done = r;
+			doneNames = names;
+			done = out;
 		}, "kubo-pack-updater");
 		t.setDaemon(true);
 		t.start();
 	}
 
-	private void buildReport(PackMigrator.Result r) {
+	private void buildReport(List<PackMigrator.Result> results, List<String> names) {
 		List<Line> l = new ArrayList<>();
-		if (r.error != null) {
-			l.add(new Line(Lang.tr("Something went wrong: ", "Algo correu mal: ") + r.error, Theme.RED));
-		} else {
+		boolean many = results.size() > 1;
+		int ok = 0, changed = 0, failed = 0;
+		for (PackMigrator.Result r : results) {
+			if (r.error != null) {
+				failed++;
+			} else {
+				ok++;
+				if (!r.moved.isEmpty() || r.formatUpdated || r.jsonFixed > 0) {
+					changed++;
+				}
+			}
+		}
+		if (many) {
+			l.add(new Line(Lang.tr("Packs checked: ", "Packs verificados: ") + results.size() + "   "
+					+ Lang.tr("with changes: ", "com alterações: ") + changed + "   "
+					+ Lang.tr("failed: ", "falharam: ") + failed, failed > 0 ? Theme.RED : Theme.GREEN));
+			if (!results.get(0).dryRun) {
+				l.add(new Line(Lang.tr("The packs were updated in place. Originals are in config/kubo-pack-backups.",
+						"Os packs foram atualizados no próprio sítio. Os originais estão em config/kubo-pack-backups."), Theme.DIM));
+				l.add(new Line(Lang.tr("Press F3 + T in the game to reload the textures.", "Carrega F3 + T no jogo para recarregar as texturas."), Theme.DIM));
+			}
+			l.add(new Line("", Theme.DIM));
+		}
+		for (int n = 0; n < results.size(); n++) {
+			PackMigrator.Result r = results.get(n);
+			if (many) {
+				l.add(new Line("== " + names.get(n) + " ==", Theme.TEXT));
+			}
+			if (r.error != null) {
+				l.add(new Line(Lang.tr("Something went wrong: ", "Algo correu mal: ") + r.error, Theme.RED));
+				continue;
+			}
 			if (r.dryRun) {
-				l.add(new Line(Lang.tr("Check only: nothing was changed.", "Só verificação: nada foi alterado."), Theme.DIM));
-			} else if (r.output != null) {
-				l.add(new Line(Lang.tr("Done! New pack: ", "Pronto! Novo pack: ") + r.output.getFileName(), Theme.GREEN));
-				l.add(new Line(Lang.tr("Close and reopen the resource packs screen to see it.",
-						"Fecha e volta a abrir o ecrã de resource packs para o veres."), Theme.DIM));
+				if (!many) {
+					l.add(new Line(Lang.tr("Check only: nothing was changed.", "Só verificação: nada foi alterado."), Theme.DIM));
+				}
+			} else if (r.output != null && !many) {
+				l.add(new Line(Lang.tr("Done! Pack updated: ", "Pronto! Pack atualizado: ") + r.output.getFileName(), Theme.GREEN));
+				l.add(new Line(Lang.tr("Your original is saved in config/kubo-pack-backups. Press F3 + T in the game to reload.",
+						"O teu original está guardado em config/kubo-pack-backups. Carrega F3 + T no jogo para recarregar."), Theme.DIM));
 			}
 			l.add(new Line(Lang.tr("Pack format: ", "Formato do pack: ") + (r.formatInfo.isEmpty() ? "-" : r.formatInfo),
 					r.formatUpdated ? Theme.GREEN : Theme.DIM));
@@ -146,25 +202,30 @@ public class PackUpdaterScreen extends Screen {
 				l.add(new Line(Lang.tr("Model / blockstate files fixed: ", "Ficheiros de modelo / blockstate corrigidos: ")
 						+ r.jsonFixed, Theme.GREEN));
 			}
-			for (String n : r.notes) {
-				l.add(new Line(n, Theme.accent()));
+			for (String note : r.notes) {
+				l.add(new Line(note, Theme.accent()));
 			}
 			l.add(new Line(Lang.tr("Not in this version (kept as they are): ", "Não existem nesta versão (ficam como estão): ")
 					+ r.unmatched.size() + ", " + Lang.tr("unsure: ", "incertos: ") + r.ambiguous.size(), Theme.DIM));
-			if (r.report != null) {
+			if (r.report != null && !many) {
 				l.add(new Line(Lang.tr("Full list: ", "Lista completa: ") + "config/kubo-pack-updates/" + r.report.getFileName(),
 						Theme.DIM));
 			}
-			l.add(new Line("", Theme.DIM));
-			int cap = 150;
+			int cap = many ? 12 : 150;
+			if (!many) {
+				l.add(new Line("", Theme.DIM));
+			}
 			for (int i = 0; i < r.moved.size() && i < cap; i++) {
 				l.add(new Line(r.moved.get(i), Theme.GREEN));
 			}
 			if (r.moved.size() > cap) {
 				l.add(new Line("... +" + (r.moved.size() - cap), Theme.DIM));
 			}
-			for (int i = 0; i < r.ambiguous.size() && i < 20; i++) {
+			for (int i = 0; i < r.ambiguous.size() && i < (many ? 5 : 20); i++) {
 				l.add(new Line("? " + r.ambiguous.get(i), 0xFFFFD866));
+			}
+			if (many) {
+				l.add(new Line("", Theme.DIM));
 			}
 		}
 		report = l;
@@ -179,14 +240,14 @@ public class PackUpdaterScreen extends Screen {
 		super.render(c, mx, my, delta);
 		if (running && done != null) {
 			running = false;
-			buildReport(done);
+			buildReport(done, doneNames);
 		}
 		scroll += (scrollTarget - scroll) * 0.35F;
 		int x = px(), y = py(), w = pw(), h = ph();
 		Gfx.rrect(c, x, y, w, h, 10, Theme.PANEL);
 		Gfx.text(c, "Update Resource Pack", x + 14, y + 10, Theme.TEXT);
 		Gfx.textClip(c, showReport ? Lang.tr("Result", "Resultado")
-				: "Pick a pack. Your original is never changed: a new updated copy is made.", x + 14, y + 24, w - 28, Theme.DIM);
+				: "Tick the packs to update (or use Update ALL). They are changed in place; your original is backed up.", x + 14, y + 24, w - 28, Theme.DIM);
 		if (!showReport) {
 			Gfx.textClip(c, "Textures that Minecraft moved or renamed are found again.", x + 14, y + 36, w - 28, Theme.DIM);
 		}
@@ -194,7 +255,7 @@ public class PackUpdaterScreen extends Screen {
 		Gfx.rrect(c, x + 10, ly - 2, w - 20, ly1 - ly + 4, 7, Theme.FIELD);
 		c.enableScissor(x + 10, ly, x + w - 10, ly1);
 		if (running) {
-			Gfx.textClip(c, Lang.tr("Working on ", "A trabalhar em ") + runningName + " ...", x + 20, ly + 8, w - 40, Theme.TEXT);
+			Gfx.textClip(c, Lang.tr("Working on ", "A trabalhar em ") + runningName + " ... (" + Math.min(total, progress + 1) + "/" + total + ")", x + 20, ly + 8, w - 40, Theme.TEXT);
 			maxScroll = 0;
 		} else if (showReport && report != null) {
 			int rh = 11;
@@ -220,12 +281,13 @@ public class PackUpdaterScreen extends Screen {
 					continue;
 				}
 				boolean hov = mx >= x + 14 && mx < x + w - 14 && my >= ry && my < ry + 21 && my >= ly && my < ly1;
-				boolean sel = i == selected;
-				Gfx.rrect(c, x + 14, ry, w - 28, 21, 6, sel ? Theme.accent() : hov ? Theme.CARD : Theme.PANEL);
+				boolean on = sel.contains(i);
+				Gfx.rrect(c, x + 14, ry, w - 28, 21, 6, on ? Gfx.blend(Theme.PANEL, Theme.accent() | 0xFF000000, 0.22F) : hov ? Theme.CARD : Theme.PANEL);
+				CheckBox.draw(c, "pu" + i, x + 20, ry + 5.5F, 10, on, hov);
 				Path p = packs.get(i);
-				Gfx.textClip(c, p.getFileName().toString(), x + 22, ry + 6, w - 100, sel ? 0xFFFFFFFF : Theme.TEXT);
+				Gfx.textClip(c, p.getFileName().toString(), x + 38, ry + 6, w - 116, Theme.TEXT);
 				String tag = Files.isDirectory(p) ? "folder" : "zip";
-				Gfx.text(c, tag, x + w - 22 - Gfx.tw(tag), ry + 6, sel ? 0xFFFFFFFF : Theme.DIM);
+				Gfx.text(c, tag, x + w - 22 - Gfx.tw(tag), ry + 6, Theme.DIM);
 			}
 		}
 		c.disableScissor();
@@ -235,10 +297,11 @@ public class PackUpdaterScreen extends Screen {
 			drawBtn(c, btn(0, 2), "Back to the list", mx, my, true);
 			drawBtn(c, btn(1, 2), "Done", mx, my, true);
 		} else {
-			boolean ok = selected >= 0 && !running;
-			drawBtn(c, btn(0, 3), "Check only", mx, my, ok);
-			drawBtn(c, btn(1, 3), "Update to current version", mx, my, ok);
-			drawBtn(c, btn(2, 3), "Back", mx, my, true);
+			boolean ok = !sel.isEmpty() && !running, any = !packs.isEmpty() && !running;
+			drawBtn(c, btn(0, 4), "Check only", mx, my, ok);
+			drawBtn(c, btn(1, 4), "Update selected", mx, my, ok);
+			drawBtn(c, btn(2, 4), "Update ALL", mx, my, any);
+			drawBtn(c, btn(3, 4), "Back", mx, my, true);
 		}
 	}
 
@@ -260,21 +323,25 @@ public class PackUpdaterScreen extends Screen {
 				scroll = 0;
 				scrollTarget = 0;
 				scan();
-				selected = -1;
+				sel.clear();
 			} else if (in(btn(1, 2), mx, my)) {
 				close();
 			}
 			return true;
 		}
-		if (in(btn(0, 3), mx, my)) {
-			start(true);
+		if (in(btn(0, 4), mx, my)) {
+			start(true, false);
 			return true;
 		}
-		if (in(btn(1, 3), mx, my)) {
-			start(false);
+		if (in(btn(1, 4), mx, my)) {
+			start(false, false);
 			return true;
 		}
-		if (in(btn(2, 3), mx, my)) {
+		if (in(btn(2, 4), mx, my)) {
+			start(false, true);
+			return true;
+		}
+		if (in(btn(3, 4), mx, my)) {
 			close();
 			return true;
 		}
@@ -282,7 +349,9 @@ public class PackUpdaterScreen extends Screen {
 		for (int i = 0; i < packs.size(); i++) {
 			int ry = ly + 2 + i * 24 - Math.round(scroll);
 			if (mx >= x + 14 && mx < x + w - 14 && my >= ry && my < ry + 21 && my >= ly && my < ly1) {
-				selected = i;
+				if (!sel.remove(i)) {
+					sel.add(i);
+				}
 				return true;
 			}
 		}

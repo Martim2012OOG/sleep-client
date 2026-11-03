@@ -575,6 +575,36 @@ public final class Presence {
 		return true;
 	}
 
+	private static long lastLobbyLink;
+
+	/**
+	 * Badge / name style / flag / cosmetics for EVERY Sleep player online (the global lobby room), not only for the ones whose
+	 * server room has the same name. Two friends who reached the same server through different addresses (name vs IP, with or
+	 * without a port) sit in different server rooms and never saw each other's crown, badges or name colour. Only public
+	 * profile data goes here: never position, health or pings.
+	 */
+	public static boolean sendLinkLobby(JsonObject kx) {
+		Room r = lobby;
+		long now = System.currentTimeMillis();
+		if (r == null || !r.open || now - lastLobbyLink < 600L) {
+			return false;
+		}
+		lastLobbyLink = now;
+		JsonObject s = new JsonObject();
+		s.add("kx", kx);
+		JsonObject o = new JsonObject();
+		o.addProperty("t", "screen");
+		o.add("s", s);
+		r.send(o.toString());
+		return true;
+	}
+
+	/** Account uuids (no dashes) and nicks of the Sleep players in the global lobby right now. */
+	public static Map<String, Player> lobbyPlayers() {
+		Room r = lobby;
+		return r == null ? Map.of() : r.players;
+	}
+
 	/** Account uuids (no dashes) and nicks of the Sleep players on this server right now. */
 	public static Map<String, Player> serverPlayers() {
 		Room r = server;
@@ -647,6 +677,17 @@ public final class Presence {
 					}
 				}
 				case "screen" -> {
+					if (room == lobby && room != server) {
+						// the global lobby only carries profile data (badge, name style, flag, cosmetics)
+						String lu = norm(Json.str(o, "u"));
+						JsonElement lsc = o.get("s");
+						if (lu != null && lsc != null && lsc.isJsonObject() && lsc.getAsJsonObject().has("kx")) {
+							JsonObject lkx = Json.obj(lsc.getAsJsonObject().get("kx"));
+							if (lkx != null) {
+								MinecraftClient.getInstance().execute(() -> KuboLink.onRemote(lu, lkx));
+							}
+						}
+					}
 					if (room == server) {
 						String u = norm(Json.str(o, "u"));
 						JsonElement sc = o.get("s");
@@ -665,13 +706,23 @@ public final class Presence {
 					}
 				}
 				case "screens" -> {
-					if (room == server) {
+					if (room == server || room == lobby) {
 						long wnow = Json.num(o, "now", 0);
 						for (JsonElement e : Json.arr(o, "list")) {
 							JsonObject it = Json.obj(e);
 							if (it != null) {
 								String u = norm(Json.str(it, "u"));
 								JsonElement sc = it.get("s");
+								if (u != null && sc != null && sc.isJsonObject() && sc.getAsJsonObject().has("kx")) {
+									// someone who was here before me: take his badge / name style now, not at his next message
+									JsonObject kx = Json.obj(sc.getAsJsonObject().get("kx"));
+									if (kx != null) {
+										MinecraftClient.getInstance().execute(() -> KuboLink.onRemote(u, kx));
+									}
+								}
+								if (room == lobby && room != server) {
+									continue; // the lobby has no watch-party screens
+								}
 								if (sc != null && sc.isJsonObject() && !sc.getAsJsonObject().has("v")) {
 									continue; // old Sleep data only (pings / party): not a screen
 								}

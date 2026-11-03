@@ -82,6 +82,7 @@ public class SolClient implements ClientModInitializer {
 		MODS.add(new TotemPopsMod());
 		MODS.add(new PlayerCardMod());
 		MODS.add(new NickHiderMod());
+		MODS.add(new AutoPasswordMod());
 		MODS.add(new CapePhysicsMod());
 		MODS.add(new NoHurtCamMod());
 		MODS.add(new PerformanceMod());
@@ -248,6 +249,7 @@ public class SolClient implements ClientModInitializer {
 		dev.solclient.fx.MaceFx.init();
 		dev.solclient.fx.LiquidFx.init();
 		dev.solclient.music.SkyLyrics.register();
+		dev.solclient.music.NowPlayingCard.register();
 		dev.solclient.fightcam.Capture.reapStrays();
 		ClientLifecycleEvents.CLIENT_STOPPING.register(client -> {
 			FightCamMod.shutdown();

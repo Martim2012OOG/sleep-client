@@ -6,7 +6,7 @@ import net.minecraft.client.gui.DrawContext;
 /** A mod with a single movable HUD element. */
 public abstract class HudMod extends Mod {
 
-	public final Option.Num scale = num("Scale", 100, 50, 150, 1, "%");
+	public final Option.Num scale = num("Scale", 100, 20, 400, 1, "%");
 	/** Position as a fraction of the scaled window size. */
 	public float hx, hy;
 	/** Default position (Reset in the HUD editor). */

@@ -27,7 +27,7 @@ public class ScoreboardMod extends Mod {
 			.onPick(this::applyPreset);
 
 	// ---- layout
-	private final Option.Num scale = num("Scale", 1F, 0.4F, 2F, 0.05F, "x");
+	private final Option.Num scale = num("Scale", 1F, 0.2F, 4F, 0.05F, "x");
 	private final Option.Choice anchor = choice("Position", 0, "Right Middle", "Right Top", "Right Bottom", "Left Middle",
 			"Left Top", "Left Bottom");
 	private final Option.Num offX = num("Offset X", 0F, -300F, 300F, 1F, " px");

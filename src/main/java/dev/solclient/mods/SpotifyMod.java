@@ -2,6 +2,7 @@ package dev.solclient.mods;
 
 import dev.solclient.Gfx;
 import dev.solclient.Keys;
+import dev.solclient.music.CoverFinder;
 import dev.solclient.music.Lyrics;
 import dev.solclient.music.LyricsView;
 import dev.solclient.music.MusicHub;
@@ -46,8 +47,20 @@ public class SpotifyMod extends HudMod {
 	private Option.Col lyricsHighlight, lyricsText, lyricsText2, lyricsText3, lyricsText4;
 	private Option.Choice lyricsColours, lyricsPosition, lyricsPlace, lyricsFont;
 	private Option.Bool lyricsBehind;
-	private Option.Num lyricsPalette;
+	private Option.Num lyricsPalette, lyricsGradFlow, lyricsGradN, lyricsGlow;
+	private Option.Choice lyricsGradient, lyricsAnim;
+	private Option.Col lyricsGradA, lyricsGradB, lyricsGradC;
+	private Option.Bool lyricsUpper;
 	private final LyricsView.Cfg lyricsCfg = new LyricsView.Cfg();
+	// now playing card (artist first, in the sky or flat)
+	private Option.Bool cardOn, cardOnlyPlaying, cardHideLyrics, cardLabelOn, cardArtist, cardSource, cardLines, cardUpper, cardFollow, cardBehind;
+	private Option.Choice cardPlace, cardFont, cardPos, cardAnim, cardColourMode;
+	private Option.Choice cardGradient;
+	private Option.Num cardGradFlow;
+	private Option.Num cardSeconds, cardRepeat, cardSize, cardArtistSize, cardLabelSize, cardHeight, cardSpread, cardDepth, cardOpacity, cardGlow;
+	private Option.Col cardTitleCol, cardArtistCol, cardLabelCol, cardAccent;
+	private Option.Text cardLabel;
+	private final dev.solclient.music.NowPlayingCard.Cfg cardCfg = new dev.solclient.music.NowPlayingCard.Cfg();
 	// account / controls
 	private Option.Text clientId, extraSites;
 	private Option.Key kPlay, kNext, kPrev;
@@ -68,17 +81,17 @@ public class SpotifyMod extends HudMod {
 		instance = this;
 		options.clear();
 
-		section = tabs("Section", 0, "Look", "Colours", "Animation", "Account", "Lyrics");
+		section = tabs("Section", 0, "Look", "Colours", "Animation", "Account", "Lyrics", "Intro");
 		BooleanSupplier look = () -> section.idx() == 0, cols = () -> section.idx() == 1, anim = () -> section.idx() == 2,
-				acc = () -> section.idx() == 3, lyr = () -> section.idx() == 4;
+				acc = () -> section.idx() == 3, lyr = () -> section.idx() == 4, np = () -> section.idx() == 5;
 
 		// ------------------------------------------------------------------ Look
 		style = tabs("Style", PLAYER, "Card", "Pill", "Vinyl", "Minimal", "Player");
 		style.visibleIf = look;
 		options.add(scale);
 		scale.visibleIf = look;
-		widthOpt = num("Width", 150, 90, 340, 1, " px");
-		coverSize = num("Cover size", 38, 16, 80, 1, " px");
+		widthOpt = num("Width", 150, 40, 600, 1, " px");
+		coverSize = num("Cover size", 38, 8, 160, 1, " px");
 		roundness = num("Roundness", 10, 0, 24, 1, "");
 		widthOpt.visibleIf = look;
 		coverSize.visibleIf = () -> look.getAsBoolean() && (style.idx() == CARD || style.idx() == VINYL || style.idx() == MINIMAL) && showArt.on();
@@ -136,7 +149,7 @@ public class SpotifyMod extends HudMod {
 
 		// --------------------------------------------------------------- Account
 		header("Any player (automatic)").showIf(acc);
-		action("Playing from", "Look again", MusicHub::refreshNow, () -> MusicHub.status).showIf(acc);
+		action("Playing from", "Look again", MusicHub::refreshNow, MusicHub::statusLine).showIf(acc);
 		extraSites = text("Extra sites", "", 120, "browser sites to watch, e.g. radio.example.com");
 		extraSites.visibleIf = acc;
 		header("Spotify account (optional)").showIf(acc);
@@ -163,8 +176,8 @@ public class SpotifyMod extends HudMod {
 		lyricsWorld = bool("Lyrics In The Sky", true);
 		lyricsOnlyPlaying = bool("Lyrics Only While Playing", true);
 		lyricsScript = bool("Lyrics Handwriting Font", true);
-		lyricsFont = tabs("Lyrics Font", 0, "Handwriting", "Minecraft", "My font");
-		lyricsFont.tip("My font: use a font you imported (button below, or the Custom Font mod).");
+		lyricsFont = choice("Lyrics Font", 0, dev.solclient.music.LyricFonts.names());
+		lyricsFont.tip("Pick a font. \"My font\" uses a font you imported (button below, or the Custom Font mod).");
 		action("Lyrics font file", "Import font", () -> dev.solclient.CustomFont.openFolder(), () -> dev.solclient.CustomFont.installed() ? "Font ready" : "Put a .ttf / .otf in the folder, then Use");
 		action("Use the font in the folder", "Use", () -> dev.solclient.CustomFont.useFolder(), () -> "");
 		lyricsSize = num("Lyrics Size", 100, 50, 200, 5, "%");
@@ -180,11 +193,20 @@ public class SpotifyMod extends HudMod {
 		lyricsSync = num("Lyrics Sync", 0, -3000, 3000, 50, " ms");
 		lyricsHighlight = colour("Lyrics Highlight Colour", 0xFF8B5CF6);
 		lyricsText = colour("Lyrics Text Colour", 0xFFFFFFFF);
-		lyricsColours = tabs("Lyrics Colours", 0, "One colour", "My colours", "Rainbow");
+		lyricsColours = tabs("Lyrics Colours", 0, "One colour", "My colours", "Rainbow", "Gradient");
 		lyricsPalette = num("Lyrics Colour Count", 4, 2, 4, 1, "");
 		lyricsText2 = colour("Lyrics Colour 2", 0xFFFF6FB5);
 		lyricsText3 = colour("Lyrics Colour 3", 0xFF7DD3FC);
 		lyricsText4 = colour("Lyrics Colour 4", 0xFFFDE047);
+		lyricsGradient = choice("Lyrics Gradient", 0, dev.solclient.music.Gradients.names());
+		lyricsGradN = num("Lyrics Gradient Colours", 2, 2, 3, 1, "");
+		lyricsGradA = colour("Lyrics Gradient Colour 1", 0xFF8B5CF6);
+		lyricsGradB = colour("Lyrics Gradient Colour 2", 0xFFEC4899);
+		lyricsGradC = colour("Lyrics Gradient Colour 3", 0xFF38BDF8);
+		lyricsGradFlow = num("Lyrics Gradient Flow", 0, 0, 100, 5, "%").tip("0 = the colours stay where they are. More = they slide through the words.");
+		lyricsUpper = bool("Lyrics Capital Letters", false);
+		lyricsGlow = num("Lyrics Glow", 100, 0, 150, 5, "%");
+		lyricsAnim = tabs("Lyrics Animation", 0, "Letters pop", "Fade", "Rise", "Zoom");
 		for (Option<?> o : new Option<?>[] {lyricsPlace, lyricsBehind, lyricsOn, lyricsBar, lyricsWorld, lyricsOnlyPlaying, lyricsScript, lyricsSize, lyricsHeight, lyricsSync, lyricsBarSize, lyricsOpacity, lyricsDepth, lyricsSway, lyricsPosition, lyricsSpread,
 				lyricsHighlight, lyricsText, lyricsColours, lyricsPalette, lyricsText2, lyricsText3, lyricsText4}) {
 			o.visibleIf = lyr;
@@ -211,7 +233,72 @@ public class SpotifyMod extends HudMod {
 		lyricsText2.visibleIf = lyricsPalette.visibleIf;
 		lyricsText3.visibleIf = () -> lyricsPalette.visibleIf.getAsBoolean() && lyricsPalette.i() >= 3;
 		lyricsText4.visibleIf = () -> lyricsPalette.visibleIf.getAsBoolean() && lyricsPalette.i() >= 4;
+		lyricsScript.visibleIf = () -> false; // the font list below replaces the old "handwriting" switch
+		BooleanSupplier gradOn = () -> lyr.getAsBoolean() && lyricsOn.on() && lyricsColours.idx() == 3;
+		lyricsGradient.visibleIf = gradOn;
+		lyricsGradFlow.visibleIf = gradOn;
+		lyricsGradN.visibleIf = () -> gradOn.getAsBoolean() && dev.solclient.music.Gradients.isCustom(lyricsGradient.idx());
+		lyricsGradA.visibleIf = lyricsGradN.visibleIf;
+		lyricsGradB.visibleIf = lyricsGradN.visibleIf;
+		lyricsGradC.visibleIf = () -> lyricsGradN.visibleIf.getAsBoolean() && lyricsGradN.i() >= 3;
+		lyricsUpper.visibleIf = lyricsBar.visibleIf;
+		lyricsGlow.visibleIf = lyricsSize.visibleIf;
+		lyricsAnim.visibleIf = lyricsSize.visibleIf;
 		action("Lyrics Status", "Search again", Lyrics::retry, () -> lyricsOn.on() ? Lyrics.status : "Turn on Show Lyrics").showIf(lyr);
+
+		// ---------------------------------------------------------------- Intro card (who sings it)
+		header("Now Playing Card").showIf(np);
+		cardOn = bool("Show Now Playing Card", true);
+		cardPlace = tabs("Card Where", 1, "Screen (flat)", "Real Sky (in the world)");
+		action("Card Preview", "Preview now", dev.solclient.music.NowPlayingCard::preview, () -> "Shows the card again");
+		cardSeconds = num("Card Duration", 6, 2, 20, 1, " s");
+		cardRepeat = num("Card Repeat Every", 0, 0, 300, 15, " s").tip("0 = only when a new song starts.");
+		cardOnlyPlaying = bool("Card Only While Playing", true);
+		cardHideLyrics = bool("Hide Lyrics While Card Shows", false).tip("The lyrics wait until the card is gone.");
+		cardLabelOn = bool("Card Label", true);
+		cardLabel = text("Card Label Text", "NOW PLAYING", 24, "NOW PLAYING");
+		cardArtist = bool("Card Artist", true);
+		cardSource = bool("Card Player Name", true).tip("Shows \"via YouTube Music\", \"via Spotify\"... under the artist.");
+		cardLines = bool("Card Lines", true);
+		cardUpper = bool("Card Title Uppercase", false);
+		cardFont = choice("Card Font", 0, dev.solclient.music.LyricFonts.names());
+		cardSize = num("Card Size", 100, 40, 250, 5, "%");
+		cardArtistSize = num("Card Artist Size", 100, 50, 200, 5, "%");
+		cardLabelSize = num("Card Label Size", 100, 50, 200, 5, "%");
+		cardHeight = num("Card Height", 14, -10, 50, 1, "\u00b0");
+		cardPos = tabs("Card Position", 0, "Centre", "Left", "Right", "Random");
+		cardSpread = num("Card Side Distance", 24, 5, 45, 1, "\u00b0");
+		cardDepth = num("Card 3D Depth", 70, 0, 100, 5, "%");
+		cardFollow = bool("Card Follows My View", false).tip("Off: it hangs in one place of the sky. On: it stays in front of you.");
+		cardBehind = bool("Card Hidden Behind Mountains", false);
+		cardAnim = tabs("Card Animation", 0, "Fade", "Typewriter", "Rise", "Zoom");
+		cardOpacity = num("Card Opacity", 100, 10, 100, 5, "%");
+		cardGlow = num("Card Glow", 50, 0, 100, 5, "%");
+		cardColourMode = tabs("Card Title Colour Mode", 0, "Solid", "Shimmer", "Gradient");
+		cardGradient = choice("Card Gradient", 0, dev.solclient.music.Gradients.names());
+		cardGradFlow = num("Card Gradient Flow", 0, 0, 100, 5, "%");
+		cardTitleCol = colour("Card Title Colour", 0xFFFFFFFF);
+		cardArtistCol = colour("Card Artist Colour", 0xFFC4B5FD);
+		cardLabelCol = colour("Card Label Colour", 0xFFFFFFFF);
+		cardAccent = colour("Card Accent Colour", 0xFF8B5CF6);
+		for (Option<?> o : new Option<?>[] {cardOn, cardPlace, cardSeconds, cardRepeat, cardOnlyPlaying, cardHideLyrics, cardLabelOn, cardLabel, cardArtist, cardSource, cardLines,
+				cardUpper, cardFont, cardSize, cardArtistSize, cardLabelSize, cardHeight, cardPos, cardSpread, cardDepth, cardFollow, cardBehind, cardAnim, cardOpacity,
+				cardGlow, cardColourMode, cardGradient, cardGradFlow, cardTitleCol, cardArtistCol, cardLabelCol, cardAccent}) {
+			o.visibleIf = () -> np.getAsBoolean() && (o == cardOn || cardOn.on());
+		}
+		BooleanSupplier cardSky = () -> np.getAsBoolean() && cardOn.on() && cardPlace.idx() == 1;
+		cardLabel.visibleIf = () -> np.getAsBoolean() && cardOn.on() && cardLabelOn.on();
+		cardLabelSize.visibleIf = cardLabel.visibleIf;
+		cardLabelCol.visibleIf = cardLabel.visibleIf;
+		cardArtistSize.visibleIf = () -> np.getAsBoolean() && cardOn.on() && cardArtist.on();
+		cardArtistCol.visibleIf = cardArtistSize.visibleIf;
+		cardSpread.visibleIf = () -> np.getAsBoolean() && cardOn.on() && cardPos.idx() != 0;
+		cardDepth.visibleIf = cardSky;
+		cardFollow.visibleIf = cardSky;
+		cardBehind.visibleIf = cardSky;
+		cardGradient.visibleIf = () -> np.getAsBoolean() && cardOn.on() && cardColourMode.idx() == 2;
+		cardGradient.tip("Custom = from the title colour to the accent colour.");
+		cardGradFlow.visibleIf = cardGradient.visibleIf;
 	}
 
 	private void resetColours() {
@@ -346,6 +433,43 @@ public class SpotifyMod extends HudMod {
 		if (!edit && cinematic != null) {
 			drawCinematic(c);
 		}
+		if (!edit && cardOn != null) {
+			dev.solclient.music.NowPlayingCard.Cfg q = cardCfg;
+			q.enabled = cardOn.on();
+			q.sky = cardPlace.idx() == 1;
+			q.onlyPlaying = cardOnlyPlaying.on();
+			q.hideLyrics = cardHideLyrics.on();
+			q.showLabel = cardLabelOn.on();
+			q.label = cardLabel.get();
+			q.showArtist = cardArtist.on();
+			q.showSource = cardSource.on();
+			q.lines = cardLines.on();
+			q.upper = cardUpper.on();
+			q.font = cardFont.idx();
+			q.size = cardSize.f() / 100F;
+			q.artistSize = cardArtistSize.f() / 100F;
+			q.labelSize = cardLabelSize.f() / 100F;
+			q.height = cardHeight.f();
+			q.position = cardPos.idx();
+			q.spread = cardSpread.f();
+			q.depth = cardDepth.f() / 100F;
+			q.follow = cardFollow.on();
+			q.behind = cardBehind.on();
+			q.anim = cardAnim.idx();
+			q.colourMode = cardColourMode.idx();
+			q.gradient = cardGradient.idx();
+			q.gradFlow = cardGradFlow.f() / 100F;
+			q.opacity = cardOpacity.f() / 100F;
+			q.glow = cardGlow.f() / 100F;
+			q.seconds = cardSeconds.f();
+			q.repeatSec = cardRepeat.f();
+			q.titleCol = cardTitleCol.c();
+			q.artistCol = cardArtistCol.c();
+			q.labelCol = cardLabelCol.c();
+			q.accent = cardAccent.c();
+			dev.solclient.music.NowPlayingCard.update(q);
+			dev.solclient.music.NowPlayingCard.drawFlat(c);
+		}
 		if (edit || !lyricsOn.on()) {
 			return;
 		}
@@ -354,8 +478,12 @@ public class SpotifyMod extends HudMod {
 		boolean sky = lyricsWorld.on() && lyricsPlace.idx() == 1;
 		k.world = lyricsWorld.on() && !sky; // the flat screen sheet only when the sky is not used
 		k.onlyPlaying = lyricsOnlyPlaying.on();
-		k.script = lyricsFont.idx() == 0 && lyricsScript.on();
-		k.fontOverride = lyricsFont.idx() == 2 && dev.solclient.CustomFont.installed() ? new net.minecraft.text.StyleSpriteSource.Font(net.minecraft.util.Identifier.of("sol_client", "ui_custom")) : null;
+		dev.solclient.music.LyricFonts.apply(k, lyricsFont.idx());
+		k.upper = lyricsUpper.on();
+		k.glow = lyricsGlow.f() / 100F;
+		k.lAnim = lyricsAnim.idx();
+		k.gradFlow = lyricsGradFlow.f() / 100F;
+		k.grad = dev.solclient.music.Gradients.stops(lyricsGradient.idx(), new int[] {lyricsGradA.c(), lyricsGradB.c(), lyricsGradC.c()}, lyricsGradN.i());
 		k.size = lyricsSize.f() / 100F;
 		k.height = lyricsHeight.f();
 		k.depth = lyricsDepth.f() / 100F;
@@ -454,11 +582,12 @@ public class SpotifyMod extends HudMod {
 
 	/** Cover texture of the current song in the given shape (0 square, 1 round, 2 rounded corners), or null while loading. */
 	private RemoteTextures.Tex cover(int shape) {
-		String url = MusicHub.artUrl;
-		if (!MusicHub.hasTrack || url.isEmpty()) {
+		String url = MusicHub.artUrl, title = MusicHub.title, artist = MusicHub.artist;
+		if (!MusicHub.hasTrack || url.isEmpty() && title.isEmpty()) {
 			return null;
 		}
-		return RemoteTextures.local("spotify:" + shape + ":" + MusicHub.artKey, () -> SpotifyClient.albumPng(url, shape));
+		// the player's picture first, then a cover found online (CoverFinder); a failure is tried again later, never kept for good
+		return RemoteTextures.local("spotify:" + shape + ":" + MusicHub.artKey, () -> CoverFinder.png(url, title, artist, shape));
 	}
 
 	private int accentColour() {
@@ -819,6 +948,12 @@ public class SpotifyMod extends HudMod {
 			Gfx.rrectFree(c, -half, -half, d, d, r, al(0x33FFFFFF, 1F));
 			int is = Math.max(6, d / 2);
 			Gfx.tex(c, Gfx.id("textures/gui/icon/spotify.png"), -is / 2, -is / 2, is, is, 64, 64, al(0x99FFFFFF, 1F));
+			if (!CoverFinder.error.isEmpty()) {
+				// the cover could not be found: a small red "!" (the reason is in Music settings > Account and in the log)
+				int bs = Math.max(8, d / 3);
+				Gfx.circle(c, half - bs / 2F, -half + bs / 2F, bs / 2F, al(0xFFE5484D, 1F));
+				Gfx.textC(c, "!", half - bs / 2, -half + bs / 2 - 4, al(0xFFFFFFFF, 1F));
+			}
 		}
 		m.popMatrix();
 	}

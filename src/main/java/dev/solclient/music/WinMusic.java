@@ -31,6 +31,30 @@ final class WinMusic {
 			$thumbs = @{}
 			$counter = 0
 			function Clean($s) { if ($null -eq $s) { return '' } return ($s -replace "[\\t\\r\\n]", ' ') }
+			function Thumb($p, $dir, $n) {
+			  $r = @{ path = ''; err = ''; hash = '' }
+			  try {
+			    if (-not $p.Thumbnail) { $r.err = 'the player gave no picture'; return $r }
+			    $ErrorActionPreference = 'Stop'
+			    $rs = Await ($p.Thumbnail.OpenReadAsync()) ([Windows.Storage.Streams.IRandomAccessStreamWithContentType])
+			    $stream = [System.IO.WindowsRuntimeStreamExtensions]::AsStreamForRead($rs)
+			    $ms = New-Object System.IO.MemoryStream
+			    $stream.CopyTo($ms)
+			    $stream.Close()
+			    $b = $ms.ToArray()
+			    if ($b.Length -lt 16) { $r.err = 'the picture was empty'; return $r }
+			    $ext = 'img'
+			    if ($b[0] -eq 0x89 -and $b[1] -eq 0x50) { $ext = 'png' }
+			    elseif ($b[0] -eq 0xFF -and $b[1] -eq 0xD8) { $ext = 'jpg' }
+			    elseif ($b[0] -eq 0x47 -and $b[1] -eq 0x49) { $ext = 'gif' }
+			    elseif ($b[0] -eq 0x42 -and $b[1] -eq 0x4D) { $ext = 'bmp' }
+			    elseif ($b[0] -eq 0x52 -and $b[1] -eq 0x49) { $ext = 'webp' }
+			    $r.hash = [BitConverter]::ToString([System.Security.Cryptography.MD5]::Create().ComputeHash($b))
+			    $r.path = Join-Path $dir ('thumb-' + $n + '.' + $ext)
+			    [System.IO.File]::WriteAllBytes($r.path, $b)
+			  } catch { $r.path = ''; $r.err = Clean $_.Exception.Message }
+			  return $r
+			}
 			while ($true) {
 			  $sessions = @($mgr.GetSessions())
 			  if (Test-Path $cmdFile) {
@@ -57,23 +81,19 @@ final class WinMusic {
 			    if ($dur -gt 0 -and $pos -gt $dur) { $pos = $dur }
 			    if ($pos -lt 0) { $pos = 0 }
 			    $key = $p.Title + '|' + $p.Artist
-			    if (-not $thumbs.ContainsKey($id) -or $thumbs[$id].key -ne $key) {
-			      $path = ''
-			      try {
-			        if ($p.Thumbnail) {
-			          $rs = Await ($p.Thumbnail.OpenReadAsync()) ([Windows.Storage.Streams.IRandomAccessStreamWithContentType])
-			          $stream = [System.IO.WindowsRuntimeStreamExtensions]::AsStreamForRead($rs)
-			          $counter++
-			          $path = Join-Path $dir ('thumb-' + $counter + '.png')
-			          $fs = [System.IO.File]::Create($path)
-			          $stream.CopyTo($fs)
-			          $fs.Close()
-			          $stream.Close()
-			        }
-			      } catch { $path = '' }
-			      $thumbs[$id] = @{ key = $key; path = $path }
+			    $th = $thumbs[$id]
+			    if ($null -eq $th -or $th.key -ne $key) { $th = @{ key = $key; path = ''; err = ''; hash = ''; reads = 0 }; $thumbs[$id] = $th }
+			    # browsers give the title first and the picture a moment later (or still the previous song's picture):
+			    # read it again a few times, and keep trying while there is none (an empty result is never kept for good)
+			    if ($th.reads -lt 4 -or ($th.path -eq '' -and $th.reads -lt 30)) {
+			      $th.reads = $th.reads + 1
+			      $counter++
+			      $tr = Thumb $p $dir $counter
+			      if ($tr.path -ne '' -and $tr.hash -ne $th.hash) { $th.path = $tr.path; $th.hash = $tr.hash; $th.err = '' }
+			      elseif ($tr.path -ne '') { Remove-Item $tr.path -Force }
+			      elseif ($th.path -eq '') { $th.err = $tr.err }
 			    }
-			    $line = 'S' + "`t" + $id + "`t" + $st + "`t" + (Clean $p.Title) + "`t" + (Clean $p.Artist) + "`t" + [long]$pos + "`t" + [long]$dur + "`t" + $thumbs[$id].path
+			    $line = 'S' + "`t" + $id + "`t" + $st + "`t" + (Clean $p.Title) + "`t" + (Clean $p.Artist) + "`t" + [long]$pos + "`t" + [long]$dur + "`t" + $th.path + "`t" + (Clean $th.err)
 			    [Console]::Out.WriteLine($line)
 			  }
 			  [Console]::Out.WriteLine('E')
@@ -125,7 +145,8 @@ final class WinMusic {
 			t.setDaemon(true);
 			t.start();
 		} catch (Exception e) {
-			hint = "PowerShell is needed to read what is playing";
+			hint = "PowerShell is needed to read what is playing (" + e.getMessage() + ")";
+			System.err.println("[Sleep] music: could not start PowerShell: " + e);
 		}
 	}
 
@@ -135,16 +156,23 @@ final class WinMusic {
 			String line;
 			while ((line = r.readLine()) != null) {
 				lastLine = System.currentTimeMillis();
+				line = line.replace("\uFEFF", ""); // PowerShell may start its output with a byte-order mark
 				if (line.equals("E")) {
 					latest = building;
 					building = new ArrayList<>();
 				} else if (line.startsWith("S\t")) {
 					String[] f = line.split("\t", -1);
 					if (f.length >= 8) {
-						String art = f[7].isEmpty() ? "" : Path.of(f[7]).toUri().toString();
+						String art = "";
+						String err = f.length >= 9 ? f[8] : "";
+						try {
+							art = f[7].isEmpty() ? "" : Path.of(f[7]).toUri().toString();
+						} catch (Exception e) {
+							err = "bad picture path: " + e.getMessage();
+						}
 						String title = f[3], artist = f[4];
 						building.add(new Track(label(f[1]), title + "\u0001" + artist, title, artist, art, Sh.num(f[6]), Sh.num(f[5]),
-								f[2].equals("Playing"), ctl(f[1])));
+								f[2].equals("Playing"), ctl(f[1]), err));
 					}
 				}
 			}

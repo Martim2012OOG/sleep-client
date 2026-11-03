@@ -162,6 +162,11 @@ public final class SeasonMusic {
 			quiet--;
 			return;
 		}
+		cueTick();
+		if (System.currentTimeMillis() < holdUntil) {
+			mc.getMusicTracker().stop(); // a cue (the Christmas card) is on: nothing else plays
+			return;
+		}
 		if (dev.solclient.mods.CinematicIntroMod.musicPlaying()) {
 			if (source != 0) {
 				stopPlayback(); // the intro music plays first
@@ -216,6 +221,109 @@ public final class SeasonMusic {
 			buffer = 0;
 			playingName = null;
 			nextAt = System.currentTimeMillis() + 5000L;
+		}
+	}
+
+	// ---------------------------------------------------------------- cues (short sounds that silence everything, e.g. the Christmas card)
+	private static final java.util.Map<String, Decoded> CUES = new java.util.concurrent.ConcurrentHashMap<>();
+	private static final java.util.Set<String> CUE_LOADING = java.util.concurrent.ConcurrentHashMap.newKeySet();
+	private static int cueSrc, cueBuf;
+	private static volatile long holdUntil;
+	private static boolean duckedByCue;
+
+	/** Decodes assets/sol_client/seasonal/cards/&lt;name&gt;.mp3 in the background so the cue starts the moment it is needed. */
+	public static void preloadCue(String name) {
+		if (CUES.containsKey(name) || !CUE_LOADING.add(name)) {
+			return;
+		}
+		dev.solclient.social.Social.IO.execute(() -> {
+			try (java.io.InputStream in = SeasonMusic.class.getResourceAsStream("/assets/sol_client/seasonal/cards/" + name + ".mp3")) {
+				if (in != null) {
+					CUES.put(name, decodeMp3(in, name, "cue"));
+				}
+			} catch (Throwable t) {
+				System.err.println("[Sleep] could not load the cue " + name + ": " + t);
+			} finally {
+				CUE_LOADING.remove(name);
+			}
+		});
+	}
+
+	/** Stops every sound and keeps the menu playlist (and an external player's volume) down for {@code ms}. */
+	public static void hold(long ms) {
+		MinecraftClient mc = MinecraftClient.getInstance();
+		holdUntil = Math.max(holdUntil, System.currentTimeMillis() + ms);
+		try {
+			stopPlayback();
+			mc.getSoundManager().stopAll();
+			mc.getMusicTracker().stop();
+		} catch (Throwable ignored) {
+		}
+		if (!duckedByCue) {
+			duckedByCue = true;
+			dev.solclient.music.MusicHub.duck(true);
+		}
+	}
+
+	/** Plays a preloaded cue (master volume) and returns how long it lasts in ms, or 0 when it is not available. */
+	public static long playCue(String name) {
+		Decoded d = CUES.get(name);
+		if (d == null) {
+			preloadCue(name);
+			return 0;
+		}
+		try {
+			stopCue();
+			cueBuf = AL10.alGenBuffers();
+			long ms = Math.round(d.pcm().remaining() / (double) Math.max(1, d.channels()) / Math.max(1, d.rate()) * 1000.0);
+			ShortBuffer pcm = d.pcm();
+			pcm.rewind();
+			AL10.alBufferData(cueBuf, d.channels() == 1 ? AL10.AL_FORMAT_MONO16 : AL10.AL_FORMAT_STEREO16, pcm, d.rate());
+			cueSrc = AL10.alGenSources();
+			AL10.alSourcei(cueSrc, AL10.AL_BUFFER, cueBuf);
+			AL10.alSourcei(cueSrc, AL10.AL_SOURCE_RELATIVE, AL10.AL_TRUE);
+			AL10.alSource3f(cueSrc, AL10.AL_POSITION, 0F, 0F, 0F);
+			AL10.alSourcef(cueSrc, AL10.AL_GAIN, MinecraftClient.getInstance().options.getSoundVolume(SoundCategory.MASTER));
+			AL10.alSourcePlay(cueSrc);
+			return ms;
+		} catch (Throwable t) {
+			cueSrc = 0;
+			cueBuf = 0;
+			return 0;
+		}
+	}
+
+	public static void stopCue() {
+		if (cueSrc != 0) {
+			try {
+				AL10.alSourceStop(cueSrc);
+				AL10.alDeleteSources(cueSrc);
+				AL10.alDeleteBuffers(cueBuf);
+			} catch (Throwable ignored) {
+			}
+		}
+		cueSrc = 0;
+		cueBuf = 0;
+	}
+
+	/** Gives everything back right now (the card was closed before its sounds finished). */
+	public static void release() {
+		stopCue();
+		holdUntil = 0;
+	}
+
+	private static void cueTick() {
+		try {
+			if (cueSrc != 0 && AL10.alGetSourcei(cueSrc, AL10.AL_SOURCE_STATE) == AL10.AL_STOPPED) {
+				stopCue();
+			}
+		} catch (Throwable t) {
+			cueSrc = 0;
+			cueBuf = 0;
+		}
+		if (duckedByCue && System.currentTimeMillis() >= holdUntil) {
+			duckedByCue = false;
+			dev.solclient.music.MusicHub.duck(false);
 		}
 	}
 
@@ -284,9 +392,15 @@ public final class SeasonMusic {
 
 	/** MP3 through JLayer (pure Java, shipped inside the Sleep jar). */
 	private static Decoded decodeMp3(Path file, String name, String season) throws Exception {
+		try (java.io.InputStream in = Files.newInputStream(file)) {
+			return decodeMp3(in, name, season);
+		}
+	}
+
+	private static Decoded decodeMp3(java.io.InputStream raw, String name, String season) throws Exception {
 		short[] all = new short[1 << 20];
 		int len = 0, rate = 0, channels = 0;
-		try (java.io.InputStream in = new java.io.BufferedInputStream(Files.newInputStream(file), 1 << 16)) {
+		try (java.io.InputStream in = new java.io.BufferedInputStream(raw, 1 << 16)) {
 			javazoom.jl.decoder.Bitstream bs = new javazoom.jl.decoder.Bitstream(in);
 			javazoom.jl.decoder.Decoder dec = new javazoom.jl.decoder.Decoder();
 			javazoom.jl.decoder.Header h;

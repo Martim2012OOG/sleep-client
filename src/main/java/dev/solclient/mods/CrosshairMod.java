@@ -75,7 +75,7 @@ public class CrosshairMod extends Mod {
 		entityColour = colour("Colour On Players / Mobs", 0xFFFF4D4D).showIf(() -> colourModeIdx() == 2);
 		outlineColour = colour("Outline Colour", 0xFF000000).showIf(() -> colourModeIdx() != 0 && outline.on());
 		header("Display");
-		scale = num("Scale", 100, 50, 300, 5, "%");
+		scale = num("Scale", 100, 20, 500, 5, "%");
 		thirdPerson = bool("Show In Third Person", false);
 		spectator = bool("Show In Spectator", false);
 		compat = bool("Compatibility Mode", System.getProperty("os.name", "").toLowerCase(java.util.Locale.ROOT).contains("win"));

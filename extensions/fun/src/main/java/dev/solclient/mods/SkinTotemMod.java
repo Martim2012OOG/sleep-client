@@ -32,7 +32,7 @@ public class SkinTotemMod extends Mod {
 	private final Option.Action pick = action("My Image", "Choose...", this::pickFile, () -> this.status);
 	private final Option.Text path = text("Image File", "", 300, "Paste a path, or drop a picture on the window");
 	private final Option.Choice anim = choice("Animation", 0, "Pop", "Spin", "Bounce", "Shake", "Rise", "Zoom");
-	private final Option.Num size = num("Size", 100, 40, 300, 10, "%");
+	private final Option.Num size = num("Size", 100, 20, 500, 10, "%");
 	private final Option.Num duration = num("Duration", 1.6F, 0.6F, 4F, 0.1F, " s");
 	private final Option.Bool glow = bool("Glow Behind", true).tip("A soft golden light behind the picture.");
 	private final Option.Bool sparkles = bool("Sparkles", true).tip("Little stars that fly around the picture.");

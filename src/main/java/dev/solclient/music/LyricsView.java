@@ -43,6 +43,13 @@ public final class LyricsView {
 		public int position;
 		/** how far from the middle of the screen the left / right lines are (fraction of the screen width) */
 		public float spread = 0.24F;
+		/** capital letters, strength of the glow (0..1.5), entrance of the big words (0 letters pop, 1 fade, 2 rise, 3 zoom) */
+		public boolean upper;
+		public float glow = 1F;
+		public int lAnim;
+		/** gradient colours (colourMode 3), how many are used, and how fast they slide along (0 = still) */
+		public int[] grad = {0xFF8B5CF6, 0xFFEC4899};
+		public float gradFlow;
 	}
 
 	/** Where a line was placed when it started: side of the screen and its own 3D pose (each line leans differently, like the reference). */
@@ -261,7 +268,7 @@ public final class LyricsView {
 			float u0 = -rw / 2F + x[i] + rowShift;
 			float vRow = (r - (rows - 1) / 2F) * rowH;
 			String text = chunk.text();
-			int base0 = wordColour(cfg, i, time);
+			int base0 = wordColour(cfg, i, n, time);
 			int col = Gfx.blend(base0, 0xFFFFFFFF, sung ? (cfg.colourMode == 0 ? 0.4F : 0.25F) : 0F);
 			for (int g = 0; g < text.length(); g++) {
 				char chr = text.charAt(g);
@@ -313,7 +320,7 @@ public final class LyricsView {
 					}
 				}
 				if (sung) {
-					int gl = alphaOf(cfg.colourMode == 0 ? cfg.highlight : base0, (cfg.script ? 0.35F : 0.22F) * alpha);
+					int gl = alphaOf(cfg.colourMode == 0 ? cfg.highlight : base0, (cfg.script ? 0.35F : 0.22F) * cfg.glow * alpha);
 					c.drawText(tr, t, -1, 1, gl, false);
 					c.drawText(tr, t, 1, -1, gl, false);
 				}
@@ -355,7 +362,7 @@ public final class LyricsView {
 			String word = ch.get(i).text();
 			int wd = mc.textRenderer.getWidth(word);
 			if (i == current) {
-				int chip = cfg.colourMode == 0 ? cfg.highlight : wordColour(cfg, i, System.currentTimeMillis() / 1000.0);
+				int chip = cfg.colourMode == 0 ? cfg.highlight : wordColour(cfg, i, ch.size(), System.currentTimeMillis() / 1000.0);
 				Gfx.rrectFree(c, xx - 1.5F, -1.5F, wd + 3, 11, 3F, alphaOf(chip, op));
 				c.drawText(mc.textRenderer, word, Math.round(xx), 0, alphaOf(0xFFFFFFFF, op), false);
 			} else {
@@ -383,6 +390,14 @@ public final class LyricsView {
 	}
 
 	/** Colour of the i-th word of a line, according to the colour mode. */
+	/** Colour of word i out of n (colourMode 3 = gradient along the line). */
+	static int wordColour(Cfg cfg, int i, int n, double time) {
+		if (cfg.colourMode == 3) {
+			return Gradients.at(cfg.grad, n <= 1 ? 0.5F : i / (float) (n - 1), cfg.gradFlow, time);
+		}
+		return wordColour(cfg, i, time);
+	}
+
 	static int wordColour(Cfg cfg, int i, double time) {
 		switch (cfg.colourMode) {
 			case 1:
@@ -411,6 +426,9 @@ public final class LyricsView {
 	}
 
 	static Text styled(String s, Cfg cfg) {
+		if (cfg.upper) {
+			s = s.toUpperCase(java.util.Locale.ROOT);
+		}
 		return Text.literal(s).setStyle(cfg.fontOverride != null ? Style.EMPTY.withFont(cfg.fontOverride) : cfg.script ? Style.EMPTY.withFont(FONT) : Style.EMPTY.withItalic(true));
 	}
 

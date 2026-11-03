@@ -21,7 +21,11 @@ public final class Menus {
 			// Cinematic Intro: the intro video plays once before the first home screen
 			Screen home = dev.solclient.mods.CinematicIntroMod.maybeIntro(SolClient.settings.customTitle.on() ? new PlegumoTitleScreen() : s);
 			// very first start: the short setup (language, performance, HUD) comes first
-			return SolClient.settings.onboarded.on() ? home : new OnboardingScreen(home);
+			if (!SolClient.settings.onboarded.on()) {
+				return new OnboardingScreen(home);
+			}
+			// 1 Nov - 31 Dec: the Christmas card (once, the first time you start the game in the season)
+			return XmasCardScreen.maybeShow(home);
 		}
 		if (s.getClass() == GameMenuScreen.class && SolClient.settings.customPause.on()) {
 			if (SolClient.settings.pauseStyle.idx() == 1) {

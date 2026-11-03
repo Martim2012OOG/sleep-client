@@ -162,6 +162,8 @@ public final class ProfileBadges {
 	}
 
 	// ---- badges of the other Sleep players on your server (sent through the presence room)
+	/** How long the badge / name style of another player stays after his last message (he repeats it every 10-12 s). */
+	private static final long FRESH_MS = 90_000L;
 	private static final Map<String, Badge> REMOTE = new java.util.concurrent.ConcurrentHashMap<>();
 	private static final Map<String, Long> REMOTE_AT = new java.util.concurrent.ConcurrentHashMap<>();
 
@@ -191,7 +193,7 @@ public final class ProfileBadges {
 		}
 		String k = nick.toLowerCase(Locale.ROOT);
 		Long at = REMOTE_AT.get(k);
-		if (at == null || System.currentTimeMillis() - at > 45_000L) {
+		if (at == null || System.currentTimeMillis() - at > FRESH_MS) {
 			return null;
 		}
 		return REMOTE.get(k);
@@ -316,7 +318,7 @@ public final class ProfileBadges {
 		}
 		String k = nick.toLowerCase(Locale.ROOT);
 		Long at = REMOTE_LOOK_AT.get(k);
-		return at == null || System.currentTimeMillis() - at > 45_000L ? null : REMOTE_LOOK.get(k);
+		return at == null || System.currentTimeMillis() - at > FRESH_MS ? null : REMOTE_LOOK.get(k);
 	}
 
 	/** Only VIPs can upload their own cape. */
@@ -574,7 +576,7 @@ public final class ProfileBadges {
 		}
 		String k = nick.toLowerCase(Locale.ROOT);
 		Long at = REMOTE_FLAG_AT.get(k);
-		return at == null || System.currentTimeMillis() - at > 45_000L ? "" : REMOTE_FLAG.getOrDefault(k, "");
+		return at == null || System.currentTimeMillis() - at > FRESH_MS ? "" : REMOTE_FLAG.getOrDefault(k, "");
 	}
 
 	/** The little flag (one glyph of the sol_client:flags font, made from textures/gui/flag). */

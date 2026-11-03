@@ -70,7 +70,7 @@ public final class SkyLyrics {
 	private static void render(MatrixStack m, OrderedRenderCommandQueue queue) {
 		MinecraftClient mc = MinecraftClient.getInstance();
 		LyricsView.Cfg c = cfg;
-		if (mc.player == null || mc.world == null || !MusicHub.hasTrack || (c.onlyPlaying && !MusicHub.playing)) {
+		if (mc.player == null || mc.world == null || !MusicHub.hasTrack || (c.onlyPlaying && !MusicHub.playing) || NowPlayingCard.blocksLyrics()) {
 			return;
 		}
 		List<Lyrics.Line> lines = Lyrics.lines;
@@ -205,9 +205,9 @@ public final class SkyLyrics {
 			float u0 = -rw / 2F + x[i];
 			float vRow = (r - (rows - 1) / 2F) * rowH - rowH * 0.5F;
 			String text = ch.get(i).text();
-			int base0 = LyricsView.wordColour(c, i, time);
+			int base0 = LyricsView.wordColour(c, i, n, time);
 			int col = Gfx.blend(base0, 0xFFFFFFFF, sung ? (c.colourMode == 0 ? 0.4F : 0.25F) : 0F);
-			if (since > text.length() * 22L + 320L && !text.isBlank()) {
+			if (since > (c.lAnim == 0 ? text.length() * 22L : 0L) + 320L && !text.isBlank()) {
 				// the word is fully in: draw it as ONE text (not letter by letter), a fraction of the draw calls
 				Text wt = LyricsView.styled(text, c);
 				float wraw = tr.getWidth(wt);
@@ -234,7 +234,7 @@ public final class SkyLyrics {
 					}
 				}
 				if (sung) {
-					int gl = LyricsView.alphaOf(c.colourMode == 0 ? c.highlight : base0, (c.script ? 0.30F : 0.22F) * wal);
+					int gl = LyricsView.alphaOf(c.colourMode == 0 ? c.highlight : base0, (c.script ? 0.30F : 0.22F) * c.glow * wal);
 					for (int[] o : new int[][] {{-1, 0}, {1, 0}}) {
 						m.push();
 						m.translate(o[0] * 0.9F, o[1] * 0.9F, -0.2F);
@@ -254,7 +254,7 @@ public final class SkyLyrics {
 				if (chr == ' ') {
 					continue;
 				}
-				float inK = Math.max(0F, Math.min(1F, (since - g * 22F) / 300F));
+				float inK = Math.max(0F, Math.min(1F, (since - (c.lAnim == 0 ? g * 22F : 0F)) / 300F));
 				if (inK <= 0F) {
 					continue;
 				}
@@ -264,9 +264,9 @@ public final class SkyLyrics {
 				float off = tr.getWidth(LyricsView.styled(text.substring(0, g), c));
 				float cu = u0 + off + raw / 2F;
 				float ur = rw <= 1F ? 0F : (cu + rw / 2F) / (rw / 2F) - 1F;
-				float cv = vRow + ur * ur * 3F + (1F - inK) * 7F + (float) Math.sin(time * 1.5 + (i * 3 + g) * 0.5) * 0.9F;
+				float cv = vRow + ur * ur * 3F + (1F - inK) * (c.lAnim == 0 ? 7F : c.lAnim == 2 ? 14F : 0F) + (float) Math.sin(time * 1.5 + (i * 3 + g) * 0.5) * 0.9F;
 				float alpha = inK * fade * (sung ? 1F : 0.85F) * c.opacity;
-				float grow = (sung ? 1.1F : 1F) * (0.6F + 0.4F * inK);
+				float grow = (sung ? 1.1F : 1F) * (c.lAnim == 3 ? 0.25F + 0.75F * inK : c.lAnim == 0 ? 0.6F + 0.4F * inK : 1F);
 				m.push();
 				m.translate(cu, cv, 0);
 				m.scale(grow, grow, 1F);
@@ -287,7 +287,7 @@ public final class SkyLyrics {
 				}
 				if (sung) {
 					// glow: soft coloured copies around the letter
-					int gl = LyricsView.alphaOf(c.colourMode == 0 ? c.highlight : base0, (c.script ? 0.30F : 0.22F) * alpha);
+					int gl = LyricsView.alphaOf(c.colourMode == 0 ? c.highlight : base0, (c.script ? 0.30F : 0.22F) * c.glow * alpha);
 					for (int[] o : new int[][] {{-1, 0}, {1, 0}}) {
 						m.push();
 						m.translate(o[0] * 0.9F, o[1] * 0.9F, -0.2F);

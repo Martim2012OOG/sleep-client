@@ -58,7 +58,7 @@ public class KeystrokesMod extends HudMod {
 		arrows = bool("Replace Names With Arrows", false);
 		mouseMovement = bool("Show Mouse Movement", false);
 		header("Layout");
-		boxSize = num("Box Size", 18, 12, 32, 0.5F, "");
+		boxSize = num("Box Size", 18, 6, 64, 0.5F, "");
 		gap = num("Gap", 1, 0, 6, 0.5F, "");
 		radius = num("Corner Radius", 2, 0, 10, 0.5F, "");
 		header("Style");

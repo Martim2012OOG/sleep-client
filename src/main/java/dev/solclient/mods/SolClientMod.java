@@ -231,7 +231,7 @@ public class SolClientMod extends Mod {
 		notifySound = bool("Notification Sound", true);
 		notifyVolume = num("Notification Volume", 80, 0, 100, 5, "%");
 		notifyVolume.showIf(() -> notifySound.on());
-		notifySize = num("Notification Size", 55, 50, 150, 5, "%");
+		notifySize = num("Notification Size", 55, 20, 300, 5, "%");
 		notifySize.tip("How big the notification cards are. Use the preview button to see it.");
 		soundMessage = text("Sound Message", "", 160, "").showIf(() -> false);
 		soundFriend = text("Sound Friend", "", 160, "").showIf(() -> false);
@@ -264,6 +264,8 @@ public class SolClientMod extends Mod {
 		cosmetics = bool("Show 3D Cosmetics", true);
 		cosmetics.tip("3D accessories (hats, wings...) on players.");
 		action("3D cosmetics status", "Refresh", () -> { }, dev.solclient.cosmetic.CosmeticFeatureRenderer::status);
+		action("Badge sync status", "Send again", dev.solclient.social.KuboLink::resendNow, dev.solclient.social.KuboLink::diag)
+				.tip("Crown, badges and name colour reach other players through here. If \"got\" says nothing yet, nobody is sending to you.");
 
 		// ------------------------------------------------------------------ Keys
 		header("Keys");

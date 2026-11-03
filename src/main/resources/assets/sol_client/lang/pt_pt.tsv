@@ -2582,3 +2582,71 @@ Hidden Behind Mountains	Escondidas atrás das montanhas
 Mute (no pop-ups, only on this client)	Silenciar (sem avisos, só neste client)
 Muted on this client - click to unmute	Silenciado neste client - clica para deixar de silenciar
 Trust Radar	Radar de Confiança
+Music cover failed	Capa da música falhou
+Intro	Intro
+Typewriter	Máquina de escrever
+Shimmer	Brilho
+Solid	Sólida
+Handwriting	Manuscrita
+Minecraft	Minecraft
+My font	A minha fonte
+Preview now	Pré-visualizar
+Shows the card again	Mostra o cartão outra vez
+Now Playing Card	Cartão A tocar agora
+Show Now Playing Card	Mostrar cartão A tocar agora
+Card Where	Cartão onde
+Card Preview	Pré-visualizar cartão
+Card Duration	Duração do cartão
+Card Repeat Every	Repetir cartão a cada
+0 = only when a new song starts.	0 = só quando começa uma música nova.
+Card Only While Playing	Cartão só a tocar
+Hide Lyrics While Card Shows	Esconder letras enquanto o cartão aparece
+The lyrics wait until the card is gone.	As letras esperam até o cartão desaparecer.
+Card Label	Etiqueta do cartão
+Card Label Text	Texto da etiqueta
+Card Artist	Artista no cartão
+Card Player Name	Nome do player no cartão
+Shows "via YouTube Music", "via Spotify"... under the artist.	Mostra "via YouTube Music", "via Spotify"... por baixo do artista.
+Card Lines	Linhas do cartão
+Card Title Uppercase	Título em maiúsculas
+Card Font	Fonte do cartão
+Card Size	Tamanho do cartão
+Card Artist Size	Tamanho do artista
+Card Label Size	Tamanho da etiqueta
+Card Height	Altura do cartão
+Card Position	Posição do cartão
+Card Side Distance	Distância lateral do cartão
+Card 3D Depth	Profundidade 3D do cartão
+Card Follows My View	Cartão segue a minha vista
+Off: it hangs in one place of the sky. On: it stays in front of you.	Desligado: fica num sítio do céu. Ligado: fica sempre à tua frente.
+Card Hidden Behind Mountains	Cartão escondido atrás das montanhas
+Card Animation	Animação do cartão
+Card Opacity	Opacidade do cartão
+Card Glow	Brilho do cartão
+Card Title Colour Mode	Modo de cor do título
+Card Title Colour	Cor do título
+Card Artist Colour	Cor do artista
+Card Label Colour	Cor da etiqueta
+Card Accent Colour	Cor de destaque
+Badge sync status	Estado da sincronização de badges
+Send again	Enviar outra vez
+Crown, badges and name colour reach other players through here. If "got" says nothing yet, nobody is sending to you.	A coroa, as badges e a cor do nome chegam aos outros por aqui. Se "got" disser nothing yet, ninguém te está a enviar nada.
+Auto Password	Palavra-passe automática
+Saves your server password and sends /login or /register for you when a server asks for it.	Guarda a tua palavra-passe dos servidores e envia /login ou /register por ti quando o servidor pedir.
+Password	Palavra-passe
+Register Command	Comando de registo
+Detect from the server	Detetar pelo servidor
+Password once	Palavra-passe uma vez
+Password twice	Palavra-passe duas vezes
+Delay	Atraso
+Auto Login	Login automático
+Auto Register	Registo automático
+Passwords Per Server	Palavras-passe por servidor
+Only On These Servers	Só nestes servidores
+Tell Me When Used	Avisar-me quando for usado
+Auto Password Status	Estado da palavra-passe automática
+Reset	Repor
+When the server says you are not registered, creates the account with your password.	Quando o servidor diz que não estás registado, cria a conta com a tua palavra-passe.
+Different password on some servers: address=password, separated by ;	Palavra-passe diferente em alguns servidores: endereço=palavra-passe, separados por ;
+Leave empty to use it on every multiplayer server.	Deixa vazio para usar em todos os servidores multijogador.
+Most servers say how many times to type the password. This is used when they do not.	A maioria dos servidores diz quantas vezes escrever a palavra-passe. Isto é usado quando não dizem.

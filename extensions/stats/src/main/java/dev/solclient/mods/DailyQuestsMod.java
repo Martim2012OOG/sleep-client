@@ -44,7 +44,7 @@ public class DailyQuestsMod extends HudMod {
 	private static final int[][] RANGE = {{800, 3000}, {64, 400}, {64, 400}, {5, 30}, {1, 5}, {100, 500}, {20, 90}};
 
 	private final Option.Bool compact = bool("Compact", false);
-	private final Option.Num boxW = num("Width", 140, 100, 220, 2, "");
+	private final Option.Num boxW = num("Width", 140, 50, 440, 2, "");
 	private final Option.Num gap = num("Gap", 1, 0, 6, 0.5F, "");
 	private final Option.Num radius = num("Corner Radius", 2, 0, 10, 0.5F, "");
 	private final Option.Col bg = colour("Background Colour", dev.solclient.gui.KeyTiles.BG);

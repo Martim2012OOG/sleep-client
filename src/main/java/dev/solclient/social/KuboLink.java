@@ -46,6 +46,8 @@ public final class KuboLink {
 	private static String lastBadge = "";
 	private static long lastBadgeAt;
 	private static long lastSend, seq = System.currentTimeMillis() % 100000;
+	private static long lastLobbyAt, lastSentAt, lastRecvAt;
+	private static String lastLobbySig = "", lastRecvNick = "";
 
 	private KuboLink() {
 	}
@@ -100,6 +102,7 @@ public final class KuboLink {
 		String myFlag = ProfileBadges.myFlagCode();
 		JsonObject myCx = myCosmetics(mc);
 		String sig = myBadge + "|" + myLook + "|" + ProfileBadges.myColourOn() + "|" + myFlag + "|" + myCx;
+		lobbyTick(mc, now, sig, myBadge, myLook, myFlag, myCx);
 		boolean badgeDue = mc.player != null && (!sig.equals(lastBadge) ? now - lastBadgeAt > 1500L
 				: (!myBadge.isEmpty() || !myLook.isEmpty() || !myFlag.isEmpty() || myCx.size() > 0) && now - lastBadgeAt > 12_000L);
 		if (mc.player == null || mc.world == null || !(wantParty || wantPings && outgoing != null || badgeDue)) {
@@ -145,7 +148,57 @@ public final class KuboLink {
 			lastSend = now;
 			lastBadge = sig;
 			lastBadgeAt = now;
+			lastSentAt = now;
 		}
+	}
+
+	/**
+	 * Your public profile (badge, name style, flag, cosmetics) also goes to the global lobby, so players who reached the same
+	 * server through another address (another server room) still see your crown, badges and name colour. No position, health or pings.
+	 */
+	private static void lobbyTick(MinecraftClient mc, long now, String sig, String badge, String look, String flag, JsonObject cx) {
+		if (mc.player == null || mc.world == null || mc.isInSingleplayer()) {
+			return;
+		}
+		boolean changed = !sig.equals(lastLobbySig);
+		boolean has = !badge.isEmpty() || !look.isEmpty() || !flag.isEmpty() || cx.size() > 0;
+		if (!(changed ? now - lastLobbyAt > 1500L : has && now - lastLobbyAt > 10_000L)) {
+			return;
+		}
+		JsonObject kx = new JsonObject();
+		kx.addProperty("n", mc.getSession().getUsername());
+		kx.addProperty("bd", badge);
+		kx.addProperty("bc", ProfileBadges.myColourOn() ? 1 : 0);
+		kx.addProperty("nn", look);
+		kx.addProperty("fl", flag);
+		if (cx.size() > 0) {
+			kx.add("cx", cx);
+		}
+		if (Presence.sendLinkLobby(kx)) {
+			lastLobbyAt = now;
+			lastLobbySig = sig;
+			lastSentAt = now;
+		}
+	}
+
+	private static String ago(long t) {
+		return t == 0 ? "never" : Math.max(0, (System.currentTimeMillis() - t) / 1000L) + " s ago";
+	}
+
+	/** One line for the settings: is the badge / name colour sync working, and with whom. */
+	public static String diag() {
+		String s = "Lobby " + (Presence.connected() ? Presence.lobbyPlayers().size() + " online" : "OFF") + " | Server room "
+				+ (Presence.serverRoomOpen() ? Presence.serverPlayers().size() + " players" : "OFF") + " | sent " + ago(lastSentAt)
+				+ " | got " + (lastRecvNick.isEmpty() ? "nothing yet" : lastRecvNick + " " + ago(lastRecvAt));
+		return Presence.problem == null ? s : s + " | " + Presence.problem;
+	}
+
+	/** Sends your badge / name style again right now (the "Check" button). */
+	public static void resendNow() {
+		lastBadge = "";
+		lastLobbySig = "";
+		lastBadgeAt = 0;
+		lastLobbyAt = 0;
 	}
 
 	/** From the presence room (client thread). */
@@ -156,6 +209,8 @@ public final class KuboLink {
 		long now = System.currentTimeMillis();
 		String nick = Json.str(kx, "n");
 		if (kx.has("bd") && nick != null) {
+			lastRecvAt = now;
+			lastRecvNick = nick;
 			ProfileBadges.onRemote(nick, Json.str(kx, "bd"));
 			ProfileBadges.onRemoteLook(nick, Json.str(kx, "nn"));
 			ProfileBadges.onRemoteFlag(nick, Json.str(kx, "fl"));

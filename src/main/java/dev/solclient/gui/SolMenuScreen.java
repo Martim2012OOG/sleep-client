@@ -89,6 +89,8 @@ public class SolMenuScreen extends Screen {
 	private int fbx, fby, fbw, fbh; // friends panel bounds in menu units (for mouse wheel)
 	private Option.Key listening;
 	private Option.Col colourOpen;
+	/** The value list of a choice option that is open under its row (null = none). */
+	private Option.Choice choiceOpen;
 	private final Map<Option.Col, float[]> hsv = new HashMap<>();
 	private int clipY0, clipY1;
 	/** Tooltip for this frame (drawn last). */
@@ -1738,12 +1740,13 @@ public class SolMenuScreen extends Screen {
 	// ------------------------------------------------------------- settings
 	private void drawSettingsHeader(DrawContext c, int mx, int my, int cx0, int cx1, int y) {
 		String backLbl = dev.solclient.Lang.tr("Back", "Voltar");
-		int bw = Gfx.tw(backLbl) + 40, bh = 22;
+		int bw = Gfx.tw(backLbl) + 30, bh = 18;
+		y += 2; // the button is smaller than the 22 px title row: keep it centred
 		boolean bhov = in(mx, my, cx0, y, bw, bh) && my >= clipY0 && my < clipY1;
 		float ba = anim("backBtn", bhov);
 		Gfx.lightButton(c, cx0, y, bw, bh, ba, false);
-		Gfx.tex(c, Theme.icon2("back"), cx0 + 8, y + 4, 14, 14, 64, 64, Gfx.BTN_LIGHT_TEXT);
-		Gfx.textMid(c, backLbl, cx0 + 26, y, bh, Gfx.BTN_LIGHT_TEXT);
+		Gfx.tex(c, Theme.icon2("back"), cx0 + 6, y + 3, 12, 12, 64, 64, Gfx.BTN_LIGHT_TEXT);
+		Gfx.textMid(c, backLbl, cx0 + 21, y, bh, Gfx.BTN_LIGHT_TEXT);
 		region(cx0, y, bw, bh, () -> {
 			open = null;
 			scroll = 0;
@@ -1751,6 +1754,7 @@ public class SolMenuScreen extends Screen {
 			colourOpen = null;
 			listening = null;
 		});
+		y -= 2;
 		Identifier icon = Theme.icon(open.id);
 		int tx = cx0 + bw + 12;
 		if (icon != null) {
@@ -1881,6 +1885,83 @@ public class SolMenuScreen extends Screen {
 	/** Light blue of the Sleep logo. */
 	private static final int LOGO_BLUE = 0xFFA3C3FC;
 
+	private static final int RAIL_W = 128;
+	private static final java.util.Set<String> SECTION_ICONS = java.util.Set.of("language", "font", "theme", "custom_colours", "menus",
+			"hud_notifications", "players", "keys", "performance", "loading_screen", "setup_reset", "testing", "general");
+
+	/** Icon of a settings section: the mod's own icon for a mod page, else a section icon (or the default one). */
+	private static Identifier sectionIcon(Page pg) {
+		if (pg.child != null) {
+			Identifier ic = Theme.icon(pg.child.id);
+			if (ic != null) {
+				return ic;
+			}
+		}
+		String slug = pg.title.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]+", "_").replaceAll("^_+|_+$", "");
+		return Theme.icon2("sec_" + (SECTION_ICONS.contains(slug) ? slug : "default"));
+	}
+
+	/**
+	 * The pages of a mod's settings as a flat vertical list on the left (no box around it), like the user's SidebarLight:
+	 * icon + name, the open one on a soft "muted" background, the others muted and lighter under the mouse. Pages that are
+	 * mods inside the card sit under a "Mods" heading with a thin line down their left side.
+	 */
+	private void railBar(DrawContext c, int mx, int my, Mod m, List<Page> pages, int sel, String sq, int x, int y0, int y1) {
+		int ih = 24, gap = 2, acc = Theme.accent() | 0xFF000000;
+		clipY0 = 0;
+		clipY1 = vh;
+		c.enableScissor(x, y0, x + RAIL_W, y1);
+		int py = y0 + 2;
+		boolean subOpen = false;
+		int subTop = 0;
+		for (int i = 0; i < pages.size(); i++) {
+			Page pg = pages.get(i);
+			boolean child = pg.child != null;
+			if (child && !subOpen) {
+				subOpen = true;
+				py += 4;
+				Gfx.textMid(c, dev.solclient.Lang.tr("Mods", "Mods"), x + 10, py, 18, Theme.TEXT);
+				py += 20;
+				subTop = py;
+			}
+			int ix = child ? x + 14 : x;
+			int iw = RAIL_W - (child ? 14 : 0);
+			String title = dev.solclient.Lang.t(pg.title);
+			boolean selected = i == sel;
+			boolean hov = in(mx, my, ix, py, iw, ih) && my >= y0 && my < y1;
+			float a = anim("rail" + m.id + i, hov);
+			boolean off = child && !pg.child.enabled;
+			if (selected) {
+				Gfx.rrect(c, ix, py, iw, ih, 6, Gfx.withAlpha(0xFFFFFF, 26)); // bg-muted
+			} else if (a > 0.01F) {
+				Gfx.rrect(c, ix, py, iw, ih, 6, Gfx.withAlpha(0xFFFFFF, Math.round(13 * a))); // hover:bg-muted/50
+			}
+			int muted = Gfx.blend(Theme.DIM, Theme.TEXT, 0.15F);
+			int col = selected ? Theme.TEXT : pageHasMatch(m, pg, sq) ? acc : off ? Gfx.blend(Theme.DIM, Theme.PANEL | 0xFF000000, 0.45F) : Gfx.blend(muted, Theme.TEXT, a);
+			Gfx.tex(c, sectionIcon(pg), ix + 9, py + 5, 14, 14, 64, 64, col);
+			Gfx.textMid(c, fit(title, iw - 38), ix + 30, py, ih, col);
+			String info = SECTION_INFO.get(pg.title);
+			if (info != null && hov) {
+				tooltipText = dev.solclient.Lang.t(info);
+			} else if (off && hov) {
+				tooltipText = dev.solclient.Lang.tr("Off", "Desligado");
+			}
+			final int idx = i;
+			region(ix, py, iw, ih, () -> {
+				PAGE_SEL.put(m.id, idx);
+				scroll = 0;
+				scrollTarget = 0;
+				colourOpen = null;
+				listening = null;
+			});
+			py += ih + gap;
+			if (subOpen && (i + 1 >= pages.size() || pages.get(i + 1).child == null)) {
+				c.fill(x + 7, subTop, x + 8, py - gap, 0x26FFFFFF); // border-l of the group
+			}
+		}
+		c.disableScissor();
+	}
+
 	/** The pages of a mod's settings as a row of small blue buttons (like Lunar). Returns its height. */
 	private int tabBar(DrawContext c, int mx, int my, Mod m, List<Page> pages, int sel, String sq, int x, int y, int rw) {
 		// chips that wrap onto more rows when they do not fit (they used to be squeezed until the names overlapped)
@@ -1968,8 +2049,10 @@ public class SolMenuScreen extends Screen {
 			}
 			clipY0 = 0;
 			clipY1 = vh;
-			int th = tabBar(c, mx, my, open, pages, sel, sq, cx0, cy0, rw);
-			cy0 += th + 10;
+			// sections as a vertical list on the left (always in view), the options of the picked one on the right
+			railBar(c, mx, my, open, pages, sel, sq, cx0, cy0, cy1);
+			cx0 += RAIL_W + 14;
+			rw = cx1 - cx0 - 8;
 		}
 		clipY0 = cy0;
 		clipY1 = cy1;
@@ -2088,7 +2171,8 @@ public class SolMenuScreen extends Screen {
 				Gfx.rrect(c, cx0 - 3, y - 2, rw + 6, 26, 9, Gfx.withAlpha(Theme.accent() & 0xFFFFFF, 0x30)); // the option you searched for
 			}
 			// two on/off options next to each other (like Lunar)
-			if (o instanceof Option.Bool b1 && i + 1 < opts.size() && opts.get(i + 1) instanceof Option.Bool b2) {
+			if (o instanceof Option.Bool b1 && i + 1 < opts.size() && opts.get(i + 1) instanceof Option.Bool b2
+					&& (b1.tip == null || b1.tip.isEmpty()) && (b2.tip == null || b2.tip.isEmpty())) {
 				int half = (rw - 6) / 2;
 				tipFor(b1, mx, my, cx0, y, half, CHECK_ROW);
 				tipFor(b2, mx, my, cx0 + half + 6, y, half, CHECK_ROW);
@@ -2475,11 +2559,21 @@ public class SolMenuScreen extends Screen {
 	private static final int[] PRESETS = {0xFFFF4D4D, 0xFFFF9F43, 0xFFFFD93D, 0xFF6BCB77, 0xFF4D96FF, 0xFFB57BFF,
 			0xFFFF6BB5, 0xFF2DD4BF, 0xFF7FB3F5, 0xFFFFFFFF, 0xFF9AA0B4, 0xFF000000};
 
-	@SuppressWarnings("unchecked")
 	private int drawOption(DrawContext c, int mx, int my, Option<?> o, int x, int y, int rw) {
+		int h = drawOptionRaw(c, mx, my, o, x, y, rw);
+		// one dim line under the option that says what it does (the same text as the tooltip)
+		if (o.tip != null && !o.tip.isEmpty() && h <= 30 && !(o instanceof Option.Header) && !(o instanceof Option.Grid)
+				&& !(o instanceof Option.Choice tb && tb.tabs)) {
+			Gfx.textRaw(c, fit(dev.solclient.Lang.t(o.tip), rw - 24), x + 14, y + h + 2, 0xFF6B7080);
+			return h + 13;
+		}
+		return h;
+	}
+
+	@SuppressWarnings("unchecked")
+	private int drawOptionRaw(DrawContext c, int mx, int my, Option<?> o, int x, int y, int rw) {
 		if (o instanceof Option.Header) {
-			Gfx.rrect(c, x + 2, y + 8, 3, 11, 1, Theme.accent() | 0xFF000000);
-			spaced(c, dev.solclient.Lang.t(o.name).toUpperCase(Locale.ROOT), x + 11, y + 10, 0.75F, 1.6F, Gfx.blend(Theme.DIM, Theme.TEXT, 0.4F));
+			spaced(c, dev.solclient.Lang.t(o.name).toUpperCase(Locale.ROOT), x + 4, y + 10, 0.75F, 1.6F, Gfx.blend(Theme.DIM, Theme.TEXT, 0.4F));
 			return 24;
 		}
 		if (o instanceof Option.Bool b) {
@@ -2542,13 +2636,62 @@ public class SolMenuScreen extends Screen {
 			return 26;
 		}
 		if (o instanceof Option.Choice ch) {
-			int bw = 140, bx = rx - bw;
-			pill(c, mx, my, bx, y + 4, bw, 20, 7, "ch" + o.key + x, false, 0, Theme.OFF_BG, Theme.OFF_BG_HOVER);
+			// every value is visible: a row of buttons when they fit, else a list that opens under the row
+			int n = ch.names.length;
+			int[] ws = new int[n];
+			int segW = 6 + 2 * Math.max(0, n - 1);
+			for (int i = 0; i < n; i++) {
+				ws[i] = Gfx.tw(ch.names[i]) + 18;
+				segW += ws[i];
+			}
+			int avail = rw - 28 - Gfx.tw(o.name) - 16;
+			if (n <= 6 && segW <= avail) {
+				int bx = rx - segW;
+				Gfx.rrect(c, bx, y + 2, segW, 24, 8, Gfx.blend(Theme.ROW | 0xFF000000, 0xFF000000, 0.4F));
+				int acc = accent | 0xFF000000, cur = Math.floorMod(ch.idx(), n), px = bx + 3;
+				for (int i = 0; i < n; i++) {
+					boolean hov = in(mx, my, px, y + 5, ws[i], 18) && my >= clipY0 && my < clipY1;
+					if (i == cur) {
+						Gfx.rrect(c, px, y + 5, ws[i], 18, 6, Gfx.blend(0xFF1B1E29, acc, 0.5F));
+					} else if (hov) {
+						Gfx.rrect(c, px, y + 5, ws[i], 18, 6, Gfx.withAlpha(0xFFFFFF, 18));
+					}
+					Gfx.textFit(c, ch.names[i], px + ws[i] / 2, ws[i] - 4, y + 10, i == cur ? 0xFFFFFFFF : hov ? Theme.TEXT : Theme.DIM);
+					final int idx = i;
+					region(px, y + 5, ws[i], 18, () -> ch.set(idx));
+					px += ws[i] + 2;
+				}
+				return 28;
+			}
+			boolean openList = choiceOpen == ch;
+			int bw = Math.min(170, Math.max(120, rw / 3)), bx = rx - bw;
+			pill(c, mx, my, bx, y + 4, bw, 20, 7, "ch" + o.key + x, openList, accent, Theme.OFF_BG, Theme.OFF_BG_HOVER);
 			Gfx.textFit(c, ch.label(), bx + bw / 2, bw - 30, y + 10, Theme.TEXT);
-			Gfx.text(c, "<", bx + 9, y + 10, Theme.DIM);
-			Gfx.text(c, ">", bx + bw - 9 - Gfx.tw(">"), y + 10, Theme.DIM);
-			region(bx, y + 4, bw, 20, b -> ch.cycle(b == 1 ? -1 : 1), null);
-			return 28;
+			Gfx.text(c, openList ? "^" : "v", bx + bw - 9 - Gfx.tw("v"), y + 10, Theme.DIM);
+			region(bx, y + 4, bw, 20, () -> choiceOpen = openList ? null : ch);
+			if (!openList) {
+				return 28;
+			}
+			int top = y + 30, rh = 22;
+			Gfx.rrect(c, x, top, rw, n * rh + 6, 9, Theme.ROW);
+			int cur = Math.floorMod(ch.idx(), n);
+			for (int i = 0; i < n; i++) {
+				int iy = top + 3 + i * rh;
+				boolean hov = in(mx, my, x + 3, iy, rw - 6, rh - 1) && my >= clipY0 && my < clipY1;
+				if (i == cur) {
+					Gfx.rrect(c, x + 3, iy, rw - 6, rh - 1, 6, Gfx.blend(Theme.ROW | 0xFF000000, accent | 0xFF000000, 0.22F));
+				} else if (hov) {
+					Gfx.rrect(c, x + 3, iy, rw - 6, rh - 1, 6, Gfx.withAlpha(0xFFFFFF, 16));
+				}
+				CheckBox.draw(c, "chl" + o.key + i, x + 10, iy + 5.5F, 10, i == cur, hov);
+				Gfx.textMid(c, fit(ch.names[i], rw - 50), x + 28, iy, rh - 1, i == cur ? Theme.TEXT : Gfx.blend(Theme.DIM, Theme.TEXT, 0.5F));
+				final int idx = i;
+				region(x + 3, iy, rw - 6, rh - 1, () -> {
+					ch.set(idx);
+					choiceOpen = null;
+				});
+			}
+			return 30 + n * rh + 6;
 		}
 
 		if (o instanceof Option.Text tx) {

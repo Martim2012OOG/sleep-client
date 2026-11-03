@@ -33,9 +33,9 @@ public class ChatBubblesMod extends Mod {
 	public final Option.Choice style = choice("Style", 0, "Classic", "Dark", "Sleep");
 	public final Option.Num duration = num("Duration", 6, 2, 15, 1, "s");
 	public final Option.Num maxBubbles = num("Bubbles Per Player", 3, 1, 5, 1, "");
-	public final Option.Num maxWidth = num("Max Width", 150, 80, 240, 10, "px");
+	public final Option.Num maxWidth = num("Max Width", 150, 40, 480, 10, "px");
 	public final Option.Num range = num("Range", 32, 8, 64, 4, " blocks");
-	public final Option.Num size = num("Size", 100, 50, 150, 5, "%");
+	public final Option.Num size = num("Size", 100, 20, 300, 5, "%");
 	public final Option.Bool own = bool("Show My Bubbles", true);
 	public final Option.Bool serverFormats = bool("Read Server Chat Formats", true);
 	public final Option.Bool throughWalls = bool("Show Through Walls", false);

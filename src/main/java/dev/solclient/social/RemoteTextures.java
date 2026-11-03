@@ -221,22 +221,51 @@ public final class RemoteTextures {
 		});
 	}
 
-	/** A picture from local bytes (mod icons), cached under 'key'. Loads on the render thread; null until ready. */
+	/** Pictures from {@link #local} that failed (no bytes / not readable), and how many times each was tried. */
+	private static final java.util.Set<String> LOCAL_FAILED = ConcurrentHashMap.newKeySet();
+	private static final Map<String, Integer> LOCAL_TRIES = new ConcurrentHashMap<>();
+
+	private static void localFailed(String k) {
+		LOCAL_FAILED.add(k);
+		PENDING.put(k, System.currentTimeMillis());
+	}
+
+	/**
+	 * A picture from local bytes (mod icons, music covers), cached under 'key'. The bytes are made off the render thread
+	 * and the texture on it; null until ready. A failure is NOT kept for good (a cover may need the player a moment, or
+	 * the network was down): it is tried again after 10 s, up to 6 times.
+	 */
 	public static Tex local(String key, java.util.function.Supplier<byte[]> bytes) {
 		String k = "local:" + key;
 		Tex t = READY.get(k);
-		if (t != null || PENDING.containsKey(k)) {
+		if (t != null) {
 			return t;
 		}
+		Long started = PENDING.get(k);
+		if (started != null) {
+			if (!LOCAL_FAILED.contains(k) || System.currentTimeMillis() - started < 10_000L || LOCAL_TRIES.getOrDefault(k, 0) >= 6) {
+				return null;
+			}
+		}
+		LOCAL_FAILED.remove(k);
+		LOCAL_TRIES.merge(k, 1, Integer::sum);
 		PENDING.put(k, System.currentTimeMillis());
 		Social.IO.execute(() -> {
-			byte[] data = bytes.get();
+			byte[] data;
+			try {
+				data = bytes.get();
+			} catch (Throwable e) {
+				System.err.println("[Sleep] Could not make picture " + key + ": " + e);
+				data = null;
+			}
 			if (data == null) {
+				localFailed(k);
 				return;
 			}
+			final byte[] png = data;
 			MinecraftClient.getInstance().execute(() -> {
 				try {
-					NativeImage img = NativeImage.read(new ByteArrayInputStream(data));
+					NativeImage img = NativeImage.read(new ByteArrayInputStream(png));
 					String h = hash(k);
 					Identifier id = Identifier.of("sol_client", "textures/solar/" + h + ".png");
 					int w = img.getWidth(), hh = img.getHeight();
@@ -244,8 +273,10 @@ public final class RemoteTextures {
 					tex.upload();
 					MinecraftClient.getInstance().getTextureManager().registerTexture(id, tex);
 					READY.put(k, new Tex(id, Identifier.of("sol_client", "solar/" + h), w, hh));
+					LOCAL_TRIES.remove(k);
 				} catch (Throwable e) {
 					System.err.println("[Sleep] Could not load icon " + key + ": " + e);
+					localFailed(k);
 				}
 			});
 		});

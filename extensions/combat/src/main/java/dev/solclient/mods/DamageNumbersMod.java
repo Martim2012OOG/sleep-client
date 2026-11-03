@@ -22,7 +22,7 @@ public class DamageNumbersMod extends Mod {
 	private final Option.Bool heals = bool("Show Healing", true);
 	private final Option.Bool onlyMine = bool("Only Entities I Hit", false);
 	private final Option.Num range = num("Range", 24, 6, 64, 2, " blocks");
-	private final Option.Num size = num("Size", 100, 50, 200, 10, "%");
+	private final Option.Num size = num("Size", 100, 20, 400, 10, "%");
 
 	private record Pop(double x, double y, double z, float amount, long at, float dx) {
 	}

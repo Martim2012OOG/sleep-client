@@ -15,7 +15,7 @@ public abstract class ScreenFxMod extends Mod {
 	protected final Option.Col colour;
 	protected final Option.Num amount = num("Amount", 40, 5, MAX, 1, "");
 	protected final Option.Num speed = num("Speed", 100, 20, 300, 10, "%");
-	protected final Option.Num size = num("Size", 100, 40, 250, 10, "%");
+	protected final Option.Num size = num("Size", 100, 20, 500, 10, "%");
 	protected final float[] vx = new float[MAX], vy = new float[MAX];
 	private final float[] px = new float[MAX], py = new float[MAX], ph = new float[MAX];
 	private boolean seeded;

@@ -21,8 +21,8 @@ public class SessionStatsMod extends HudMod {
 	public static SessionStatsMod instance;
 	private final Option.Bool summary = bool("Summary When Leaving", true);
 	private final Option.Bool compact = bool("Compact", false);
-	private final Option.Num tileW = num("Box Width", 34, 24, 60, 1, "");
-	private final Option.Num tileH = num("Box Height", 22, 14, 36, 1, "");
+	private final Option.Num tileW = num("Box Width", 34, 12, 120, 1, "");
+	private final Option.Num tileH = num("Box Height", 22, 8, 72, 1, "");
 	private final Option.Num gap = num("Gap", 1, 0, 6, 0.5F, "");
 	private final Option.Num radius = num("Corner Radius", 2, 0, 10, 0.5F, "");
 	private final Option.Col bg = colour("Background Colour", dev.solclient.gui.KeyTiles.BG);

@@ -33,7 +33,7 @@ public class MinimapMod extends HudMod {
 	private final Option.Choice style = choice("Map Style", 0, "3D", "Flat (top view)").tip("3D: the land has height and you see the side of hills, trees and buildings.");
 	private final Option.Num height3d = num("3D Height", 100, 40, 160, 10, "%");
 	private final Option.Choice shape = choice("Shape", 0, "Circle", "Square", "Rounded");
-	private final Option.Num size = num("Size", 128, 64, 256, 8, " px");
+	private final Option.Num size = num("Size", 128, 32, 512, 8, " px");
 	private final Option.Num border = num("Border Width", 2, 0, 6, 1, " px");
 	private final Option.Col borderColour = colour("Border Colour", 0xFF1B1E27);
 	private final Option.Num opacity = num("Opacity", 100, 30, 100, 5, "%");

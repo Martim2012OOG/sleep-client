@@ -448,6 +448,14 @@ public final class SpotifyClient {
 	/** Cover colours found so far (album picture URL -> accent colour ARGB), filled while converting the picture. */
 	private static final java.util.Map<String, Integer> COLOURS = new java.util.concurrent.ConcurrentHashMap<>();
 
+	/** The colour found for the cover at address {@code from} is also the colour of {@code to} (a cover found online for a local picture). */
+	public static void aliasColour(String from, String to) {
+		Integer c = from == null ? null : COLOURS.get(from);
+		if (c != null && to != null && !to.isEmpty()) {
+			COLOURS.put(to, c);
+		}
+	}
+
 	/** The main colour of the cover of this URL (bright enough to be used as an accent), or def while unknown. */
 	public static int colourFor(String url, int def) {
 		Integer c = url == null ? null : COLOURS.get(url);
