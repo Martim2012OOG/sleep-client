@@ -96,8 +96,23 @@ public final class KuboRelay {
 	 * Proves to the relay that this Minecraft name is really yours: the same "join" call Minecraft makes when you
 	 * enter any online server (Mojang's session server); the relay then asks Mojang "hasJoined". Returns the server id.
 	 */
-	public static String mojangJoin() throws Exception {
+	private static long lastJoinAt, joinBlockedUntil;
+
+	public static synchronized String mojangJoin() throws Exception {
 		var mc = net.minecraft.client.MinecraftClient.getInstance();
+		long now = System.currentTimeMillis();
+		// Mojang rate-limits its session server per account. Our background proofs (live link, voice) must never eat that
+		// budget: the player's own "join server" (ranked queue, hops between servers) then comes back as "Invalid session".
+		if (now < joinBlockedUntil) {
+			throw new IllegalStateException("Minecraft login skipped (cooling down)");
+		}
+		if (mc.getNetworkHandler() != null && mc.player == null) {
+			throw new IllegalStateException("Minecraft login skipped (you are joining a server)");
+		}
+		if (now - lastJoinAt < 20_000L) {
+			throw new IllegalStateException("Minecraft login skipped (just done)");
+		}
+		lastJoinAt = now;
 		var session = mc.getSession();
 		java.util.UUID id = session.getUuidOrNull();
 		String token = session.getAccessToken();
@@ -112,6 +127,7 @@ public final class KuboRelay {
 				.timeout(Duration.ofSeconds(10)).header("Content-Type", "application/json")
 				.POST(java.net.http.HttpRequest.BodyPublishers.ofString(body)).build(), java.net.http.HttpResponse.BodyHandlers.ofString());
 		if (res.statusCode() / 100 != 2) {
+			joinBlockedUntil = System.currentTimeMillis() + 10 * 60_000L; // stop poking Mojang for 10 min
 			throw new IllegalStateException("Minecraft login refused (" + res.statusCode() + "), restart the game");
 		}
 		return sid;

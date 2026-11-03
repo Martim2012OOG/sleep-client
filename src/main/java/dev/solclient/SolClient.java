@@ -471,9 +471,24 @@ public class SolClient implements ClientModInitializer {
 	}
 
 	private static void renderHudBody(DrawContext context) {
+		try {
+			renderHudInner(context);
+		} catch (Throwable t) {
+			// never let the HUD take the frame (or the callback) down with it
+			if (hudErr == null) {
+				hudErr = "HUD: " + t;
+				System.err.println("[Sleep] HUD failed");
+				t.printStackTrace();
+			}
+		}
+	}
+
+	private static void renderHudInner(DrawContext context) {
 		MinecraftClient mc = MinecraftClient.getInstance();
-		if (++hudCalls == 900) {
-			System.out.println("[Sleep] HUD status: " + hudDiag());
+		int n = ++hudCalls;
+		if (n == 1 || n == 60 || n == 300 || n % 3000 == 0) {
+			System.out.println("[Sleep] HUD status #" + n + " (player " + (mc.player != null) + ", screen " + (mc.currentScreen == null ? "none" : mc.currentScreen.getClass().getName())
+					+ ", overlay " + (mc.getOverlay() != null) + "): " + hudDiag());
 		}
 		frame();
 		CinematicAfkMod.drawOverlay(context); // cinema bars + hint: before the "HUD hidden" check

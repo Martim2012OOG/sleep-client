@@ -1,0 +1,6 @@
+-proc:none
+-d
+/tmp/jx
+dev/solclient/music/SkyLyrics.java
+dev/solclient/music/LyricsView.java
+dev/solclient/mods/SpotifyMod.java

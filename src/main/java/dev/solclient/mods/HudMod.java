@@ -98,7 +98,10 @@ public abstract class HudMod extends Mod {
 		c.getMatrices().pushMatrix();
 		c.getMatrices().translate(absX(), absY());
 		c.getMatrices().scale(s, s);
-		renderHud(c, edit);
-		c.getMatrices().popMatrix();
+		try {
+			renderHud(c, edit);
+		} finally {
+			c.getMatrices().popMatrix(); // stays balanced even if the widget throws
+		}
 	}
 }
