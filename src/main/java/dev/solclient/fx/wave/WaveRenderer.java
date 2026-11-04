@@ -48,7 +48,7 @@ public class WaveRenderer {
 
 	private void renderWave(MatrixStack matrices, OrderedRenderCommandQueue queue, Vec3d cam, Wave wave) {
 		Box box = wave.getBoundingBox();
-		Vec3d c = box.getBottomCenter().subtract(cam);
+		Vec3d c = new Vec3d((box.minX + box.maxX) / 2.0 - cam.x, box.minY - cam.y, (box.minZ + box.maxZ) / 2.0 - cam.z);
 		if (c.lengthSquared() > 96 * 96) {
 			return;
 		}

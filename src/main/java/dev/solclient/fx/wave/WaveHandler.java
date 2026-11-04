@@ -231,7 +231,7 @@ public class WaveHandler {
     public int getChunkRadius() {
         MinecraftClient client = MinecraftClient.getInstance();
         int configRadius = WaveCfg.chunkRadius;
-        int serverRadius = client.options.serverViewDistance;
+        int serverRadius = client.options.getViewDistance().getValue();
 
         return Math.min(configRadius, serverRadius);
     }
@@ -241,7 +241,7 @@ public class WaveHandler {
      */
     public int getLoadedChunkRadius() {
         MinecraftClient client = MinecraftClient.getInstance();
-        int loadRadius = client.options.serverViewDistance;
+        int loadRadius = client.options.getViewDistance().getValue();
         return Math.max(2, loadRadius) + 3;
     }
 
