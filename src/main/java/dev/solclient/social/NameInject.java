@@ -33,8 +33,26 @@ public final class NameInject {
 		if (in == null) {
 			return null;
 		}
-		return dev.solclient.mods.NickHiderMod.apply(inject(in));
+		// Called for every text display, every frame. The same Text object comes back each time, so remember the answer
+		// for that exact object (no string building / hashing / player list scan on every call).
+		long now = System.currentTimeMillis();
+		synchronized (FAST) {
+			Object[] c = FAST.get(in);
+			if (c != null && (long) c[0] > now) {
+				return (Text) c[1];
+			}
+		}
+		Text out = dev.solclient.mods.NickHiderMod.apply(inject(in));
+		synchronized (FAST) {
+			if (FAST.size() > 512) {
+				FAST.clear();
+			}
+			FAST.put(in, new Object[] {now + 1500L, out});
+		}
+		return out;
 	}
+
+	private static final java.util.IdentityHashMap<Text, Object[]> FAST = new java.util.IdentityHashMap<>();
 
 	private static synchronized Text inject(Text in) {
 		if (in == null) {

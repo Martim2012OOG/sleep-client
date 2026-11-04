@@ -38,7 +38,7 @@ public abstract class TextDisplayCacheMixin {
 		Text t = self.getText();
 		int w = self.getLineWidth();
 		Object font = GameFont.target;
-		if (this.sleep$keep != null && w == this.sleep$width && font == this.sleep$font && t != null && (t == this.sleep$text || t.equals(this.sleep$text))) {
+		if (this.sleep$keep != null && w == this.sleep$width && font == this.sleep$font && t != null && t == this.sleep$text) {
 			this.textLines = this.sleep$keep; // same text, same width, same font: reuse
 		} else {
 			this.sleep$text = t;

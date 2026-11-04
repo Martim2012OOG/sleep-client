@@ -34,6 +34,11 @@ public class WavesMod extends Mod {
 	}
 
 	@Override
+	public boolean enabledByDefault() {
+		return true;
+	}
+
+	@Override
 	public void init() {
 		super.init();
 		if (hooked) {

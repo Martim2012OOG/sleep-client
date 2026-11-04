@@ -123,7 +123,7 @@ public class WaveHandler {
             if (visited.contains(water)) continue;
             SitePos site = this.waterHandler.getSiteForPos(water);
             if (site == null || !site.yawCalculated) continue;
-            if (site.xList.size() < 50) continue;
+            if (site.xList.size() < 24) continue;
 
             float yaw = site.getYaw();
             Set<BlockPos> connected = findConnected(water, yaw, waterBlocks, visited);
@@ -162,7 +162,7 @@ public class WaveHandler {
                 if (!waterBlocks.contains(check)) continue;
 
                 SitePos site = this.waterHandler.getSiteForPos(check);
-                if (site == null || !site.yawCalculated || site.xList.size() < 50) continue;
+                if (site == null || !site.yawCalculated || site.xList.size() < 24) continue;
                 if (Math.abs(site.yaw - yaw) > 15) continue;
                 stack.add(new BlockPos(check));
             }
