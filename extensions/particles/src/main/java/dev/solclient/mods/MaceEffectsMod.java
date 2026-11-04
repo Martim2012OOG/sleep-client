@@ -28,8 +28,11 @@ public class MaceEffectsMod extends Mod {
 
 	public static MaceEffectsMod instance;
 
-	private final Option.Choice style = choice("Effect", 0, "Classic", "Meteor", "Lightning", "Ground Cracks", "Tornado", "Eruption", "Gravity Well", "Soul Wave", "Crater", "Star Burst", "Halo Dome", "Helix", "Light Cage", "Aurora", "Random Each Smash", "MasEffects Look", "Slash Arcs", "Nova Flash", "Blade Storm", "Shatter", "Void Rift");
+	private final Option.Choice style = choice("Effect", 0, "Classic", "Meteor", "Lightning", "Ground Cracks", "Tornado", "Eruption", "Gravity Well", "Soul Wave", "Crater", "Star Burst", "Halo Dome", "Helix", "Light Cage", "Aurora", "Random Each Smash", "MasEffects Look", "Slash Arcs", "Nova Flash", "Blade Storm", "Shatter", "Void Rift",
+			"Crescent Wave", "Starfall", "Thunder Fork", "Pulse Rings", "Cross Slash", "Spiral Blades", "Meteor Rain", "Frost Burst", "Inferno", "Gravity Crush", "Halo Crown", "Thunder Clap", "Tectonic", "Comet Strike", "Petal Storm");
 	private final Option.Choice who = choice("Show For", 0, "Everyone", "Only Me", "Only Others");
+	private final Option.Action previewNow = action("Preview", "Play", this::preview, () -> style.idx() == 14 ? "Random" : "");
+	private final Option.Action previewNext = action("Preview next effect", "Next", this::previewNext, () -> "");
 	private final Option.Num power = num("Power", 100, 30, 250, 10, "%");
 	private final Option.Num radius = num("Radius", 8, 3, 16, 1, " blocks");
 	private final Option.Choice look = choice("Colour", 5, "Rainbow", "Custom", "Fire", "Ice", "Void", "Impact (white-hot)");
@@ -52,6 +55,8 @@ public class MaceEffectsMod extends Mod {
 	private final Option.Bool air = bool("Air Smash Too", true).tip("The smaller smash when the mace hits something in the air.");
 
 	private static boolean hooked;
+	private boolean previewing;
+	private int previewIdx = -1;
 	private final List<Quake> quakes = new ArrayList<>();
 
 	private static final class Quake {
@@ -161,7 +166,7 @@ public class MaceEffectsMod extends Mod {
 		}
 		double dx = x - mc.player.getX(), dz = z - mc.player.getZ();
 		boolean mine = dx * dx + dz * dz < 16;
-		if (who.idx() == 1 && !mine || who.idx() == 2 && mine) {
+		if (!previewing && (who.idx() == 1 && !mine || who.idx() == 2 && mine)) {
 			return;
 		}
 		pw *= power.f() / 100F;
@@ -170,7 +175,7 @@ public class MaceEffectsMod extends Mod {
 			paletteFor(art);
 			float quality = mc.getCurrentFps() < 40 ? 0.55F : 1F;
 			dev.solclient.fx.MaceArt.play(art, x, y + 0.02, z, pw, radius.f() / 8F, quality);
-			if (art == 19 && !isAir) {
+			if ((art == 19 || art == 33) && !isAir) {
 				floorChunks(new Quake(x, y, z, pw, false), 2.8F, Math.round(10 * pw * quality), 1F);
 			}
 			if (shake.on()) {
@@ -212,11 +217,42 @@ public class MaceEffectsMod extends Mod {
 		impact(q, mine);
 	}
 
+	/** Plays the chosen effect in the real game, a few blocks in front of you (works even when "Show For" says Only Others). */
+	private void preview() {
+		if (mc.world == null || mc.player == null) {
+			return;
+		}
+		if (!enabled) {
+			dev.solclient.social.Social.say("Turn Mace Effects on first", false);
+			return;
+		}
+		Vec3d f = mc.player.getRotationVec(1F);
+		double len = Math.max(0.01, Math.sqrt(f.x * f.x + f.z * f.z));
+		double px = mc.player.getX() + f.x / len * 4.0, pz = mc.player.getZ() + f.z / len * 4.0;
+		previewing = true;
+		try {
+			onSound("minecraft:item.mace.smash_ground", px, mc.player.getY(), pz);
+		} finally {
+			previewing = false;
+		}
+	}
+
+	/** Moves to the next effect of the list (skipping "Random"), and plays it. */
+	private void previewNext() {
+		int n = style.names.length;
+		int i = style.idx();
+		do {
+			i = (i + 1) % n;
+		} while (i == 14);
+		style.set(i);
+		preview();
+	}
+
 	/** 16..20 when a hand-drawn style plays now ("Random" picks one of them 60% of the time), else 0. */
 	private int artStyle() {
 		int i = style.idx();
-		if (i == 14 && ThreadLocalRandom.current().nextFloat() < 0.6F) {
-			return 16 + ThreadLocalRandom.current().nextInt(5);
+		if (i == 14 && ThreadLocalRandom.current().nextFloat() < 0.8F) {
+			return 16 + ThreadLocalRandom.current().nextInt(20);
 		}
 		return i >= 16 ? i : 0;
 	}
@@ -226,9 +262,10 @@ public class MaceEffectsMod extends Mod {
 		int l = look.idx();
 		if (l == 0) {
 			l = switch (st) {
-				case 17 -> 3;
-				case 19 -> 2;
-				case 20 -> 4;
+				case 17, 23, 24, 28, 32 -> 3;
+				case 19, 25, 27, 29, 33, 34 -> 2;
+				case 20, 26, 30 -> 4;
+				case 35 -> 6;
 				default -> 5;
 			};
 			if (look.idx() == 0 && st == 18) {
@@ -255,6 +292,10 @@ public class MaceEffectsMod extends Mod {
 			}
 			case 5 -> {
 				main = 0xFFFFB347;
+				hot = 0xFFFFFFFF;
+			}
+			case 6 -> {
+				main = 0xFFFF8FC8;
 				hot = 0xFFFFFFFF;
 			}
 			default -> {

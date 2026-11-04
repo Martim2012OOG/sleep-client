@@ -31,7 +31,8 @@
     "sol_client_fightcam.mixins.json",
     "sol_client_extra.mixins.json",
     "sol_client_display.mixins.json",
-    "sol_client_font.mixins.json"
+    "sol_client_font.mixins.json",
+    "sol_client_perf.mixins.json"
   ],
   "depends": {
     "fabricloader": ">=0.18.1",

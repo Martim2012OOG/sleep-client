@@ -53,7 +53,28 @@ public class NametagHealthMod extends Mod {
 		return squaredDistance <= r * r;
 	}
 
+	private record Cached(float hp, float max, float abs, long until, Text text) {
+	}
+
+	private static final java.util.Map<Integer, Cached> LINES = new java.util.HashMap<>();
+
+	/** The "13 ❤" text, rebuilt only when the health changed (or every 300 ms for setting changes), not every frame. */
 	public static Text line(LivingEntity e) {
+		long now = System.currentTimeMillis();
+		Cached c = LINES.get(e.getId());
+		float hp = e.getHealth(), max = e.getMaxHealth(), abs = e.getAbsorptionAmount();
+		if (c != null && c.until > now && c.hp == hp && c.max == max && c.abs == abs) {
+			return c.text;
+		}
+		Text t = build(e);
+		if (LINES.size() > 256) {
+			LINES.clear();
+		}
+		LINES.put(e.getId(), new Cached(hp, max, abs, now + 300L, t));
+		return t;
+	}
+
+	private static Text build(LivingEntity e) {
 		NametagHealthMod m = instance;
 		float hp = Math.max(0F, e.getHealth()), max = Math.max(1F, e.getMaxHealth()), abs = Math.max(0F, e.getAbsorptionAmount());
 		int numCol = 0xFFFFFF;

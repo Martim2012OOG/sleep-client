@@ -115,6 +115,7 @@ public class SolClient implements ClientModInitializer {
 		MODS.add(new dev.solclient.mods.PersonasMod());
 		MODS.add(new dev.solclient.mods.TrustRadarMod());
 		MODS.add(new dev.solclient.mods.RealisticLiquidsMod());
+		MODS.add(new dev.solclient.mods.WavesMod());
 		MODS.add(new dev.solclient.mods.CustomRainMod());
 		MODS.add(new StableFovMod());
 		MODS.add(new FovChangerMod());

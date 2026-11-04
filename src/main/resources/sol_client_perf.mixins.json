@@ -1,0 +1,11 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "dev.solclient.mixin.perf",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "TextDisplayCacheMixin",
+    "ClientWorldWaveMixin"
+  ],
+  "injectors": { "defaultRequire": 0 }
+}

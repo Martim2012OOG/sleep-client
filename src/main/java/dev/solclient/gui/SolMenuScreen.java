@@ -538,10 +538,18 @@ public class SolMenuScreen extends Screen {
 			drawStatusMenu(c, mouseX, mouseY);
 		}
 		if (tooltipText != null) {
-			int tw = Gfx.tw(tooltipText) + 12;
-			int tx = Math.min(vw - tw - 2, mouseX + 10), ty = Math.max(2, mouseY - 18);
-			Gfx.rrectBorder(c, tx, ty, tw, 16, 5, 0xF0101114, Theme.CARD_BORDER);
-			Gfx.text(c, tooltipText, tx + 6, ty + 4, Theme.TEXT);
+			// long texts are wrapped in a box of at most 220 px (they used to run across the whole screen)
+			List<String> tl = wrap(tooltipText, 220, 6);
+			int widest = 0;
+			for (String ln : tl) {
+				widest = Math.max(widest, Gfx.tw(ln));
+			}
+			int tw = widest + 12, th = tl.size() * 11 + 5;
+			int tx = Math.max(2, Math.min(vw - tw - 2, mouseX + 10)), ty = Math.max(2, Math.min(vh - th - 2, mouseY - 18));
+			Gfx.rrectBorder(c, tx, ty, tw, th, 5, 0xF0101114, Theme.CARD_BORDER);
+			for (int i = 0; i < tl.size(); i++) {
+				Gfx.text(c, tl.get(i), tx + 6, ty + 4 + i * 11, Theme.TEXT);
+			}
 		}
 	}
 

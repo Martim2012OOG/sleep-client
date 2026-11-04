@@ -68,9 +68,21 @@ public final class SolarBadge {
 		if (p == mc.player) {
 			return true;
 		}
+		long now = System.currentTimeMillis();
+		Object[] c = USES_CACHE.get(p.getUuid());
+		if (c != null && (long) c[0] > now) {
+			return (boolean) c[1];
+		}
 		String nick = p.getName().getString();
-		return Presence.inServerRoom(p.getUuid(), nick) || Presence.inServerRoom(Presence.backendId(p), nick) || Presence.inLobby(p.getUuid(), nick);
+		boolean r = Presence.inServerRoom(p.getUuid(), nick) || Presence.inServerRoom(Presence.backendId(p), nick) || Presence.inLobby(p.getUuid(), nick);
+		if (USES_CACHE.size() > 512) {
+			USES_CACHE.clear();
+		}
+		USES_CACHE.put(p.getUuid(), new Object[] {now + 500L, r});
+		return r;
 	}
+
+	private static final java.util.Map<java.util.UUID, Object[]> USES_CACHE = new java.util.concurrent.ConcurrentHashMap<>();
 
 	public static Text decorate(Text name) {
 		if (name == null || badge().getString().isEmpty()) {

@@ -40,11 +40,24 @@ public final class SolarSkins {
 		if (p == null) {
 			return base;
 		}
+		// this runs for every player on every frame: reuse the answer for a moment while the base skin is the same
+		long now = System.currentTimeMillis();
+		Object[] c = APPLY_CACHE.get(p.getUuid());
+		if (c != null && (long) c[0] > now && c[1] == base && !dev.solclient.cosmetic.Cosmetics.inGui) {
+			return (SkinTextures) c[2];
+		}
 		UUID backend = dev.solclient.social.Presence.backendId(p);
 		// a player the site's lookup knows has a cape to show even when they are not in a presence room
 		boolean client = SolarBadge.usesClient(p) || Social.isSolar(backend);
-		return apply(p.getUuid(), backend, base, client);
+		SkinTextures out = apply(p.getUuid(), backend, base, client);
+		if (APPLY_CACHE.size() > 512) {
+			APPLY_CACHE.clear();
+		}
+		APPLY_CACHE.put(p.getUuid(), new Object[] {now + 250L, base, out});
+		return out;
 	}
+
+	private static final java.util.Map<UUID, Object[]> APPLY_CACHE = new java.util.concurrent.ConcurrentHashMap<>();
 
 	/** entityId = uuid in the world (nick hider); id = uuid the backend knows (capes, skins, your own skin). */
 	public static SkinTextures apply(UUID entityId, UUID id, SkinTextures base) {

@@ -548,3 +548,9 @@ Janela nova (categorias | estilos | inspetor) com 35 categorias; estilos vêm do
 - **Instant Pack Reload** (Settings > Loading Screen, on by default): adding/removing a resource pack no longer shows the red loading screen (no fade-in, no 1 s minimum, no fade-out). You keep seeing the game with a thin progress bar on top. Idea taken from Resource Pack Optimizer by ravineclaw (MIT); only the overlay part is ported, the heavy caches of that mod are not.
 - **Whole Game Font** (Settings > Font): replaces `minecraft:default` for the entire game (chat, inventory, tooltips, signs...). Instant, no reload (`FontManagerMixin`).
 - **Mace smashes**: 5 new textured styles (Slash Arcs, Nova Flash, Blade Storm, Shatter, Void Rift), see `tools/gen_mace_fx.py` and `fx/MaceArt.java`.
+
+## Realistic Waves (Visual)
+Waves roll in and wash up on the shore. Wave logic and textures adapted from **Wavify (Tidal) by Superkat32 / Icywhenhot**, MIT licence (`THIRD-PARTY-LICENSES/wavify-MIT.txt`). Off by default; while off nothing is scanned or drawn.
+
+## Hologram speed-up
+Server leaderboards (Text Displays) no longer get re-wrapped every frame (`TextDisplayCacheMixin`).

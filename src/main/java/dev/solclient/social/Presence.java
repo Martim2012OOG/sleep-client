@@ -253,9 +253,22 @@ public final class Presence {
 				return me;
 			}
 		}
+		// asked several times per player per frame (skin, cape, cosmetics...): remember the answer for a moment
+		long now = System.currentTimeMillis();
+		Object[] c = BACKEND_CACHE.get(p.getUuid());
+		if (c != null && (long) c[0] > now) {
+			return (UUID) c[1];
+		}
 		UUID acc = dashed(accountId(p.getName().getString()));
-		return acc != null ? acc : p.getUuid();
+		UUID out = acc != null ? acc : p.getUuid();
+		if (BACKEND_CACHE.size() > 512) {
+			BACKEND_CACHE.clear();
+		}
+		BACKEND_CACHE.put(p.getUuid(), new Object[] {now + 500L, out});
+		return out;
 	}
+
+	private static final java.util.Map<UUID, Object[]> BACKEND_CACHE = new java.util.concurrent.ConcurrentHashMap<>();
 
 	public static boolean connected() {
 		Room l = lobby;

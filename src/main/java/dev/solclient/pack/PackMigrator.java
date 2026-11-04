@@ -565,6 +565,18 @@ public final class PackMigrator {
 							}
 						}
 					}
+					// models/item overrides that would be converted
+					for (Map.Entry<String, String> e : rel.entrySet()) {
+						java.util.regex.Matcher mm = ITEM_MODEL.matcher(e.getValue());
+						if (mm.matches() && !relSet.contains("assets/minecraft/items/" + mm.group(1) + ".json")) {
+							try (InputStream in = src.open(e.getKey())) {
+								if (overridesToItemDef(new String(in.readAllBytes(), StandardCharsets.UTF_8), mm.group(1), r) != null) {
+									r.jsonFixed++;
+								}
+							} catch (Exception ignored) {
+							}
+						}
+					}
 					writeReport(pack, r);
 					return r;
 				}
@@ -615,6 +627,23 @@ public final class PackMigrator {
 								}
 							}
 							put(zo, outName, data);
+						}
+					}
+					// 1.21.4+: the "overrides" of models/item/<x>.json (custom_model_data) are gone, the game wants assets/minecraft/items/<x>.json
+					for (Map.Entry<String, String> e : rel.entrySet()) {
+						String relName = e.getValue();
+						java.util.regex.Matcher mm = ITEM_MODEL.matcher(relName);
+						if (!mm.matches() || relSet.contains("assets/minecraft/items/" + mm.group(1) + ".json")) {
+							continue;
+						}
+						try (InputStream in = src.open(e.getKey())) {
+							String def = overridesToItemDef(new String(in.readAllBytes(), StandardCharsets.UTF_8), mm.group(1), r);
+							if (def != null && written.add("assets/minecraft/items/" + mm.group(1) + ".json")) {
+								put(zo, "assets/minecraft/items/" + mm.group(1) + ".json", def.getBytes(StandardCharsets.UTF_8));
+								r.jsonFixed++;
+							}
+						} catch (Exception ex) {
+							r.notes.add("Item " + mm.group(1) + ": could not convert (" + ex.getMessage() + ")");
 						}
 					}
 					if (newMeta == null && !written.contains("pack.mcmeta")) {
@@ -689,6 +718,146 @@ public final class PackMigrator {
 			}
 		}
 		r.backup = backup;
+	}
+
+	// ------------------------------------------------------------------------------------------ item models (1.21.4+)
+	private static final java.util.regex.Pattern ITEM_MODEL = java.util.regex.Pattern.compile("assets/minecraft/models/item/([a-z0-9_]+)\\.json");
+	/** Items whose vanilla definition is more than one plain model (dyes, compass needle, bow pulling, chests, banners...): never replaced. */
+	private static final java.util.regex.Pattern SPECIAL_ITEM = java.util.regex.Pattern.compile(
+			"compass|recovery_compass|clock|bow|crossbow|shield|trident|elytra|fishing_rod|spyglass|goat_horn|brush|light|filled_map|potion|splash_potion|lingering_potion"
+					+ "|tipped_arrow|firework_star|leather_.*|wolf_armor|.*_banner|.*_bed|.*shulker_box|.*_sign|.*_hanging_sign|.*_skull|.*_head|player_head|.*chest|decorated_pot|conduit");
+
+	/**
+	 * Old resource packs give an item new looks with "overrides" + custom_model_data in models/item/x.json. Since 1.21.4 the
+	 * game ignores those: it reads assets/minecraft/items/x.json instead. This writes that file for the plain case (every
+	 * override only asks for custom_model_data). Returns null when there is nothing to convert or it is not safe to.
+	 */
+	private static String overridesToItemDef(String json, String name, Result r) {
+		com.google.gson.JsonObject root;
+		try {
+			root = com.google.gson.JsonParser.parseString(json).getAsJsonObject();
+		} catch (Exception e) {
+			return null;
+		}
+		if (!root.has("overrides") || !root.get("overrides").isJsonArray() || root.getAsJsonArray("overrides").isEmpty()) {
+			return null;
+		}
+		if (SPECIAL_ITEM.matcher(name).matches()) {
+			r.notes.add("Item " + name + ": has custom models but its look is special in the game, left as it is");
+			return null;
+		}
+		java.util.TreeMap<Float, String> entries = new java.util.TreeMap<>();
+		for (com.google.gson.JsonElement el : root.getAsJsonArray("overrides")) {
+			if (!el.isJsonObject()) {
+				return null;
+			}
+			com.google.gson.JsonObject o = el.getAsJsonObject();
+			if (!o.has("predicate") || !o.get("predicate").isJsonObject() || !o.has("model") || !o.get("model").isJsonPrimitive()) {
+				return null;
+			}
+			com.google.gson.JsonObject pred = o.getAsJsonObject("predicate");
+			if (pred.size() != 1 || !pred.has("custom_model_data")) {
+				r.notes.add("Item " + name + ": uses other predicates than custom_model_data, left as it is");
+				return null;
+			}
+			entries.put(pred.get("custom_model_data").getAsFloat(), o.get("model").getAsString());
+		}
+		com.google.gson.JsonArray arr = new com.google.gson.JsonArray();
+		for (Map.Entry<Float, String> en : entries.entrySet()) {
+			com.google.gson.JsonObject e = new com.google.gson.JsonObject();
+			e.addProperty("threshold", en.getKey());
+			com.google.gson.JsonObject m = new com.google.gson.JsonObject();
+			m.addProperty("type", "minecraft:model");
+			m.addProperty("model", en.getValue());
+			e.add("model", m);
+			arr.add(e);
+		}
+		com.google.gson.JsonObject fb = new com.google.gson.JsonObject();
+		fb.addProperty("type", "minecraft:model");
+		fb.addProperty("model", "minecraft:item/" + name);
+		com.google.gson.JsonObject rd = new com.google.gson.JsonObject();
+		rd.addProperty("type", "minecraft:range_dispatch");
+		rd.addProperty("property", "minecraft:custom_model_data");
+		rd.add("fallback", fb);
+		rd.add("entries", arr);
+		com.google.gson.JsonObject out = new com.google.gson.JsonObject();
+		out.add("model", rd);
+		r.notes.add("Item " + name + ": " + entries.size() + " custom model(s) converted to the new items/" + name + ".json");
+		return out.toString();
+	}
+
+	// ------------------------------------------------------------------ revert (only the very last update)
+	private static Path journalFile() {
+		return FabricLoader.getInstance().getConfigDir().resolve("kubo-pack-backups").resolve("last-update.json");
+	}
+
+	/** Remembers what the last real update changed (a single pack, or every pack of one "Update ALL"). Replaces the older one. */
+	public static void writeJournal(List<Result> results) {
+		try {
+			com.google.gson.JsonArray arr = new com.google.gson.JsonArray();
+			for (Result r : results) {
+				if (r != null && r.error == null && !r.dryRun && r.backup != null && r.output != null) {
+					com.google.gson.JsonObject o = new com.google.gson.JsonObject();
+					o.addProperty("pack", r.output.toString());
+					o.addProperty("backup", r.backup.toString());
+					arr.add(o);
+				}
+			}
+			if (arr.isEmpty()) {
+				return; // nothing changed: the older update can still be reverted
+			}
+			Files.createDirectories(journalFile().getParent());
+			Files.writeString(journalFile(), arr.toString(), java.nio.charset.StandardCharsets.UTF_8);
+		} catch (Exception ignored) {
+			// no undo then, the update itself is fine
+		}
+	}
+
+	public static boolean hasJournal() {
+		return Files.isRegularFile(journalFile());
+	}
+
+	/** Puts the packs of the last update back as they were. Returns one line per pack (starting with "OK" or "ERR"). Can only be done once. */
+	public static List<String> revertLast() {
+		List<String> out = new java.util.ArrayList<>();
+		try {
+			com.google.gson.JsonArray arr = com.google.gson.JsonParser.parseString(Files.readString(journalFile(), java.nio.charset.StandardCharsets.UTF_8)).getAsJsonArray();
+			boolean allOk = true;
+			for (com.google.gson.JsonElement e : arr) {
+				com.google.gson.JsonObject o = e.getAsJsonObject();
+				Path pack = Path.of(o.get("pack").getAsString());
+				Path backup = Path.of(o.get("backup").getAsString());
+				try {
+					if (!Files.exists(backup)) {
+						throw new IOException("the saved original is gone");
+					}
+					if (Files.isDirectory(backup)) {
+						if (Files.isDirectory(pack)) {
+							try (java.util.stream.Stream<Path> w = Files.walk(pack)) {
+								for (Path f : (Iterable<Path>) w.sorted(java.util.Comparator.reverseOrder())::iterator) {
+									if (!f.equals(pack)) {
+										Files.delete(f);
+									}
+								}
+							}
+						}
+						copyTree(backup, pack);
+					} else {
+						Files.copy(backup, pack, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+					}
+					out.add("OK " + pack.getFileName());
+				} catch (IOException | RuntimeException ex) {
+					allOk = false;
+					out.add("ERR " + pack.getFileName() + ": " + ex.getMessage());
+				}
+			}
+			if (allOk) {
+				Files.deleteIfExists(journalFile());
+			}
+		} catch (Exception ex) {
+			out.add("ERR " + ex.getMessage());
+		}
+		return out;
 	}
 
 	private static void copyTree(Path from, Path to) throws IOException {

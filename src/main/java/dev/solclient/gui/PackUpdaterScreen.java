@@ -38,6 +38,7 @@ public class PackUpdaterScreen extends Screen {
 	private volatile List<String> doneNames;
 	private volatile int progress, total;
 	private volatile String runningName = "";
+	private volatile List<String> revertDone;
 	private List<Line> report;
 	private boolean showReport;
 
@@ -68,7 +69,7 @@ public class PackUpdaterScreen extends Screen {
 
 	// ---- layout
 	private int pw() {
-		return Math.min(width - 16, 400);
+		return Math.min(width - 16, 300);
 	}
 
 	private int px() {
@@ -80,7 +81,7 @@ public class PackUpdaterScreen extends Screen {
 	}
 
 	private int ph() {
-		return Math.min(height - 12, 270);
+		return Math.min(height - 12, 215);
 	}
 
 	private int listTop() {
@@ -143,11 +144,51 @@ public class PackUpdaterScreen extends Screen {
 				names.add(p.getFileName().toString());
 				progress++;
 			}
+			if (!dryRun) {
+				PackMigrator.writeJournal(out);
+			}
 			doneNames = names;
 			done = out;
 		}, "kubo-pack-updater");
 		t.setDaemon(true);
 		t.start();
+	}
+
+	/** Undoes the very last update (one pack, or all the packs of the last Update ALL). */
+	private void revert() {
+		if (running || !PackMigrator.hasJournal()) {
+			return;
+		}
+		runningName = Lang.tr("restoring the originals", "a repor os originais");
+		total = 1;
+		progress = 0;
+		running = true;
+		done = null;
+		Thread t = new Thread(() -> revertDone = PackMigrator.revertLast(), "kubo-pack-revert");
+		t.setDaemon(true);
+		t.start();
+	}
+
+	private void buildRevertReport(List<String> lines) {
+		List<Line> l = new ArrayList<>();
+		int bad = 0;
+		for (String s : lines) {
+			if (s.startsWith("ERR")) {
+				bad++;
+			}
+		}
+		l.add(new Line(bad == 0 ? Lang.tr("Reverted: the packs are back as they were before the last update.", "Revertido: os packs voltaram a ficar como estavam antes da última atualização.")
+				: Lang.tr("Some packs could not be restored (close the game's resource pack or restart and try again).", "Alguns packs não puderam ser repostos (fecha o resource pack no jogo ou reinicia e tenta outra vez)."),
+				bad == 0 ? Theme.GREEN : Theme.RED));
+		l.add(new Line(Lang.tr("Press F3 + T in the game to reload the textures.", "Carrega F3 + T no jogo para recarregar as texturas."), Theme.DIM));
+		l.add(new Line("", Theme.DIM));
+		for (String s : lines) {
+			l.add(new Line(s, s.startsWith("ERR") ? Theme.RED : Theme.GREEN));
+		}
+		report = l;
+		showReport = true;
+		scroll = 0;
+		scrollTarget = 0;
 	}
 
 	private void buildReport(List<PackMigrator.Result> results, List<String> names) {
@@ -242,6 +283,12 @@ public class PackUpdaterScreen extends Screen {
 			running = false;
 			buildReport(done, doneNames);
 		}
+		if (running && revertDone != null) {
+			running = false;
+			List<String> rd = revertDone;
+			revertDone = null;
+			buildRevertReport(rd);
+		}
 		scroll += (scrollTarget - scroll) * 0.35F;
 		int x = px(), y = py(), w = pw(), h = ph();
 		Gfx.rrect(c, x, y, w, h, 10, Theme.PANEL);
@@ -298,10 +345,11 @@ public class PackUpdaterScreen extends Screen {
 			drawBtn(c, btn(1, 2), "Done", mx, my, true);
 		} else {
 			boolean ok = !sel.isEmpty() && !running, any = !packs.isEmpty() && !running;
-			drawBtn(c, btn(0, 4), "Check only", mx, my, ok);
-			drawBtn(c, btn(1, 4), "Update selected", mx, my, ok);
-			drawBtn(c, btn(2, 4), "Update ALL", mx, my, any);
-			drawBtn(c, btn(3, 4), "Back", mx, my, true);
+			drawBtn(c, btn(0, 5), "Check only", mx, my, ok);
+			drawBtn(c, btn(1, 5), "Update selected", mx, my, ok);
+			drawBtn(c, btn(2, 5), "Update ALL", mx, my, any);
+			drawBtn(c, btn(3, 5), "Revert last", mx, my, !running && PackMigrator.hasJournal());
+			drawBtn(c, btn(4, 5), "Back", mx, my, true);
 		}
 	}
 
@@ -329,19 +377,23 @@ public class PackUpdaterScreen extends Screen {
 			}
 			return true;
 		}
-		if (in(btn(0, 4), mx, my)) {
+		if (in(btn(0, 5), mx, my)) {
 			start(true, false);
 			return true;
 		}
-		if (in(btn(1, 4), mx, my)) {
+		if (in(btn(1, 5), mx, my)) {
 			start(false, false);
 			return true;
 		}
-		if (in(btn(2, 4), mx, my)) {
+		if (in(btn(2, 5), mx, my)) {
 			start(false, true);
 			return true;
 		}
-		if (in(btn(3, 4), mx, my)) {
+		if (in(btn(3, 5), mx, my)) {
+			revert();
+			return true;
+		}
+		if (in(btn(4, 5), mx, my)) {
 			close();
 			return true;
 		}

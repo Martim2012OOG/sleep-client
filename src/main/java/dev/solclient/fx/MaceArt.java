@@ -350,7 +350,7 @@ public final class MaceArt {
 	}
 
 	// ------------------------------------------------------------------ the styles
-	/** 16 Slash Arcs, 17 Nova Flash, 18 Blade Storm, 19 Shatter, 20 Void Rift. {@code size} is the Radius setting divided by 8. */
+	/** 16..35, see MaceEffectsMod for the names. {@code size} is the Radius setting divided by 8. */
 	public static void play(int style, double x, double y, double z, float pw, float size, float quality) {
 		float S = Math.max(0.35F, size * pw);
 		switch (style) {
@@ -359,6 +359,21 @@ public final class MaceArt {
 			case 18 -> bladeStorm(x, y, z, S, quality);
 			case 19 -> shatter(x, y, z, S, quality);
 			case 20 -> voidRift(x, y, z, S, quality);
+			case 21 -> crescentWave(x, y, z, S, quality);
+			case 22 -> starfall(x, y, z, S, quality);
+			case 23 -> thunderFork(x, y, z, S, quality);
+			case 24 -> pulseRings(x, y, z, S, quality);
+			case 25 -> crossSlash(x, y, z, S, quality);
+			case 26 -> spiralBlades(x, y, z, S, quality);
+			case 27 -> meteorRain(x, y, z, S, quality);
+			case 28 -> frostBurst(x, y, z, S, quality);
+			case 29 -> inferno(x, y, z, S, quality);
+			case 30 -> gravityCrush(x, y, z, S, quality);
+			case 31 -> haloCrown(x, y, z, S, quality);
+			case 32 -> thunderClap(x, y, z, S, quality);
+			case 33 -> tectonic(x, y, z, S, quality);
+			case 34 -> cometStrike(x, y, z, S, quality);
+			case 35 -> petalStorm(x, y, z, S, quality);
 			default -> {
 			}
 		}
@@ -447,5 +462,250 @@ public final class MaceArt {
 			shards(x, y + 0.4, z, Math.round(12 * quality), 1.1F, 0.5F * S);
 			dust(x, y, z, 3F * S, 10, quality);
 		});
+	}
+
+	// ------------------------------------------------------------------ styles 21..35
+	/** A bolt that flies from one point to another in {@code life} ticks (straight, no slowing down). */
+	private static void bolt(int delay, double sx, double sy, double sz, double tx, double ty, double tz, float length, int life) {
+		double dx = tx - sx, dy = ty - sy, dz = tz - sz;
+		double len = Math.sqrt(dx * dx + dy * dy + dz * dz);
+		if (len < 0.01) {
+			return;
+		}
+		float phi = (float) Math.atan2(dz, dx);
+		float elev = (float) Math.asin(dy / len);
+		float roll = -((float) Math.PI / 2F - elev);
+		double sp = len / life;
+		Spec a = new Spec().mode(Mode.VERT).angles(-phi, roll, 0F).size(length, length * 0.9F).life(life).colour(hot).fade(0.05F, 0.3F, 1F)
+				.move(dx / life, dy / life, dz / life, 0F, 1F).linear();
+		Spec b = new Spec().mode(Mode.VERT).angles(-phi, roll, 0F).size(length * 1.15F, length).life(life).colour(main).fade(0.05F, 0.3F, 0.7F)
+				.move(dx / life, dy / life, dz / life, 0F, 1F).linear();
+		putLater(delay, STREAK, sx, sy, sz, a);
+		putLater(delay, STREAK, sx, sy, sz, b);
+	}
+
+	private static void crack(double x, double y, double z, float from, float to, int life, float yaw) {
+		put(CRACK, x, y + 0.05, z, new Spec().mode(Mode.FLAT).angles(yaw, 0F, 0F).size(from, to).life(life).colour(main).fade(0.03F, 0.45F, 1F));
+	}
+
+	/** Big flat crescents sweeping out along the ground in every direction. */
+	private static void crescentWave(double x, double y, double z, float S, float quality) {
+		flare(x, y + 0.6, z, 0.4F * S, 2F * S, 7, 0.1F);
+		int n = 6;
+		float base = rnd() * 6.28F;
+		for (int i = 0; i < n; i++) {
+			float yaw = base + i * 1.0472F;
+			double dx = Math.cos(yaw), dz = Math.sin(yaw);
+			Spec a = new Spec().mode(Mode.VERT).angles(yaw + 1.5708F, 0F, 0F).size(1.4F * S, 3.2F * S).life(12).colour(main).fade(0.05F, 0.5F, 0.95F).move(dx * 0.32 * S, 0, dz * 0.32 * S, 0F, 0.93F);
+			Spec b = new Spec().mode(Mode.VERT).angles(yaw + 1.5708F, 0F, 0F).size(1.4F * S, 3.2F * S).life(12).colour(hot).fade(0.05F, 0.5F, 1F).move(dx * 0.32 * S, 0, dz * 0.32 * S, 0F, 0.93F);
+			putLater(i % 2, SLASH, x + dx * 0.5, y + 0.55, z + dz * 0.5, a);
+			putLater(i % 2, SLASHCORE, x + dx * 0.5, y + 0.55, z + dz * 0.5, b);
+		}
+		ring(0, x, y, z, 5F * S, 13, 0.9F);
+		ring(3, x, y, z, 3F * S, 11, 0.55F);
+		dust(x, y, z, 2.6F * S, 8, quality);
+	}
+
+	/** Stars rain down all around and burst on the floor. */
+	private static void starfall(double x, double y, double z, float S, float quality) {
+		int n = Math.round(14 * quality);
+		for (int i = 0; i < n; i++) {
+			double a = rnd() * 6.28, r = rnd(0.3F, 3.6F) * S;
+			double tx = x + Math.cos(a) * r, tz = z + Math.sin(a) * r;
+			int d = i % 7;
+			bolt(d, tx + rnd(-1F, 1F), y + 7, tz + rnd(-1F, 1F), tx, y + 0.3, tz, 1.1F * S, 6);
+			final double fx = tx, fz = tz;
+			later(d + 6, () -> flare(fx, y + 0.35, fz, 0.2F * S, 1.1F * S, 7, 0.2F));
+		}
+		flare(x, y + 1, z, 0.5F * S, 2.2F * S, 9, 0.1F);
+		ring(2, x, y, z, 4.4F * S, 13, 0.8F);
+	}
+
+	/** Forked lightning from the sky onto the point, cracks in the floor. */
+	private static void thunderFork(double x, double y, double z, float S, float quality) {
+		bolt(0, x, y + 9, z, x, y + 0.2, z, 3.2F * S, 3);
+		for (int i = 0; i < 5; i++) {
+			double a = rnd() * 6.28, r = rnd(1.2F, 3.4F) * S;
+			bolt(1 + i / 2, x + rnd(-0.6F, 0.6F), y + 8, z + rnd(-0.6F, 0.6F), x + Math.cos(a) * r, y + 0.2, z + Math.sin(a) * r, 2.2F * S, 4);
+		}
+		put(GLOW, x, y + 4, z, new Spec().size(2F * S, 4F * S).life(6).colour(main).fade(0.1F, 0.6F, 0.7F));
+		later(3, () -> {
+			flare(x, y + 0.7, z, 0.7F * S, 3.4F * S, 9, 0.1F);
+			crack(x, y, z, 2.4F * S, 6.6F * S, 28, rnd() * 6.28F);
+			ring(0, x, y, z, 5.2F * S, 13, 0.9F);
+			shards(x, y + 0.3, z, Math.round(10 * quality), 1F, 0.45F * S);
+		});
+	}
+
+	/** Six rings one after the other, like a sonar. */
+	private static void pulseRings(double x, double y, double z, float S, float quality) {
+		flare(x, y + 0.5, z, 0.4F * S, 1.8F * S, 8, 0.1F);
+		for (int i = 0; i < 6; i++) {
+			ring(i * 2, x, y, z, (2.2F + i * 0.9F) * S, 14, 0.95F - i * 0.1F);
+		}
+		put(GLOW, x, y + 0.1, z, new Spec().mode(Mode.FLAT).size(0.8F * S, 4F * S).life(16).colour(main).fade(0.05F, 0.7F, 0.7F));
+		dust(x, y, z, 2.2F * S, 6, quality);
+	}
+
+	/** Two huge slashes that cross like an X. */
+	private static void crossSlash(double x, double y, double z, float S, float quality) {
+		float yaw = rnd() * 6.28F;
+		flare(x, y + 1.2, z, 0.6F * S, 3F * S, 8, 0.1F);
+		slash(0, x, y + 1.3, z, yaw, 0.8F, 0F, 3.8F * S, 10);
+		slash(2, x, y + 1.3, z, yaw, -0.8F, 0F, 3.8F * S, 10);
+		slash(4, x, y + 1.3, z, yaw + 1.5708F, 0.8F, 0F, 3F * S, 9);
+		slash(5, x, y + 1.3, z, yaw + 1.5708F, -0.8F, 0F, 3F * S, 9);
+		ring(1, x, y, z, 4.6F * S, 13, 0.9F);
+		int n = Math.round(8 * quality);
+		for (int i = 0; i < n; i++) {
+			streak(1, x, y + 1.2, z, (float) (Math.PI * 2 * i / n), rnd(-0.2F, 0.6F), rnd(0.4F, 0.7F) * S, 1.2F * S, 9);
+		}
+	}
+
+	/** Blades that spiral upward around the point. */
+	private static void spiralBlades(double x, double y, double z, float S, float quality) {
+		int n = Math.round(14 * quality);
+		float base = rnd() * 6.28F;
+		for (int i = 0; i < n; i++) {
+			float a = base + i * 0.62F;
+			float r = (0.8F + i * 0.1F) * S;
+			slash(i / 2, x + Math.cos(a) * r, y + 0.3 + i * 0.22, z + Math.sin(a) * r, a + 1.5708F, (i % 2 == 0 ? 1F : -1F) * 0.6F, 0.2F, 1.5F * S, 9);
+		}
+		flare(x, y + 1.1, z, 0.5F * S, 2.2F * S, 9, 0.2F);
+		ring(0, x, y, z, 4.4F * S, 13, 0.85F);
+		dust(x, y, z, 2F * S, 6, quality);
+	}
+
+	/** Meteors crash in from one side. */
+	private static void meteorRain(double x, double y, double z, float S, float quality) {
+		int n = Math.round(9 * quality);
+		float side = rnd() * 6.28F;
+		for (int i = 0; i < n; i++) {
+			double tx = x + rnd(-3F, 3F) * S, tz = z + rnd(-3F, 3F) * S;
+			double sx = tx + Math.cos(side) * 6, sz = tz + Math.sin(side) * 6;
+			int d = i * 2 % 8;
+			bolt(d, sx, y + 8, sz, tx, y + 0.2, tz, 1.5F * S, 7);
+			final double fx = tx, fz = tz;
+			later(d + 7, () -> {
+				flare(fx, y + 0.4, fz, 0.3F * S, 1.4F * S, 8, 0.2F);
+				ring(0, fx, y, fz, 1.8F * S, 9, 0.7F);
+				shards(fx, y + 0.2, fz, 3, 0.8F, 0.35F * S);
+			});
+		}
+		dust(x, y, z, 3F * S, 8, quality);
+	}
+
+	/** Ice: a ring, a pale flare and shards all around. */
+	private static void frostBurst(double x, double y, double z, float S, float quality) {
+		flare(x, y + 0.9, z, 0.7F * S, 3.6F * S, 10, 0.03F);
+		ring(0, x, y, z, 5.8F * S, 15, 1F);
+		ring(2, x, y, z, 3.4F * S, 12, 0.7F);
+		shards(x, y + 0.3, z, Math.round(26 * quality), 1.3F, 0.55F * S);
+		int n = Math.round(10 * quality);
+		for (int i = 0; i < n; i++) {
+			streak(0, x, y + 0.2, z, (float) (Math.PI * 2 * i / n), rnd(0.3F, 1.1F), rnd(0.3F, 0.55F) * S, 1.3F * S, 10);
+		}
+		put(GLOW, x, y + 0.5, z, new Spec().size(1F * S, 5F * S).life(14).colour(main).fade(0.05F, 0.7F, 0.5F));
+	}
+
+	/** Flames shooting up from the floor. */
+	private static void inferno(double x, double y, double z, float S, float quality) {
+		int n = Math.round(16 * quality);
+		for (int i = 0; i < n; i++) {
+			double a = rnd() * 6.28, r = rnd(0.2F, 2.6F) * S;
+			double fx = x + Math.cos(a) * r, fz = z + Math.sin(a) * r;
+			bolt(i / 4, fx, y + 0.1, fz, fx + rnd(-0.4F, 0.4F), y + rnd(2F, 4.2F) * S, fz + rnd(-0.4F, 0.4F), 1.3F * S, 9);
+		}
+		put(GLOW, x, y + 1, z, new Spec().size(1.2F * S, 5.5F * S).life(16).colour(main).fade(0.1F, 0.7F, 0.7F));
+		ring(0, x, y, z, 4.8F * S, 14, 0.9F);
+		crack(x, y, z, 2F * S, 5.5F * S, 26, rnd() * 6.28F);
+		dust(x, y, z, 2.8F * S, 10, quality);
+	}
+
+	/** Everything is crushed down into the ground, then it slams out. */
+	private static void gravityCrush(double x, double y, double z, float S, float quality) {
+		for (int i = 0; i < 12; i++) {
+			bolt(i % 3, x + rnd(-2.2F, 2.2F) * S, y + 5 + rnd() * 2, z + rnd(-2.2F, 2.2F) * S, x, y + 0.2, z, 1.2F * S, 6);
+		}
+		put(GLOW, x, y + 2, z, new Spec().size(2.4F * S, 0.5F * S).life(8).colour(main).fade(0.2F, 0.3F, 0.8F));
+		later(6, () -> {
+			flare(x, y + 0.5, z, 0.8F * S, 3.8F * S, 9, 0.08F);
+			ring(0, x, y, z, 6F * S, 15, 1F);
+			ring(2, x, y, z, 3.4F * S, 12, 0.7F);
+			crack(x, y, z, 2.4F * S, 6.8F * S, 30, rnd() * 6.28F);
+			shards(x, y + 0.2, z, Math.round(12 * quality), 1F, 0.5F * S);
+			dust(x, y, z, 3.2F * S, 10, quality);
+		});
+	}
+
+	/** A glowing halo standing upright above the point, a star in its middle. */
+	private static void haloCrown(double x, double y, double z, float S, float quality) {
+		float yaw = rnd() * 6.28F;
+		for (int i = 0; i < 3; i++) {
+			put(RING, x, y + 1.4 + i * 0.55, z, new Spec().mode(Mode.VERT).angles(yaw, 0F, 0F).spin(0.05F * (i % 2 == 0 ? 1 : -1)).size(0.5F, (2.2F - i * 0.4F) * S).life(14 + i * 2).colour(main).fade(0.05F, 0.5F, 0.9F));
+		}
+		flare(x, y + 1.6, z, 0.5F * S, 2.6F * S, 12, 0.08F);
+		ring(0, x, y, z, 4.2F * S, 13, 0.8F);
+		int n = Math.round(10 * quality);
+		for (int i = 0; i < n; i++) {
+			streak(2, x, y + 1.6, z, (float) (Math.PI * 2 * i / n), rnd(0.1F, 1.2F), rnd(0.2F, 0.45F) * S, 1.1F * S, 10);
+		}
+	}
+
+	/** A huge flash, two fast rings and flat streaks - a clap. */
+	private static void thunderClap(double x, double y, double z, float S, float quality) {
+		put(GLOW, x, y + 0.8, z, new Spec().size(2F * S, 8F * S).life(8).colour(hot).fade(0.02F, 0.8F, 0.85F));
+		flare(x, y + 0.9, z, 1F * S, 5F * S, 8, 0.04F);
+		ring(0, x, y, z, 7.5F * S, 11, 1F);
+		ring(1, x, y, z, 5F * S, 10, 0.9F);
+		int n = Math.round(20 * quality);
+		for (int i = 0; i < n; i++) {
+			streak(0, x, y + 0.5, z, (float) (Math.PI * 2 * i / n) + rnd(-0.08F, 0.08F), rnd(-0.05F, 0.2F), rnd(0.55F, 0.9F) * S, rnd(1.2F, 2F) * S, 8);
+		}
+		dust(x, y, z, 3.4F * S, 10, quality);
+	}
+
+	/** Several big cracks run out of the point and chunks fly. */
+	private static void tectonic(double x, double y, double z, float S, float quality) {
+		float base = rnd() * 6.28F;
+		for (int i = 0; i < 3; i++) {
+			crack(x, y, z, (2F + i * 0.4F) * S, (6.6F - i * 0.5F) * S, 34, base + i * 2.0944F);
+		}
+		put(GLOW, x, y + 0.1, z, new Spec().mode(Mode.FLAT).size(0.8F * S, 3.8F * S).life(18).colour(main).fade(0.05F, 0.7F, 0.8F));
+		flare(x, y + 0.6, z, 0.5F * S, 2.2F * S, 8, 0.1F);
+		ring(0, x, y, z, 5F * S, 14, 0.85F);
+		shards(x, y + 0.2, z, Math.round(22 * quality), 1.2F, 0.6F * S);
+		dust(x, y, z, 3.8F * S, 14, quality);
+	}
+
+	/** One enormous bolt falls from the sky onto the point. */
+	private static void cometStrike(double x, double y, double z, float S, float quality) {
+		float side = rnd() * 6.28F;
+		double sx = x + Math.cos(side) * 7, sz = z + Math.sin(side) * 7;
+		bolt(0, sx, y + 10, sz, x, y + 0.2, z, 3.6F * S, 7);
+		put(GLOW, sx, y + 10, sz, new Spec().size(1.2F * S, 1.6F * S).life(7).colour(main).fade(0.1F, 0.5F, 0.8F).move((x - sx) / 7, -9.8 / 7, (z - sz) / 7, 0F, 1F).linear());
+		later(7, () -> {
+			flare(x, y + 0.6, z, 0.8F * S, 4F * S, 10, 0.08F);
+			ring(0, x, y, z, 6F * S, 15, 1F);
+			ring(2, x, y, z, 3.4F * S, 12, 0.7F);
+			crack(x, y, z, 2.4F * S, 6.4F * S, 28, rnd() * 6.28F);
+			shards(x, y + 0.3, z, Math.round(16 * quality), 1.2F, 0.5F * S);
+			dust(x, y, z, 3F * S, 10, quality);
+		});
+	}
+
+	/** Pink petals swirl up and drift, soft ring on the floor. */
+	private static void petalStorm(double x, double y, double z, float S, float quality) {
+		int n = Math.round(30 * quality);
+		for (int i = 0; i < n; i++) {
+			float a = rnd() * 6.28F;
+			float out = rnd(0.04F, 0.14F) * S;
+			put(SHARD, x + Math.cos(a) * 0.4, y + 0.3, z + Math.sin(a) * 0.4,
+					new Spec().size(0.35F * S, 0.5F * S).life(rnd() < 0.5F ? 26 : 34).colour(rnd() < 0.4F ? hot : main).fade(0.05F, 0.5F, 0.95F)
+							.move(Math.cos(a + 1.2F) * out, rnd(0.07F, 0.16F), Math.sin(a + 1.2F) * out, -0.1F, 0.95F).spin(rnd(-0.3F, 0.3F)).linear());
+		}
+		flare(x, y + 0.9, z, 0.4F * S, 1.8F * S, 9, 0.08F);
+		ring(0, x, y, z, 4.6F * S, 16, 0.7F);
+		ring(3, x, y, z, 2.6F * S, 13, 0.5F);
 	}
 }
