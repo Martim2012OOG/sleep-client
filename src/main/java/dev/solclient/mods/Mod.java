@@ -98,6 +98,12 @@ public abstract class Mod {
 		return o;
 	}
 
+	protected Option.Custom custom(String name, Option.Custom.Drawer drawer) {
+		Option.Custom o = new Option.Custom(name, drawer);
+		options.add(o);
+		return o;
+	}
+
 	protected Option.Grid grid(String name, int size, String def) {
 		Option.Grid o = new Option.Grid(name, size, def);
 		options.add(o);

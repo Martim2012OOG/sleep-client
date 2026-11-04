@@ -2705,3 +2705,5 @@ How far from you waves are made. Lower = lighter.	Até onde as ondas são criada
 Max Waves	Máximo de Ondas
 Never more waves than this at once, so it cannot lag.	Nunca há mais ondas do que isto ao mesmo tempo, por isso não laga.
 Pauses new waves while the game is below 30 fps.	Pára de criar ondas novas enquanto o jogo está abaixo de 30 fps.
+Water Colour Status	Estado da Cor da Água
+Refresh	Atualizar

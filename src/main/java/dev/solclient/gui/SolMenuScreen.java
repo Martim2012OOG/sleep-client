@@ -2615,6 +2615,9 @@ public class SolMenuScreen extends Screen {
 			return 28;
 		}
 
+		if (o instanceof Option.Custom cu) {
+			return cu.drawer.draw(c, mx, my, x + 4, y + 2, rw - 8, (rx, ry, rw2, rh, cl) -> region(rx, ry, rw2, rh, cl)) + 6;
+		}
 		if (o instanceof Option.Grid g) {
 			return gridEditor(c, mx, my, g, x + 4, y + 4, rw - 8) + 8;
 		}

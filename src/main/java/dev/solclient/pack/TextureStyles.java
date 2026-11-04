@@ -381,6 +381,48 @@ public final class TextureStyles {
 		return count;
 	}
 
+	/** The picture of the category's main item inside a pack (e.g. the totem texture), or null when the pack has none. */
+	public static byte[] previewPng(Path zip, Cat cat) throws IOException {
+		try (ZipFile z = new ZipFile(zip.toFile())) {
+			String pre = prefixOf(z) + "assets/minecraft/";
+			Pattern rx = Pattern.compile(cat.rx());
+			ZipEntry best = null;
+			int bestScore = -1;
+			var en = z.entries();
+			while (en.hasMoreElements()) {
+				ZipEntry e = en.nextElement();
+				String n = e.getName();
+				if (e.isDirectory() || !n.startsWith(pre) || !n.endsWith(".png")) {
+					continue;
+				}
+				String rel = n.substring(pre.length());
+				if (!rx.matcher(rel).matches()) {
+					continue;
+				}
+				String base = rel.substring(rel.lastIndexOf('/') + 1);
+				int score = 1;
+				if (base.equals(cat.item() + ".png")) {
+					score = 100;
+				} else if (base.startsWith(cat.item())) {
+					score = 50;
+				} else if (base.contains(cat.item())) {
+					score = 20;
+				}
+				if (rel.startsWith("textures/item/") || rel.startsWith("textures/block/")) {
+					score += 5;
+				}
+				if (score > bestScore) {
+					best = e;
+					bestScore = score;
+				}
+			}
+			if (best == null || best.getSize() > 2_000_000) {
+				return null;
+			}
+			return read(z, best);
+		}
+	}
+
 	/** Result of {@link #buildPack()}. */
 	public record Built(String packFile, Map<String, Integer> files) {
 	}

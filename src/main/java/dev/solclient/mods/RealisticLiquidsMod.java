@@ -49,6 +49,12 @@ public class RealisticLiquidsMod extends Mod {
 	private static final int CLEAR = 0x5CC4F0;
 
 	private static boolean hooked;
+	/** How many times the biome water-colour hook ran (0 = the hook is not active, the fallback below is used). */
+	public static volatile int hookHits;
+
+	@SuppressWarnings("unused")
+	private final Option.Action status = action("Water Colour Status", "Refresh", () -> {
+	}, () -> hookHits > 0 ? "Colour hook active (" + hookHits + " lookups)" : "Colour hook not seen yet (fallback in use)");
 	private int applied = -1;
 
 	public RealisticLiquidsMod() {
@@ -73,7 +79,8 @@ public class RealisticLiquidsMod extends Mod {
 					SimpleFluidRenderHandler.WATER_OVERLAY) {
 				@Override
 				public int getFluidColor(BlockRenderView view, BlockPos pos, FluidState state) {
-					return 0xFF000000 | tint(view.getColor(pos, BiomeColors.WATER_COLOR) & 0xFFFFFF);
+					int raw = view.getColor(pos, BiomeColors.WATER_COLOR) & 0xFFFFFF; // tinted already when the biome hook runs
+					return 0xFF000000 | (hookHits > 0 ? raw : tint(raw));
 				}
 			};
 			FluidRenderHandlerRegistry.INSTANCE.register(Fluids.WATER, Fluids.FLOWING_WATER, h);

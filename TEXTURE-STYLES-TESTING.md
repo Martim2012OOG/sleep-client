@@ -14,3 +14,9 @@ New mod **Texture Styles** (Visual). Pick ready-made community styles PER ITEM; 
 3. Model-based packs (katana / knives): the sword shows the right model (models + textures are followed from the JSON files).
 4. Turn the mod OFF: pack removed; ON again: the same pack comes back without downloading.
 5. Offline: "Could not reach Modrinth", no crash.
+
+## v134 change: inside the settings page, pictures only
+- The "Open" button and the big window are gone. Texture Styles is drawn inside the mod's own settings page (`TextureStylesPanel`, an `Option.Custom` block).
+- Pick an item chip, then pick a picture of that item's texture. No pack names / pack icons are shown; the author is only credited under the grid for the active style.
+- The first time a picture is on screen the style is downloaded in the background (cached) and only the item's texture is read from it. Packs with no texture for that item disappear from the grid.
+- Click a picture = used at once (the generated pack is rebuilt). First tile = vanilla.

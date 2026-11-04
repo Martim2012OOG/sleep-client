@@ -1,6 +1,5 @@
 package dev.solclient.mods;
 
-import dev.solclient.gui.TextureStylesScreen;
 import dev.solclient.pack.TextureStyles;
 
 /**
@@ -19,7 +18,7 @@ public class TextureStylesMod extends Mod {
 		super("Texture Styles", "texture_styles",
 				"Choose a texture style for each item (totems, swords, pearls, crystals, hearts, fire...) from community packs.", Category.VISUAL);
 		instance = this;
-		action("Texture Styles", "Open", () -> mc.setScreen(new TextureStylesScreen(mc.currentScreen)), () -> status);
+		custom("Texture Styles", dev.solclient.gui.TextureStylesPanel.INSTANCE.drawer());
 	}
 
 	@Override

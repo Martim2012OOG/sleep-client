@@ -350,4 +350,33 @@ public abstract class Option<T> {
 			}
 		}
 	}
+
+	// ----------------------------------------------------------------- Custom
+	/** A block the mod draws itself inside the settings page (no value). It returns its own height. */
+	public static class Custom extends Option<String> {
+		/** Registers a click area for this frame. */
+		public interface Reg {
+			void region(int x, int y, int w, int h, Runnable click);
+		}
+
+		public interface Drawer {
+			int draw(net.minecraft.client.gui.DrawContext c, int mx, int my, int x, int y, int w, Reg reg);
+		}
+
+		public final Drawer drawer;
+
+		public Custom(String name, Drawer drawer) {
+			super(name, name);
+			this.drawer = drawer;
+		}
+
+		@Override
+		public JsonElement save() {
+			return JsonNull.INSTANCE;
+		}
+
+		@Override
+		public void load(JsonElement e) {
+		}
+	}
 }
