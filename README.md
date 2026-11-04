@@ -537,3 +537,14 @@ Custom Sky tem agora 6 separadores: **Sky / Night / Effects / Particles / Ambien
 - **Som por tipo de notificação:** Message, Friend, Invite, Clip Saved, Error e Other. Cada um abre a janela "Pick a sound" (todos os sons do jogo e dos resource packs, com pesquisa e botão de ouvir). "Default sound" = o pling do Kubo, "Silent" = sem som.
 - **Sons teus:** ficheiros `.wav` na pasta `kubo-sounds` (ou arrastados para a janela). Só `.wav`.
 - O código dos sons está em `SoundLib` e `SoundPickerScreen` (núcleo); o Kill Sounds usa o mesmo.
+
+## Windows: GUI não aparecia (corrigido)
+O ImmediatelyFast (mod de FPS que ia dentro do jar) partia a GUI normal no Windows e foi removido do build. Se ainda tiveres um ImmediatelyFast solto em `.minecraft/mods`, apaga-o.
+
+## Texture Styles (reconstruído)
+Janela nova (categorias | estilos | inspetor) com 35 categorias; estilos vêm do Modrinth (duplo clique ou "Use this style"); ao fechar a janela o pack `kubo-styles-*.zip` é gerado e ativado. Ver TEXTURE-STYLES-TESTING.md.
+
+## Instant pack reload + Whole Game Font
+- **Instant Pack Reload** (Settings > Loading Screen, on by default): adding/removing a resource pack no longer shows the red loading screen (no fade-in, no 1 s minimum, no fade-out). You keep seeing the game with a thin progress bar on top. Idea taken from Resource Pack Optimizer by ravineclaw (MIT); only the overlay part is ported, the heavy caches of that mod are not.
+- **Whole Game Font** (Settings > Font): replaces `minecraft:default` for the entire game (chat, inventory, tooltips, signs...). Instant, no reload (`FontManagerMixin`).
+- **Mace smashes**: 5 new textured styles (Slash Arcs, Nova Flash, Blade Storm, Shatter, Void Rift), see `tools/gen_mace_fx.py` and `fx/MaceArt.java`.

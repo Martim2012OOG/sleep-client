@@ -28,8 +28,9 @@ dependencies {
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 	// shipped inside the Kubo jar (jar-in-jar), so players don't have to install it; Kubo talks to it by reflection
 	include "net.dimaskama:mcef-modern:${project.mcef_version}"
-	// FPS: ImmediatelyFast (LGPL-3.0) batches HUD/text/item drawing, FerriteCore (MIT) cuts memory use
-	include "maven.modrinth:immediatelyfast:${project.immediatelyfast_version}"
+	// FerriteCore (MIT) cuts memory use.
+	// ImmediatelyFast was REMOVED: on Windows (Intel/AMD/NVIDIA drivers) its HUD/GUI batching made the normal GUI disappear
+	// (fine on Mac). Minecraft 1.21.11 already batches GUI drawing itself, so the FPS gain was small.
 	include "maven.modrinth:ferrite-core:${project.ferritecore_version}"
 	// MP3 decoder (JLayer, LGPL-2.1) for the seasonal menu music, shipped inside the Kubo jar
 	// Offline speech recognition (Vosk, Apache-2.0) for Clip Events "save by voice"; JNA comes with Minecraft

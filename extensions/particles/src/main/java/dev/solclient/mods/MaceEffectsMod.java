@@ -28,7 +28,7 @@ public class MaceEffectsMod extends Mod {
 
 	public static MaceEffectsMod instance;
 
-	private final Option.Choice style = choice("Effect", 0, "Classic", "Meteor", "Lightning", "Ground Cracks", "Tornado", "Eruption", "Gravity Well", "Soul Wave", "Crater", "Star Burst", "Halo Dome", "Helix", "Light Cage", "Aurora", "Random Each Smash", "MasEffects Look");
+	private final Option.Choice style = choice("Effect", 0, "Classic", "Meteor", "Lightning", "Ground Cracks", "Tornado", "Eruption", "Gravity Well", "Soul Wave", "Crater", "Star Burst", "Halo Dome", "Helix", "Light Cage", "Aurora", "Random Each Smash", "MasEffects Look", "Slash Arcs", "Nova Flash", "Blade Storm", "Shatter", "Void Rift");
 	private final Option.Choice who = choice("Show For", 0, "Everyone", "Only Me", "Only Others");
 	private final Option.Num power = num("Power", 100, 30, 250, 10, "%");
 	private final Option.Num radius = num("Radius", 8, 3, 16, 1, " blocks");
@@ -43,6 +43,8 @@ public class MaceEffectsMod extends Mod {
 	private final Option.Bool newLook = bool("v2 look", false);
 	/** One-time move to the MasEffects look (the default now). */
 	private final Option.Bool masLook = bool("v3 mas look", false);
+	/** One-time move to the art-directed look (Slash Arcs) for configs made before it. */
+	private final Option.Bool artLook = bool("v4 art look", false);
 	private final Option.Bool burst = bool("Block Burst", true);
 	private final Option.Bool sparks = bool("Sparks", true);
 	private final Option.Bool shake = bool("Screen Shake", true);
@@ -82,6 +84,7 @@ public class MaceEffectsMod extends Mod {
 		shakeAmount.showIf(shake::on);
 		newLook.showIf(() -> false);
 		masLook.showIf(() -> false);
+		artLook.showIf(() -> false);
 	}
 
 	@Override
@@ -102,6 +105,10 @@ public class MaceEffectsMod extends Mod {
 		if (!masLook.on()) {
 			masLook.set(true);
 			style.set(15); // the shockwave ring + wind + sparks + flash of the MasEffects mod
+		}
+		if (!artLook.on()) {
+			artLook.set(true);
+			style.set(16); // the new hand-drawn Slash Arcs (the old styles stay in the list)
 		}
 		if (hooked) {
 			return;
@@ -158,6 +165,23 @@ public class MaceEffectsMod extends Mod {
 			return;
 		}
 		pw *= power.f() / 100F;
+		int art = artStyle();
+		if (art >= 16) {
+			paletteFor(art);
+			float quality = mc.getCurrentFps() < 40 ? 0.55F : 1F;
+			dev.solclient.fx.MaceArt.play(art, x, y + 0.02, z, pw, radius.f() / 8F, quality);
+			if (art == 19 && !isAir) {
+				floorChunks(new Quake(x, y, z, pw, false), 2.8F, Math.round(10 * pw * quality), 1F);
+			}
+			if (shake.on()) {
+				double d = mc.player.squaredDistanceTo(x, y, z);
+				float near = (float) Math.max(0, 1 - Math.sqrt(d) / (radius.f() * 3F));
+				if (near > 0F) {
+					CameraShake.add(2.2F * pw * near * (shakeAmount.f() / 100F) * (mine ? 1.2F : 1F));
+				}
+			}
+			return;
+		}
 		if (style.idx() == 15) {
 			// MasEffects look: flat shockwave ring, tilted wind ring, sparks and a flash (assets and numbers from MasEffects, MIT)
 			if (!isAir) {
@@ -186,6 +210,59 @@ public class MaceEffectsMod extends Mod {
 		q.seed = ThreadLocalRandom.current().nextLong();
 		quakes.add(q);
 		impact(q, mine);
+	}
+
+	/** 16..20 when a hand-drawn style plays now ("Random" picks one of them 60% of the time), else 0. */
+	private int artStyle() {
+		int i = style.idx();
+		if (i == 14 && ThreadLocalRandom.current().nextFloat() < 0.6F) {
+			return 16 + ThreadLocalRandom.current().nextInt(5);
+		}
+		return i >= 16 ? i : 0;
+	}
+
+	/** The two colours of a hand-drawn style: the body and the white-hot core (each style has its own unless you picked a colour). */
+	private void paletteFor(int st) {
+		int l = look.idx();
+		if (l == 0) {
+			l = switch (st) {
+				case 17 -> 3;
+				case 19 -> 2;
+				case 20 -> 4;
+				default -> 5;
+			};
+			if (look.idx() == 0 && st == 18) {
+				l = 0;
+			}
+		}
+		int main, hot;
+		switch (l) {
+			case 1 -> {
+				main = custom.c() | 0xFF000000;
+				hot = Rainbow.mix(main, 0xFFFFFFFF, 0.85F);
+			}
+			case 2 -> {
+				main = 0xFFFF6A1A;
+				hot = 0xFFFFE2A0;
+			}
+			case 3 -> {
+				main = 0xFF6FD8FF;
+				hot = 0xFFFFFFFF;
+			}
+			case 4 -> {
+				main = 0xFF8A3BFF;
+				hot = 0xFFFFC8FF;
+			}
+			case 5 -> {
+				main = 0xFFFFB347;
+				hot = 0xFFFFFFFF;
+			}
+			default -> {
+				main = Rainbow.hue(ThreadLocalRandom.current().nextFloat());
+				hot = 0xFFFFFFFF;
+			}
+		}
+		dev.solclient.fx.MaceArt.palette(main, hot);
 	}
 
 	private void impact(Quake q, boolean mine) {

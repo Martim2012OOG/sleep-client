@@ -2417,7 +2417,7 @@ Medium Coin Chest	Baú de Moedas Médio
 Large Coin Chest	Baú de Moedas Grande
 Coin Chest	Baú de Moedas
 Chests	Baús
-Hide Loading Screen On Reload	Esconder o ecrã de carregamento ao recarregar
+Instant Pack Reload	Recarregar packs instantaneamente
 Adding or changing a resource pack reloads the game without the red Mojang loading screen: you keep seeing the game.	Ao adicionar ou mudar um pacote de recursos, o jogo recarrega sem o ecrã vermelho da Mojang: continuas a ver o jogo.
 Custom Textures	Texturas personalizadas
 Custom looks and counters for items. For now: the golden apple with its cooldown and how many you have.	Visuais e contadores personalizados para itens. Por agora: a maçã dourada com o cooldown e quantas tens.
@@ -2663,3 +2663,17 @@ How far in front of you each line appears. You keep walking and it stays where i
 How far behind you a line is when it has completely faded away.	A que distância atrás de ti a linha já desapareceu por completo.
 HUD status	Estado do HUD
 What the in-game HUD is doing. "frames" must grow while you play. If it stays at 0 the HUD is not being drawn at all.	O que o HUD está a fazer em jogo. Os "frames" têm de aumentar enquanto jogas. Se ficarem a 0, o HUD não está a ser desenhado de todo.
+Choose a texture style for each item (totems, swords, pearls, crystals, hearts, fire...) from community packs.	Escolhe um estilo de textura para cada item (totems, espadas, pérolas, cristais, corações, fogo...) a partir de packs da comunidade.
+INSPECTOR	INSPETOR
+Newest	Mais recentes
+Vanilla	Vanilla
+Adding or removing a resource pack no longer shows the red loading screen (no fade, no 1 s minimum): you keep seeing the game with a thin progress bar on top.	Ao adicionar ou remover um pacote de recursos já não aparece o ecrã vermelho (sem fade nem mínimo de 1 s): continuas a ver o jogo com uma barra fina no topo.
+Whole Game Font	Fonte de todo o jogo
+Changes the font of the ENTIRE game too: chat, inventory, tooltips, signs, names, scoreboard. Instant, no reload. Off = normal Minecraft font.	Muda também a fonte do jogo TODO: chat, inventário, descrições, placas, nomes, scoreboard. Instantâneo, sem recarregar. Desligado = fonte normal do Minecraft.
+Slash Arcs	Arcos de Corte
+Nova Flash	Clarão Nova
+Blade Storm	Tempestade de Lâminas
+Shatter	Estilhaçar
+Void Rift	Fenda do Vazio
+Random Each Smash	Aleatório a cada smash
+MasEffects Look	Estilo MasEffects

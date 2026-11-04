@@ -282,7 +282,7 @@ public final class CustomFont {
 	}
 
 	/** The pack.mcmeta of the font pack: the same format numbers as the game itself, so it is never "incompatible". */
-	private static String mcmeta(String name) {
+	public static String mcmeta(String name) {
 		JsonObject pack = new JsonObject();
 		JsonObject game = gamePack();
 		if (game != null) {

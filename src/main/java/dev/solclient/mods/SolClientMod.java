@@ -57,6 +57,7 @@ public class SolClientMod extends Mod {
 	public final Option.Bool splashLogo;
 	public final Option.Bool splashOnReload;
 	public final Option.Bool hideReloadScreen;
+	public final Option.Choice gameFont;
 	public final Option.Bool hideHudWhileLoading;
 	/** The first-start setup was finished (or skipped). */
 	public final Option.Bool onboarded;
@@ -106,6 +107,8 @@ public class SolClientMod extends Mod {
 		header("Font");
 		font = choice("Font", 0, dev.solclient.Gfx.FONT_NAMES);
 		font.tip("The font of all Sleep menus and HUD text.");
+		gameFont = choice("Whole Game Font", 0, dev.solclient.GameFont.NAMES);
+		gameFont.tip("Changes the font of the ENTIRE game too: chat, inventory, tooltips, signs, names, scoreboard. Instant, no reload. Off = normal Minecraft font.");
 		action("Your own font (.ttf)", "Open Folder", dev.solclient.CustomFont::openFolder, dev.solclient.CustomFont::statusText)
 				.tip("Drag a .ttf file onto this window, or put it in the folder and click Apply.");
 		action("Use the font in the folder", "Apply", dev.solclient.CustomFont::useFolder, () -> "")
@@ -291,8 +294,8 @@ public class SolClientMod extends Mod {
 		header("Loading Screen");
 		splashLogo = bool("Sleep Logo On Loading Screen", true);
 		splashOnReload = bool("Also When Reloading Resource Packs", false);
-		hideReloadScreen = bool("Hide Loading Screen On Reload", false);
-		hideReloadScreen.tip("Adding or changing a resource pack reloads the game without the red Mojang loading screen: you keep seeing the game.");
+		hideReloadScreen = bool("Instant Pack Reload", true);
+		hideReloadScreen.tip("Adding or removing a resource pack no longer shows the red loading screen (no fade, no 1 s minimum): you keep seeing the game with a thin progress bar on top.");
 		hideHudWhileLoading = bool("Hide Sleep HUD While Loading", true);
 
 		// ------------------------------------------------------------------ Setup & reset

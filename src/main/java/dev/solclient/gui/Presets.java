@@ -99,6 +99,13 @@ public final class Presets {
 				o.getSimulationDistance().setValue(Math.min(o.getSimulationDistance().getValue(), 8));
 				o.getEntityShadows().setValue(false);
 				o.getParticles().setValue(ParticlesMode.DECREASED);
+				// max FPS: uncapped, no vsync, no clouds, no biome blending, no mipmaps, nearer entities
+				o.getMaxFps().setValue(260);
+				o.getEnableVsync().setValue(false);
+				o.getCloudRenderMode().setValue(net.minecraft.client.option.CloudRenderMode.OFF);
+				o.getBiomeBlendRadius().setValue(0);
+				o.getMipmapLevels().setValue(0);
+				o.getEntityDistanceScaling().setValue(0.75D);
 				o.write();
 			} catch (Throwable t) {
 				System.err.println("[Sleep] performance preset (video settings): " + t);

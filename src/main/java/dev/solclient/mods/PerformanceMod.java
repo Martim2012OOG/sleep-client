@@ -36,6 +36,9 @@ public class PerformanceMod extends Mod {
 	public final Option.Num maxPlayers = num("Max Players Drawn", 32, 8, 128, 4, "");
 	public final Option.Num playerDistance = num("Players Draw Distance", 64, 24, 160, 8, " blocks");
 
+	public final Option.Action maxFps = action("Max FPS Mode", "Apply", () -> dev.solclient.gui.Presets.performance(0),
+			() -> "Uncapped FPS, no vsync, no clouds, less particles / shadows / distance");
+
 	public PerformanceMod() {
 		super("Performance", "performance", "Saves resources: lower FPS in the background and skips far-away cosmetics.", Category.UTILITY);
 		instance = this;

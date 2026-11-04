@@ -79,6 +79,7 @@ public class SolClient implements ClientModInitializer {
 		MODS.add(new FriendsHudMod());
 		MODS.add(new ItemCounterMod());
 		MODS.add(new CustomTexturesMod());
+		MODS.add(new TextureStylesMod());
 		MODS.add(new TotemPopsMod());
 		MODS.add(new PlayerCardMod());
 		MODS.add(new NickHiderMod());
@@ -247,6 +248,7 @@ public class SolClient implements ClientModInitializer {
 		dev.solclient.video.Panels.register();
 		dev.solclient.cosmetic.pet.Pets.init();
 		dev.solclient.fx.MaceFx.init();
+		dev.solclient.fx.MaceArt.init();
 		dev.solclient.fx.LiquidFx.init();
 		dev.solclient.music.SkyLyrics.register();
 		dev.solclient.music.NowPlayingCard.register();
@@ -371,6 +373,7 @@ public class SolClient implements ClientModInitializer {
 		recorderTick(client);
 		if (settings != null && settings.font != null) {
 			Gfx.setFont(settings.font.idx()); // Settings > Font (cheap: only does work when it changed)
+			if (settings.gameFont != null) GameFont.sync(settings.gameFont.idx()); // Settings > Whole Game Font
 		}
 		if (client.player == null) {
 			return;
