@@ -88,6 +88,18 @@ public final class Animation {
 		this.loop = loop;
 	}
 
+	/** Multiplies the whole-body movement (torso x / y / z) - fixes files whose body moves were saved in pixels instead of blocks. */
+	public void scaleBodyMove(float k) {
+		for (int q = 0; q < 3; q++) {
+			Track tr = tracks[TORSO][q];
+			if (tr != null) {
+				for (int i = 0; i < tr.values.length; i++) {
+					tr.values[i] *= k;
+				}
+			}
+		}
+	}
+
 	public static Animation parse(JsonObject root) {
 		JsonObject e = root.has("emote") ? root.getAsJsonObject("emote") : root;
 		int end = intOr(e, "endTick", 0);

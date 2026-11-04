@@ -11,7 +11,8 @@
   "name": "Ascend",
   "icon": false,
   "author": "Una Persona Normal",
-  "loop": false
+  "loop": false,
+  "bodyScale": 0.04549
  },
  {
   "id": "becomehelicopter",
@@ -25,7 +26,8 @@
   "name": "Brakedance",
   "icon": false,
   "author": "",
-  "loop": true
+  "loop": true,
+  "bodyScale": 0.0625
  },
  {
   "id": "californiagirls",
@@ -67,7 +69,8 @@
   "name": "Helicopter Helicopter",
   "icon": false,
   "author": "",
-  "loop": true
+  "loop": true,
+  "bodyScale": 0.0625
  },
  {
   "id": "hug",

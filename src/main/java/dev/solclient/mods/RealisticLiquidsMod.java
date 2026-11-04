@@ -55,6 +55,8 @@ public class RealisticLiquidsMod extends Mod {
 	@SuppressWarnings("unused")
 	private final Option.Action status = action("Water Colour Status", "Refresh", () -> {
 	}, () -> hookHits > 0 ? "Colour hook active (" + hookHits + " lookups)" : "Colour hook not seen yet (fallback in use)");
+	@SuppressWarnings("unused")
+	private final Option.Action shader = action("3D Realistic Water (shader)", "Install", dev.solclient.pack.ShaderInstaller::install, dev.solclient.pack.ShaderInstaller::status);
 	private int applied = -1;
 
 	public RealisticLiquidsMod() {

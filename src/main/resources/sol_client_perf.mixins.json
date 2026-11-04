@@ -6,7 +6,10 @@
   "client": [
     "TextDisplayCacheMixin",
     "ClientWorldWaveMixin",
-    "BiomeWaterColorMixin"
+    "BiomeWaterColorMixin",
+    "FrameSyncMixin",
+    "ArmorStandPoseMixin",
+    "KillFxHideMixin"
   ],
   "injectors": { "defaultRequire": 0 }
 }

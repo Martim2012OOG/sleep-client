@@ -2707,3 +2707,57 @@ Never more waves than this at once, so it cannot lag.	Nunca há mais ondas do qu
 Pauses new waves while the game is below 30 fps.	Pára de criar ondas novas enquanto o jogo está abaixo de 30 fps.
 Water Colour Status	Estado da Cor da Água
 Refresh	Atualizar
+3D Realistic Water (shader)	Água Realista 3D (shader)
+Install	Instalar
+Fast Sleep Menu Background	Fundo Rápido do Menu Sleep
+The Sleep menu uses a flat dark backdrop instead of blurring the whole game every frame. No fps drop when it is open.	O menu Sleep usa um fundo escuro simples em vez de desfocar o jogo todo a cada frame. Sem quebra de fps quando está aberto.
+Better Visual	Melhor Visual
+Cinematic light, shadows, reflections and bloom with one click (installs a shader pack). Heavy on weak computers.	Luz cinematográfica, sombras, reflexos e bloom com um clique (instala um shader). Pesado em computadores fracos.
+Look	Estilo
+Balanced	Equilibrado
+Ultra pretty (heavy)	Ultra bonito (pesado)
+Classic cinematic	Cinematográfico clássico
+Install this look	Instalar este estilo
+Remember: restart the game after installing	Lembra-te: reinicia o jogo depois de instalar
+Input Optimizer	Otimizador de Input
+Lower input latency: raw mouse, GPU frame sync and optional VSync off. Does not change network ping.	Reduz o atraso do input: rato direto, sincronização da GPU e VSync desligado opcional. Não altera o ping da rede.
+Raw Mouse Input	Input Direto do Rato
+Reads the mouse straight from the hardware (no OS acceleration/smoothing). Less delay and more consistent aim.	Lê o rato diretamente do hardware (sem aceleração/suavização do sistema). Menos atraso e mira mais consistente.
+Low Latency Frame Sync	Sincronização de Frames de Baixa Latência
+Waits for the GPU to finish each frame before reading input again, so the game never shows an old frame. Cuts input delay; can cost a little fps.	Espera que a GPU acabe cada frame antes de ler o input outra vez, para nunca mostrar um frame antigo. Reduz o atraso; pode custar um pouco de fps.
+Disable VSync	Desativar VSync
+VSync adds up to a whole frame of delay. Turning it off can show screen tearing.	O VSync acrescenta até um frame inteiro de atraso. Desligar pode mostrar rasgos no ecrã.
+Armor Stand Poses	Poses de Armor Stand
+Bedrock armor stand poses on Java. Look at an armor stand and press the key. Other players with the client see them too.	Poses de armor stand do Bedrock no Java. Olha para um armor stand e carrega na tecla. Os outros jogadores com o client também as veem.
+Cycle Pose Key	Tecla de Mudar Pose
+See Other Players' Poses	Ver Poses de Outros Jogadores
+Shows the poses that other Sleep users give to armor stands.	Mostra as poses que outros utilizadores do Sleep dão aos armor stands.
+Test Effect	Testar Efeito
+Test	Testar
+Pac-Man (3D)	Pac-Man (3D)
+Shark (3D)	Tubarão (3D)
+Random 3D	3D Aleatório
+Mimic Chest (3D)	Baú Mímico (3D)
+Giant Frog (3D)	Sapo Gigante (3D)
+Flytrap (3D)	Planta Carnívora (3D)
+UFO (3D)	OVNI (3D)
+Black Hole (3D)	Buraco Negro (3D)
+Firework Rocket (3D)	Foguete de Fogo de Artifício (3D)
+Whale (3D)	Baleia (3D)
+Dragon (3D)	Dragão (3D)
+Giant Worm (3D)	Minhoca Gigante (3D)
+Snake (3D)	Cobra (3D)
+Crocodile (3D)	Crocodilo (3D)
+T-Rex (3D)	T-Rex (3D)
+Toilet Flush (3D)	Sanita (3D)
+Giant Hand (3D)	Mão Gigante (3D)
+Kraken (3D)	Kraken (3D)
+Hungry Pig (3D)	Porco Esfomeado (3D)
+Ghost (3D)	Fantasma (3D)
+Eagle (3D)	Águia (3D)
+Pet Sounds	Sons dos Pets
+Pets make a soft sound now and then and when you pet them. Turn off for silent pets.	Os pets fazem um som suave de vez em quando e quando lhes fazes festas. Desliga para pets silenciosos.
+Piano Drop (3D)	Piano a Cair (3D)
+Tornado (3D)	Tornado (3D)
+Surprise Gift (3D)	Presente Surpresa (3D)
+Cannon (3D)	Canhão (3D)

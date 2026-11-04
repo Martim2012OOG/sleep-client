@@ -30,6 +30,7 @@ public class SolClientMod extends Mod {
 	public final Option.Num screenSize;
 	public final Option.Num cornerRadius;
 	public final Option.Bool cosmetics;
+	public final Option.Bool petSounds;
 	public final Option.Bool othersEmotes;
 	public final Option.Bool shareEmotes;
 	public final Option.Bool solarCapes;
@@ -265,6 +266,7 @@ public class SolClientMod extends Mod {
 		nameBadge = bool("Logo On Nametags", true);
 		nameBadge.tip("A small Sleep logo next to the name of Sleep players.");
 		cosmetics = bool("Show 3D Cosmetics", true);
+		petSounds = bool("Pet Sounds", true).tip("Pets make a soft sound now and then and when you pet them. Turn off for silent pets.");
 		cosmetics.tip("3D accessories (hats, wings...) on players.");
 		action("3D cosmetics status", "Refresh", () -> { }, dev.solclient.cosmetic.CosmeticFeatureRenderer::status);
 		action("HUD status", "Reset", dev.solclient.SolClient::hudDiagReset, dev.solclient.SolClient::hudDiag)

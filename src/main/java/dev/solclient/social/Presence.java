@@ -774,7 +774,10 @@ public final class Presence {
 					String u = norm(Json.str(o, "u"));
 					long id = Json.num(o, "id", -1);
 					BiConsumer<String, Integer> cb = onEmote;
-					if (u != null && id >= 0 && cb != null && room == server) {
+					if (u != null && id >= dev.solclient.mods.ArmorStandPosesMod.WIRE && room == server) { // an armor stand pose, not an emote
+						int pose = (int) (id - dev.solclient.mods.ArmorStandPosesMod.WIRE);
+						MinecraftClient.getInstance().execute(() -> dev.solclient.mods.ArmorStandPosesMod.onRemote(u, pose));
+					} else if (u != null && id >= 0 && cb != null && room == server) {
 						MinecraftClient.getInstance().execute(() -> cb.accept(u, (int) id));
 					}
 				}

@@ -1,0 +1,282 @@
+<title>Kill Effects 3D</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Silkscreen:wght@400;700&display=swap">
+<style>
+/* Layout: the 3D stage on the left with its transport bar, the effects to approve on the right; stacked on phones. */
+:root{
+  --bg:#e6e9ec; --panel:#f5f6f7; --line:#c9cfd4; --fg:#14181b; --mute:#5d676e;
+  --accent:#c4402a; --accent-fg:#fff; --ok:#2f7d3b;
+  --head:"Silkscreen","Courier New",monospace; --body:"IBM Plex Sans",system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#101214; --panel:#171a1d; --line:#2a2f34; --fg:#e9ebec; --mute:#8d969c;
+  --accent:#e0553a; --accent-fg:#fff; --ok:#6fbf73; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#101214; --panel:#171a1d; --line:#2a2f34; --fg:#e9ebec; --mute:#8d969c;
+  --accent:#e0553a; --accent-fg:#fff; --ok:#6fbf73; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);margin:0;padding-block:20px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{max-width:1180px;margin:0 auto 16px}
+h1{font-family:var(--head);font-size:22px;font-weight:700;margin:0 0 6px;text-wrap:balance}
+header p{margin:0;color:var(--mute);font-size:14px;line-height:1.5;max-width:72ch}
+main{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1.6fr) minmax(260px,1fr);gap:16px;align-items:start}
+@media (max-width:820px){main{grid-template-columns:minmax(0,1fr)}}
+.stage{background:var(--panel);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+canvas{display:block;width:100%;aspect-ratio:4/3;touch-action:none;cursor:grab;background:#8fc3f0}
+canvas:active{cursor:grabbing}
+.scrub{display:flex;align-items:center;gap:10px;padding:10px 12px 0}
+.scrub input{flex:1;min-width:0;accent-color:var(--accent)}
+.scrub output{font-size:12px;color:var(--mute);font-variant-numeric:tabular-nums;min-width:74px;text-align:right}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 12px}
+button,select{font:inherit;font-size:13px;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:7px 11px;cursor:pointer}
+button:hover,select:hover{border-color:var(--mute)}
+button:focus-visible,select:focus-visible,.item:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button.on{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.list{background:var(--panel);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.head{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid var(--line);font-size:13px;color:var(--mute)}
+.item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:12px;border-top:1px solid var(--line);cursor:pointer;border-left:3px solid transparent}
+.item:first-of-type{border-top:0}
+.item:hover,.item.cur{background:var(--bg)}
+.item.cur{border-left-color:var(--accent)}
+.item b{font-family:var(--head);font-size:14px;letter-spacing:.02em}
+.item small{display:block;color:var(--mute);font-size:12.5px;margin-top:3px;line-height:1.45}
+.item label{display:flex;gap:6px;align-items:center;font-size:12.5px;color:var(--mute);cursor:pointer}
+.item input{width:18px;height:18px;accent-color:var(--ok);margin:0;cursor:pointer}
+body.embed{padding:0;background:#8fc3f0}
+body.embed header,body.embed .list,body.embed .note,body.embed .bar,body.embed .scrub{display:none}
+body.embed main{display:block;max-width:none}
+body.embed .stage{border:0;border-radius:0}
+body.embed canvas{aspect-ratio:auto;height:100vh}
+.note{max-width:1180px;margin:14px auto 0;color:var(--mute);font-size:12.5px;line-height:1.5}
+</style>
+
+<header>
+  <h1>Kill Effects 3D</h1>
+  <p>Blockbench models with pixel-art textures and keyframe animation, played from the exact files the client loads. Drag to orbit, scroll or pinch to zoom, scrub the timeline to check any frame.</p>
+</header>
+<main>
+  <section class="stage" aria-label="3D preview">
+    <canvas id="cv" role="img" aria-label="Kill effect animation"></canvas>
+    <div class="scrub"><input id="time" type="range" min="0" max="1000" value="0" aria-label="Timeline"><output id="tout">0.00 s</output></div>
+    <div class="bar">
+      <button id="play" type="button" class="on" aria-pressed="true">Pause</button>
+      <button id="replay" type="button">Replay</button>
+      <button id="loop" type="button" class="on" aria-pressed="true">Loop</button>
+      <select id="speed" aria-label="Speed"><option value="0.25">0.25x</option><option value="0.5">0.5x</option><option value="1" selected>1x</option></select>
+      <select id="view" aria-label="Camera"><option value="side">Side view</option><option value="you">Your view (killer)</option><option value="low">Low angle</option></select>
+    </div>
+  </section>
+  <section class="list" aria-label="Kill effects">
+    <div class="head"><span id="count"></span><button id="copy" type="button">Copy approved list</button></div>
+    <div id="items"></div>
+  </section>
+</main>
+<p class="note">The dead player tips over and disappears after one second, like in vanilla; the bite lands exactly then. Particles here imitate Minecraft's splash, block and crit particles, so in game they look slightly different.</p>
+
+<script>
+(function(){
+"use strict";
+var FX=/*FXDATA*/;
+var SKIN="/*SKIN*/";
+var DESC={pacman:"Rolls in chomping with waka-waka notes, lunges and swallows the player whole, chews looking at you, burps and munches off.",
+  shark:"Its fin cuts through the ground, the player panics, it bursts out with a splash, swallows them, flips over and dives back in.",
+  mimic:"A chest hops in, opens its toothy lid with glowing eyes, chomps the player, chews and burps out gold, then hops away.",
+  frog:"A giant frog leaps in, puffs its throat, shoots its tongue, reels the player in, gulps and jumps off into the sky.",
+  flytrap:"The ground rumbles, a giant flytrap bursts out under the player, snaps shut, chews and sinks back down.",
+  ufo:"A flying saucer swoops in, turns on its tractor beam, the player floats up spinning into it and it zooms away.",
+  blackhole:"A swirling black hole opens at their feet, spins them, stretches them and sucks them in, then collapses in confetti.",
+  rocket:"A firework rocket pops out under the player, rumbles, launches them into the sky and explodes in colours.",
+  whale:"The ground ripples, a giant whale breaches right under the player, swallows them, sprays from its blowhole and falls back.",
+  dragon:"A purple dragon dives out of the sky, snaps the player up mid-swoop and flies off flapping, a puff of fire behind it.",
+  worm:"The ground shakes, a giant worm erupts under the player, its petal mouth snaps shut around them and it sinks back.",
+  snake:"A striped snake slithers in, rears up, flicks its tongue, strikes with its fangs, gulps and slithers away.",
+  croc:"A crocodile cruises in through the ground, lunges up, snaps, does a death roll and sinks.",
+  trex:"A T-Rex head bursts in, roars, bites down on the player, shakes them and pulls back.",
+  toilet:"A giant toilet pops up under the player, flushes them away in a swirl and slams the lid.",
+  hand:"A giant cartoon glove comes down from the sky, grabs the player like a claw machine and lifts them away.",
+  kraken:"Tentacles burst out of the ground all around, curl around the player and drag them down.",
+  pig:"A hungry pig runs in, opens wide, gobbles the player, chews looking at you, burps hearts and runs off.",
+  ghost:"A cute ghost floats in, rushes into the player and swallows them inside its sheet, then floats away.",
+  eagle:"An eagle dives from the sky, grabs the player with its talons and flies away with them.",
+  piano:"A grand surprise: a piano falls from the sky, squashes the player with a chord and plays a little tune.",
+  tornado:"A tornado full of flying debris rolls in, sucks the player up spinning and flings them away.",
+  gift:"A giant present drops on the player, wobbles, and pops open in a burst of confetti. Empty.",
+  cannon:"A cannon rolls in, takes aim, fires a cannonball and the player bursts into confetti."};
+
+/* ---------------- maths (column-major 4x4) ---------------- */
+function I(){return [1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1]}
+function M(a,b){var o=new Array(16);for(var c=0;c<4;c++)for(var r=0;r<4;r++){var s=0;for(var k=0;k<4;k++)s+=a[k*4+r]*b[c*4+k];o[c*4+r]=s}return o}
+function T(x,y,z){var m=I();m[12]=x;m[13]=y;m[14]=z;return m}
+function S(x,y,z){var m=I();m[0]=x;m[5]=y;m[10]=z;return m}
+function RX(a){var c=Math.cos(a),s=Math.sin(a);return [1,0,0,0, 0,c,s,0, 0,-s,c,0, 0,0,0,1]}
+function RY(a){var c=Math.cos(a),s=Math.sin(a);return [c,0,-s,0, 0,1,0,0, s,0,c,0, 0,0,0,1]}
+function RZ(a){var c=Math.cos(a),s=Math.sin(a);return [c,s,0,0, -s,c,0,0, 0,0,1,0, 0,0,0,1]}
+function tp(m,x,y,z){return [m[0]*x+m[4]*y+m[8]*z+m[12],m[1]*x+m[5]*y+m[9]*z+m[13],m[2]*x+m[6]*y+m[10]*z+m[14]]}
+function tn(m,x,y,z){var v=[m[0]*x+m[4]*y+m[8]*z,m[1]*x+m[5]*y+m[9]*z,m[2]*x+m[6]*y+m[10]*z],l=Math.hypot(v[0],v[1],v[2])||1;return [v[0]/l,v[1]/l,v[2]/l]}
+function persp(fov,asp,n,f){var t=1/Math.tan(fov/2);return [t/asp,0,0,0, 0,t,0,0, 0,0,(f+n)/(n-f),-1, 0,0,2*f*n/(n-f),0]}
+function look(e,c,u){var z=[e[0]-c[0],e[1]-c[1],e[2]-c[2]],l=Math.hypot(z[0],z[1],z[2]);z=[z[0]/l,z[1]/l,z[2]/l];
+  var x=[u[1]*z[2]-u[2]*z[1],u[2]*z[0]-u[0]*z[2],u[0]*z[1]-u[1]*z[0]];l=Math.hypot(x[0],x[1],x[2]);x=[x[0]/l,x[1]/l,x[2]/l];
+  var y=[z[1]*x[2]-z[2]*x[1],z[2]*x[0]-z[0]*x[2],z[0]*x[1]-z[1]*x[0]];
+  return [x[0],y[0],z[0],0, x[1],y[1],z[1],0, x[2],y[2],z[2],0, -(x[0]*e[0]+x[1]*e[1]+x[2]*e[2]),-(y[0]*e[0]+y[1]*e[1]+y[2]*e[2]),-(z[0]*e[0]+z[1]*e[1]+z[2]*e[2]),1]}
+
+/* ---------------- the same sampling the client does ---------------- */
+function sample(keys,t,def){
+  if(!keys||!keys.length)return def;
+  if(t<=keys[0][0])return keys[0].slice(1,4);
+  var n=keys.length;if(t>=keys[n-1][0])return keys[n-1].slice(1,4);
+  var i=0;while(i<n-2&&keys[i+1][0]<t)i++;
+  var a=keys[i],b=keys[i+1],u=(t-a[0])/Math.max(1e-9,b[0]-a[0]),out=[];
+  if(a[4]===2)return a.slice(1,4);
+  var cat=a[4]===1||b[4]===1,p=keys[Math.max(0,i-1)],q=keys[Math.min(n-1,i+2)];
+  for(var k=1;k<4;k++){
+    if(cat){var p0=p[k],p1=a[k],p2=b[k],p3=q[k],u2=u*u,u3=u2*u;
+      out.push(0.5*((2*p1)+(-p0+p2)*u+(2*p0-5*p1+4*p2-p3)*u2+(-p0+3*p1-3*p2+p3)*u3))}
+    else out.push(a[k]+(b[k]-a[k])*u)}
+  return out}
+function boneMats(fx,t){
+  var mats=[],tr={};fx.tracks.forEach(function(x){(tr[x.bone]=tr[x.bone]||{})[x.ch]=x.keys});
+  fx.bones.forEach(function(b,i){
+    var c=tr[i]||{},p=sample(c.p,t,[0,0,0]),r=sample(c.r,t,[0,0,0]),s=sample(c.s,t,[1,1,1]),rest=b.rest||[0,0,0];
+    var m=T(b.pivot[0]+p[0],b.pivot[1]+p[1],b.pivot[2]+p[2]);
+    m=M(m,RZ(rest[2]+r[2]));m=M(m,RY(rest[1]+r[1]));m=M(m,RX(rest[0]+r[0]));m=M(m,S(s[0],s[1],s[2]));m=M(m,T(-b.pivot[0],-b.pivot[1],-b.pivot[2]));
+    mats.push(b.parent>=0?M(mats[b.parent],m):m)});
+  return mats}
+
+/* ---------------- WebGL ---------------- */
+var cv=document.getElementById("cv"),gl=cv.getContext("webgl",{antialias:true});
+if(!gl){cv.insertAdjacentHTML("afterend","<p style='padding:12px'>WebGL is not available in this browser.</p>");return}
+function sh(type,src){var s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw gl.getShaderInfoLog(s);return s}
+var prog=gl.createProgram();
+gl.attachShader(prog,sh(gl.VERTEX_SHADER,"attribute vec3 aP;attribute vec2 aT;attribute vec3 aN;attribute vec4 aC;uniform mat4 uVP;varying vec2 vT;varying vec3 vN;varying vec4 vC;varying float vY;void main(){vT=aT;vN=aN;vC=aC;vY=aP.y;gl_Position=uVP*vec4(aP,1.0);}"));
+gl.attachShader(prog,sh(gl.FRAGMENT_SHADER,"precision mediump float;uniform sampler2D uS;uniform float uClip;uniform float uLit;varying vec2 vT;varying vec3 vN;varying vec4 vC;varying float vY;void main(){vec4 c=texture2D(uS,vT)*vC;if(c.a<0.1)discard;if(uClip>0.5&&vY<-0.002)discard;vec3 n=normalize(vN);float l=0.4+0.6*(max(0.0,dot(n,normalize(vec3(0.2,1.0,-0.7))))+max(0.0,dot(n,normalize(vec3(-0.2,1.0,0.7)))));l=mix(1.0,min(1.0,l),uLit);gl_FragColor=vec4(c.rgb*l,1.0);}"));
+gl.linkProgram(prog);gl.useProgram(prog);
+var L={P:gl.getAttribLocation(prog,"aP"),T:gl.getAttribLocation(prog,"aT"),N:gl.getAttribLocation(prog,"aN"),C:gl.getAttribLocation(prog,"aC")};
+var U={VP:gl.getUniformLocation(prog,"uVP"),S:gl.getUniformLocation(prog,"uS"),clip:gl.getUniformLocation(prog,"uClip"),lit:gl.getUniformLocation(prog,"uLit")};
+var vbo=gl.createBuffer(),ibo=gl.createBuffer();
+gl.enable(gl.DEPTH_TEST);
+function texFrom(src,repeat,cb){var t=gl.createTexture(),img=new Image();img.onload=function(){gl.bindTexture(gl.TEXTURE_2D,t);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,img);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.NEAREST);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,repeat?gl.REPEAT:gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,repeat?gl.REPEAT:gl.CLAMP_TO_EDGE);if(cb)cb()};img.src=src;return t}
+function canvasTex(w,h,draw){var c=document.createElement("canvas");c.width=w;c.height=h;draw(c.getContext("2d"));return texFrom(c.toDataURL(),true)}
+function rnd(s){return function(){s=(s*1664525+1013904223)>>>0;return s/4294967296}}
+var grass=canvasTex(16,16,function(x){var r=rnd(7);for(var i=0;i<16;i++)for(var j=0;j<16;j++){var v=r();x.fillStyle=v<0.15?"#5c9a3a":v<0.5?"#6fb24a":v<0.85?"#79bd52":"#86c95c";x.fillRect(i,j,1,1)}});
+var white=canvasTex(2,2,function(x){x.fillStyle="#fff";x.fillRect(0,0,2,2)});
+var texs={};
+var ready=0;Object.keys(FX).forEach(function(k){texs[k]=texFrom("data:image/png;base64,"+FX[k].png,false,function(){ready++})});
+var skinTex=texFrom("data:image/png;base64,"+SKIN,false,function(){ready++});
+
+/* geometry batch */
+var V=[],IX=[];
+function quad(p,t,n,c){var b=V.length/12;for(var i=0;i<4;i++)V.push(p[i][0],p[i][1],p[i][2],t[i][0],t[i][1],n[0],n[1],n[2],c[0],c[1],c[2],c[3]);IX.push(b,b+1,b+2,b,b+2,b+3)}
+function flush(tex,clip,lit){if(!IX.length)return;
+  gl.bindBuffer(gl.ARRAY_BUFFER,vbo);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(V),gl.DYNAMIC_DRAW);
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,ibo);gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,new Uint16Array(IX),gl.DYNAMIC_DRAW);
+  var st=48;gl.enableVertexAttribArray(L.P);gl.vertexAttribPointer(L.P,3,gl.FLOAT,false,st,0);gl.enableVertexAttribArray(L.T);gl.vertexAttribPointer(L.T,2,gl.FLOAT,false,st,12);
+  gl.enableVertexAttribArray(L.N);gl.vertexAttribPointer(L.N,3,gl.FLOAT,false,st,20);gl.enableVertexAttribArray(L.C);gl.vertexAttribPointer(L.C,4,gl.FLOAT,false,st,32);
+  gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,tex);gl.uniform1i(U.S,0);gl.uniform1f(U.clip,clip?1:0);gl.uniform1f(U.lit,lit?1:0);
+  gl.drawElements(gl.TRIANGLES,IX.length,gl.UNSIGNED_SHORT,0);V=[];IX=[]}
+
+/* ---------------- particles (imitating Minecraft's) ---------------- */
+var PT={splash:{c:["#e8f4ff","#bfe0ff","#ffffff"],s:0.07,g:0.04,life:[8,16],sp:1},water:{c:["#3f76e4","#5a8ef0","#2d5fc8"],s:0.06,g:0.06,life:[18,30],sp:1},
+  chunks:{c:["#a9d8ff","#7fc2ff","#cde9ff"],s:0.11,g:0.04,life:[16,28],sp:0.8},blood:{c:["#a5100c","#d0201a","#7a0a08"],s:0.1,g:0.04,life:[16,28],sp:0.8},
+  gold:{c:["#ffe14a","#f5c518","#fff3a0"],s:0.1,g:0.04,life:[14,24],sp:0.8},crit:{c:["#ffffff","#fff6c8","#e8e8e8"],s:0.06,g:0,life:[8,14],sp:0.6},
+  poof:{c:["#ffffff","#e2e2e2","#cfcfcf"],s:0.14,g:-0.004,life:[10,18],sp:0.15},cloud:{c:["#ffffff","#eeeeee"],s:0.2,g:-0.002,life:[20,30],sp:0.1},
+  confetti:{c:["#ff2bd6","#ffe417","#2bff88","#2bd9ff","#ff6a2b","#8a4bff","#ffffff"],s:0.11,g:0.03,life:[22,36],sp:0.9},
+  sparkle:{c:["#ffffff","#fff6b0","#bff4ff"],s:0.07,g:-0.004,life:[16,28],sp:0.4},firework:{c:["#ff3bd6","#3bfff2","#fff23b","#7bff3b","#ff7b3b"],s:0.07,g:0.01,life:[20,34],sp:1.2},
+  flame:{c:["#ffb020","#ff6a10","#ffe070"],s:0.09,g:-0.01,life:[8,14],sp:0.4},smoke:{c:["#5a5a5a","#7a7a7a","#3e3e3e"],s:0.16,g:-0.008,life:[18,30],sp:0.2},
+  portal:{c:["#b44bff","#ff4bd8","#6f3bff"],s:0.07,g:-0.003,life:[14,24],sp:0.3},dirt:{c:["#8a5a2b","#6b4220","#a8743c"],s:0.1,g:0.04,life:[16,26],sp:0.8},
+  heart:{c:["#ff2b5e","#ff5c8a"],s:0.14,g:-0.006,life:[18,26],sp:0.2},note:{c:["#3bff6f","#ff3bd6","#3bd6ff","#ffe43b"],s:0.12,g:-0.006,life:[18,28],sp:0.2}};
+var parts=[],R=rnd(1);
+function hexA(h){var n=parseInt(h.slice(1),16);return [(n>>16&255)/255,(n>>8&255)/255,(n&255)/255,1]}
+function fire(cmd,yaw){
+  var a=cmd.trim().split(/\s+/),k=a[0];if(k==="hide"){hidden=true;return}if(k!=="p"&&k!=="ring")return;
+  var d=PT[a[1]]||PT.crit,n=+a[2]||1,x=(+a[3]||0)/16,y=(+a[4]||0)/16,z=(+a[5]||0)/16,sp=(+a[6]||0)/16,spd=+(a[7]||0.2);
+  for(var i=0;i<n;i++){
+    var px=x,py=y,pz=z,vx,vy,vz;
+    if(k==="ring"){var an=i/n*Math.PI*2;px+=Math.cos(an)*sp;pz+=Math.sin(an)*sp;vx=Math.cos(an)*spd*0.5;vz=Math.sin(an)*spd*0.5;vy=spd*(0.5+R()*0.7)}
+    else{px+=(R()-0.5)*2*sp;py+=(R()-0.5)*2*sp*0.6;pz+=(R()-0.5)*2*sp;vx=(R()-0.5)*2*spd;vz=(R()-0.5)*2*spd;vy=R()*spd*1.2}
+    vx*=d.sp;vy*=d.sp;vz*=d.sp;
+    var c=Math.cos(yaw),s=Math.sin(yaw);
+    parts.push({x:px*c+pz*s,y:py,z:-px*s+pz*c,vx:vx*c+vz*s,vy:vy,vz:-vx*s+vz*c,g:d.g,s:d.s*(0.7+R()*0.6),life:d.life[0]+R()*(d.life[1]-d.life[0]),age:0,col:hexA(d.c[(R()*d.c.length)|0])})}}
+function stepParts(dt){var ticks=dt*20;parts=parts.filter(function(p){p.age+=ticks;if(p.age>p.life)return false;
+  for(var k=0;k<ticks;k+=1){var f=Math.min(1,ticks-k);p.x+=p.vx*f;p.y+=p.vy*f;p.z+=p.vz*f;p.vy-=p.g*f;p.vx*=Math.pow(0.96,f);p.vz*=Math.pow(0.96,f);p.vy*=Math.pow(0.98,f);
+    if(p.y<p.s/2&&p.g>0){p.y=p.s/2;p.vy=0;p.vx*=0.6;p.vz*=0.6}}return true})}
+
+/* ---------------- scene ---------------- */
+var ids=Object.keys(FX),cur=0,t=0,playing=true,loop=true,speed=1,hidden=false,evIdx=0,cam={yaw:0.3,pitch:0.16,dist:6.5,ty:1.25},drag=null,viewMode="side";
+function setView(v){viewMode=v;if(v==="side"){cam.yaw=0.3;cam.pitch=0.16;cam.dist=6.5;cam.ty=1.25}else if(v==="you"){cam.yaw=0;cam.pitch=0.12;cam.dist=5.5;cam.ty=1.5}else{cam.yaw=-0.5;cam.pitch=0.02;cam.dist=8;cam.ty=1.8}}
+function reset(){t=0;hidden=false;evIdx=0;parts=[]}
+function fxNow(){return FX[ids[cur]].json}
+function W(){var r=cv.getBoundingClientRect(),d=Math.min(2,window.devicePixelRatio||1),w=Math.max(200,Math.round(r.width*d)),h=Math.round(w*0.75);if(cv.width!==w||cv.height!==h){cv.width=w;cv.height=h}}
+function render(){
+  W();gl.viewport(0,0,cv.width,cv.height);gl.clearColor(0.56,0.76,0.94,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+  var fx=fxNow(),eye=[Math.sin(cam.yaw)*Math.cos(cam.pitch)*cam.dist,cam.ty+Math.sin(cam.pitch)*cam.dist,Math.cos(cam.yaw)*Math.cos(cam.pitch)*cam.dist];
+  var vp=M(persp(1.0,cv.width/cv.height,0.05,200),look(eye,[0,cam.ty*0.75,0],[0,1,0]));gl.uniformMatrix4fv(U.VP,false,new Float32Array(vp));
+  /* ground: a grass field, one texture tile per block */
+  var G=16;quad([[-G,0,G],[G,0,G],[G,0,-G],[-G,0,-G]],[[0,2*G],[2*G,2*G],[2*G,0],[0,0]],[0,1,0],[1,1,1,1]);flush(grass,false,true);
+  /* the effect: model pixels -> blocks */
+  var mats=boneMats(fx,t),sc=1/16;
+  [false,true].forEach(function(skinPass){
+  fx.bones.forEach(function(b,i){
+    if(!!b.skin!==skinPass||b.preview)return;
+    var m=M(S(sc,sc,sc),mats[i]),q=b.quads,tint=[1,1,1,1];
+    for(var o=0;o<q.length;o+=20){var P=[],TT=[];for(var k=0;k<4;k++){P.push(tp(m,q[o+k*5],q[o+k*5+1],q[o+k*5+2]));TT.push([q[o+k*5+3],q[o+k*5+4]])}
+      var a=[P[1][0]-P[0][0],P[1][1]-P[0][1],P[1][2]-P[0][2]],c=[P[2][0]-P[0][0],P[2][1]-P[0][1],P[2][2]-P[0][2]];
+      var n=[a[1]*c[2]-a[2]*c[1],a[2]*c[0]-a[0]*c[2],a[0]*c[1]-a[1]*c[0]],l=Math.hypot(n[0],n[1],n[2])||1;
+      var nb=[n[0]/l,n[1]/l+0.6,n[2]/l],lb=Math.hypot(nb[0],nb[1],nb[2])||1;quad(P,TT,[nb[0]/lb,nb[1]/lb,nb[2]/lb],tint)}});
+  flush(skinPass?skinTex:texs[ids[cur]],true,true)});
+  /* particles: little camera-facing squares */
+  var rx=[vp[0],vp[4],vp[8]],ry=[vp[1],vp[5],vp[9]],lr=Math.hypot(rx[0],rx[1],rx[2]),lu=Math.hypot(ry[0],ry[1],ry[2]);rx=rx.map(function(v){return v/lr});ry=ry.map(function(v){return v/lu});
+  parts.forEach(function(p){var s=p.s/2,f=p.age>p.life*0.75?1-(p.age-p.life*0.75)/(p.life*0.25):1;s*=Math.max(0.2,f);
+    var P=[[-1,1],[1,1],[1,-1],[-1,-1]].map(function(o){return [p.x+(rx[0]*o[0]+ry[0]*o[1])*s,p.y+(rx[1]*o[0]+ry[1]*o[1])*s,p.z+(rx[2]*o[0]+ry[2]*o[1])*s]});
+    quad(P,[[0,0],[1,0],[1,1],[0,1]],[0,1,0],p.col)});
+  flush(white,false,false)}
+
+/* ---------------- loop & UI ---------------- */
+var timeEl=document.getElementById("time"),tout=document.getElementById("tout"),playB=document.getElementById("play"),loopB=document.getElementById("loop");
+function runEvents(upTo){var ev=fxNow().events;while(evIdx<ev.length&&ev[evIdx][0]<=upTo+1e-6){fire(ev[evIdx][1],0);evIdx++}}
+var last=performance.now();
+function frame(now){var dt=Math.min(0.1,(now-last)/1000);last=now;
+  if(ready===ids.length+1){
+    var len=fxNow().length,end=len+0.8;
+    if(playing){t+=dt*speed;runEvents(t);stepParts(dt*speed);
+      if(t>=end){if(loop){reset()}else{t=end;playing=false;playB.textContent="Play";playB.classList.remove("on");playB.setAttribute("aria-pressed","false")}}}
+    timeEl.value=Math.round(Math.min(1,Math.min(t,len)/len)*1000);tout.textContent=Math.min(t,len).toFixed(2)+" / "+len.toFixed(2)+" s";
+    render()}
+  requestAnimationFrame(frame)}
+/* scrubbing replays the events up to that time so particles look right */
+timeEl.addEventListener("input",function(){var len=fxNow().length,target=timeEl.value/1000*len;reset();var step=1/30;
+  while(t<target){var d=Math.min(step,target-t);t+=d;runEvents(t);stepParts(d)}
+  playing=false;playB.textContent="Play";playB.classList.remove("on");playB.setAttribute("aria-pressed","false")});
+playB.addEventListener("click",function(){playing=!playing;if(playing&&t>=fxNow().length+0.8)reset();playB.textContent=playing?"Pause":"Play";playB.classList.toggle("on",playing);playB.setAttribute("aria-pressed",String(playing))});
+document.getElementById("replay").addEventListener("click",function(){reset();playing=true;playB.textContent="Pause";playB.classList.add("on");playB.setAttribute("aria-pressed","true")});
+loopB.addEventListener("click",function(){loop=!loop;loopB.classList.toggle("on",loop);loopB.setAttribute("aria-pressed",String(loop))});
+document.getElementById("speed").addEventListener("change",function(e){speed=+e.target.value||1});
+document.getElementById("view").addEventListener("change",function(e){setView(e.target.value)});
+cv.addEventListener("pointerdown",function(e){drag={x:e.clientX,y:e.clientY};try{cv.setPointerCapture(e.pointerId)}catch(x){}});
+cv.addEventListener("pointermove",function(e){if(!drag)return;cam.yaw-=(e.clientX-drag.x)*0.008;cam.pitch=Math.max(-0.05,Math.min(1.3,cam.pitch+(e.clientY-drag.y)*0.006));drag={x:e.clientX,y:e.clientY}});
+cv.addEventListener("pointerup",function(){drag=null});cv.addEventListener("pointercancel",function(){drag=null});
+cv.addEventListener("wheel",function(e){e.preventDefault();cam.dist=Math.max(3,Math.min(20,cam.dist+e.deltaY*0.01))},{passive:false});
+var store={};try{store=JSON.parse(localStorage.getItem("killfx3d-approved")||"{}")||{}}catch(e){}
+function save(){try{localStorage.setItem("killfx3d-approved",JSON.stringify(store))}catch(e){}}
+var items=document.getElementById("items");
+function count(){document.getElementById("count").textContent=ids.filter(function(k){return store[k]}).length+" of "+ids.length+" approved"}
+ids.forEach(function(k,i){var f=FX[k].json,row=document.createElement("div");row.className="item";row.tabIndex=0;row.setAttribute("role","button");
+  var txt=document.createElement("div");var b=document.createElement("b");b.textContent=f.name;var s=document.createElement("small");s.textContent=(DESC[k]||"")+" "+f.length.toFixed(1)+" s.";txt.append(b,s);
+  var lab=document.createElement("label");var cb=document.createElement("input");cb.type="checkbox";cb.checked=!!store[k];lab.append(cb,document.createTextNode("Approve"));
+  lab.addEventListener("click",function(e){e.stopPropagation()});cb.addEventListener("change",function(){store[k]=cb.checked;save();count()});
+  row.append(txt,lab);row.addEventListener("click",function(){pick(i)});row.addEventListener("keydown",function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();pick(i)}});items.appendChild(row)});
+function pick(i){cur=i;reset();playing=true;playB.textContent="Pause";playB.classList.add("on");Array.prototype.forEach.call(items.children,function(r,k){r.classList.toggle("cur",k===i)})}
+document.getElementById("copy").addEventListener("click",function(){var l=ids.filter(function(k){return store[k]}).map(function(k){return FX[k].json.name}),txt=l.length?"Approved kill effects: "+l.join(", "):"No kill effects approved yet",bt=this;
+  function done(m){bt.textContent=m;setTimeout(function(){bt.textContent="Copy approved list"},1600)}
+  try{navigator.clipboard.writeText(txt).then(function(){done("Copied")},function(){done("Copy failed")})}catch(e){done("Copy failed")}});
+window.__seek=function(i,tt){cur=i;reset();var step=1/30;while(t<tt){var d=Math.min(step,tt-t);t+=d;runEvents(t);stepParts(d)}playing=false;render()};
+window.__view=setView;window.__ready=function(){return ready===ids.length+1};
+count();
+/* ?fx=pacman&embed=1 : only the 3D view of one effect, looping (for the shop pages of the website) */
+var qs={};try{location.search.replace(/^\?/,"").split("&").forEach(function(kv){var a=kv.split("=");if(a[0])qs[decodeURIComponent(a[0])]=decodeURIComponent(a[1]||"")})}catch(e){}
+if(qs.embed==="1")document.body.classList.add("embed");
+pick(Math.max(0,ids.indexOf(qs.fx||"")));requestAnimationFrame(frame);
+})();
+</script>

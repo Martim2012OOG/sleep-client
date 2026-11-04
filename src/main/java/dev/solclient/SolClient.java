@@ -116,6 +116,9 @@ public class SolClient implements ClientModInitializer {
 		MODS.add(new dev.solclient.mods.TrustRadarMod());
 		MODS.add(new dev.solclient.mods.RealisticLiquidsMod());
 		MODS.add(new dev.solclient.mods.WavesMod());
+		MODS.add(new dev.solclient.mods.BetterVisualMod());
+		MODS.add(new dev.solclient.mods.InputOptimizerMod());
+		MODS.add(new dev.solclient.mods.ArmorStandPosesMod());
 		MODS.add(new dev.solclient.mods.CustomRainMod());
 		MODS.add(new StableFovMod());
 		MODS.add(new FovChangerMod());
@@ -355,6 +358,14 @@ public class SolClient implements ClientModInitializer {
 			ResourceGuard.tick(client);
 		} catch (RuntimeException e) {
 			System.err.println("[Sleep] resource pack guard: " + e);
+		}
+		if (loadingScreenUp(client)) {
+			// Minecraft is loading: its main thread is busy with the reload, so only what must watch the loading
+			// screen runs. Everything else (social, menus, capes, badges, fonts...) waits until it is done, so the
+			// loading screen keeps moving instead of freezing.
+			dev.solclient.gui.SeasonMusic.tick();
+			CinematicIntroMod.clientTick(client);
+			return;
 		}
 		pollKeys();
 		dev.solclient.emote.EmoteManager.tick();

@@ -29,6 +29,8 @@ public final class EmoteLibrary {
 	/** Every entry of index.json in order, including the hidden ones: other players' emotes travel as a position in THIS list. */
 	private static List<Info> raw;
 	private static final Map<String, Animation> CACHE = new HashMap<>();
+	/** index.json "bodyScale": some bundled files move the whole body in pixels, not blocks (the player flew away). */
+	private static final Map<String, Float> BODY_SCALE = new HashMap<>();
 
 	private EmoteLibrary() {
 	}
@@ -85,6 +87,9 @@ public final class EmoteLibrary {
 							o.has("author") ? o.get("author").getAsString() : "",
 							o.has("loop") && o.get("loop").getAsBoolean(),
 							!o.has("icon") || o.get("icon").getAsBoolean());
+					if (o.has("bodyScale")) {
+						BODY_SCALE.put(id, o.get("bodyScale").getAsFloat());
+					}
 					every.add(info);
 					if (!(o.has("hidden") && o.get("hidden").getAsBoolean())) { // removed for being unsuitable for young players
 						out.add(info);
@@ -107,6 +112,11 @@ public final class EmoteLibrary {
 			JsonElement root = read("emotes/" + info.id() + ".json");
 			if (root != null && root.isJsonObject()) {
 				a = Animation.parse(root.getAsJsonObject());
+				all();
+				Float k = BODY_SCALE.get(info.id());
+				if (k != null) {
+					a.scaleBodyMove(k);
+				}
 				CACHE.put(info.id(), a);
 			}
 		} catch (Exception e) {

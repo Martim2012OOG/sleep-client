@@ -433,6 +433,16 @@ public class SolMenuScreen extends Screen {
 		}
 	}
 
+	/** The vanilla background re-blurs the whole game every frame (costly); a flat dark backdrop costs nothing. */
+	@Override
+	public void renderBackground(DrawContext c, int mouseX, int mouseY, float delta) {
+		if (dev.solclient.mods.MenuBlurMod.fast() && client != null && client.world != null) {
+			c.fill(0, 0, width, height, 0xB0000000);
+			return;
+		}
+		super.renderBackground(c, mouseX, mouseY, delta);
+	}
+
 	@Override
 	public void render(DrawContext c, int guiMouseX, int guiMouseY, float delta) {
 		super.render(c, guiMouseX, guiMouseY, delta);

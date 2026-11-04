@@ -2237,6 +2237,61 @@ public final class Social {
 		return false;
 	}
 
+	// ================================================================== 3D kill effects are bought in the shop too
+	/**
+	 * 3D kill effect ids you own (shop items of category "Kill Effects": their modelId, else id). Returns null while
+	 * unknown or when the site sells no kill effects yet (then every effect stays usable, like before).
+	 */
+	public static java.util.Set<String> ownedKillEffects() {
+		List<Item> all = SHOP_CACHE.get("All");
+		if (all == null) {
+			long t = System.currentTimeMillis();
+			if (me != null && t - emotesAskedAt > 60_000L) {
+				emotesAskedAt = t;
+				IO.execute(() -> safe(() -> fetchShop("All")));
+			}
+			return null;
+		}
+		java.util.Set<String> out = new HashSet<>();
+		boolean any = false;
+		for (Item it : all) {
+			if (isKillEffect(it)) {
+				String key = killEffectKey(it);
+				any |= java.util.Arrays.asList(dev.solclient.fx.killfx.KillFxModel.IDS).contains(key);
+				if (it.owned) {
+					out.add(key);
+				}
+			}
+		}
+		return any ? out : null;
+	}
+
+	/** The kill effect you equipped in the Locker / on the website (its id, e.g. "pacman"), or null. */
+	public static String equippedKillEffect() {
+		List<Item> all = SHOP_CACHE.get("All");
+		if (all == null) {
+			return null;
+		}
+		String mine = MY_EQUIP.get("Kill Effects");
+		for (Item it : all) {
+			if (isKillEffect(it) && it.owned && (it.equipped || it.id != null && it.id.equals(mine))) {
+				if (MY_UNEQUIP.contains(it.category) && !it.id.equals(mine)) {
+					continue;
+				}
+				return killEffectKey(it);
+			}
+		}
+		return null;
+	}
+
+	private static boolean isKillEffect(Item it) {
+		return it.category != null && it.category.replace(" ", "").equalsIgnoreCase("KillEffects");
+	}
+
+	private static String killEffectKey(Item it) {
+		return (it.modelId != null && !it.modelId.isBlank() ? it.modelId : it.id).toLowerCase(Locale.ROOT);
+	}
+
 	/** True when the site sells emotes (category "Emotes" exists in the shop). */
 	public static boolean sellsEmotes() {
 		return ownedEmotes() != null;

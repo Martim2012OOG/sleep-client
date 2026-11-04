@@ -58,7 +58,8 @@ public final class Pet {
 	// ---- brain
 	Mode mode = Mode.FOLLOW;
 	int modeTicks;
-	private int ownerStill, nextIdle = 80, ambientIn = 200, scanIn, hopCooldown, stuck, stepSound;
+	private int lastAlertSound = -10_000;
+	private int ownerStill, nextIdle = 80, ambientIn = 600, scanIn, hopCooldown, stuck, stepSound;
 	private double tx, ty, tz; // where the brain wants to go
 	private Entity interest; // what it looks at / walks to (item, monster, other pet's owner)
 	private Pet friend;
@@ -684,7 +685,10 @@ public final class Pet {
 		headPitch += (hpT - headPitch) * 0.25F;
 		headRoll *= 0.985F;
 		if (mode == Mode.ALERT && age % 40 == 0) {
-			sound(world, model.soundAmbient, 0.85F, 1F);
+			if (age - lastAlertSound > 200) { // one bark when it notices something, not one every 2 seconds
+				lastAlertSound = age;
+				sound(world, model.soundAmbient, 0.85F, 0.7F);
+			}
 			if (onGround && !flies()) {
 				vy = 0.25; // barks with a little bounce
 			}
@@ -734,9 +738,9 @@ public final class Pet {
 
 	private void sounds(ClientWorld world) {
 		if (--ambientIn <= 0) {
-			ambientIn = 260 + rnd.nextInt(500);
+			ambientIn = 1200 + rnd.nextInt(2400); // once every 1-3 minutes, quietly
 			if (mode != Mode.SLEEP) {
-				sound(world, model.soundAmbient, 1F, 1F);
+				sound(world, model.soundAmbient, 1F, 0.6F);
 			}
 		}
 		// footsteps on the block under it
@@ -755,11 +759,15 @@ public final class Pet {
 	}
 
 	void sound(ClientWorld world, String id, float pitchMul, float volMul) {
+		if (dev.solclient.SolClient.settings != null && dev.solclient.SolClient.settings.petSounds != null
+				&& !dev.solclient.SolClient.settings.petSounds.on()) {
+			return;
+		}
 		net.minecraft.sound.SoundEvent ev = Pets.soundEvent(id);
 		if (ev == null) {
 			return;
 		}
-		float vol = model.soundVolume * volMul * (mine ? 1F : 0.6F);
+		float vol = model.soundVolume * volMul * (mine ? 0.8F : 0.4F);
 		world.playSoundClient(x, y + model.heightBlocks() * 0.5, z, ev, net.minecraft.sound.SoundCategory.NEUTRAL, vol,
 				model.soundPitch * pitchMul * (0.92F + rnd.nextFloat() * 0.16F), false);
 	}
