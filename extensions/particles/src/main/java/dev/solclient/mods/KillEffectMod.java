@@ -20,7 +20,7 @@ public class KillEffectMod extends Mod {
 			"Mimic Chest (3D)", "Giant Frog (3D)", "Flytrap (3D)", "UFO (3D)", "Black Hole (3D)", "Firework Rocket (3D)", "Whale (3D)", "Dragon (3D)",
 			"Giant Worm (3D)", "Snake (3D)", "Crocodile (3D)", "T-Rex (3D)", "Toilet Flush (3D)", "Giant Hand (3D)", "Kraken (3D)", "Hungry Pig (3D)",
 			"Ghost (3D)", "Eagle (3D)", "Piano Drop (3D)", "Tornado (3D)", "Surprise Gift (3D)", "Cannon (3D)", "Random 3D");
-	private final Option.Action test = action("Test Effect", "Test", this::test, () -> status.isEmpty() ? effect.label() : effect.label() + " - " + status);
+	private final Option.Action test = action("Test Effect", "Test", this::test, () -> this.status.isEmpty() ? effect.label() : effect.label() + " - " + this.status);
 	private final Option.Bool sound = bool("Sound", true);
 	private final Option.Bool playersOnly = bool("Players Only", false);
 	/** Everyone you hit in the last seconds, with where they were and their skin (so the effect plays where they died). */
