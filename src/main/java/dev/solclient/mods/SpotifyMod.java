@@ -43,6 +43,9 @@ public class SpotifyMod extends HudMod {
 	private Option.Num barCount, scrollSpeed, spinSpeed;
 	// lyrics (in the sky + top capsule)
 	private Option.Bool lyricsOn, lyricsBar, lyricsWorld, lyricsOnlyPlaying, lyricsScript;
+	private Option.Choice lyricsBacking;
+	private Option.Num lyricsBackingAlpha;
+	private Option.Bool lyricsFrontFollow;
 	private Option.Num lyricsFrontDist, lyricsFrontFade, lyricsFrontKeep, lyricsSpread, lyricsSize, lyricsHeight, lyricsSync, lyricsBarSize, lyricsOpacity, lyricsDepth, lyricsSway;
 	private Option.Col lyricsHighlight, lyricsText, lyricsText2, lyricsText3, lyricsText4;
 	private Option.Choice lyricsColours, lyricsPosition, lyricsPlace, lyricsFont;
@@ -192,6 +195,11 @@ public class SpotifyMod extends HudMod {
 		lyricsPosition = tabs("Lyrics Position", 0, "Centre", "Left", "Right", "Left and right", "Random");
 		lyricsSpread = num("Lyrics Side Distance", 24, 5, 40, 1, "%");
 		lyricsDepth = num("Lyrics 3D Depth", 70, 0, 100, 5, "%");
+		lyricsBacking = tabs("Lyrics Letter Backing", 2, "None", "Soft shadow", "3D same colour", "3D dark");
+		lyricsBacking.tip("What is drawn behind the letters. None = only the letters, no dark shape behind them.");
+		lyricsBackingAlpha = num("Lyrics Backing Opacity", 60, 0, 100, 5, "%");
+		lyricsFrontFollow = bool("Line Follows Me While Sung", true)
+				.tip("On: the line being sung stays in front of you as you walk, and is left behind when its last word has been sung.");
 		lyricsSway = num("Lyrics Camera Sway", 60, 0, 100, 5, "%");
 		lyricsBarSize = num("Lyrics Bar Size", 100, 60, 160, 5, "%");
 		lyricsOpacity = num("Lyrics Opacity", 100, 10, 100, 5, "%");
@@ -223,6 +231,9 @@ public class SpotifyMod extends HudMod {
 		lyricsFrontDist.visibleIf = () -> lyricsPlace.visibleIf.getAsBoolean() && lyricsPlace.idx() == 2;
 		lyricsFrontFade.visibleIf = lyricsFrontDist.visibleIf;
 		lyricsFrontKeep.visibleIf = lyricsFrontDist.visibleIf;
+		lyricsFrontFollow.visibleIf = lyricsFrontDist.visibleIf;
+		lyricsBacking.visibleIf = () -> lyr.getAsBoolean() && lyricsOn.on() && lyricsWorld.on();
+		lyricsBackingAlpha.visibleIf = () -> lyricsBacking.visibleIf.getAsBoolean() && lyricsBacking.idx() != 0;
 		lyricsOnlyPlaying.visibleIf = lyricsBar.visibleIf;
 		lyricsScript.visibleIf = () -> lyr.getAsBoolean() && lyricsOn.on() && lyricsWorld.on();
 		lyricsSize.visibleIf = () -> lyr.getAsBoolean() && lyricsOn.on() && lyricsWorld.on();
@@ -499,6 +510,9 @@ public class SpotifyMod extends HudMod {
 		k.frontKeep = lyricsFrontKeep.i();
 		k.height = lyricsHeight.f();
 		k.depth = lyricsDepth.f() / 100F;
+		k.backing = lyricsBacking.idx();
+		k.backingAlpha = lyricsBackingAlpha.f() / 100F;
+		k.frontFollow = lyricsFrontFollow.on();
 		k.sway = lyricsSway.f() / 100F;
 		k.position = lyricsPosition.idx();
 		k.spread = lyricsSpread.f() / 100F;

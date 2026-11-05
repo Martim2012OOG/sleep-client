@@ -54,6 +54,27 @@ public final class LyricsView {
 		public boolean front;
 		public float frontDist = 8F, frontFade = 24F;
 		public int frontKeep = 3;
+		/** "in front of me": the line being sung follows you, and stays behind only when its last word has been sung */
+		public boolean frontFollow = true;
+		/** what is drawn behind the letters: 0 nothing, 1 soft shadow, 2 3D in a darker shade of the same colour, 3 3D dark (old look) */
+		public int backing = 2;
+		/** strength of that backing (0..1) */
+		public float backingAlpha = 0.6F;
+	}
+
+	/** Copies behind each letter for the 3D look: how many (0 = none). */
+	static int backLayers(Cfg cfg, int wanted) {
+		return cfg.backing >= 2 ? wanted : 0;
+	}
+
+	/** Colour of the 3D copies behind a letter. */
+	static int backColour(Cfg cfg, int base) {
+		return Gfx.blend(base, 0xFF000000, cfg.backing == 3 ? 0.72F : 0.3F);
+	}
+
+	/** Should the letter get Minecraft's drop shadow? */
+	static boolean backShadow(Cfg cfg) {
+		return cfg.backing == 1 && !cfg.script;
 	}
 
 	/** Where a line was placed when it started: side of the screen and its own 3D pose (each line leans differently, like the reference). */
@@ -256,7 +277,7 @@ public final class LyricsView {
 		float pitch = (float) Math.toRadians(depth * (a.pitch + 2F * Math.sin(time * 0.55 + 1.0)) + sy * 8F * depth);
 		float roll = (float) Math.toRadians(a.roll * depth);
 		float focal = Math.max(140F, Math.min(sw, sh * 1.7F) * 0.5F); // close camera = strong perspective
-		int layers = Math.round(5F * depth);
+		int layers = backLayers(cfg, Math.round(5F * depth));
 		float[] pr = new float[6];
 
 		for (int i = 0; i < n; i++) {
@@ -311,9 +332,9 @@ public final class LyricsView {
 				if (layers > 0) {
 					float ox = Math.max(-1F, Math.min(1F, (sw / 2F - cx - pr[0]) / (sw * 0.25F))) * 0.55F;
 					float oy = Math.max(-1F, Math.min(1F, (sh / 2F - cy - pr[1]) / (sh * 0.25F))) * 0.4F + 0.55F;
-					int dark = Gfx.blend(base0, 0xFF000000, 0.72F);
+					int dark = backColour(cfg, base0);
 					for (int l = layers; l >= 1; l--) {
-						int a8 = alphaOf(dark, alpha * (0.7F - 0.07F * l));
+						int a8 = alphaOf(dark, alpha * (0.7F - 0.07F * l) * cfg.backingAlpha / 0.6F);
 						if (((a8 >>> 24) & 255) < 6) {
 							continue;
 						}
@@ -330,7 +351,7 @@ public final class LyricsView {
 				}
 				int a8 = alphaOf(col, alpha);
 				if (((a8 >>> 24) & 255) >= 8) {
-					c.drawText(tr, t, 0, 0, a8, !cfg.script);
+					c.drawText(tr, t, 0, 0, a8, backShadow(cfg));
 				}
 				m.popMatrix();
 			}

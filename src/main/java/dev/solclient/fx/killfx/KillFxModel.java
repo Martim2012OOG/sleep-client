@@ -184,11 +184,15 @@ public final class KillFxModel {
 		CACHE.clear();
 	}
 
+	/** Why the last effect could not be loaded (shown in the Kill Effect menu). */
+	public static volatile String lastError = "";
+
 	private static Optional<KillFxModel> load(String id) {
 		try {
 			Optional<Resource> res = MinecraftClient.getInstance().getResourceManager().getResource(Gfx.id("killfx/" + id + ".json"));
 			if (res.isEmpty()) {
 				System.err.println("[Sleep] kill effect missing: " + id);
+				lastError = "file killfx/" + id + ".json not found";
 				return Optional.empty();
 			}
 			try (BufferedReader r = res.get().getReader()) {
@@ -196,6 +200,7 @@ public final class KillFxModel {
 			}
 		} catch (Exception e) {
 			System.err.println("[Sleep] could not load kill effect " + id + ": " + e);
+			lastError = String.valueOf(e);
 			return Optional.empty();
 		}
 	}

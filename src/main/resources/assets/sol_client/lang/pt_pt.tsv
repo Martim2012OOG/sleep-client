@@ -2761,3 +2761,12 @@ Piano Drop (3D)	Piano a Cair (3D)
 Tornado (3D)	Tornado (3D)
 Surprise Gift (3D)	Presente Surpresa (3D)
 Cannon (3D)	Canhão (3D)
+Lyrics Letter Backing	Fundo das letras
+Soft shadow	Sombra suave
+3D same colour	3D da mesma cor
+3D dark	3D escuro
+What is drawn behind the letters. None = only the letters, no dark shape behind them.	O que aparece atrás das letras. Nenhum = só as letras, sem nada escuro atrás.
+Lyrics Backing Opacity	Opacidade do fundo das letras
+Line Follows Me While Sung	A linha segue-me enquanto é cantada
+On: the line being sung stays in front of you as you walk, and is left behind when its last word has been sung.	Ligado: a linha que está a ser cantada fica à tua frente enquanto andas e só fica para trás quando a última palavra acaba.
+Off: always visible. On: hills and buildings can cover the sky words.	Desligado: sempre visíveis. Ligado: montes e edifícios podem tapar as letras no céu.

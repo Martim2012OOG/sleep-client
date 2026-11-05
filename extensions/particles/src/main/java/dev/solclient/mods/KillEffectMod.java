@@ -20,45 +20,191 @@ public class KillEffectMod extends Mod {
 			"Mimic Chest (3D)", "Giant Frog (3D)", "Flytrap (3D)", "UFO (3D)", "Black Hole (3D)", "Firework Rocket (3D)", "Whale (3D)", "Dragon (3D)",
 			"Giant Worm (3D)", "Snake (3D)", "Crocodile (3D)", "T-Rex (3D)", "Toilet Flush (3D)", "Giant Hand (3D)", "Kraken (3D)", "Hungry Pig (3D)",
 			"Ghost (3D)", "Eagle (3D)", "Piano Drop (3D)", "Tornado (3D)", "Surprise Gift (3D)", "Cannon (3D)", "Random 3D");
-	private final Option.Action test = action("Test Effect", "Test", this::test, () -> effect.label());
+	private final Option.Action test = action("Test Effect", "Test", this::test, () -> status.isEmpty() ? effect.label() : effect.label() + " - " + status);
 	private final Option.Bool sound = bool("Sound", true);
 	private final Option.Bool playersOnly = bool("Players Only", false);
-	/** entity id -> when you last hit it */
-	private final Map<Integer, Long> hit = new HashMap<>();
-	private final Map<Integer, Entity> ents = new HashMap<>();
+	/** Everyone you hit in the last seconds, with where they were and their skin (so the effect plays where they died). */
+	private static final class Target {
+		Entity e;
+		long hitAt;
+		double x, y, z;
+		float height;
+		boolean hidden;
+		String name;
+		net.minecraft.util.Identifier skin;
+	}
+
+	private final Map<Integer, Target> hit = new HashMap<>();
+	private static boolean chatHooked;
+	private String status = "";
+	private int kills;
 
 	public KillEffectMod() {
 		super("Kill Effect", "kill_effect", "Show an effect when something you hit dies.", Category.VISUAL);
 		instance = this;
 	}
 
+	@Override
+	public void init() {
+		super.init();
+		if (chatHooked) {
+			return;
+		}
+		chatHooked = true;
+		// minigame servers often never let a player "die": the kill message in the chat is the surest sign
+		net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents.GAME.register((msg, overlay) -> {
+			if (!overlay && instance != null && instance.enabled) {
+				instance.onChat(msg.getString());
+			}
+		});
+		net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents.CHAT.register((msg, signed, sender, params, time) -> {
+			if (instance != null && instance.enabled) {
+				instance.onChat(msg.getString());
+			}
+		});
+	}
+
 	public void onAttack(Entity e) {
 		if (!(e instanceof LivingEntity) || playersOnly.on() && !(e instanceof net.minecraft.entity.player.PlayerEntity)) {
 			return;
 		}
-		hit.put(e.getId(), System.currentTimeMillis());
-		ents.put(e.getId(), e);
+		Target t = hit.computeIfAbsent(e.getId(), k -> new Target());
+		t.e = e;
+		t.hitAt = System.currentTimeMillis();
+		t.x = e.getX();
+		t.y = e.getY();
+		t.z = e.getZ();
+		t.height = e.getHeight();
+		t.hidden = e.isInvisible() || e.isSpectator();
+		t.name = e instanceof net.minecraft.entity.player.PlayerEntity p ? p.getName().getString() : null;
+		if (e instanceof net.minecraft.client.network.AbstractClientPlayerEntity p) {
+			try {
+				t.skin = p.getSkin().body().texturePath();
+			} catch (RuntimeException ex) {
+				t.skin = null;
+			}
+		}
 	}
 
 	@Override
 	public void tick() {
+		if (mc.world == null || mc.player == null) {
+			hit.clear();
+			return;
+		}
 		long now = System.currentTimeMillis();
-		Iterator<Map.Entry<Integer, Long>> it = hit.entrySet().iterator();
+		Iterator<Map.Entry<Integer, Target>> it = hit.entrySet().iterator();
 		while (it.hasNext()) {
-			Map.Entry<Integer, Long> en = it.next();
-			Entity e = ents.get(en.getKey());
-			if (e == null || now - en.getValue() > 4000) {
+			Target t = it.next().getValue();
+			long since = now - t.hitAt;
+			Entity e = t.e;
+			Entity live = mc.world.getEntityById(e.getId());
+			String why = null;
+			if (live != e || e.isRemoved()) {
+				// gone from the world right after your hit (servers often remove / hide a player who was killed)
+				if (since < MINE_MS && mc.player.squaredDistanceTo(t.x, t.y, t.z) < 24 * 24) {
+					why = "removed";
+				} else {
+					it.remove();
+					continue;
+				}
+			} else if (e instanceof LivingEntity l && (l.isDead() || l.getHealth() <= 0F)) {
+				if (since < MINE_MS && !hitByOther(l)) {
+					why = "died";
+				} else {
+					it.remove(); // somebody else finished them
+					continue;
+				}
+			} else if (since < MINE_MS && !t.hidden && (e.isSpectator() || e.isInvisible())) {
+				why = "spectator";
+			} else if (since < MINE_MS && e.squaredDistanceTo(t.x, t.y, t.z) > 10 * 10) {
+				why = "respawned"; // teleported far away in one go: the minigame respawned them
+			}
+			if (why != null) {
 				it.remove();
-				ents.remove(en.getKey());
+				kill(t);
 				continue;
 			}
-			boolean dead = e instanceof LivingEntity l ? l.isDead() || l.getHealth() <= 0 : !e.isAlive();
-			if (dead) {
-				play(e);
+			if (since > 5000) {
 				it.remove();
-				ents.remove(en.getKey());
+				continue;
+			}
+			t.x = e.getX();
+			t.y = e.getY();
+			t.z = e.getZ();
+		}
+	}
+
+	/** Your hit must be this recent for the kill to be yours (vanilla gives the kill to the last one who hit). */
+	private static final long MINE_MS = 1500L;
+
+	/**
+	 * True when the last hit before they died came from someone else: the dying player's attacker is known to the client only
+	 * when it is you, so a "recent damage" mark newer than your own hit means another player or something else killed them.
+	 */
+	private boolean hitByOther(LivingEntity l) {
+		Target t = hit.get(l.getId());
+		if (t == null) {
+			return true;
+		}
+		net.minecraft.entity.LivingEntity by = l.getAttacker();
+		return by != null && by != mc.player;
+	}
+
+	private static final String[] KILL_WORDS = {"kill", "slain", "elimin", "died", "death", "dead", "fell", "shot", "murder", "destroy", "final",
+			"morto", "matou", "morreu", "eliminad", "abatid", "\u2620", "\u2694", "\u00bb", ">>", "by "};
+
+	private void onChat(String text) {
+		if (text == null || hit.isEmpty() || mc.player == null) {
+			return;
+		}
+		String low = text.toLowerCase(java.util.Locale.ROOT);
+		String me = mc.player.getName().getString().toLowerCase(java.util.Locale.ROOT);
+		boolean word = false;
+		for (String w : KILL_WORDS) {
+			if (low.contains(w)) {
+				word = true;
+				break;
 			}
 		}
+		long now = System.currentTimeMillis();
+		final boolean killWord = word;
+		mc.execute(() -> {
+			Iterator<Map.Entry<Integer, Target>> it = hit.entrySet().iterator();
+			while (it.hasNext()) {
+				Target t = it.next().getValue();
+				if (t.name == null || now - t.hitAt > 6000) {
+					continue;
+				}
+				String n = t.name.toLowerCase(java.util.Locale.ROOT);
+				int at = low.indexOf(n);
+				if (at < 0 || low.startsWith(me + ":") || low.startsWith("<" + me + ">")) {
+					continue; // not about them, or something you typed yourself
+				}
+				// only YOUR kills: the message must name them and you, with a kill word
+				int mine = low.indexOf(me);
+				if (mine >= 0 && mine < at) {
+					String between = low.substring(mine + me.length(), at);
+					if (between.contains(" by ") || between.contains(" por ") || between.contains("was ") || between.contains("foi ")) {
+						continue; // "you were killed BY them": that is your death, not your kill
+					}
+				}
+				if (mc.player.isDead() || mc.player.getHealth() <= 0F) {
+					continue;
+				}
+				if (killWord && mine >= 0 && !low.startsWith(n + ":")) {
+					it.remove();
+					kill(t);
+				}
+			}
+		});
+	}
+
+	private void kill(Target t) {
+		kills++;
+		Entity e = t.e;
+		boolean stillDead = e instanceof LivingEntity l && (l.isDead() || l.getHealth() <= 0F) && !e.isRemoved();
+		play(t.x, t.y, t.z, t.height, e, t.skin, stillDead ? e.getId() : -1);
 	}
 
 	/** Plays the chosen effect a few blocks in front of you. */
@@ -76,11 +222,17 @@ public class KillEffectMod extends Mod {
 				skin = mc.player.getSkin().body().texturePath();
 			} catch (RuntimeException ignored) {
 			}
-			if (dev.solclient.fx.killfx.KillFx.play(fx3d(), x, mc.player.getY(), z, skin, -1)) {
+			String id = fx3d();
+			if (dev.solclient.fx.killfx.KillFx.play(id, x, mc.player.getY(), z, skin, -1)) {
+				status = "playing " + id;
 				return;
 			}
+			status = "could not load '" + id + "': " + dev.solclient.fx.killfx.KillFxModel.lastError;
+			mc.player.sendMessage(net.minecraft.text.Text.literal("Kill effect " + status), false);
+			return;
 		}
-		play(x, mc.player.getY(), z, 1.8, null);
+		play(x, mc.player.getY(), z, 1.8, null, null, -1);
+		status = "played";
 	}
 
 	private String fx3d() {
@@ -127,15 +279,15 @@ public class KillEffectMod extends Mod {
 
 	private long toldAt;
 
-	private void play(Entity e) {
-		play(e.getX(), e.getY(), e.getZ(), e.getHeight(), e);
-	}
-
-	private void play(double x, double y, double z, double h, Entity victim) {
+	private void play(double x, double y, double z, double h, Entity victim, net.minecraft.util.Identifier skin, int hideId) {
 		int idx = effect.idx();
 		String fx = victim == null ? null : ownedFx3d();
-		if (fx != null && dev.solclient.fx.killfx.KillFx.play(fx, victim)) {
+		if (fx != null && dev.solclient.fx.killfx.KillFx.play(fx, x, y, z, skin, hideId)) {
+			status = "kill " + kills + ": " + fx;
 			return; // the 3D effect brings its own sounds
+		}
+		if (fx != null) {
+			status = "could not load '" + fx + "': " + dev.solclient.fx.killfx.KillFxModel.lastError;
 		}
 		if (idx >= 6) {
 			idx = 0; // not owned / could not load: lightning instead

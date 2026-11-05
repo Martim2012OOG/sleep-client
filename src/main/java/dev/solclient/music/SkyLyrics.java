@@ -38,6 +38,9 @@ public final class SkyLyrics {
 		double wx, wy, wz;
 		float dist = DIST;
 		long bornAt;
+		/** "in front of me": still glued in front of you (until its last word has been sung), and its angle from where you look */
+		boolean follow;
+		float yawOff;
 	}
 
 	private static final java.util.ArrayList<Anchor> trail = new java.util.ArrayList<>();
@@ -150,6 +153,8 @@ public final class SkyLyrics {
 				a.wy = camY - Math.sin(pr) * a.dist - 0.2;
 				a.wz = camZ + Math.cos(yr) * Math.cos(pr) * a.dist;
 				a.bornAt = now;
+				a.follow = c.frontFollow;
+				a.yawOff = a.yaw - py;
 				trail.add(a);
 				while (trail.size() > Math.max(1, Math.min(8, c.frontKeep)) + 1) {
 					trail.remove(0);
@@ -164,6 +169,24 @@ public final class SkyLyrics {
 				continue;
 			}
 			boolean current = live && a.line == frontLine && a.version == frontVersion;
+			if (a.follow) {
+				// glued in front of you while the line is being sung; when its last word has been sung it stays where it is
+				Lyrics.Line ln = lines.get(a.line);
+				long lastEnd = ln.blank() ? 0 : ln.chunks().get(ln.chunks().size() - 1).end();
+				if (!current || pos > lastEnd) {
+					a.follow = false;
+				} else {
+					float target = mc.player.getYaw() + a.yawOff;
+					float dy = net.minecraft.util.math.MathHelper.wrapDegrees(target - a.yaw);
+					a.yaw += dy * 0.12F; // turns with you smoothly, not stuck to the screen
+					double yr = Math.toRadians(a.yaw), pr = Math.toRadians(a.pitch);
+					double nx = camX - Math.sin(yr) * Math.cos(pr) * a.dist, ny = camY - Math.sin(pr) * a.dist - 0.2,
+							nz = camZ + Math.cos(yr) * Math.cos(pr) * a.dist;
+					a.wx += (nx - a.wx) * 0.25;
+					a.wy += (ny - a.wy) * 0.25;
+					a.wz += (nz - a.wz) * 0.25;
+				}
+			}
 			if (current) {
 				a.leftAt = 0;
 			} else if (a.leftAt == 0) {
@@ -273,7 +296,7 @@ public final class SkyLyrics {
 
 		var layer = behindTerrain ? TextRenderer.TextLayerType.POLYGON_OFFSET : TextRenderer.TextLayerType.SEE_THROUGH;
 		int light = 0xF000F0;
-		int layers = Math.min(2, Math.round(3F * Math.max(0F, Math.min(1F, c.depth)))); // few copies: the old 5 + glow made 10 draws per letter and lagged
+		int layers = LyricsView.backLayers(c, Math.min(2, Math.round(3F * Math.max(0F, Math.min(1F, c.depth))))); // few copies: the old 5 + glow made 10 draws per letter and lagged
 		for (int i = 0; i < n; i++) {
 			long since = pos - ch.get(i).start();
 			if (since < 0) {
@@ -301,9 +324,9 @@ public final class SkyLyrics {
 				m.scale(wg, wg, 1F);
 				m.translate(-wraw / 2F, -4F, 0);
 				if (layers > 0) {
-					int dark = Gfx.blend(base0, 0xFF000000, 0.72F);
+					int dark = LyricsView.backColour(c, base0);
 					for (int l = layers; l >= 1; l--) {
-						int a8 = LyricsView.alphaOf(dark, wal * (0.75F - 0.08F * l));
+						int a8 = LyricsView.alphaOf(dark, wal * (0.75F - 0.08F * l) * c.backingAlpha / 0.6F);
 						if (((a8 >>> 24) & 255) < 6) {
 							continue;
 						}
@@ -324,7 +347,7 @@ public final class SkyLyrics {
 				}
 				int wa8 = LyricsView.alphaOf(col, wal);
 				if (((wa8 >>> 24) & 255) >= 8) {
-					queue.submitText(m, 0, 0, wt.asOrderedText(), !c.script, layer, light, wa8, 0, 0);
+					queue.submitText(m, 0, 0, wt.asOrderedText(), LyricsView.backShadow(c), layer, light, wa8, 0, 0);
 				}
 				m.pop();
 				continue;
@@ -353,9 +376,9 @@ public final class SkyLyrics {
 				m.translate(-raw / 2F, -4F, 0);
 				// thickness: dark copies behind the letter, so it reads as a solid slab when you walk around
 				if (layers > 0) {
-					int dark = Gfx.blend(base0, 0xFF000000, 0.72F);
+					int dark = LyricsView.backColour(c, base0);
 					for (int l = layers; l >= 1; l--) {
-						int a8 = LyricsView.alphaOf(dark, alpha * (0.75F - 0.08F * l));
+						int a8 = LyricsView.alphaOf(dark, alpha * (0.75F - 0.08F * l) * c.backingAlpha / 0.6F);
 						if (((a8 >>> 24) & 255) < 6) {
 							continue;
 						}
@@ -377,7 +400,7 @@ public final class SkyLyrics {
 				}
 				int a8 = LyricsView.alphaOf(col, alpha);
 				if (((a8 >>> 24) & 255) >= 8) {
-					queue.submitText(m, 0, 0, t.asOrderedText(), !c.script, layer, light, a8, 0, 0);
+					queue.submitText(m, 0, 0, t.asOrderedText(), LyricsView.backShadow(c), layer, light, a8, 0, 0);
 				}
 				m.pop();
 			}
