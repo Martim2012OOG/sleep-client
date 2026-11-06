@@ -60,17 +60,47 @@ public final class Persona {
 	}
 
 	// order: pitch tone peakHz peakDb ring ringHz drive crush echo reverb vibrato vibratoHz tremolo bandLow bandHigh gainDb chorus whisper
-	// (made by tools/personas/voices.py; pictures: Google Noto 3D emoji, open licence)
+	// (made by tools/personas/voices.py; pictures: Google Noto 3D emoji, open licence; famous / characters: see PERSONA-IMAGES.md)
 	private static Persona b(String id, String name, String tag, String cat, float... v) {
 		return new Persona(id, name, tag, cat, v, Gfx.id("textures/persona/" + id + ".png"), null, false);
 	}
 
 	/** Category ids and names, in the order of the tabs. */
-	public static final String[] CATS = {"all", "funny", "scary", "fantasy", "animals", "scifi", "places", "effects", "custom"};
-	public static final String[] CAT_NAMES = {"All", "Funny", "Scary", "Fantasy", "Animals", "Robots & Space", "Places & Devices", "Effects", "Mine"};
+	public static final String[] CATS = {"all", "famous", "characters", "funny", "scary", "fantasy", "animals", "scifi", "places", "effects", "custom"};
+	public static final String[] CAT_NAMES = {"All", "Famous", "Characters", "Funny", "Scary", "Fantasy", "Animals", "Robots & Space", "Places & Devices", "Effects", "Mine"};
 
 	private static final List<Persona> BUILTIN = List.of(
 			b("me", "Just Me", "Your own voice", "all", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+			b("ronaldo", "Cristiano Ronaldo", "SIUUUU! Confident and full of energy", "famous", 1.0F, 0.15F, 2200, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0),
+			b("messi", "Messi", "Calm and soft spoken", "famous", 1.5F, 0.1F, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+			b("speed", "IShowSpeed", "Screams everything, always at max", "famous", 2.0F, 0.2F, 2500, 6, 0, 0, 0.35F, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0),
+			b("mrbeast", "MrBeast", "YouTube video energy", "famous", 1.0F, 0.2F, 3000, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0),
+			b("patrickjane", "Patrick Jane", "Calm, charming and knows everything", "famous", -1.5F, -0.1F, 200, 2, 0, 0, 0, 0, 0, 0.1F, 0, 0, 0, 0, 0, 0, 0, 0),
+			b("patrick", "Patrick Star", "Slow, silly and happy", "characters", -2.0F, -0.15F, 700, 5, 0, 0, 0, 0, 0, 0, 0.1F, 3, 0, 0, 0, 0, 0, 0),
+			b("squidward", "Squidward", "Nasal and always annoyed", "characters", -1.0F, 0, 1400, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 300, 0, 0, 0, 0),
+			b("krabs", "Mr. Krabs", "Money! Raspy old sailor", "characters", -3.0F, -0.1F, 900, 4, 0, 0, 0.3F, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+			b("plankton", "Plankton", "Tiny evil genius", "characters", 5.0F, 0.2F, 0, 0, 0.1F, 80, 0.2F, 0, 0, 0.2F, 0, 0, 0, 0, 0, 0, 0, 0),
+			b("shrek", "Shrek", "Deep Scottish ogre", "characters", -5.0F, -0.3F, 250, 4, 0, 0, 0.15F, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+			b("donkey", "Donkey", "Never stops talking", "characters", 3.0F, 0.2F, 1500, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+			b("minion", "Minion", "Banana!", "characters", 10.0F, 0.35F, 1600, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.2F, 0),
+			b("pikachu", "Pikachu", "Pika pika!", "characters", 11.0F, 0.4F, 2500, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+			b("sonic", "Sonic", "Gotta go fast", "characters", 4.0F, 0.2F, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+			b("homer", "Homer", "D'oh!", "characters", -3.0F, -0.2F, 600, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+			b("peppa", "Peppa Pig", "Oink oink", "characters", 6.0F, 0.2F, 1000, 8, 0, 0, 0.1F, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+			b("vader", "Darth Vader", "Heavy breathing, helmet voice", "characters", -7.0F, -0.3F, 0, 0, 0.15F, 30, 0.2F, 0, 0, 0.25F, 0, 0, 0, 0, 5000, 0, 0, 0),
+			b("yoda", "Yoda", "Wise and small, backwards he talks", "characters", 3.0F, 0, 1200, 6, 0, 0, 0, 0, 0, 0, 0.15F, 4, 0, 0, 0, 0, 0, 0),
+			b("gollum", "Gollum", "My precious...", "characters", 2.0F, 0.2F, 1800, 8, 0, 0, 0.45F, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.2F),
+			b("groot", "Groot", "I am Groot", "characters", -9.0F, -0.4F, 150, 5, 0, 0, 0, 0, 0, 0.2F, 0, 0, 0, 0, 0, 0, 0, 0),
+			b("venom", "Venom", "We are Venom", "characters", -10.0F, -0.3F, 0, 0, 0.1F, 35, 0.5F, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.35F, 0),
+			b("joker", "Joker", "Why so serious?", "characters", 1.0F, 0.1F, 1500, 4, 0, 0, 0.15F, 0, 0, 0, 0.3F, 5, 0, 0, 0, 0, 0, 0),
+			b("batman", "Batman", "Raspy and mysterious", "characters", -6.0F, -0.35F, 0, 0, 0, 0, 0.35F, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.15F),
+			b("optimus", "Optimus Prime", "Autobots, roll out!", "characters", -5.0F, -0.1F, 0, 0, 0.3F, 70, 0, 0, 0, 0.2F, 0, 0, 0, 0, 0, 0, 0, 0),
+			b("stitch", "Stitch", "Ohana!", "characters", 4.0F, 0, 1200, 8, 0, 0, 0.4F, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+			b("goku", "Goku", "Kamehameha!", "characters", 3.0F, 0.2F, 2000, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+			b("herobrine", "Herobrine", "He is watching you...", "characters", -8.0F, -0.3F, 0, 0, 0, 0, 0, 0, 0.3F, 0.6F, 0, 0, 0, 0, 0, 0, 0, 0.3F),
+			b("creeper", "Creeper", "Tssss... BOOM", "characters", 0, 0.3F, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.3F, 0, 0, 0, 0, 0.8F),
+			b("villager", "Villager", "Hmm. Hrrm.", "characters", -1.0F, -0.1F, 500, 10, 0, 0, 0, 0, 0, 0, 0.2F, 6, 0, 0, 0, 0, 0, 0),
+			b("enderman", "Enderman", "Glitchy and creepy", "characters", -6.0F, 0, 0, 0, 0.25F, 120, 0, 0.3F, 0, 0.4F, 0.6F, 4, 0, 0, 0, 0, 0, 0),
 			b("sponge", "Square Sponge", "Squeaky, nasal and always cheerful", "funny", 4.5F, 0.25F, 1300, 6, 0, 0, 0, 0, 0, 0, 0.12F, 5.5F, 0, 0, 0, 0, 0, 0),
 			b("chipmunk", "Chip", "Tiny and super fast sounding", "funny", 9, 0.3F, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 			b("helium", "Helium Balloon", "Just breathed a whole balloon", "funny", 12, 0.35F, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),

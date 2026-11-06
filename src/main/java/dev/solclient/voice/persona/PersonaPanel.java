@@ -31,7 +31,7 @@ import org.lwjgl.util.tinyfd.TinyFileDialogs;
  * The voice changer, drawn INSIDE the mod's settings page (no extra window), like Texture Styles. A banner with the chosen
  * voice, the on / off switches, a search box and category chips, then a grid of round photos. Every photo can be swapped for
  * any picture from your computer (pencil on a voice, or drag a photo onto the window = the chosen voice); it is cut into a
- * smooth circle, so real photos look right. Your pictures live in kubo/personas/pictures/&lt;voice&gt;.png|jpg.
+ * rounded square (like the voice apps' cards), so real photos look right. Your pictures live in kubo/personas/pictures/&lt;voice&gt;.png|jpg.
  */
 public final class PersonaPanel {
 
@@ -168,7 +168,10 @@ public final class PersonaPanel {
 		}
 	}
 
-	/** Centre square, scaled smoothly to PIC x PIC, cut into a circle with a soft (anti-aliased) edge. */
+	/** Corner radius of the cards, as a part of their size. */
+	private static final float CORNER = 0.22F;
+
+	/** Centre square, scaled smoothly to PIC x PIC, cut into a rounded square with soft (anti-aliased) corners. */
 	private static int[] round(BufferedImage src) {
 		int s = Math.min(src.getWidth(), src.getHeight());
 		BufferedImage sq = src.getSubimage((src.getWidth() - s) / 2, (src.getHeight() - s) / 2, s, s);
@@ -179,11 +182,13 @@ public final class PersonaPanel {
 		}
 		BufferedImage out = scale(sq, PIC);
 		int[] px = new int[PIC * PIC];
-		float r = PIC / 2F, c = (PIC - 1) / 2F;
+		float r = PIC * CORNER, c = (PIC - 1) / 2F, half = PIC / 2F;
 		for (int y = 0; y < PIC; y++) {
 			for (int x = 0; x < PIC; x++) {
-				float d = (float) Math.hypot(x - c, y - c);
-				float a = Math.max(0, Math.min(1, r - d));
+				// distance outside the rounded square (negative inside)
+				float qx = Math.max(Math.abs(x - c) - (half - r), 0), qy = Math.max(Math.abs(y - c) - (half - r), 0);
+				float d = (float) Math.hypot(qx, qy) - r;
+				float a = Math.max(0, Math.min(1, 0.5F - d));
 				int argb = out.getRGB(x, y);
 				int alpha = Math.round(((argb >>> 24) & 0xFF) * a);
 				px[y * PIC + x] = (alpha << 24) | (argb & 0xFFFFFF);
@@ -370,19 +375,31 @@ public final class PersonaPanel {
 	}
 
 	// ------------------------------------------------------------------ drawing
-	/** A round photo on a dark backing, with a coloured ring behind it when ring != 0; the first letter while the picture loads. */
+	/** A rounded-square photo, with a coloured frame when ring != 0; a coloured card with initials when there is no picture yet. */
 	private void portrait(DrawContext c, Persona p, int cx, int cy, int size, int ring) {
-		Gfx.circle(c, cx, cy + 2, size / 2F + (ring != 0 ? 3 : 1), 0x55000000); // soft shadow
+		int x = cx - size / 2, y = cy - size / 2, r = Math.round(size * CORNER);
+		Gfx.rrect(c, x, y + 2, size, size, r, 0x55000000); // soft shadow
 		if (ring != 0) {
-			Gfx.circle(c, cx, cy, size / 2F + 2.5F, ring);
+			Gfx.rrect(c, x - 2, y - 2, size + 4, size + 4, r + 2, ring);
 		}
-		Gfx.circle(c, cx, cy, size / 2F, 0xFF22242C);
 		Identifier id = picture(p);
 		if (id != null) {
-			Gfx.tex(c, id, cx - size / 2, cy - size / 2, size, size, size, size, 0xFFFFFFFF);
-		} else {
-			Gfx.textC(c, p.name.substring(0, 1).toUpperCase(Locale.ROOT), cx, cy - 4, Theme.DIM);
+			Gfx.rrect(c, x, y, size, size, r, 0xFF22242C);
+			Gfx.tex(c, id, x, y, size, size, size, size, 0xFFFFFFFF);
+			return;
 		}
+		// no picture (yet): a colourful card made from the name
+		float hue = (p.id.hashCode() & 0xFFFF) / 65536F;
+		int c1 = 0xFF000000 | java.awt.Color.HSBtoRGB(hue, 0.55F, 0.55F), c2 = 0xFF000000 | java.awt.Color.HSBtoRGB(hue + 0.08F, 0.6F, 0.32F);
+		Gfx.rrect(c, x, y, size, size, r, Gfx.blend(c2, c1, 0.6F));
+		String[] w = Lang.t(p.name).split(" ");
+		String ini = (w[0].substring(0, 1) + (w.length > 1 && !w[1].isEmpty() ? w[1].substring(0, 1) : "")).toUpperCase(Locale.ROOT);
+		var mat = c.getMatrices();
+		mat.pushMatrix();
+		mat.translate(cx, cy);
+		mat.scale(size / 28F, size / 28F);
+		Gfx.textRaw(c, ini, -Gfx.tw(ini) / 2, -4, 0xF0FFFFFF);
+		mat.popMatrix();
 	}
 
 	private int draw(DrawContext c, int mx, int my, int x, int y, int w, Option.Custom.Reg reg) {
@@ -406,7 +423,8 @@ public final class PersonaPanel {
 		int pcx = x + 14 + 34, pcy = y + bh / 2;
 		float pulse = m.enabled ? 0.5F + 0.5F * (float) Math.sin(now / 450.0) : 0;
 		if (m.enabled) {
-			Gfx.circle(c, pcx, pcy, 37 + 2 * pulse, Gfx.withAlpha(accent, Math.round(40 + 40 * pulse)));
+			int gr = Math.round(37 + 2 * pulse);
+			Gfx.rrect(c, pcx - gr, pcy - gr, gr * 2, gr * 2, Math.round(gr * CORNER * 1.2F), Gfx.withAlpha(accent, Math.round(40 + 40 * pulse)));
 		}
 		portrait(c, cur, pcx, pcy, 66, m.enabled ? accent : 0xFF4A4D59);
 		int tx = x + 14 + 68 + 14;
@@ -528,7 +546,8 @@ public final class PersonaPanel {
 			}
 			if (sel) {
 				Gfx.rrect(c, gx + 2, gy, cwid - 4, ROW_H - 4, 10, Gfx.blend(Theme.CARD, accent, 0.18F));
-				Gfx.circle(c, pcxx, pcyy, size / 2F + 5, Gfx.withAlpha(accent, 0x50));
+				int gr = size / 2 + 5;
+				Gfx.rrect(c, pcxx - gr, pcyy - gr, gr * 2, gr * 2, Math.round(gr * CORNER * 1.2F), Gfx.withAlpha(accent, 0x50));
 			}
 			portrait(c, p, pcxx, pcyy, size, sel ? accent : hov ? 0x66FFFFFF : 0);
 			Gfx.textFit(c, p.name, pcxx, cwid - 8, gy + 64, sel ? 0xFFFFFFFF : Theme.TEXT);
@@ -543,7 +562,7 @@ public final class PersonaPanel {
 			});
 			boolean fav = m.isFav(p.id);
 			if (fav || hov) {
-				int fx = pcxx + size / 2 - 4, fy = pcyy - size / 2 + 3;
+				int fx = pcxx + size / 2 - 3, fy = pcyy - size / 2 + 3;
 				boolean hf = in(mx, my, fx - 7, fy - 7, 14, 14);
 				Gfx.circle(c, fx, fy, 7, 0xE6101116);
 				Gfx.tex(c, Theme.iconPublic(fav ? "star_filled" : "star_outline"), fx - 5, fy - 5, 10, 10, 64, 64, fav ? 0xFFFFC94A : hf ? 0xFFFFFFFF : 0xFFB8BCCB);
@@ -551,13 +570,13 @@ public final class PersonaPanel {
 			}
 			if (hov) {
 				// change the picture (and put the original back when you already changed it)
-				int ex = pcxx - size / 2 + 4, ey = pcyy - size / 2 + 3;
+				int ex = pcxx - size / 2 + 3, ey = pcyy - size / 2 + 3;
 				boolean he = in(mx, my, ex - 7, ey - 7, 14, 14);
 				Gfx.circle(c, ex, ey, 7, 0xE6101116);
 				Gfx.tex(c, Theme.iconPublic("edit"), ex - 4, ey - 4, 8, 8, 64, 64, he ? 0xFFFFFFFF : 0xFFB8BCCB);
 				reg.region(ex - 7, ey - 7, 14, 14, () -> choosePicture(p));
 				if (override(p.id) != null) {
-					int rx = pcxx - size / 2 + 4, ry = pcyy + size / 2 - 5;
+					int rx = pcxx - size / 2 + 3, ry = pcyy + size / 2 - 3;
 					boolean hr = in(mx, my, rx - 7, ry - 7, 14, 14);
 					Gfx.circle(c, rx, ry, 7, 0xE6101116);
 					Gfx.tex(c, Theme.iconPublic("close"), rx - 4, ry - 4, 8, 8, 64, 64, hr ? 0xFFF87171 : 0xFFB8BCCB);
