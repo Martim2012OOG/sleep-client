@@ -41,6 +41,7 @@ public final class ParkourLive {
 	}
 
 	private static final int MAX = 100;
+	private static final Identifier WATERMELON = Identifier.of("sol_client", "textures/parkour/watermelon.png");
 
 	// ---- synced with the map (written on the server thread, read on the client thread)
 	private static volatile boolean inMap;
@@ -472,6 +473,11 @@ public final class ParkourLive {
 
 	/** The gift's real picture when known, else a coloured badge; the count is drawn over its bottom. */
 	private static void drawGift(DrawContext c, Act a, int x, int y, int s) {
+		if (a == Act.SAVE) {
+			// the watermelon picture shipped with the client: the same as on the stream, even before TikTok connects
+			c.drawTexture(net.minecraft.client.gl.RenderPipelines.GUI_TEXTURED, WATERMELON, x, y, 0, 0, s, s, s, s);
+			return;
+		}
 		Identifier icon = null;
 		TikTokLiveMod mm = TikTokLiveMod.instance;
 		for (String name : (mm == null ? giftOf(a) : mm.pkGifts(a)).split("[,;]")) {
