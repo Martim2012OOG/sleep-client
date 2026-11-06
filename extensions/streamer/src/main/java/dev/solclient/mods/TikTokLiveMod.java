@@ -6,6 +6,7 @@ import dev.solclient.option.Option;
 import dev.solclient.tiktok.TikClient;
 import dev.solclient.tiktok.TikEvent;
 import dev.solclient.tiktok.TikFx;
+import dev.solclient.tiktok.TikMusic;
 import dev.solclient.tiktok.TikSound;
 import dev.solclient.tiktok.TikStats;
 import java.nio.file.Files;
@@ -76,6 +77,40 @@ public class TikTokLiveMod extends HudMod {
 	private final Option.Action btnTestFollow = action("New follower", "Send", this::testFollow, () -> "");
 	private final Option.Action btnTestViewers = action("Viewers / likes counter", "Send", this::testViewers, () -> "");
 
+	private final Option.Header hParkour = header("Parkour Live (Parkour Paradise 3)");
+	public final Option.Bool pkOn = bool("Parkour Live", true)
+			.tip("In the Parkour Paradise 3 map (Add-ons): LEVEL X / 100 on screen instead of the boss bar, and gifts move you up or down, start a RESET timer, save you or punch you.");
+	public final Option.Text pkTitle = text("Parkour Title", "I HAVE TO BEAT THIS PARKOUR", 60, "I HAVE TO BEAT THIS PARKOUR");
+	private final Option.Text pkUp1 = text("UP 1 LVL gifts", "Paper Crane, Heart Me", 200, "gift names, separated by commas");
+	private final Option.Text pkDown1 = text("DOWN 1 LVL gifts", "Hat and Mustache, Cowboy Hat", 200, "gift names, separated by commas");
+	private final Option.Text pkUp10 = text("UP 10 LVL gifts", "Panda", 200, "gift names, separated by commas");
+	private final Option.Text pkDown10 = text("DOWN 10 LVL gifts", "Gift Box", 200, "gift names, separated by commas");
+	private final Option.Text pkReset = text("RESET gifts", "Galaxy", 200, "gift names, separated by commas");
+	private final Option.Text pkSave = text("SAVE gifts", "Watermelon Sugar, Watermelon", 200, "gift names, separated by commas");
+	private final Option.Text pkPunch = text("PUNCH gifts", "Boxing Gloves", 200, "gift names, separated by commas");
+	private final Option.Text pkJail = text("JAIL gifts", "Sunglasses", 200, "gift names, separated by commas");
+	public final Option.Num pkJailSeconds = num("Jail Time", 20, 5, 60, 1, "s");
+	public final Option.Num pkResetSeconds = num("Reset Timer", 60, 10, 300, 5, "s");
+	public final Option.Num pkPunchStrength = num("Punch Strength", 100, 30, 300, 10, "%");
+	private final Option.Choice pkTestPick = choice("Test Parkour Gift", 0, "UP 1 LVL", "DOWN 1 LVL", "UP 10 LVL", "DOWN 10 LVL", "RESET", "SAVE", "PUNCH", "JAIL");
+	private final Option.Action pkTestBtn = action("Send the parkour test", "Send",
+			() -> dev.solclient.parkour.ParkourLive.test(dev.solclient.parkour.ParkourLive.Act.values()[pkTestPick.idx()]),
+			() -> dev.solclient.parkour.ParkourLive.giftOf(dev.solclient.parkour.ParkourLive.Act.values()[pkTestPick.idx()]));
+
+	/** The gift names (comma separated) that do this in Parkour Live. */
+	public String pkGifts(dev.solclient.parkour.ParkourLive.Act a) {
+		return switch (a) {
+			case UP1 -> pkUp1.get();
+			case DOWN1 -> pkDown1.get();
+			case UP10 -> pkUp10.get();
+			case DOWN10 -> pkDown10.get();
+			case RESET -> pkReset.get();
+			case SAVE -> pkSave.get();
+			case PUNCH -> pkPunch.get();
+			case JAIL -> pkJail.get();
+		};
+	}
+
 	private final Option.Header hChat = header("Live chat on screen");
 	private final Option.Bool showChat = bool("Show Chat", true);
 	private final Option.Num chatLines = num("Max Lines", 8, 3, 16, 1, "");
@@ -113,6 +148,14 @@ public class TikTokLiveMod extends HudMod {
 	private final Option.Action btnClear = action("Remove my sounds", "Clear", this::clearSlots, () -> "");
 	private final Option.Action btnTestSound = action("Test donation sound", "Play", this::testSound, () -> "");
 	private final Option.Action btnFolder = action("Sounds folder (gifts/Rose.mp3)", "Open", this::openFolder, () -> "");
+
+	private final Option.Header hMusic = header("Background music (plays all the time)");
+	private final Option.Bool bgMusic = bool("Background Music", true)
+			.tip("Your 1 or 2 songs play one after the other, forever, while this mod is on. They go quieter while a donation sound plays.");
+	private final Option.Num musicVolume = num("Music Volume", 35, 0, 100, 5, "%");
+	private final Option.Action btnBg1 = action("Background song 1", "Choose file", () -> pickSlot("bg1"), () -> bgName(0));
+	private final Option.Action btnBg2 = action("Background song 2", "Choose file", () -> pickSlot("bg2"), () -> bgName(1));
+	private final Option.Action btnBgClear = action("Remove background songs", "Clear", this::clearMusic, () -> TikMusic.playing().isEmpty() ? "" : "playing: " + TikMusic.playing());
 
 	// ---------------------------------------------------------------- state
 	private final TikClient client = new TikClient();
@@ -204,6 +247,7 @@ public class TikTokLiveMod extends HudMod {
 		shown.clear();
 		streaks.clear();
 		TikSound.stopAll();
+		TikMusic.stop();
 	}
 
 	@Override
@@ -219,6 +263,7 @@ public class TikTokLiveMod extends HudMod {
 		}
 		client.setDebug(debug.on());
 		TikSound.tick();
+		TikMusic.tick(bgMusic.on() ? bgSongs : List.of(), musicVolume.f() / 100F, TikSound.playing());
 		watchSettings();
 		// chat / gifts: a few per tick at most, so even a huge live never costs a frame
 		int budget = 14;
@@ -352,7 +397,14 @@ public class TikTokLiveMod extends HudMod {
 				}
 				addChat(e.who(), e.text(), colourOf(e.user() == null ? e.who() : e.user()));
 			}
-			case GIFT -> onGift(e);
+			case GIFT -> {
+				try {
+					dev.solclient.parkour.ParkourLive.onGift(e);
+				} catch (Throwable t) {
+					System.err.println("[Sleep] Parkour Live: " + t);
+				}
+				onGift(e);
+			}
 			case FOLLOW -> {
 				if (followsInChat.on()) {
 					addChat(e.who(), "followed you!", 0xFFFF6BB5);
@@ -713,6 +765,15 @@ public class TikTokLiveMod extends HudMod {
 			sounds0 = nameOf(TikSound.find(root(), "donate"));
 			sounds1 = nameOf(TikSound.find(root(), "big"));
 			sounds2 = nameOf(TikSound.find(root(), "follow"));
+			List<Path> bg = new ArrayList<>();
+			for (String slot : new String[] {"bg1", "bg2"}) {
+				Path f = TikSound.find(root().resolve("music"), slot);
+				if (f != null) {
+					bg.add(f);
+				}
+			}
+			bgSongs = List.copyOf(bg);
+			bgNames = new String[] {nameOf(TikSound.find(root().resolve("music"), "bg1")), nameOf(TikSound.find(root().resolve("music"), "bg2"))};
 			pickStatus = "";
 		});
 	}
@@ -766,22 +827,51 @@ public class TikTokLiveMod extends HudMod {
 				pickStatus = "Use .mp3, .ogg or .wav";
 				return;
 			}
-			if (Files.size(src) > 20L * 1024 * 1024) {
-				pickStatus = "File too big (max 20 MB)";
+			boolean music = slot.startsWith("bg");
+			if (Files.size(src) > (music ? 40L : 20L) * 1024 * 1024) {
+				pickStatus = "File too big (max " + (music ? 40 : 20) + " MB)";
 				return;
 			}
-			Files.createDirectories(root());
+			Path dir = music ? root().resolve("music") : root();
+			Files.createDirectories(dir);
 			for (String ext : new String[] {".mp3", ".ogg", ".wav"}) {
-				Files.deleteIfExists(root().resolve(slot + ext));
+				Files.deleteIfExists(dir.resolve(slot + ext));
 			}
 			String ext = n.substring(n.lastIndexOf('.')).toLowerCase(Locale.ROOT);
-			Files.copy(src, root().resolve(slot + ext), StandardCopyOption.REPLACE_EXISTING);
+			Files.copy(src, dir.resolve(slot + ext), StandardCopyOption.REPLACE_EXISTING);
 			pickStatus = "";
 			refreshSlots();
-			TikSound.play(root().resolve(slot + ext), Math.max(0.3F, volume.f() / 100F)); // so you hear it right away
+			if (music) {
+				TikMusic.restart(); // starts again with the new song
+			} else {
+				TikSound.play(dir.resolve(slot + ext), Math.max(0.3F, volume.f() / 100F)); // so you hear it right away
+			}
 		} catch (Exception e) {
 			pickStatus = "Could not copy the file";
 		}
+	}
+
+	private volatile List<Path> bgSongs = List.of();
+	private volatile String[] bgNames = {"", ""};
+
+	private String bgName(int i) {
+		String n = bgNames[i];
+		return n.isEmpty() ? "none" : n;
+	}
+
+	private void clearMusic() {
+		dev.solclient.social.Social.IO.execute(() -> {
+			for (String slot : new String[] {"bg1", "bg2"}) {
+				for (String ext : new String[] {".mp3", ".ogg", ".wav"}) {
+					try {
+						Files.deleteIfExists(root().resolve("music").resolve(slot + ext));
+					} catch (Exception ignored) {
+						// in use
+					}
+				}
+			}
+			refreshSlots();
+		});
 	}
 
 	private void clearSlots() {

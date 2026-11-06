@@ -35,6 +35,14 @@ final class TikDirect {
 						.onConnected((lc, e) -> {
 							if (g == gen) {
 								sink.directStatus("Connected - @" + user + " is live");
+								// every gift's picture and price, for the Parkour Live panel icons
+								try {
+									for (var gift : lc.getGiftManager().toList()) {
+										TikGifts.learn(gift.getName(), gift.getPicture() == null ? null : gift.getPicture().getLink(), gift.getDiamondCost());
+									}
+								} catch (Throwable ignored) {
+									// only icons
+								}
 							}
 						})
 						.onDisconnected((lc, e) -> {
@@ -69,6 +77,13 @@ final class TikDirect {
 								d.addProperty("diamondCount", e.getGift().getDiamondCost());
 								d.addProperty("repeatCount", Math.max(1, e.getCombo()));
 								d.addProperty("giftType", 0); // the library already sends one event at the end of a streak
+								try {
+									if (e.getGift().getPicture() != null) {
+										d.addProperty("giftPictureUrl", e.getGift().getPicture().getLink());
+									}
+								} catch (Throwable ignored) {
+									// no picture
+								}
 								sink.inject(msg("gift", d));
 							}
 						})

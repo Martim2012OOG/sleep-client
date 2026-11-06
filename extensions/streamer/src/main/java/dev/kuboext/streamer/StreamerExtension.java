@@ -10,6 +10,8 @@ import net.minecraft.client.MinecraftClient;
 /** Sleep extension "Streamer Tools": Streamer Mode (hide IP, coordinates, messages) and TikTok Live (chat, gifts, sounds). */
 public class StreamerExtension implements KuboExtension {
 
+	private static boolean parkourHooked;
+
 	@Override
 	public void register(KuboApi api) {
 		api.addMod(new StreamerModeMod());
@@ -18,14 +20,57 @@ public class StreamerExtension implements KuboExtension {
 		// while you are live: full FPS even with OBS in front, optionally locked to a steady number
 		api.streamFps(() -> TikTokLiveMod.instance == null ? -1 : TikTokLiveMod.instance.streamFps());
 		ClientTickEvents.END_CLIENT_TICK.register(c -> StreamerModeMod.pollKey());
+		// Parkour Live: the Parkour Paradise 3 map played by TikTok gifts (Add-ons tab)
+		dev.solclient.addons.Addons.register(new dev.solclient.parkour.ParkourAddon());
+		api.addIcon("addon_parkour");
+		if (!parkourHooked) {
+			parkourHooked = true;
+			// the jail cage never stays in the map, even if you close the world while locked up
+			net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents.SERVER_STOPPING.register(dev.solclient.parkour.ParkourLive::release);
+			// /pktest up1 | down1 | up10 | down10 | reset | save | punch | jail : try every gift without being live
+			net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback.EVENT.register((d, reg) -> d.register(
+					net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal("pktest")
+							.then(net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
+									.argument("action", com.mojang.brigadier.arguments.StringArgumentType.word())
+									.suggests((ctx, b) -> {
+										for (var a : dev.solclient.parkour.ParkourLive.Act.values()) {
+											b.suggest(a.name().toLowerCase(java.util.Locale.ROOT));
+										}
+										return b.buildFuture();
+									})
+									.executes(ctx -> {
+										String s = com.mojang.brigadier.arguments.StringArgumentType.getString(ctx, "action").toUpperCase(java.util.Locale.ROOT);
+										for (var a : dev.solclient.parkour.ParkourLive.Act.values()) {
+											if (a.name().equals(s)) {
+												dev.solclient.parkour.ParkourLive.test(a);
+												return 1;
+											}
+										}
+										ctx.getSource().sendError(net.minecraft.text.Text.literal("Use: up1, down1, up10, down10, reset, save, punch, jail"));
+										return 0;
+									}))));
+		}
+		ClientTickEvents.END_CLIENT_TICK.register(c -> {
+			try {
+				dev.solclient.parkour.ParkourLive.tick(c);
+			} catch (Throwable t) {
+				// never break the game
+			}
+		});
 		api.hudFilter(StreamerModeMod::hidesHud);
 		api.hideToasts(StreamerModeMod::hideToasts);
 		api.onHudLast(c -> {
+			dev.solclient.parkour.ParkourLive.render(c);
 			if (TikTokLiveMod.instance != null && TikTokLiveMod.instance.enabled) TikTokLiveMod.instance.drawOverlay(c);
 			if (StreamerModeMod.on()) StreamerModeMod.instance.drawTag(c);
 		});
 		api.command("Streamer Mode", "Hide IP, coordinates and messages", "streamer_mode", () -> {
 			if (StreamerModeMod.instance != null) StreamerModeMod.instance.toggle();
 		});
+	}
+
+	@Override
+	public void unload() {
+		dev.solclient.addons.Addons.unregister("parkour_live");
 	}
 }

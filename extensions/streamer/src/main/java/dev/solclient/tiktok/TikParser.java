@@ -85,6 +85,11 @@ final class TikParser {
 					boolean end = !d.has("repeatEnd") && !d.has("repeat_end") || bool(d, "repeatEnd", "repeat_end");
 					boolean streaking = type == 1 && !end;
 					int gid = intOf(d, "giftId", "gift_id");
+					String pic = str(d, "giftPictureUrl", "giftPicture", "gift_picture_url", "picture", "image");
+					if (pic == null && g != null) {
+						pic = str(g, "giftPictureUrl", "picture", "image", "icon");
+					}
+					TikGifts.learn(name, pic, each);
 					return new TikEvent(TikEvent.Type.GIFT, user, nick, "", clean(name, 40), gid, each, repeat, streaking, id);
 				}
 				case "follow", "followmessage", "newfollower", "newfollow", "webcastfollowmessage", "follower" -> {

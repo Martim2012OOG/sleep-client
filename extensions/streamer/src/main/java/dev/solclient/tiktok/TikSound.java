@@ -117,6 +117,11 @@ public final class TikSound {
 		}
 	}
 
+	/** True while one of your sounds is playing (the background music goes quieter). */
+	public static boolean playing() {
+		return !VOICES.isEmpty() || !READY.isEmpty();
+	}
+
 	public static void stopAll() {
 		READY.clear();
 		try {

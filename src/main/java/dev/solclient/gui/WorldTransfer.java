@@ -161,6 +161,14 @@ public final class WorldTransfer {
 
 	/** Separate from Minecraft so it can be tested on its own. */
 	static String unpack(Path zip, Path saves) throws IOException {
+		return unpack(zip, saves, null);
+	}
+
+	/**
+	 * Unpacks the world in a zip into {@code saves}. {@code wanted} = folder name to use (null: the name in the zip);
+	 * " (2)" etc. is added when it is taken. Returns the folder name. Used by add-ons that ship a map.
+	 */
+	public static String unpack(Path zip, Path saves, String wanted) throws IOException {
 		try (ZipFile zf = new ZipFile(zip.toFile())) {
 			// the world root is the folder with the shallowest level.dat (ignoring the macOS __MACOSX junk)
 			String root = null;
@@ -177,7 +185,7 @@ public final class WorldTransfer {
 			if (root == null) {
 				throw new IOException(Lang.tr("No world in this zip (no level.dat)", "Este zip não tem nenhum mundo (falta o level.dat)"));
 			}
-			String base = root.isEmpty() ? zip.getFileName().toString().replaceFirst("(?i)\\.zip$", "") : root.substring(0, root.length() - 1);
+			String base = wanted != null && !wanted.isBlank() ? wanted : root.isEmpty() ? zip.getFileName().toString().replaceFirst("(?i)\\.zip$", "") : root.substring(0, root.length() - 1);
 			base = base.substring(base.lastIndexOf('/') + 1).replaceAll("[\\\\/:*?\"<>|\\p{Cntrl}]", "_").trim();
 			if (base.isEmpty() || base.equals(".") || base.equals("..")) {
 				base = "World";
