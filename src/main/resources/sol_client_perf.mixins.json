@@ -9,7 +9,8 @@
     "BiomeWaterColorMixin",
     "FrameSyncMixin",
     "ArmorStandPoseMixin",
-    "KillFxHideMixin"
+    "KillFxHideMixin",
+    "RetinaMixin"
   ],
   "injectors": { "defaultRequire": 0 }
 }

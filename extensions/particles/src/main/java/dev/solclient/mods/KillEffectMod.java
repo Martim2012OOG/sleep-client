@@ -29,13 +29,11 @@ public class KillEffectMod extends Mod {
 		long hitAt;
 		double x, y, z;
 		float height;
-		boolean hidden;
 		String name;
 		net.minecraft.util.Identifier skin;
 	}
 
 	private final Map<Integer, Target> hit = new HashMap<>();
-	private static boolean chatHooked;
 	private String status = "";
 	private int kills;
 
@@ -44,29 +42,12 @@ public class KillEffectMod extends Mod {
 		instance = this;
 	}
 
-	@Override
-	public void init() {
-		super.init();
-		if (chatHooked) {
-			return;
-		}
-		chatHooked = true;
-		// minigame servers often never let a player "die": the kill message in the chat is the surest sign
-		net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents.GAME.register((msg, overlay) -> {
-			if (!overlay && instance != null && instance.enabled) {
-				instance.onChat(msg.getString());
-			}
-		});
-		net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents.CHAT.register((msg, signed, sender, params, time) -> {
-			if (instance != null && instance.enabled) {
-				instance.onChat(msg.getString());
-			}
-		});
-	}
-
 	public void onAttack(Entity e) {
 		if (!(e instanceof LivingEntity) || playersOnly.on() && !(e instanceof net.minecraft.entity.player.PlayerEntity)) {
 			return;
+		}
+		if (!hit.containsKey(e.getId())) {
+			System.out.println("[Sleep] kill effect: watching " + e.getName().getString());
 		}
 		Target t = hit.computeIfAbsent(e.getId(), k -> new Target());
 		t.e = e;
@@ -75,8 +56,7 @@ public class KillEffectMod extends Mod {
 		t.y = e.getY();
 		t.z = e.getZ();
 		t.height = e.getHeight();
-		t.hidden = e.isInvisible() || e.isSpectator();
-		t.name = e instanceof net.minecraft.entity.player.PlayerEntity p ? p.getName().getString() : null;
+		t.name = e.getName().getString();
 		if (e instanceof net.minecraft.client.network.AbstractClientPlayerEntity p) {
 			try {
 				t.skin = p.getSkin().body().texturePath();
@@ -86,6 +66,36 @@ public class KillEffectMod extends Mod {
 		}
 	}
 
+	/** How long after your last hit a death still counts as your kill. */
+	private static final long MINE_MS = 5000L;
+
+	/** True when the game says somebody else hit them last (the client only knows the attacker when it was you). */
+	private boolean hitByOther(LivingEntity l) {
+		net.minecraft.entity.LivingEntity by = l.getAttacker();
+		return by != null && by != mc.player;
+	}
+
+	/**
+	 * The server says this entity just died (entity status 3, sent to every client at the moment of the death). If you
+	 * hit it in the last seconds, it is your kill.
+	 */
+	public void onDeathSignal(LivingEntity e) {
+		if (mc.player == null || e == mc.player) {
+			return;
+		}
+		Target t = hit.get(e.getId());
+		if (t == null || System.currentTimeMillis() - t.hitAt > MINE_MS || hitByOther(e)) {
+			return;
+		}
+		hit.remove(e.getId());
+		t.x = e.getX();
+		t.y = e.getY();
+		t.z = e.getZ();
+		System.out.println("[Sleep] kill effect: " + t.name + " -> death signal");
+		kill(t);
+	}
+
+	/** Backup for the death signal: their health reached 0 while you were the last to hit them. Also forgets old hits. */
 	@Override
 	public void tick() {
 		if (mc.world == null || mc.player == null) {
@@ -96,108 +106,23 @@ public class KillEffectMod extends Mod {
 		Iterator<Map.Entry<Integer, Target>> it = hit.entrySet().iterator();
 		while (it.hasNext()) {
 			Target t = it.next().getValue();
-			long since = now - t.hitAt;
 			Entity e = t.e;
-			Entity live = mc.world.getEntityById(e.getId());
-			String why = null;
-			if (live != e || e.isRemoved()) {
-				// gone from the world right after your hit (servers often remove / hide a player who was killed)
-				if (since < MINE_MS && mc.player.squaredDistanceTo(t.x, t.y, t.z) < 24 * 24) {
-					why = "removed";
-				} else {
-					it.remove();
-					continue;
-				}
-			} else if (e instanceof LivingEntity l && (l.isDead() || l.getHealth() <= 0F)) {
-				if (since < MINE_MS && !hitByOther(l)) {
-					why = "died";
-				} else {
-					it.remove(); // somebody else finished them
-					continue;
-				}
-			} else if (since < MINE_MS && !t.hidden && (e.isSpectator() || e.isInvisible())) {
-				why = "spectator";
-			} else if (since < MINE_MS && e.squaredDistanceTo(t.x, t.y, t.z) > 10 * 10) {
-				why = "respawned"; // teleported far away in one go: the minigame respawned them
-			}
-			if (why != null) {
+			if (now - t.hitAt > MINE_MS || e.isRemoved()) {
 				it.remove();
-				kill(t);
 				continue;
 			}
-			if (since > 5000) {
+			if (e instanceof LivingEntity l && (l.isDead() || l.getHealth() <= 0F)) {
 				it.remove();
+				if (!hitByOther(l)) {
+					System.out.println("[Sleep] kill effect: " + t.name + " -> health 0");
+					kill(t);
+				}
 				continue;
 			}
 			t.x = e.getX();
 			t.y = e.getY();
 			t.z = e.getZ();
 		}
-	}
-
-	/** Your hit must be this recent for the kill to be yours (vanilla gives the kill to the last one who hit). */
-	private static final long MINE_MS = 1500L;
-
-	/**
-	 * True when the last hit before they died came from someone else: the dying player's attacker is known to the client only
-	 * when it is you, so a "recent damage" mark newer than your own hit means another player or something else killed them.
-	 */
-	private boolean hitByOther(LivingEntity l) {
-		Target t = hit.get(l.getId());
-		if (t == null) {
-			return true;
-		}
-		net.minecraft.entity.LivingEntity by = l.getAttacker();
-		return by != null && by != mc.player;
-	}
-
-	private static final String[] KILL_WORDS = {"kill", "slain", "elimin", "died", "death", "dead", "fell", "shot", "murder", "destroy", "final",
-			"morto", "matou", "morreu", "eliminad", "abatid", "\u2620", "\u2694", "\u00bb", ">>", "by "};
-
-	private void onChat(String text) {
-		if (text == null || hit.isEmpty() || mc.player == null) {
-			return;
-		}
-		String low = text.toLowerCase(java.util.Locale.ROOT);
-		String me = mc.player.getName().getString().toLowerCase(java.util.Locale.ROOT);
-		boolean word = false;
-		for (String w : KILL_WORDS) {
-			if (low.contains(w)) {
-				word = true;
-				break;
-			}
-		}
-		long now = System.currentTimeMillis();
-		final boolean killWord = word;
-		mc.execute(() -> {
-			Iterator<Map.Entry<Integer, Target>> it = hit.entrySet().iterator();
-			while (it.hasNext()) {
-				Target t = it.next().getValue();
-				if (t.name == null || now - t.hitAt > 6000) {
-					continue;
-				}
-				String n = t.name.toLowerCase(java.util.Locale.ROOT);
-				int at = low.indexOf(n);
-				if (at < 0 || low.startsWith(me + ":") || low.startsWith("<" + me + ">")) {
-					continue; // not about them, or something you typed yourself
-				}
-				// only YOUR kills: the message must name them and you, with a kill word
-				int mine = low.indexOf(me);
-				if (mine >= 0 && mine < at) {
-					String between = low.substring(mine + me.length(), at);
-					if (between.contains(" by ") || between.contains(" por ") || between.contains("was ") || between.contains("foi ")) {
-						continue; // "you were killed BY them": that is your death, not your kill
-					}
-				}
-				if (mc.player.isDead() || mc.player.getHealth() <= 0F) {
-					continue;
-				}
-				if (killWord && mine >= 0 && !low.startsWith(n + ":")) {
-					it.remove();
-					kill(t);
-				}
-			}
-		});
 	}
 
 	private void kill(Target t) {
@@ -280,8 +205,13 @@ public class KillEffectMod extends Mod {
 	private long toldAt;
 
 	private void play(double x, double y, double z, double h, Entity victim, net.minecraft.util.Identifier skin, int hideId) {
+		if (victim != null && dev.solclient.fx.killfx.KillFxTrigger.equipped() != null) {
+			return; // the kill effect equipped in the Locker plays it (KillFxTrigger), never twice
+		}
 		int idx = effect.idx();
 		String fx = victim == null ? null : ownedFx3d();
+		System.out.println("[Sleep] kill effect: choice=" + effect.label() + ", equipped in shop=" + dev.solclient.social.Social.equippedKillEffect()
+				+ ", owned=" + dev.solclient.social.Social.ownedKillEffects() + " -> " + (fx == null ? "classic effect " + idx : fx));
 		if (fx != null && dev.solclient.fx.killfx.KillFx.play(fx, x, y, z, skin, hideId)) {
 			status = "kill " + kills + ": " + fx;
 			return; // the 3D effect brings its own sounds

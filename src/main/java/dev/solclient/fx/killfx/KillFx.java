@@ -119,6 +119,7 @@ public final class KillFx {
 			return false;
 		}
 		init();
+		System.out.println("[Sleep] kill effect: playing " + id + " at " + Math.round(x) + " " + Math.round(y) + " " + Math.round(z) + (skin != null ? " with skin" : ""));
 		// model +Z points at you, so the creature crosses your screen from the side
 		Vec3d eye = mc.gameRenderer != null && mc.gameRenderer.getCamera() != null ? mc.gameRenderer.getCamera().getCameraPos()
 				: mc.player != null ? mc.player.getEyePos() : new Vec3d(x, y, z + 1);

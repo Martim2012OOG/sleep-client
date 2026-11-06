@@ -14,5 +14,6 @@ public abstract class EntityStatusMixin {
 	@Inject(method = "handleStatus(B)V", at = @At("HEAD"), require = 0)
 	private void kubo$status(byte status, CallbackInfo ci) {
 		KuboApi.entityStatus((LivingEntity) (Object) this, status);
+		dev.solclient.fx.killfx.KillFxTrigger.onStatus((LivingEntity) (Object) this, status);
 	}
 }

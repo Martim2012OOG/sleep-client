@@ -164,6 +164,7 @@ public final class MusicHub {
 			status = hint.isEmpty() ? "Nothing is playing: start a song in any player or browser" : hint;
 			return;
 		}
+		String lastIdBefore = lastId;
 		if (!pick.id().equals(lastId)) {
 			CoverFinder.error = "";
 		}
@@ -175,7 +176,12 @@ public final class MusicHub {
 		artUrl = pick.artUrl() == null ? "" : pick.artUrl();
 		artKey = pick.id() + "#" + artUrl.hashCode();
 		durationMs = Math.max(0, pick.durationMs());
-		progressMs = Math.max(0, pick.positionMs());
+		// keep our own clock running smoothly: only jump to the player's position when it really differs (seek, pause,
+		// another song); small differences are the player's report being late / rounded, and made the words stutter
+		long predicted = progressMs + (playing ? now - fetchedAt : 0);
+		long reported = Math.max(0, pick.positionMs());
+		boolean sameSong = pick.id().equals(lastIdBefore) && playing == pick.playing();
+		progressMs = sameSong && pick.playing() && Math.abs(reported - predicted) < 450 ? predicted + (reported - predicted) / 8 : reported;
 		fetchedAt = now;
 		playing = pick.playing();
 		source = pick.source();

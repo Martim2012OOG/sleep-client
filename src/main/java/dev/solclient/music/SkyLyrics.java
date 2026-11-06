@@ -41,6 +41,65 @@ public final class SkyLyrics {
 		/** "in front of me": still glued in front of you (until its last word has been sung), and its angle from where you look */
 		boolean follow;
 		float yawOff;
+		/** blocks this piece was moved up / down so it does not cover another one */
+		double lift;
+		/** half size in blocks (measured when placed), to keep pieces from overlapping */
+		float hw, hh;
+	}
+
+	// ------------------------------------------------------------------ pieces: the line cut into a few words at a time
+	private static List<Lyrics.Line> piecesSrc;
+	private static List<Lyrics.Line> pieces = List.of();
+	private static int piecesN = -1, piecesVersion = -1;
+
+	/** The lines cut into pieces of n words (n <= 0: the lines as they are). Cached until the lyrics or n change. */
+	static List<Lyrics.Line> pieces(List<Lyrics.Line> lines, int n) {
+		if (n <= 0) {
+			return lines;
+		}
+		if (lines == piecesSrc && n == piecesN && piecesVersion == Lyrics.version) {
+			return pieces;
+		}
+		List<Lyrics.Line> out = new java.util.ArrayList<>();
+		for (Lyrics.Line l : lines) {
+			List<Lyrics.Chunk> ch = l.chunks();
+			if (l.blank() || ch.size() <= n) {
+				out.add(l);
+				continue;
+			}
+			for (int i = 0; i < ch.size(); i += n) {
+				List<Lyrics.Chunk> part = ch.subList(i, Math.min(ch.size(), i + n));
+				StringBuilder t = new StringBuilder();
+				for (Lyrics.Chunk k : part) {
+					t.append(t.length() == 0 ? "" : " ").append(k.text());
+				}
+				long end = i + n < ch.size() ? ch.get(i + n).start() : l.end();
+				out.add(new Lyrics.Line(part.get(0).start(), end, t.toString(), List.copyOf(part)));
+			}
+		}
+		piecesSrc = lines;
+		piecesN = n;
+		piecesVersion = Lyrics.version;
+		pieces = out;
+		return out;
+	}
+
+	/** Half width / half height in blocks of a line drawn at this distance (same layout as draw()). */
+	private static float[] halfSize(TextRenderer tr, LyricsView.Cfg c, Lyrics.Line line, float dist) {
+		List<Lyrics.Chunk> ch = line.chunks();
+		int n = ch.size();
+		float space = tr.getWidth(LyricsView.styled(" ", c)) * (c.script ? 1.6F : 1F);
+		float tot = 0F;
+		for (Lyrics.Chunk k : ch) {
+			tot += tr.getWidth(LyricsView.styled(k.text(), c)) + space;
+		}
+		tot = Math.max(1F, tot - space);
+		int rows = n <= 2 ? 1 : (n <= 6 ? 2 : 3);
+		float widest = Math.max(1F, tot / rows * 1.08F);
+		float widthDeg = (c.script ? 34F : 28F) * c.size;
+		float s = (float) (2 * dist * Math.tan(Math.toRadians(widthDeg / 2))) / widest;
+		float rowH = 11F * (c.script ? 1.35F : 1.25F);
+		return new float[] {widest * s / 2F, rows * rowH * s / 2F};
 	}
 
 	private static final java.util.ArrayList<Anchor> trail = new java.util.ArrayList<>();
@@ -85,7 +144,7 @@ public final class SkyLyrics {
 		if (mc.player == null || mc.world == null || !MusicHub.hasTrack || (c.onlyPlaying && !MusicHub.playing) || NowPlayingCard.blocksLyrics()) {
 			return;
 		}
-		List<Lyrics.Line> lines = Lyrics.lines;
+		List<Lyrics.Line> lines = pieces(Lyrics.lines, c.wordsPerPiece);
 		if (lines.isEmpty()) {
 			return;
 		}
@@ -146,12 +205,17 @@ public final class SkyLyrics {
 				float py = mc.player.getYaw();
 				a.yaw = py + (a.yaw - py) * 0.45F; // not as wide as in the sky
 				a.pitch = -(float) (java.util.concurrent.ThreadLocalRandom.current().nextDouble() * 7.0 - 1.5);
-				a.dist = Math.max(3F, Math.min(20F, c.frontDist));
+				a.dist = Math.max(2F, Math.min(40F, c.frontDist));
 				double yr = Math.toRadians(a.yaw), pr = Math.toRadians(a.pitch);
 				a.world = true;
 				a.wx = camX - Math.sin(yr) * Math.cos(pr) * a.dist;
-				a.wy = camY - Math.sin(pr) * a.dist - 0.2;
+				a.wy = camY - Math.sin(pr) * a.dist - 0.2 + c.frontLift;
 				a.wz = camZ + Math.cos(yr) * Math.cos(pr) * a.dist;
+				float[] hs = halfSize(mc.textRenderer, c, lines.get(idx), a.dist);
+				a.hw = hs[0];
+				a.hh = hs[1];
+				a.lift = c.frontLift + clearSpot(a);
+				a.wy += a.lift - c.frontLift;
 				a.bornAt = now;
 				a.follow = c.frontFollow;
 				a.yawOff = a.yaw - py;
@@ -180,7 +244,7 @@ public final class SkyLyrics {
 					float dy = net.minecraft.util.math.MathHelper.wrapDegrees(target - a.yaw);
 					a.yaw += dy * 0.12F; // turns with you smoothly, not stuck to the screen
 					double yr = Math.toRadians(a.yaw), pr = Math.toRadians(a.pitch);
-					double nx = camX - Math.sin(yr) * Math.cos(pr) * a.dist, ny = camY - Math.sin(pr) * a.dist - 0.2,
+					double nx = camX - Math.sin(yr) * Math.cos(pr) * a.dist, ny = camY - Math.sin(pr) * a.dist - 0.2 + a.lift,
 							nz = camZ + Math.cos(yr) * Math.cos(pr) * a.dist;
 					a.wx += (nx - a.wx) * 0.25;
 					a.wy += (ny - a.wy) * 0.25;
@@ -204,6 +268,36 @@ public final class SkyLyrics {
 				draw(m, queue, mc, c, lines.get(a.line), a, pos, now, k * k);
 			}
 		}
+	}
+
+	/**
+	 * How far up (or down) a new piece must move so it covers none of the pieces still shown: tries the spot itself, then a
+	 * little higher, a little lower, higher again... Pieces are compared as boxes facing you.
+	 */
+	private static double clearSpot(Anchor a) {
+		double[] tries = {0, 1, -1, 2, -2, 3, 4};
+		for (double t : tries) {
+			double y = a.wy + t * (a.hh * 2 + 0.25);
+			boolean free = true;
+			for (Anchor o : trail) {
+				if (o == a || o.version != a.version) {
+					continue;
+				}
+				// side-by-side distance seen from the camera, and height
+				double ox = o.wx - a.wx, oz = o.wz - a.wz;
+				double yr = Math.toRadians(a.yaw);
+				double across = Math.abs(ox * Math.cos(yr) + oz * Math.sin(yr));
+				double along = Math.abs(-ox * Math.sin(yr) + oz * Math.cos(yr));
+				if (across < a.hw + o.hw + 0.2 && Math.abs(o.wy - y) < a.hh + o.hh + 0.15 && along < 4.0) {
+					free = false;
+					break;
+				}
+			}
+			if (free) {
+				return t * (a.hh * 2 + 0.25);
+			}
+		}
+		return 4 * (a.hh * 2 + 0.25);
 	}
 
 	private static void leave(long now) {

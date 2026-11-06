@@ -2770,3 +2770,14 @@ Lyrics Backing Opacity	Opacidade do fundo das letras
 Line Follows Me While Sung	A linha segue-me enquanto é cantada
 On: the line being sung stays in front of you as you walk, and is left behind when its last word has been sung.	Ligado: a linha que está a ser cantada fica à tua frente enquanto andas e só fica para trás quando a última palavra acaba.
 Off: always visible. On: hills and buildings can cover the sky words.	Desligado: sempre visíveis. Ligado: montes e edifícios podem tapar as letras no céu.
+Kill effect on	Kill effect ligado
+Lyrics Height Ahead	Altura das letras à frente
+Lyrics Words Per Text	Palavras por texto
+How many words appear together. 0 = the whole line, 1 = one word at a time.	Quantas palavras aparecem juntas. 0 = a linha inteira, 1 = uma palavra de cada vez.
+Crowd Mode (lobbies full of NPCs)	Modo Multidão (lobbies cheios de NPCs)
+When many NPCs, holograms or animals are around you, only the nearest are drawn. Real players and monsters are never hidden.	Quando há muitos NPCs, hologramas ou animais à tua volta, só os mais perto são desenhados. Jogadores reais e monstros nunca são escondidos.
+Crowd Mode Starts With	O Modo Multidão começa com
+Max NPCs Drawn In A Crowd	Máximo de NPCs desenhados na multidão
+NPCs Distance In A Crowd	Distância dos NPCs na multidão
+Mac: Sharp Retina Resolution (slower)	Mac: Resolução Retina total (mais lento)
+Off = Minecraft draws at the normal screen resolution: about 4x fewer pixels, much more FPS on a Mac. Restart the game after changing it.	Desligado = o Minecraft desenha à resolução normal do ecrã: cerca de 4x menos píxeis, muito mais FPS no Mac. Reinicia o jogo depois de mudar.

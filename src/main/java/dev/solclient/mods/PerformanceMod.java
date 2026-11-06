@@ -35,6 +35,14 @@ public class PerformanceMod extends Mod {
 	public final Option.Num maxXp = num("Max XP Orbs Drawn", 24, 4, 256, 4, "");
 	public final Option.Num maxPlayers = num("Max Players Drawn", 32, 8, 128, 4, "");
 	public final Option.Num playerDistance = num("Players Draw Distance", 64, 24, 160, 8, " blocks");
+	/** Mac: full Retina resolution (sharp, about 4x slower to draw). Read from a file at start, before the window exists. */
+	public final Option.Bool sharpRetina = bool("Mac: Sharp Retina Resolution (slower)", false)
+			.tip("Off = Minecraft draws at the normal screen resolution: about 4x fewer pixels, much more FPS on a Mac. Restart the game after changing it.");
+	public final Option.Bool crowdMode = bool("Crowd Mode (lobbies full of NPCs)", true)
+			.tip("When many NPCs, holograms or animals are around you, only the nearest are drawn. Real players and monsters are never hidden.");
+	public final Option.Num crowdAbove = num("Crowd Mode Starts With", 25, 10, 120, 5, " NPCs");
+	public final Option.Num crowdMax = num("Max NPCs Drawn In A Crowd", 30, 8, 150, 2, "");
+	public final Option.Num crowdDistance = num("NPCs Distance In A Crowd", 20, 8, 64, 2, " blocks");
 
 	public final Option.Action maxFps = action("Max FPS Mode", "Apply", () -> dev.solclient.gui.Presets.performance(0),
 			() -> "Uncapped FPS, no vsync, no clouds, less particles / shadows / distance");
@@ -75,6 +83,7 @@ public class PerformanceMod extends Mod {
 	public void tick() {
 		MinecraftClient mc = MinecraftClient.getInstance();
 		var p = mc.player;
+		saveRetina();
 		crowd(mc);
 		if (p == null) {
 			lastActive = System.currentTimeMillis();
@@ -103,9 +112,41 @@ public class PerformanceMod extends Mod {
 		return d * d;
 	}
 
+	private static java.nio.file.Path retinaFile() {
+		return net.fabricmc.loader.api.FabricLoader.getInstance().getConfigDir().resolve("kubo-retina.txt");
+	}
+
+	/** Read at start-up (before the settings are loaded): true = keep the full Retina resolution. */
+	public static boolean sharpRetinaSaved() {
+		try {
+			java.nio.file.Path f = retinaFile();
+			return java.nio.file.Files.exists(f) && java.nio.file.Files.readString(f).trim().equals("sharp");
+		} catch (Exception e) {
+			return false;
+		}
+	}
+
+	private Boolean lastSharp;
+
+	/** Keeps the file in step with the option (checked every tick, written only when it changes). */
+	private void saveRetina() {
+		boolean on = sharpRetina.on();
+		if (lastSharp == null || lastSharp != on) {
+			if (lastSharp != null || sharpRetinaSaved() != on) {
+				try {
+					java.nio.file.Files.writeString(retinaFile(), on ? "sharp" : "fast");
+				} catch (Exception ignored) {
+				}
+			}
+			lastSharp = on;
+		}
+	}
+
 	// ------------------------------------------------------------------ Crowd Guard
 	/** Ids of the entities that are NOT drawn right now (rebuilt 5 times a second; new entities are drawn until then). */
 	private static volatile Set<Integer> hidden = new HashSet<>();
+	/** True while Crowd Mode is thinning out the NPCs around you. */
+	public static volatile boolean crowded;
 	private int crowdTick;
 
 	private static final class Bucket {
@@ -145,7 +186,8 @@ public class PerformanceMod extends Mod {
 		if (++crowdTick % 4 != 0) {
 			return;
 		}
-		Bucket items = new Bucket(), orbs = new Bucket(), players = new Bucket();
+		Bucket items = new Bucket(), orbs = new Bucket(), players = new Bucket(), npcs = new Bucket();
+		var net = mc.getNetworkHandler();
 		Entity self = mc.player, cam = mc.getCameraEntity(), target = mc.targetedEntity;
 		for (Entity e : mc.world.getEntities()) {
 			if (e == self || e == cam || e == target) {
@@ -155,8 +197,16 @@ public class PerformanceMod extends Mod {
 				items.add(e.squaredDistanceTo(self), e.getId());
 			} else if (e instanceof ExperienceOrbEntity) {
 				orbs.add(e.squaredDistanceTo(self), e.getId());
-			} else if (e instanceof PlayerEntity) {
-				players.add(e.squaredDistanceTo(self), e.getId());
+			} else if (e instanceof PlayerEntity p) {
+				if (net != null && net.getPlayerListEntry(p.getUuid()) == null) {
+					npcs.add(e.squaredDistanceTo(self), e.getId()); // a server NPC (fake player, not in the tab list)
+				} else {
+					players.add(e.squaredDistanceTo(self), e.getId());
+				}
+			} else if (!(e instanceof net.minecraft.entity.mob.Monster) && !(e instanceof net.minecraft.entity.projectile.ProjectileEntity)
+					&& !e.hasPassengers() && !e.hasVehicle()
+					&& (e instanceof net.minecraft.entity.LivingEntity || e instanceof net.minecraft.entity.decoration.DisplayEntity)) {
+				npcs.add(e.squaredDistanceTo(self), e.getId()); // armor stands / holograms / villagers / animals
 			}
 		}
 		Set<Integer> out = new HashSet<>();
@@ -164,6 +214,23 @@ public class PerformanceMod extends Mod {
 		pick(items, Math.round(maxItems.f()), id * id, 4, out);
 		pick(orbs, Math.round(maxXp.f()), id * id, 4, out);
 		pick(players, Math.round(maxPlayers.f()), pd * pd, 64, out);
+		// Crowd Mode: a lobby full of NPCs, holograms and animals only draws the nearest ones
+		if (crowdMode.on()) {
+			double near = 48 * 48;
+			int around = 0;
+			for (int i = 0; i < npcs.n; i++) {
+				if (npcs.d[i] < near) {
+					around++;
+				}
+			}
+			crowded = around >= Math.round(crowdAbove.f());
+			if (crowded) {
+				double cd = crowdDistance.f();
+				pick(npcs, Math.round(crowdMax.f()), cd * cd, 36, out);
+			}
+		} else {
+			crowded = false;
+		}
 		hidden = out;
 	}
 

@@ -84,6 +84,10 @@ public class ParticlesExtension implements KuboExtension {
 		api.onExplosion(at -> {
 			if (ExplosionDebrisMod.instance != null && (ExplosionDebrisMod.instance.enabled || ExplosionDebrisMod.instance.external)) ExplosionDebrisMod.instance.onExplosion(at);
 		});
+		// the server tells every client when an entity dies (status 3): the moment of a kill, the same signal servers use
+		api.onEntityStatus((e, st) -> {
+			if (st == 3 && KillEffectMod.instance != null && KillEffectMod.instance.enabled) KillEffectMod.instance.onDeathSignal(e);
+		});
 		api.onAttack(e -> {
 			if (KillEffectMod.instance != null && KillEffectMod.instance.enabled) KillEffectMod.instance.onAttack(e);
 			if (HitBubblesMod.instance != null && HitBubblesMod.instance.enabled) HitBubblesMod.instance.onAttack(e);

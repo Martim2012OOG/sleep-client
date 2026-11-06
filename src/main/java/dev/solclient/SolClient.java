@@ -282,6 +282,7 @@ public class SolClient implements ClientModInitializer {
 				if (CustomSkyMod.instance != null && CustomSkyMod.instance.enabled) CustomSkyMod.instance.onAttack(entity);
 				if (CrosshairAddonsMod.instance != null && CrosshairAddonsMod.instance.enabled) CrosshairAddonsMod.instance.onAttack(entity);
 				dev.solclient.ext.KuboApi.fireAttack(entity);
+				dev.solclient.fx.killfx.KillFxTrigger.onAttack(entity);
 			}
 			return ActionResult.PASS;
 		});
@@ -368,6 +369,7 @@ public class SolClient implements ClientModInitializer {
 			return;
 		}
 		pollKeys();
+		dev.solclient.fx.killfx.KillFxTrigger.tick();
 		dev.solclient.emote.EmoteManager.tick();
 		HitColourMod.refresh();
 		Social.tick(client);

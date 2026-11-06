@@ -3687,20 +3687,21 @@ public class SolMenuScreen extends Screen {
 		}
 		// what you are looking at: Cosmetics / Emotes / Skin, centred on top (like LabyMod)
 		if (!lockerStore) {
-			String[] kinds = {"Cosmetics", "Emotes", "Skin"};
+			String[] kinds = {"Cosmetics", "Emotes", "Kill Effects", "Skin"};
 			boolean emotesNow = lockerShop ? "Emotes".equalsIgnoreCase(Social.shopCategory) : invCat.equals("Emotes");
+			boolean killNow = lockerShop ? "Kill Effects".equalsIgnoreCase(Social.shopCategory) : invCat.equals("Kill Effects");
 			boolean skinNow = !lockerShop && invCat.equals("Skins");
-			int cur = skinNow ? 2 : emotesNow ? 1 : 0;
+			int cur = skinNow ? 3 : killNow ? 2 : emotesNow ? 1 : 0;
 			int segW = 0;
-			int[] ws = new int[3];
-			for (int i = 0; i < 3; i++) {
+			int[] ws = new int[4];
+			for (int i = 0; i < 4; i++) {
 				ws[i] = Math.max(64, Gfx.tw(kinds[i]) + 24);
 				segW += ws[i];
 			}
 			int sxx = Math.max(tx + 8, (ix0 + ix1) / 2 - (segW + 6) / 2), syy = y + 7; // never on top of Inventory / Shop
 			Gfx.rrectBorder(c, sxx, syy, segW + 6, 22, 4, Theme.FIELD, Theme.CARD_BORDER);
 			int kx = sxx + 3;
-			for (int i = 0; i < 3; i++) {
+			for (int i = 0; i < 4; i++) {
 				boolean sel = i == cur, hov = in(mx, my, kx, syy + 3, ws[i], 16);
 				if (sel) {
 					Gfx.rrect(c, kx, syy + 3, ws[i], 16, 3, SlideBg.colour());
@@ -3819,12 +3820,17 @@ public class SolMenuScreen extends Screen {
 				emoteList.sort((a, b) -> Long.compare(emotePrice(a), emotePrice(b)));
 			}
 		} else {
-			if (drawOffline(c, mx, my, (gx0 + ix1) / 2, (gy0 + iy1) / 2, gx1 - gx0 - 20)) {
+			boolean killTab = !lockerShop && invCat.equals("Kill Effects");
+			if (!(killTab && !Social.sellsKillEffects()) && drawOffline(c, mx, my, (gx0 + ix1) / 2, (gy0 + iy1) / 2, gx1 - gx0 - 20)) {
 				maxScroll = 0;
 				return;
 			}
-			for (Social.Item it : Social.shop) {
+			for (Social.Item it : killTab ? Social.killEffectItems() : Social.shop) {
 				if (!lockerShop && !(it.owned && it.wearable())) {
+					continue;
+				}
+				// kill effects have their own tab in the inventory
+				if (!lockerShop && killTab != Social.isKillEffect(it)) {
 					continue;
 				}
 				// emotes have their own "All Emotes" section: the other sections show only accessories
@@ -4191,10 +4197,14 @@ public class SolMenuScreen extends Screen {
 			lastCapeSel = capeId;
 		}
 		previewCape = isCape ? dev.solclient.social.CapeMedia.forItem(it) : null;
-		drawPosedModel(c, x, areaY, w, areaH, wear, true, skin);
+		if (it != null && Social.isKillEffect(it)) {
+			itemImage(c, it, x + 8, areaY + 4, w - 16, areaH - 8); // a kill effect: its picture, big
+		} else {
+			drawPosedModel(c, x, areaY, w, areaH, wear, true, skin);
+		}
 		previewCape = null;
 		// item without a 3D model (cape, emote...): its picture in the corner
-		if (it != null && dev.solclient.cosmetic.Cosmetics.modelFor(it) == null) {
+		if (it != null && !Social.isKillEffect(it) && dev.solclient.cosmetic.Cosmetics.modelFor(it) == null) {
 			itemImage(c, it, x + 8, areaY + 4, 40, 40);
 		}
 		Gfx.fill(c, x + 10, areaY + areaH + 2, x + w - 10, areaY + areaH + 3, LINE);
@@ -4401,6 +4411,8 @@ public class SolMenuScreen extends Screen {
 	 */
 	private void lockerSideList(DrawContext c, int mx, int my, int x, int y, int w, int h) {
 		boolean emotesTab = invCat.equals("Emotes");
+		boolean killTab = invCat.equals("Kill Effects");
+		List<Social.Item> src = killTab ? Social.killEffectItems() : Social.shop;
 		List<String[]> rows = new ArrayList<>(); // id, name, slot
 		if (emotesTab) {
 			for (int i = 0; i < 8; i++) {
@@ -4408,13 +4420,13 @@ public class SolMenuScreen extends Screen {
 				rows.add(new String[] {e == null ? null : e.id(), e == null ? null : e.name(), String.valueOf(i)});
 			}
 		} else {
-			for (Social.Item it : Social.shop) {
-				if (it.owned && it.equipped) {
+			for (Social.Item it : src) {
+				if (it.owned && it.equipped && killTab == Social.isKillEffect(it)) {
 					rows.add(new String[] {it.id, it.name, null});
 				}
 			}
 		}
-		String title = dev.solclient.Lang.t(emotesTab ? "Emote wheel" : "My cosmetics").toUpperCase(Locale.ROOT);
+		String title = dev.solclient.Lang.t(emotesTab ? "Emote wheel" : killTab ? "Kill effect on" : "My cosmetics").toUpperCase(Locale.ROOT);
 		Gfx.textRaw(c, fitRaw(title, w - 30), x + 8, y + 9, 0xFF6B7080);
 		if (!emotesTab) {
 			String n = String.valueOf(rows.size());
@@ -4434,7 +4446,7 @@ public class SolMenuScreen extends Screen {
 				tx += 10;
 			} else {
 				Social.Item it = null;
-				for (Social.Item s2 : Social.shop) {
+				for (Social.Item s2 : src) {
 					if (r[0].equals(s2.id)) {
 						it = s2;
 					}
@@ -4458,7 +4470,7 @@ public class SolMenuScreen extends Screen {
 					if (row[2] != null) {
 						EmoteSlots.clear(Integer.parseInt(row[2]));
 					} else {
-						for (Social.Item s2 : Social.shop) {
+						for (Social.Item s2 : src) {
 							if (row[0].equals(s2.id)) {
 								Social.equip(s2, false);
 							}
@@ -4477,20 +4489,20 @@ public class SolMenuScreen extends Screen {
 		}
 	}
 
-	/** Top tabs: 0 cosmetics, 1 emotes, 2 skin (skins only exist in the inventory). */
+	/** Top tabs: 0 cosmetics, 1 emotes, 2 kill effects, 3 skin (skins only exist in the inventory). */
 	private void lockerKind(int k) {
 		lockerSel = null;
 		lockerChip = null;
 		scroll = 0;
 		scrollTarget = 0;
-		if (k == 2) {
+		if (k == 3) {
 			lockerShop = false;
 			invCat = "Skins";
 		} else if (lockerShop) {
-			Social.loadShop(k == 1 ? "Emotes" : "All");
+			Social.loadShop(k == 1 ? "Emotes" : k == 2 ? "Kill Effects" : "All");
 		} else {
-			invCat = k == 1 ? "Emotes" : "Cosmetics";
-			if (k == 0) {
+			invCat = k == 1 ? "Emotes" : k == 2 ? "Kill Effects" : "Cosmetics";
+			if (k != 1) {
 				Social.loadShop("All");
 			}
 		}
@@ -4515,7 +4527,7 @@ public class SolMenuScreen extends Screen {
 		scrollTarget = 0;
 		if (shop) {
 			Social.loadShop(Social.shopCategory.equals("All") && !Social.categories.isEmpty() ? Social.categories.get(0) : Social.shopCategory);
-		} else if (invCat.equals("Cosmetics")) {
+		} else if (invCat.equals("Cosmetics") || invCat.equals("Kill Effects")) {
 			Social.loadShop("All");
 		}
 	}
@@ -4635,6 +4647,17 @@ public class SolMenuScreen extends Screen {
 	private static final java.util.Map<String, Identifier> THUMBS = new java.util.HashMap<>();
 
 	/** The generated picture of a bundled cosmetic (textures/cosmetics/thumb/<id>.png), or null. */
+	private static final java.util.Map<String, java.util.Optional<Identifier>> KILL_THUMBS = new java.util.HashMap<>();
+
+	/** Picture of a kill effect (textures/killfx/thumb/<id>.png), or null. */
+	private static Identifier killThumb(Social.Item it) {
+		String key = Social.killEffectKey(it);
+		return KILL_THUMBS.computeIfAbsent(key, k -> {
+			Identifier id = Gfx.id("textures/killfx/thumb/" + k + ".png");
+			return MinecraftClient.getInstance().getResourceManager().getResource(id).isPresent() ? java.util.Optional.of(id) : java.util.Optional.empty();
+		}).orElse(null);
+	}
+
 	private static Identifier thumb(Social.Item it) {
 		dev.solclient.cosmetic.CosmeticModels.Def d = dev.solclient.cosmetic.Cosmetics.modelFor(it);
 		if (d == null) {
@@ -4692,6 +4715,12 @@ public class SolMenuScreen extends Screen {
 		int c2 = it.colors.size() > 1 ? parseColour(it.colors.get(1), c1) : Gfx.blend(c1, 0xFF000000, 0.35F);
 		Gfx.rrect(c, px, py, pw, ph, 3, Gfx.blend(0xFF1B1D24, Gfx.blend(c1, c2, 0.5F), 0.18F)); // dark, a hint of the item's colour
 		RemoteTextures.Tex t = RemoteTextures.get(it.imageUrl);
+		if (Social.isKillEffect(it) && killThumb(it) != null) {
+			// the kill effect's own picture, bundled in the client (always there, even before the site sends one)
+			int ts = Math.min(pw, ph) - 4;
+			Gfx.tex(c, killThumb(it), px + (pw - ts) / 2, py + (ph - ts) / 2, ts, ts, 128, 128, 0xFFFFFFFF);
+			return;
+		}
 		if (t != null && it.category != null && it.category.equalsIgnoreCase("Capes")) {
 			capeCard(c, t, px, py, pw, ph);
 		} else if (t != null) {

@@ -14,9 +14,39 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(EntityRenderer.class)
 public abstract class NametagBadgeMixin {
 
+	/** entity id -> {time, decorated name}: the name is rebuilt 4 times a second, not every frame for every player. */
+	@org.spongepowered.asm.mixin.Unique
+	private static final java.util.Map<Integer, Object[]> kubo$names = new java.util.HashMap<>();
+	@org.spongepowered.asm.mixin.Unique
+	private static long kubo$cleanAt;
+
 	@Inject(method = "getDisplayName", at = @At("RETURN"), cancellable = true, require = 0)
 	private void plegumo$badge(Entity entity, CallbackInfoReturnable<Text> cir) {
+		if ((entity instanceof PlayerEntity || entity instanceof net.minecraft.entity.decoration.ArmorStandEntity) && cir.getReturnValue() != null) {
+			long now = System.currentTimeMillis();
+			Object[] c = kubo$names.get(entity.getId());
+			if (c != null && now - (Long) c[0] < 250L) {
+				cir.setReturnValue((Text) c[1]);
+				return;
+			}
+			if (now - kubo$cleanAt > 10_000L) {
+				kubo$cleanAt = now;
+				kubo$names.entrySet().removeIf(e -> now - (Long) e.getValue()[0] > 5_000L);
+			}
+			kubo$decorate(entity, cir);
+			kubo$names.put(entity.getId(), new Object[] {now, cir.getReturnValue()});
+			return;
+		}
+		kubo$decorate(entity, cir);
+	}
+
+	@org.spongepowered.asm.mixin.Unique
+	private static void kubo$decorate(Entity entity, CallbackInfoReturnable<Text> cir) {
 		if (entity instanceof PlayerEntity p && cir.getReturnValue() != null) {
+			net.minecraft.client.MinecraftClient mc = net.minecraft.client.MinecraftClient.getInstance();
+			if (p != mc.player && mc.getNetworkHandler() != null && mc.getNetworkHandler().getPlayerListEntry(p.getUuid()) == null) {
+				return; // a server NPC (a fake player, not in the tab list): no badges, voice icons or logos to look up
+			}
 			Text name = dev.solclient.mods.NickHiderMod.apply(cir.getReturnValue());
 			name = dev.solclient.mods.NameColourMod.apply(name);
 			name = SolarBadge.uses(p.getUuid(), p.getName().getString()) ? SolarBadge.decorate(name) : name;

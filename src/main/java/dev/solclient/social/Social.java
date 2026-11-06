@@ -1814,6 +1814,10 @@ public final class Social {
 		rememberEquip(it, on);
 		shopChanged();
 		say(on ? "Equipped " + it.name : "Unequipped " + it.name, false);
+		if (it.local && isKillEffect(it)) {
+			setLocalKill(on ? killEffectKey(it) : null); // the site sells none: remembered on this computer
+			return;
+		}
 		if (it.local) {
 			return; // bundled test cosmetic: the site does not know it
 		}
@@ -2266,11 +2270,96 @@ public final class Social {
 		return any ? out : null;
 	}
 
+	/** Kill effect picked in the Locker while the site sells none (saved in config/kubo-killfx.txt): its id, or null. */
+	private static volatile String localKillEffect;
+	private static boolean localKillLoaded;
+	private static List<Item> localKillItems;
+
+	private static java.nio.file.Path localKillFile() {
+		return net.fabricmc.loader.api.FabricLoader.getInstance().getConfigDir().resolve("kubo-killfx.txt");
+	}
+
+	private static String localKill() {
+		if (!localKillLoaded) {
+			localKillLoaded = true;
+			try {
+				java.nio.file.Path f = localKillFile();
+				if (java.nio.file.Files.exists(f)) {
+					String v = java.nio.file.Files.readString(f).trim();
+					localKillEffect = v.isEmpty() ? null : v;
+				}
+			} catch (Exception ignored) {
+			}
+		}
+		return localKillEffect;
+	}
+
+	private static void setLocalKill(String id) {
+		localKillEffect = id;
+		localKillLoaded = true;
+		try {
+			java.nio.file.Files.writeString(localKillFile(), id == null ? "" : id);
+		} catch (Exception e) {
+			System.err.println("[Sleep] could not save the kill effect: " + e);
+		}
+	}
+
+	/** True when the site's shop lists kill effects that the client has. */
+	public static boolean sellsKillEffects() {
+		List<Item> all = SHOP_CACHE.get("All");
+		if (all == null) {
+			return false;
+		}
+		for (Item it : all) {
+			if (isKillEffect(it) && java.util.Arrays.asList(dev.solclient.fx.killfx.KillFxModel.IDS).contains(killEffectKey(it))) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * The kill effects for the Locker: the site's items (owned or not) when it sells them, otherwise all the client's effects as
+	 * free local items you can equip.
+	 */
+	public static List<Item> killEffectItems() {
+		if (sellsKillEffects()) {
+			List<Item> out = new ArrayList<>();
+			for (Item it : SHOP_CACHE.get("All")) {
+				if (isKillEffect(it)) {
+					out.add(it);
+				}
+			}
+			return out;
+		}
+		if (localKillItems == null) {
+			List<Item> l = new ArrayList<>();
+			String[] ids = dev.solclient.fx.killfx.KillFxModel.IDS, names = dev.solclient.fx.killfx.KillFxModel.NAMES;
+			for (int i = 0; i < ids.length; i++) {
+				Item it = new Item();
+				it.id = "killfx:" + ids[i];
+				it.modelId = ids[i];
+				it.name = i < names.length ? names[i] : ids[i];
+				it.category = "Kill Effects";
+				it.description = "3D kill effect";
+				it.owned = true;
+				it.local = true;
+				l.add(it);
+			}
+			localKillItems = l;
+		}
+		String on = localKill();
+		for (Item it : localKillItems) {
+			it.equipped = it.modelId.equals(on);
+		}
+		return localKillItems;
+	}
+
 	/** The kill effect you equipped in the Locker / on the website (its id, e.g. "pacman"), or null. */
 	public static String equippedKillEffect() {
 		List<Item> all = SHOP_CACHE.get("All");
-		if (all == null) {
-			return null;
+		if (all == null || !sellsKillEffects()) {
+			return localKill();
 		}
 		String mine = MY_EQUIP.get("Kill Effects");
 		for (Item it : all) {
@@ -2284,11 +2373,11 @@ public final class Social {
 		return null;
 	}
 
-	private static boolean isKillEffect(Item it) {
+	public static boolean isKillEffect(Item it) {
 		return it.category != null && it.category.replace(" ", "").equalsIgnoreCase("KillEffects");
 	}
 
-	private static String killEffectKey(Item it) {
+	public static String killEffectKey(Item it) {
 		return (it.modelId != null && !it.modelId.isBlank() ? it.modelId : it.id).toLowerCase(Locale.ROOT);
 	}
 

@@ -170,6 +170,10 @@ public final class KillFxModel {
 	// ---------------------------------------------------------------- loading
 	public static final String[] IDS = {"pacman", "shark", "mimic", "frog", "flytrap", "ufo", "blackhole", "rocket", "whale", "dragon", "worm", "snake",
 			"croc", "trex", "toilet", "hand", "kraken", "pig", "ghost", "eagle", "piano", "tornado", "gift", "cannon"};
+	/** Display names, same order as IDS. */
+	public static final String[] NAMES = {"Pac-Man", "Shark", "Mimic Chest", "Giant Frog", "Flytrap", "UFO", "Black Hole", "Firework Rocket", "Whale",
+			"Dragon", "Giant Worm", "Snake", "Crocodile", "T-Rex", "Toilet Flush", "Giant Hand", "Kraken", "Hungry Pig", "Ghost", "Eagle", "Piano Drop",
+			"Tornado", "Surprise Gift", "Cannon"};
 	private static final Map<String, Optional<KillFxModel>> CACHE = new HashMap<>();
 
 	public static synchronized KillFxModel get(String id) {

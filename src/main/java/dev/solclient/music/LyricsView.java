@@ -56,6 +56,10 @@ public final class LyricsView {
 		public int frontKeep = 3;
 		/** "in front of me": the line being sung follows you, and stays behind only when its last word has been sung */
 		public boolean frontFollow = true;
+		/** words shown per piece of text (0 = the whole line at once) */
+		public int wordsPerPiece;
+		/** "in front of me": how high the text hangs, in blocks (+ up, - down) */
+		public float frontLift;
 		/** what is drawn behind the letters: 0 nothing, 1 soft shadow, 2 3D in a darker shade of the same colour, 3 3D dark (old look) */
 		public int backing = 2;
 		/** strength of that backing (0..1) */
