@@ -62,6 +62,6 @@ public class VerityMod extends Mod {
 
 	public static boolean on() {
 		VerityMod m = instance;
-		return m != null && m.enabled;
+		return m != null; // equipping the pet is the switch (the Mods toggle is not needed: it stayed off and silenced him)
 	}
 }
