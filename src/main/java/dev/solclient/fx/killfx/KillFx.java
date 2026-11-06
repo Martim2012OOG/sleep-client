@@ -125,6 +125,12 @@ public final class KillFx {
 				: mc.player != null ? mc.player.getEyePos() : new Vec3d(x, y, z + 1);
 		float yaw = (float) Math.atan2(eye.x - x, eye.z - z);
 		synchronized (ACTIVE) {
+			// never the same effect twice at the same place within a second (double signals / double clicks)
+			for (Active o : ACTIVE) {
+				if (o.time() < 1F && (o.x - x) * (o.x - x) + (o.z - z) * (o.z - z) < 4.0 && Math.abs(o.y - y) < 3.0) {
+					return true;
+				}
+			}
 			if (ACTIVE.size() >= MAX) {
 				Active old = ACTIVE.remove(0);
 				HIDDEN.remove(old.hideId);

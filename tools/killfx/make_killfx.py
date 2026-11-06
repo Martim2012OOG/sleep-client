@@ -1117,6 +1117,8 @@ def check_overlaps(m, fx_id):
 def build(fx_id, name, maker, skin):
     import bbmodel_to_killfx as conv
     m, an = maker()
+    import sounds
+    sounds.apply(fx_id, an)
     check_overlaps(m, fx_id)
     img = paint_and_pack(m)
     os.makedirs(os.path.join(HERE, "models"), exist_ok=True)

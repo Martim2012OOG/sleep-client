@@ -1,0 +1,7 @@
+-proc:none
+-d
+/tmp/claude-0/jc
+-Xmaxerrs
+1000
+fx/killfx/KillFxTrigger.java
+fx/killfx/KillFx.java

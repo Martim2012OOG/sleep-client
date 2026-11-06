@@ -10,14 +10,15 @@ import net.minecraft.util.Identifier;
 
 /**
  * Plays the kill effect equipped in the Locker when YOU kill someone. Works on its own (no extension needed):
- * 1. you hit an entity (remembered for 5 s, with its skin and place);
+ * 1. you hit a PLAYER (never mobs; remembered for 1.5 s, with its skin and place);
  * 2. the server says that entity died (entity status 3, sent to every client at the moment of the death), or its health
  *    reaches 0 while you were the last to hit it;
  * 3. the equipped effect plays where it died.
  */
 public final class KillFxTrigger {
 
-	private static final long MINE_MS = 5000L;
+	/** Your hit must be the killing one: the death arrives right after it (a kill by someone else comes later). */
+	private static final long MINE_MS = 1500L;
 
 	private static final class Hit {
 		Entity e;
@@ -44,8 +45,9 @@ public final class KillFxTrigger {
 
 	/** You hit something. */
 	public static void onAttack(Entity e) {
-		if (!(e instanceof LivingEntity) || equipped() == null) {
-			return;
+		if (!(e instanceof net.minecraft.entity.player.PlayerEntity l) || e == MinecraftClient.getInstance().player || equipped() == null
+				|| l.isDead() || l.getHealth() <= 0F || recentlyKilled(e.getId())) {
+			return; // hitting the body while it falls must not count again
 		}
 		Hit h = HITS.computeIfAbsent(e.getId(), k -> new Hit());
 		if (h.e == null) {
@@ -124,7 +126,23 @@ public final class KillFxTrigger {
 	/** Last time the Locker effect played (the Kill Effect mod then does not play a second one). */
 	public static volatile long lastPlayed;
 
+	/** entity id -> when its kill effect played: one effect per death, however many signals or clicks follow. */
+	private static final Map<Integer, Long> KILLED = new HashMap<>();
+
+	private static boolean recentlyKilled(int id) {
+		Long t = KILLED.get(id);
+		return t != null && System.currentTimeMillis() - t < 5000L;
+	}
+
 	private static void fire(Hit h, String why) {
+		if (h.e != null) {
+			if (recentlyKilled(h.e.getId())) {
+				return;
+			}
+			long now = System.currentTimeMillis();
+			KILLED.values().removeIf(t -> now - t > 10_000L);
+			KILLED.put(h.e.getId(), now);
+		}
 		String id = equipped();
 		System.out.println("[Sleep] kill effect: " + h.name + " -> " + why + " -> " + id);
 		if (id == null) {

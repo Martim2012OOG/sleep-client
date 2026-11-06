@@ -36,7 +36,7 @@ public class PerformanceMod extends Mod {
 	public final Option.Num maxPlayers = num("Max Players Drawn", 32, 8, 128, 4, "");
 	public final Option.Num playerDistance = num("Players Draw Distance", 64, 24, 160, 8, " blocks");
 	/** Mac: full Retina resolution (sharp, about 4x slower to draw). Read from a file at start, before the window exists. */
-	public final Option.Bool sharpRetina = bool("Mac: Sharp Retina Resolution (slower)", false)
+	public final Option.Bool sharpRetina = bool("Mac: Sharp Retina Resolution (slower)", true)
 			.tip("Off = Minecraft draws at the normal screen resolution: about 4x fewer pixels, much more FPS on a Mac. Restart the game after changing it.");
 	public final Option.Bool crowdMode = bool("Crowd Mode (lobbies full of NPCs)", true)
 			.tip("When many NPCs, holograms or animals are around you, only the nearest are drawn. Real players and monsters are never hidden.");
@@ -120,9 +120,10 @@ public class PerformanceMod extends Mod {
 	public static boolean sharpRetinaSaved() {
 		try {
 			java.nio.file.Path f = retinaFile();
-			return java.nio.file.Files.exists(f) && java.nio.file.Files.readString(f).trim().equals("sharp");
+			// sharp unless you chose the fast (lower resolution) mode
+			return !java.nio.file.Files.exists(f) || !java.nio.file.Files.readString(f).trim().equals("fast");
 		} catch (Exception e) {
-			return false;
+			return true;
 		}
 	}
 

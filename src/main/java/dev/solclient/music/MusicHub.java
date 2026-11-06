@@ -233,8 +233,30 @@ public final class MusicHub {
 	 * macOS: Spotify and the Music app, through their own volume. Linux: Spotify through playerctl.
 	 * Windows has no per-app volume that can be set without extra programs, so there the player stays as it is.
 	 */
+	/** One queue for lowering / giving back the volume, so "give back" can never run before "lower" (that left the music silent). */
+	private static final java.util.concurrent.ScheduledExecutorService DUCK = java.util.concurrent.Executors.newSingleThreadScheduledExecutor(r -> {
+		Thread t = new Thread(r, "kubo-duck");
+		t.setDaemon(true);
+		return t;
+	});
+	private static java.util.concurrent.ScheduledFuture<?> duckSafety;
+
 	public static void duck(boolean on) {
-		Sh.async(() -> {
+		synchronized (DUCK) {
+			if (duckSafety != null) {
+				duckSafety.cancel(false);
+				duckSafety = null;
+			}
+			if (on) {
+				// whatever happens, the music comes back after 20 s
+				duckSafety = DUCK.schedule(() -> duckNow(false), 20, java.util.concurrent.TimeUnit.SECONDS);
+			}
+		}
+		DUCK.execute(() -> duckNow(on));
+	}
+
+	private static void duckNow(boolean on) {
+		{
 			if (OS.contains("mac")) {
 				for (String app : new String[]{"Spotify", "Music"}) {
 					try {
@@ -276,7 +298,7 @@ public final class MusicHub {
 					// no playerctl / no Spotify
 				}
 			}
-		});
+		}
 	}
 
 	private static void later() {

@@ -22,7 +22,7 @@ public class KillEffectMod extends Mod {
 			"Ghost (3D)", "Eagle (3D)", "Piano Drop (3D)", "Tornado (3D)", "Surprise Gift (3D)", "Cannon (3D)", "Random 3D");
 	private final Option.Action test = action("Test Effect", "Test", this::test, () -> this.status.isEmpty() ? effect.label() : effect.label() + " - " + this.status);
 	private final Option.Bool sound = bool("Sound", true);
-	private final Option.Bool playersOnly = bool("Players Only", false);
+	private final Option.Bool playersOnly = bool("Players Only", true);
 	/** Everyone you hit in the last seconds, with where they were and their skin (so the effect plays where they died). */
 	private static final class Target {
 		Entity e;
@@ -42,8 +42,15 @@ public class KillEffectMod extends Mod {
 		instance = this;
 	}
 
+	private final Map<Integer, Long> done = new HashMap<>();
+
 	public void onAttack(Entity e) {
-		if (!(e instanceof LivingEntity) || playersOnly.on() && !(e instanceof net.minecraft.entity.player.PlayerEntity)) {
+		if (!(e instanceof LivingEntity l) || playersOnly.on() && !(e instanceof net.minecraft.entity.player.PlayerEntity)
+				|| l.isDead() || l.getHealth() <= 0F) {
+			return; // hitting the body while it falls must not count again
+		}
+		Long d = done.get(e.getId());
+		if (d != null && System.currentTimeMillis() - d < 5000L) {
 			return;
 		}
 		if (!hit.containsKey(e.getId())) {
@@ -67,7 +74,7 @@ public class KillEffectMod extends Mod {
 	}
 
 	/** How long after your last hit a death still counts as your kill. */
-	private static final long MINE_MS = 5000L;
+	private static final long MINE_MS = 1500L;
 
 	/** True when the game says somebody else hit them last (the client only knows the attacker when it was you). */
 	private boolean hitByOther(LivingEntity l) {
@@ -126,6 +133,13 @@ public class KillEffectMod extends Mod {
 	}
 
 	private void kill(Target t) {
+		long now = System.currentTimeMillis();
+		Long d = done.get(t.e.getId());
+		if (d != null && now - d < 5000L) {
+			return; // one effect per death
+		}
+		done.values().removeIf(v -> now - v > 10_000L);
+		done.put(t.e.getId(), now);
 		kills++;
 		Entity e = t.e;
 		boolean stillDead = e instanceof LivingEntity l && (l.isDead() || l.getHealth() <= 0F) && !e.isRemoved();
