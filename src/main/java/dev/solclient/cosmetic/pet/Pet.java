@@ -511,10 +511,9 @@ public final class Pet {
 			}
 		}
 		if (model.kind == PetModel.Kind.ROLL) {
-			// walkPhase is the angle he has rolled: distance / radius; when he stops he settles with his face to the front again
-			double radius = Math.max(0.1, model.heightBlocks() * 0.5);
+			// walkPhase is the angle he has rolled (the original mod: 150 degrees per block); when he stops he settles with his face to the front again
 			if (hs > 0.02) {
-				walkPhase += (float) (hs / radius);
+				walkPhase += (float) (hs * Math.toRadians(150.0));
 			} else {
 				float whole = (float) (Math.round(walkPhase / (2 * Math.PI)) * 2 * Math.PI);
 				walkPhase += (whole - walkPhase) * 0.12F;

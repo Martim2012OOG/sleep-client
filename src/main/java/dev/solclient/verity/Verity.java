@@ -446,6 +446,15 @@ public final class Verity {
 		return r == null || System.currentTimeMillis() - r.at > 60_000L ? 1F : r.size;
 	}
 
+	/** Is this player's Verity talking right now (he wobbles while he does)? */
+	public static boolean talking(int ownerEntityId, UUID owner) {
+		MinecraftClient mc = MinecraftClient.getInstance();
+		if (mc.player != null && ownerEntityId == mc.player.getId()) {
+			return VerityVoice.speaking();
+		}
+		return !bubble(ownerEntityId, owner).isEmpty();
+	}
+
 	/** The speech bubble above a player's Verity ("" = none). */
 	public static String bubble(int ownerEntityId, UUID owner) {
 		VerityMod m = VerityMod.instance;

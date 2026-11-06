@@ -1,10 +1,5 @@
 package dev.solclient.cosmetic.pet;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import java.io.BufferedReader;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.RenderLayers;
 import net.minecraft.client.render.WorldRenderer;
@@ -17,89 +12,122 @@ import net.minecraft.util.math.RotationAxis;
 import net.minecraft.util.math.Vec3d;
 
 /**
- * The cardboard box Verity comes out of (model: "Minecraft Verity Box" by Jojojossy76, CC-BY-4.0): it lands, its two flaps
- * swing open, Verity rises out, and the box sinks into the ground.
+ * The original mod's cardboard box (box.geo.json + box.animation.json): an 18x17x16 px cube with two flaps. Shut it hovers
+ * and pulses; opened (age >= 0, ms) the flaps swing open, the box floats up, then shrinks away.
  */
 final class VerityBox {
 
 	private static final Identifier TEX = dev.solclient.Gfx.id("textures/cosmetics/verity_box.png");
-	/** main, lid_r, lid_l: triangles as x, y, z, u, v (blocks). */
-	private static float[][] parts;
-	private static float[][] pivots;
+	/** The geo says 128x128 (the png is 256x256: uv is relative to the geo size). */
+	private static final float TW = 128F;
 
 	private VerityBox() {
 	}
 
-	private static boolean load() {
-		if (parts != null) {
-			return parts.length > 0;
-		}
-		parts = new float[0][];
-		try {
-			var res = MinecraftClient.getInstance().getResourceManager().getResource(dev.solclient.Gfx.id("verity/box.json"));
-			if (res.isEmpty()) {
-				return false;
-			}
-			try (BufferedReader r = res.get().getReader()) {
-				JsonArray ps = JsonParser.parseReader(r).getAsJsonObject().getAsJsonArray("parts");
-				float[][] out = new float[ps.size()][], piv = new float[ps.size()][];
-				for (int i = 0; i < ps.size(); i++) {
-					JsonObject o = ps.get(i).getAsJsonObject();
-					JsonArray t = o.getAsJsonArray("tris");
-					out[i] = new float[t.size()];
-					for (int k = 0; k < out[i].length; k++) {
-						out[i][k] = t.get(k).getAsFloat();
-					}
-					JsonArray pv = o.getAsJsonArray("pivot");
-					piv[i] = new float[] {pv.get(0).getAsFloat(), pv.get(1).getAsFloat(), pv.get(2).getAsFloat()};
-				}
-				parts = out;
-				pivots = piv;
-			}
-		} catch (Exception e) {
-			System.err.println("[Sleep] verity box: " + e);
-		}
-		return parts.length > 0;
+	/** One face: 4 corners (x, y, z in px) and the texture rectangle (px) [u0, v0, u1, v1]; corner 0 = (u0, v0). */
+	private record Face(float[] c, float u0, float v0, float u1, float v1, float nx, float ny, float nz) {
 	}
 
-	/** age = ms since Verity appeared. */
+	private static final java.util.List<Face> MAIN = cube(-9, 0, -8, 18, 17, 16, 0, 0);
+	private static final java.util.List<Face> FLAP1 = flat(0, 17.05F, -8, 9, 16, 0, 33, 16);
+	private static final java.util.List<Face> FLAP2 = flat(-9, 17.05F, -8, 9, 16, 0, 49, 16);
+
+	/** Bedrock box uv: row 1 = up, down; row 2 = east, north, west, south. */
+	private static java.util.List<Face> cube(float ox, float oy, float oz, float w, float h, float d, float u, float v) {
+		java.util.List<Face> f = new java.util.ArrayList<>();
+		float x1 = ox + w, y1 = oy + h, z1 = oz + d;
+		// +x
+		f.add(new Face(new float[] {x1, y1, oz, x1, y1, z1, x1, oy, z1, x1, oy, oz}, u, v + d, u + d, v + d + h, 1, 0, 0));
+		// -z
+		f.add(new Face(new float[] {x1, y1, oz, ox, y1, oz, ox, oy, oz, x1, oy, oz}, u + d, v + d, u + d + w, v + d + h, 0, 0, -1));
+		// -x
+		f.add(new Face(new float[] {ox, y1, z1, ox, y1, oz, ox, oy, oz, ox, oy, z1}, u + d + w, v + d, u + 2 * d + w, v + d + h, -1, 0, 0));
+		// +z
+		f.add(new Face(new float[] {ox, y1, z1, x1, y1, z1, x1, oy, z1, ox, oy, z1}, u + 2 * d + w, v + d, u + 2 * d + 2 * w, v + d + h, 0, 0, 1));
+		// up
+		f.add(new Face(new float[] {x1, y1, oz, ox, y1, oz, ox, y1, z1, x1, y1, z1}, u + d, v, u + d + w, v + d, 0, 1, 0));
+		// down
+		f.add(new Face(new float[] {x1, oy, z1, ox, oy, z1, ox, oy, oz, x1, oy, oz}, u + d + w, v, u + d + 2 * w, v + d, 0, -1, 0));
+		return f;
+	}
+
+	/** A flap: no height, only a top and a bottom. */
+	private static java.util.List<Face> flat(float ox, float y, float oz, float w, float d, float u, float v, float dd) {
+		java.util.List<Face> f = new java.util.ArrayList<>();
+		float x1 = ox + w, z1 = oz + d;
+		f.add(new Face(new float[] {x1, y, oz, ox, y, oz, ox, y, z1, x1, y, z1}, u + dd, v, u + dd + w, v + d, 0, 1, 0));
+		f.add(new Face(new float[] {x1, y, z1, ox, y, z1, ox, y, oz, x1, y, oz}, u + dd + w, v, u + dd + 2 * w, v + d, 0, -1, 0));
+		return f;
+	}
+
+	private static float easeOutCirc(float x) {
+		return (float) Math.sqrt(1 - Math.pow(x - 1, 2));
+	}
+
+	private static float easeInExpo(float x) {
+		return x <= 0 ? 0 : (float) Math.pow(2, 10 * x - 10);
+	}
+
+	private static float easeInOutSine(float x) {
+		return -((float) Math.cos(Math.PI * x) - 1F) / 2F;
+	}
+
+	/**
+	 * @param age ms since the box was opened; negative = shut, hovering
+	 */
 	static void draw(MatrixStack m, OrderedRenderCommandQueue q, Vec3d cam, double x, double y, double z, long age, ClientWorld w) {
-		if (!load()) {
-			return;
-		}
-		int light = WorldRenderer.getLightmapCoordinates(w, BlockPos.ofFloored(x, y + 0.3, z));
-		float drop = age < 250 ? (1F - age / 250F) * 0.8F : 0F; // falls in
-		float open = Math.max(0F, Math.min(1F, (age - 350F) / 450F)); // flaps open
-		float sink = age > 4500 ? (age - 4500F) / 1500F * 0.45F : 0F; // goes away
-		m.push();
-		m.translate(x - cam.x, y - cam.y + drop - sink, z - cam.z);
-		m.scale(0.55F, 0.55F, 0.55F);
-		for (int i = 0; i < parts.length; i++) {
-			m.push();
-			if (i > 0) {
-				float[] pv = pivots[i];
-				float ang = open * 125F * (pv[0] > 0 ? -1F : 1F) + (float) Math.sin(age / 90.0) * 3F * open;
-				m.translate(pv[0], pv[1], pv[2]);
-				m.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(ang));
-				m.translate(-pv[0], -pv[1], -pv[2]);
+		float lift = 0F, scale = 1F, flap = 0F;
+		if (age < 0) {
+			// "hover": bobs 2 px over 2 s and pulses three times
+			float t = (System.currentTimeMillis() % 2000L) / 1000F;
+			lift = 1F - (float) Math.cos(Math.PI * t);
+			for (float c : new float[] {0.5F, 1.2917F, 1.5417F}) {
+				scale += 0.1F * Math.max(0F, 1F - Math.abs(t - c) / 0.0833F);
 			}
-			final float[] t = parts[i];
-			q.submitCustom(m, RenderLayers.entityCutoutNoCull(TEX), (e, vc) -> {
-				for (int k = 0; k + 14 < t.length; k += 15) {
-					float ax = t[k + 5] - t[k], ay = t[k + 6] - t[k + 1], az = t[k + 7] - t[k + 2];
-					float bx = t[k + 10] - t[k], by = t[k + 11] - t[k + 1], bz = t[k + 12] - t[k + 2];
-					float nx = ay * bz - az * by, ny = az * bx - ax * bz, nz = ax * by - ay * bx;
-					float l = (float) Math.sqrt(nx * nx + ny * ny + nz * nz) + 1e-6F;
-					// a triangle as a quad with its last corner repeated
-					for (int c = 0; c < 4; c++) {
-						int o = k + Math.min(c, 2) * 5;
-						vc.vertex(e, t[o], t[o + 1], t[o + 2]).color(0xFFFFFFFF).texture(t[o + 3], t[o + 4]).overlay(OverlayTexture.DEFAULT_UV).light(light)
-								.normal(e, nx / l, ny / l, nz / l);
-					}
-				}
-			});
-			m.pop();
+		} else {
+			// "open"
+			float t = age / 1000F;
+			if (t > 2.05F) {
+				return; // the box is gone
+			}
+			lift = 16F * easeOutCirc(Math.min(1F, t / 0.75F));
+			flap = 130F * easeInOutSine(Math.max(0F, Math.min(1F, (t - 0.5F) / 0.5F)));
+			if (t > 1.25F) {
+				scale = 1F - 0.9F * easeInExpo(Math.min(1F, (t - 1.25F) / 0.75F));
+			}
 		}
+		int light = WorldRenderer.getLightmapCoordinates(w, BlockPos.ofFloored(x, y + 0.5, z));
+		m.push();
+		m.translate(x - cam.x, y - cam.y, z - cam.z);
+		m.scale(1F / 16F, 1F / 16F, 1F / 16F);
+		m.translate(0, lift, 0);
+		m.scale(scale, scale, scale);
+		part(m, q, MAIN, light);
+		flap(m, q, FLAP1, 9F, -flap, light);
+		flap(m, q, FLAP2, -9F, flap, light);
 		m.pop();
+	}
+
+	private static void flap(MatrixStack m, OrderedRenderCommandQueue q, java.util.List<Face> faces, float pivotX, float angle, int light) {
+		m.push();
+		m.translate(pivotX, 17.05F, 0);
+		m.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(angle));
+		m.translate(-pivotX, -17.05F, 0);
+		part(m, q, faces, light);
+		m.pop();
+	}
+
+	private static void part(MatrixStack m, OrderedRenderCommandQueue q, java.util.List<Face> faces, int light) {
+		q.submitCustom(m, RenderLayers.entityCutoutNoCull(TEX), (e, vc) -> {
+			for (Face f : faces) {
+				float[] c = f.c();
+				float[] us = {f.u0(), f.u1(), f.u1(), f.u0()};
+				float[] vs = {f.v0(), f.v0(), f.v1(), f.v1()};
+				for (int k = 0; k < 4; k++) {
+					vc.vertex(e, c[k * 3], c[k * 3 + 1], c[k * 3 + 2]).color(0xFFFFFFFF).texture(us[k] / TW, vs[k] / TW)
+							.overlay(OverlayTexture.DEFAULT_UV).light(light).normal(e, f.nx(), f.ny(), f.nz());
+				}
+			}
+		});
 	}
 }

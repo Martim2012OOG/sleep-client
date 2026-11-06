@@ -261,7 +261,7 @@ public final class Pets {
 			PetModel m = p.model;
 			boolean verity = "verity".equals(m.id);
 			UUID vOwner = verity ? CosmeticFeatureRenderer.uuidOf(p.ownerId) : null;
-			float vSize = 1F;
+			float vSize = 1F, vSy = 1F, vSxz = 1F;
 			if (verity) {
 				dev.solclient.verity.Verity.seen(p.ownerId);
 				vSize = dev.solclient.verity.Verity.size(p.ownerId, vOwner);
@@ -269,7 +269,7 @@ public final class Pets {
 				if (dev.solclient.verity.Verity.boxed(p.ownerId)) {
 					// the box stands shut on the ground until you click it; he is not drawn yet
 					try {
-						VerityBox.draw(matrices, queue, cam, box0[0], box0[1], box0[2], 300L, mc.world);
+						VerityBox.draw(matrices, queue, cam, box0[0], box0[1], box0[2], -1L, mc.world);
 						if (cam.squaredDistanceTo(box0[0], box0[1], box0[2]) < 12 * 12) {
 							bubble(matrices, queue, cam, box0[0], box0[1] + 0.9, box0[2], dev.solclient.Lang.tr("Click the box!", "Clica na caixa!"));
 						}
@@ -278,18 +278,23 @@ public final class Pets {
 					}
 					continue;
 				}
-				// he comes out of his box: the box opens, he rises out of it, then the box sinks away
+				// he comes out of his box: the box opens, he drops out of it with a bounce, then the box shrinks away
 				long age = System.currentTimeMillis() - dev.solclient.verity.Verity.spawnedAt(p.ownerId);
 				double[] bx = BOX.computeIfAbsent(p.ownerId, k -> new double[] {p.x, p.groundY, p.z});
-				if (age < 6000L) {
-					// your own box is already standing there (no fall-in): the flaps just open
-					VerityBox.draw(matrices, queue, cam, bx[0], bx[1], bx[2], p.mine ? age + 300L : age, mc.world);
-					if (age < 1800L) {
-						float k = Math.max(0F, (age - 700L) / 1100F);
-						x = bx[0] + (x - bx[0]) * k;
-						z = bx[2] + (z - bx[2]) * k;
-						y = bx[1] + 0.1 + (y - bx[1] - 0.1) * k * k;
+				if (age < 2200L) {
+					VerityBox.draw(matrices, queue, cam, bx[0], bx[1], bx[2], age, mc.world);
+				}
+				if (age < 3200L) {
+					if (age < 600L) {
+						continue; // still inside the box
 					}
+					float k = Math.min(1F, (age - 600L) / 1200F);
+					x = bx[0] + (x - bx[0]) * k;
+					z = bx[2] + (z - bx[2]) * k;
+					float bt = (age - 600L) / 50F; // ticks
+					vSy = VeritySphere.bounceScaleY(bt);
+					vSxz = VeritySphere.bounceScaleXZ(bt);
+					y += VeritySphere.bounceYOffset(bt);
 				} else {
 					BOX.remove(p.ownerId);
 				}
@@ -302,6 +307,23 @@ public final class Pets {
 			p.pose(d, poseBuf);
 			if (!p.perched) {
 				shadow(matrices, queue, cam, x, p.groundY, y, z, m, light);
+			}
+			if (verity) {
+				// exactly like the original mod: a sphere with the face projected on it, turned to the camera, rolling
+				if (dev.solclient.verity.Verity.talking(p.ownerId, vOwner)) {
+					// he wobbles while he talks
+					float wob = 1F + (float) Math.sin((p.age + d) * 0.6F) * 0.12F;
+					vSy *= wob;
+					vSxz *= 1F + (1F - wob) * 0.5F;
+				}
+				float roll = p.prevWalkPhase + (p.walkPhase - p.prevWalkPhase) * d;
+				VeritySphere.draw(matrices, queue, cam, x, y, z, dev.solclient.verity.Verity.face(p.ownerId, vOwner), roll, p.renderYaw(d), vSize, vSy,
+						vSxz, light);
+				String say0 = dev.solclient.verity.Verity.bubble(p.ownerId, vOwner);
+				if (!say0.isEmpty()) {
+					bubble(matrices, queue, cam, x, y + 0.5 * vSize + 0.45, z, say0);
+				}
+				continue;
 			}
 			matrices.push();
 			matrices.translate(x - cam.x, y - cam.y, z - cam.z);
