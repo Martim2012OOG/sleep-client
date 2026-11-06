@@ -7,6 +7,7 @@ import dev.solclient.tiktok.TikClient;
 import dev.solclient.tiktok.TikEvent;
 import dev.solclient.tiktok.TikFx;
 import dev.solclient.tiktok.TikSound;
+import dev.solclient.tiktok.TikStats;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -46,7 +47,8 @@ public class TikTokLiveMod extends HudMod {
 
 	// ---------------------------------------------------------------- options
 	private final Option.Header hConn = header("Connection");
-	private final Option.Choice source = choice("Source", 0, "TikFinity (app)", "Tik.Tools (online)", "Custom address");
+	private final Option.Choice source = choice("Source", 0, "Automatic (just your @)", "TikFinity (app)", "Tik.Tools (online)", "Custom address")
+			.tip("Automatic: type your @ and that's it - no app, no key. It waits by itself and starts the moment you go live.");
 	private final Option.Text liveUser = text("Live @user or link", "", 160, "@name or tiktok.com/@name/live");
 	private final Option.Text apiKey = text("API key / token", "", 120, "paste your key");
 	private final Option.Text tikfinityAddr = text("TikFinity address", "ws://127.0.0.1:21213/", 120, "ws://127.0.0.1:21213/");
@@ -56,11 +58,23 @@ public class TikTokLiveMod extends HudMod {
 	private final Option.Action btnSeen = action("Events that arrived (diagnose)", "Show in chat", this::showSeen, () -> this.client.total() + " msgs");
 	private final Option.Bool debug = bool("Debug Log (raw events)", false);
 
+	private final Option.Header hStream = header("Smooth stream");
+	private final Option.Bool keepFps = bool("Keep Full FPS While Live", true)
+			.tip("While you are live the game never drops to the background / AFK frame rate, so the stream stays smooth when you click OBS or the TikTok chat.");
+	private final Option.Choice lockFps = choice("Lock FPS While Live", 2, "Off", "30", "60", "120")
+			.tip("A steady frame rate looks smoother on stream than one that jumps around, and leaves your Mac's GPU free for OBS. 60 is best for a 60 FPS live, 30 for a 30 FPS live.");
+	private final Option.Action btnObs = action("OBS settings for TikTok", "Copy", this::copyObsGuide, () -> this.obsNote);
 	private final Option.Header hTest = header("Test it (no live needed)");
+	private final Option.Bool testLive = bool("Test Live Mode", false)
+			.tip("Pretends you are live: chat, gifts (small and big), follows, shares, viewers and likes arrive by themselves, with your sounds and effects. Nothing is sent to TikTok.");
+	private final Option.Choice testSpeed = choice("Test Live Speed", 1, "Calm", "Normal", "Crazy");
+	private final Option.Choice testGiftPick = choice("Test Gift", 2, GIFT_NAMES);
+	private final Option.Action btnTestPick = action("Send the test gift", "Send", this::sendPickedGift, () -> GIFT_COINS[testGiftPick.idx()] + " coins");
 	private final Option.Action btnTestChat = action("Fake chat message", "Send", this::testChat, () -> "");
 	private final Option.Action btnTestSmall = action("Small gift (5 coins)", "Send", () -> testGift("Rose", 1, 5), () -> "");
 	private final Option.Action btnTestBig = action("Big gift (500 coins)", "Send", () -> testGift("Lion", 1, 500), () -> "");
 	private final Option.Action btnTestFollow = action("New follower", "Send", this::testFollow, () -> "");
+	private final Option.Action btnTestViewers = action("Viewers / likes counter", "Send", this::testViewers, () -> "");
 
 	private final Option.Header hChat = header("Live chat on screen");
 	private final Option.Bool showChat = bool("Show Chat", true);
@@ -155,11 +169,11 @@ public class TikTokLiveMod extends HudMod {
 	public TikTokLiveMod() {
 		super("TikTok Live", "tiktok_live", "Your TikTok live chat in the game, gift alerts, your own donation sounds and big screen effects.", 0.012F, 0.46F);
 		instance = this;
-		liveUser.showIf(() -> source.idx() != 0);
-		apiKey.showIf(() -> source.idx() != 0);
+		liveUser.showIf(() -> source.idx() != 1);
+		apiKey.showIf(() -> source.idx() >= 2);
 		apiKey.secret = true;
-		tikfinityAddr.showIf(() -> source.idx() == 0);
-		customAddr.showIf(() -> source.idx() == 2);
+		tikfinityAddr.showIf(() -> source.idx() == 1);
+		customAddr.showIf(() -> source.idx() == 3);
 	}
 
 	private static String[] concat(String a, String b, String[] rest) {
@@ -184,6 +198,7 @@ public class TikTokLiveMod extends HudMod {
 	@Override
 	protected void onDisable() {
 		client.disconnect();
+		TikStats.reset();
 		fx.clear();
 		pending.clear();
 		shown.clear();
@@ -194,6 +209,14 @@ public class TikTokLiveMod extends HudMod {
 	@Override
 	public void tick() {
 		ticks++;
+		if (testLive.on()) {
+			simulateLive();
+		} else if (testViewers > 0) {
+			testViewers = 0;
+			if (!client.connected()) {
+				TikStats.reset();
+			}
+		}
 		client.setDebug(debug.on());
 		TikSound.tick();
 		watchSettings();
@@ -272,6 +295,13 @@ public class TikTokLiveMod extends HudMod {
 		String user = TikClient.username(liveUser.get());
 		switch (source.idx()) {
 			case 0 -> {
+				if (user == null) {
+					client.fail("Type your @user (that's all)");
+				} else {
+					client.connectDirect(user);
+				}
+			}
+			case 1 -> {
 				String a = tikfinityAddr.get().trim();
 				if (a.isEmpty()) {
 					a = "ws://127.0.0.1:21213/";
@@ -281,7 +311,7 @@ public class TikTokLiveMod extends HudMod {
 				}
 				client.connect(a);
 			}
-			case 1 -> {
+			case 2 -> {
 				if (user == null) {
 					client.fail("Type your @user or live link");
 				} else if (apiKey.get().isBlank()) {
@@ -499,6 +529,105 @@ public class TikTokLiveMod extends HudMod {
 	private void testGift(String gift, int repeat, int coins) {
 		String n = NAMES[rnd.nextInt(NAMES.length)];
 		injected.add(TikEvent.gift(n.toLowerCase(Locale.ROOT), n, gift, coins, repeat));
+	}
+
+	private void testViewers() {
+		int v = TikStats.viewers < 0 ? 120 + rnd.nextInt(400) : Math.max(1, TikStats.viewers + rnd.nextInt(80) - 25);
+		TikStats.fake(v, Math.max(0, TikStats.likes) + 50 + rnd.nextInt(900));
+	}
+
+	// ---------------------------------------------------------------- smooth stream
+	private volatile String obsNote = "";
+
+	/** For the frame-rate hook: -1 not live, 0 keep full FPS, n also lock to n FPS. */
+	public int streamFps() {
+		if (!enabled || !client.connected() || !keepFps.on()) {
+			return -1;
+		}
+		return switch (lockFps.idx()) {
+			case 1 -> 30;
+			case 2 -> 60;
+			case 3 -> 120;
+			default -> 0;
+		};
+	}
+
+	/** Connected to the live right now (the viewer counter shows only then, unless it is set to always show). */
+	public boolean live() {
+		return enabled && (client.connected() || testLive.on());
+	}
+
+	// ---------------------------------------------------------------- test live
+	/** Real TikTok gifts and their price in coins. */
+	private static final String[] GIFT_NAMES = {"Rose", "TikTok", "Finger Heart", "Doughnut", "Hand Hearts", "Corgi", "Money Gun", "Galaxy", "Whale diving",
+			"Lion", "Universe"};
+	private static final int[] GIFT_COINS = {1, 1, 5, 30, 100, 299, 500, 1000, 2150, 29999, 44999};
+	private int testViewers = 0;
+
+	private void sendPickedGift() {
+		int i = testGiftPick.idx();
+		testGift(GIFT_NAMES[i], 1, GIFT_COINS[i]);
+	}
+
+	/** One tick of the pretend live: events arrive at random, like a real one. */
+	private void simulateLive() {
+		float k = switch (testSpeed.idx()) {
+			case 0 -> 0.4F;
+			case 2 -> 3F;
+			default -> 1F;
+		};
+		// chances per tick (20 ticks = 1 s)
+		if (rnd.nextFloat() < 0.035F * k) {
+			testChat();
+		}
+		if (rnd.nextFloat() < 0.006F * k) {
+			int i = rnd.nextInt(5); // the cheap ones most of the time
+			testGift(GIFT_NAMES[i], 1 + (rnd.nextInt(4) == 0 ? rnd.nextInt(10) : 0), GIFT_COINS[i]);
+		}
+		if (rnd.nextFloat() < 0.0009F * k) {
+			int i = 5 + rnd.nextInt(GIFT_NAMES.length - 5);
+			testGift(GIFT_NAMES[i], 1, GIFT_COINS[i]);
+		}
+		if (rnd.nextFloat() < 0.004F * k) {
+			testFollow();
+		}
+		if (rnd.nextFloat() < 0.002F * k) {
+			String n = NAMES[rnd.nextInt(NAMES.length)];
+			injected.add(TikEvent.simple(TikEvent.Type.SHARE, n.toLowerCase(Locale.ROOT), n));
+		}
+		if (ticks % 40 == 0) {
+			// viewers drift up and down around a level that grows slowly
+			if (testViewers <= 0) {
+				testViewers = 40 + rnd.nextInt(60);
+			}
+			testViewers = Math.max(1, testViewers + Math.round((rnd.nextInt(21) - 8) * k));
+			long likesNow = Math.max(0, TikStats.likes) + Math.round((20 + rnd.nextInt(120)) * k);
+			TikStats.fake(testViewers, likesNow);
+		}
+	}
+
+	private static final String OBS_GUIDE = String.join("\n",
+			"TikTok LIVE from OBS (best settings, Mac M1):",
+			"1) Stream key: tiktok.com > Go LIVE (livecenter.tiktok.com/producer) > Save & Go LIVE > copy Server URL + Stream Key into OBS > Settings > Stream > Custom.",
+			"2) Video: Base (canvas) 1080x1920, Output 1080x1920 (vertical, made for phones), FPS 30 (or 60 on fast internet).",
+			"3) Output > Streaming: Encoder 'Apple VT H264 Hardware Encoder' (uses the Mac's media engine, not the GPU the game needs), Rate control CBR, Bitrate 4500 kbps (3000 on weak Wi-Fi, 6000 max), Keyframe interval 2 s, Profile high.",
+			"4) Audio: 128 kbps, 48 kHz.",
+			"5) Capture the game with 'macOS Screen Capture' > Window, pick Minecraft. Put the game in the middle of the vertical canvas (or use the Vertical Clips mod layout), the TikTok chat / viewer counter of Sleep are already in the game picture.",
+			"6) Advanced > Process priority: Above normal. Use a cable instead of Wi-Fi if you can (5 Mbps upload or more).",
+			"7) In Sleep: TikTok Live > Smooth stream: Keep Full FPS While Live ON, Lock FPS 60. If OBS says 'encoding overloaded' or 'rendering lag', lower Minecraft's render distance or turn off the Mac's sharp Retina (Performance).");
+
+	private void copyObsGuide() {
+		try {
+			MinecraftClient.getInstance().keyboard.setClipboard(OBS_GUIDE);
+			obsNote = "Copied - paste it anywhere";
+		} catch (Exception e) {
+			obsNote = "Could not copy";
+		}
+		if (MinecraftClient.getInstance().player != null) {
+			for (String l : OBS_GUIDE.split("\n")) {
+				MinecraftClient.getInstance().player.sendMessage(net.minecraft.text.Text.literal(l), false);
+			}
+		}
 	}
 
 	private void testFollow() {

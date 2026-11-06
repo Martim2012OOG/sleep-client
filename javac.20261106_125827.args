@@ -1,0 +1,16 @@
+-proc:none
+-d
+/tmp/claude-0/-home-claude/bdd64f24-dd99-5481-b26b-e18a4624d981/scratchpad/jc6
+-sourcepath
+src/main/java:extensions/streamer/src/main/java
+src/main/java/dev/solclient/voice/persona/Persona.java
+src/main/java/dev/solclient/voice/persona/PersonaHook.java
+src/main/java/dev/solclient/voice/persona/PersonaMonitor.java
+src/main/java/dev/solclient/voice/persona/PersonaScreen.java
+src/main/java/dev/solclient/voice/persona/SystemVoice.java
+src/main/java/dev/solclient/voice/persona/VoiceDsp.java
+src/main/java/dev/solclient/mods/PersonasMod.java
+src/main/java/dev/solclient/net/PrivateConnection.java
+src/main/java/dev/solclient/gui/PrivateConnectionScreen.java
+extensions/streamer/src/main/java/dev/solclient/mods/TikTokLiveMod.java
+extensions/streamer/src/main/java/dev/solclient/tiktok/TikClient.java

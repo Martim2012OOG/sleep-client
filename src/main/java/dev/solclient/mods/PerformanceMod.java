@@ -59,6 +59,12 @@ public class PerformanceMod extends Mod {
 
 	/** Called by the vanilla FPS limiter: our cap while the window is not focused. */
 	public static int limit(int vanilla) {
+		// streaming (TikTok Live): the game never slows down in the background, optionally locked to a steady FPS
+		int stream = dev.solclient.ext.KuboApi.streamFpsCap();
+		if (stream >= 0) {
+			int max = MinecraftClient.getInstance().options.getMaxFps().getValue();
+			return stream > 0 ? Math.min(max, stream) : max;
+		}
 		PerformanceMod m = instance;
 		if (m == null || !m.enabled || !m.limitUnfocused.on()) {
 			return vanilla;

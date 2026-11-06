@@ -16,6 +16,17 @@ public final class PersonaHook {
 	public static volatile Persona active;
 	public static volatile float pitchAdd, amount = 1F, gainDb;
 
+	/** Your extra settings on top of the character (all set by the Personas mod every frame). */
+	public static final class Tune {
+		public volatile float pitchAdd, amount = 1F, gainDb, micBoostDb, gateDb = -90, bassDb, trebleDb;
+		public volatile float addEcho, addReverb, addRobot, addDrive, addChorus, addWhisper;
+		public volatile boolean autoLevel = true;
+	}
+
+	public static final Tune TUNE = new Tune();
+	/** Only reshape this capture device (the "whole computer" one) and leave the game's voice mods alone; 0 = all. */
+	public static volatile long onlyDevice;
+
 	/** Diagnostics for the settings screen. */
 	public static volatile long lastHookAt;
 	public static volatile int streams;
@@ -39,7 +50,7 @@ public final class PersonaHook {
 	public static void samples(long device, long addr, int count) {
 		lastHookAt = System.currentTimeMillis();
 		Persona p = active;
-		if (p == null || addr == 0 || count <= 0) {
+		if (p == null || addr == 0 || count <= 0 || onlyDevice != 0 && device != onlyDevice) {
 			return;
 		}
 		int[] f = FORMAT.get(device);
@@ -65,11 +76,19 @@ public final class PersonaHook {
 			x[i] = sb.get(i) / 32768F;
 		}
 		VoiceDsp d = DSP.computeIfAbsent(key, k -> new VoiceDsp(rate));
-		d.process(x, count, p, pitchAdd, amount, gainDb);
+		d.process(x, count, p, tune());
 		for (int i = 0; i < count; i++) {
 			int v = Math.round(x[i] * 32767F);
 			sb.put(i, (short) Math.max(-32768, Math.min(32767, v)));
 		}
+	}
+
+	private static Tune tune() {
+		Tune t = TUNE;
+		t.pitchAdd = pitchAdd;
+		t.amount = amount;
+		t.gainDb = gainDb;
+		return t;
 	}
 
 	/** True while the mixin is really being called (a voice mod is recording and our hook is in). */
@@ -89,7 +108,7 @@ public final class PersonaHook {
 			x[i] = pcm[i] / 32768F;
 		}
 		VoiceDsp d = DSP.computeIfAbsent(-1L, k -> new VoiceDsp(rate));
-		d.process(x, pcm.length, p, pitchAdd, amount, gainDb);
+		d.process(x, pcm.length, p, tune());
 		for (int i = 0; i < pcm.length; i++) {
 			pcm[i] = (short) Math.max(-32768, Math.min(32767, Math.round(x[i] * 32767F)));
 		}

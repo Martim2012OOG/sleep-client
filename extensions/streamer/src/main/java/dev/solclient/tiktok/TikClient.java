@@ -61,7 +61,41 @@ public final class TikClient {
 	}
 
 	public boolean connected() {
-		return ws != null && status.startsWith("Connected");
+		return (ws != null || directOn) && status.startsWith("Connected");
+	}
+
+	// ------------------------------------------------------------------ automatic (straight to TikTok, only the @user)
+	private Object direct; // a TikDirect, made on first use (so a missing library can never break the other sources)
+	private volatile boolean directOn;
+
+	/** Connects straight to TikTok with only the @user; waits by itself until the live starts. */
+	public synchronized void connectDirect(String user) {
+		disconnect();
+		want = true;
+		directOn = true;
+		try {
+			if (direct == null) {
+				direct = new TikDirect();
+			}
+			((TikDirect) direct).start(user, this);
+		} catch (Throwable t) {
+			// the bundled library is missing / broken: say so instead of crashing the game
+			directOn = false;
+			status = "Automatic connection unavailable: " + t.getClass().getSimpleName();
+		}
+	}
+
+	void directStatus(String s) {
+		if (directOn) {
+			status = s;
+		}
+	}
+
+	/** A message in the gateway JSON shape, from the automatic connection (or anything else inside the mod). */
+	void inject(String json) {
+		if (directOn) {
+			handle(json);
+		}
 	}
 
 	public long received() {
@@ -131,6 +165,16 @@ public final class TikClient {
 
 	public synchronized void disconnect() {
 		want = false;
+		if (directOn) {
+			directOn = false;
+			try {
+				if (direct != null) {
+					((TikDirect) direct).stop();
+				}
+			} catch (Throwable ignored) {
+				// library missing: nothing to stop
+			}
+		}
 		generation++;
 		WebSocket w = ws;
 		ws = null;
@@ -226,6 +270,14 @@ public final class TikClient {
 		String nm = eventName(msg);
 		if (names.size() < 60 || names.containsKey(nm)) {
 			names.merge(nm, 1, Integer::sum);
+		}
+		String low = nm.toLowerCase(java.util.Locale.ROOT).replaceAll("[^a-z0-9]", "");
+		if (TikStats.wants(low)) {
+			TikStats.read(low, msg); // viewers / likes for the viewer counter
+			if (!status.startsWith("Connected")) {
+				status = "Connected - live events arriving";
+			}
+			return;
 		}
 		TikEvent e = TikParser.parse(msg);
 		if (e == null) {

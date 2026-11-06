@@ -2800,3 +2800,215 @@ GIFs you send show up here	Os GIFs que envias aparecem aqui
 Right-click a GIF to add it to your favourites	Clica com o botão direito num GIF para o pôr nos favoritos
 Type to search	Escreve para procurar
 No GIFs found	Nenhum GIF encontrado
+TikTok Viewers	Espectadores TikTok
+How many people are watching your TikTok live, as a badge on screen (needs TikTok Live connected).	Quantas pessoas estão a ver a tua live do TikTok, num emblema no ecrã (precisa do TikTok Live ligado).
+Only while live	Só durante a live
+Blue	Azul
+LIVE Tag	Etiqueta LIVE
+Pulsing Dot	Ponto a piscar
+Show Likes	Mostrar likes
+Count Up Animation	Animação a contar
+Smooth stream	Live sem lag
+Keep Full FPS While Live	Manter os FPS durante a live
+While you are live the game never drops to the background / AFK frame rate, so the stream stays smooth when you click OBS or the TikTok chat.	Durante a live o jogo nunca baixa os FPS em segundo plano / AFK, por isso a transmissão continua suave quando clicas no OBS ou no chat do TikTok.
+Lock FPS While Live	Trancar FPS durante a live
+A steady frame rate looks smoother on stream than one that jumps around, and leaves your Mac's GPU free for OBS. 60 is best for a 60 FPS live, 30 for a 30 FPS live.	FPS estáveis ficam mais suaves na live do que FPS aos saltos, e deixam a placa do Mac livre para o OBS. 60 para uma live a 60 FPS, 30 para uma a 30 FPS.
+OBS settings for TikTok	Definições do OBS para o TikTok
+Copied - paste it anywhere	Copiado - cola onde quiseres
+Viewers / likes counter	Contador de espectadores / likes
+Automatic (just your @)	Automático (só o teu @)
+Automatic: type your @ and that's it - no app, no key. It waits by itself and starts the moment you go live.	Automático: escreves o teu @ e já está - sem app, sem chave. Fica à espera e começa sozinho mal entras em live.
+Type your @user (that's all)	Escreve o teu @ (só isso)
+Test Live Mode	Modo de teste de live
+Pretends you are live: chat, gifts (small and big), follows, shares, viewers and likes arrive by themselves, with your sounds and effects. Nothing is sent to TikTok.	Finge que estás em live: chat, presentes (pequenos e grandes), follows, partilhas, espectadores e likes chegam sozinhos, com os teus sons e efeitos. Nada é enviado ao TikTok.
+Test Live Speed	Velocidade do teste
+Calm	Calmo
+Crazy	Louco
+Test Gift	Presente de teste
+Send the test gift	Enviar o presente de teste
+Where it works	Onde funciona
+Use It In	Usar em
+Only Minecraft (all voice mods)	Só Minecraft (todos os mods de voz)
+Whole computer (Discord, etc.)	PC todo (Discord, etc.)
+Minecraft + whole computer	Minecraft + PC todo
+Only Minecraft: Simple Voice Chat, Plasmo Voice and every other voice mod. Whole computer: also a virtual microphone you pick in Discord, OBS, TikTok LIVE Studio...	Só Minecraft: Simple Voice Chat, Plasmo Voice e todos os outros mods de voz. PC todo: também um microfone virtual que escolhes no Discord, OBS, TikTok LIVE Studio...
+Virtual Microphone	Microfone virtual
+Virtual microphone	Microfone virtual
+Get it (free)	Obter (grátis)
+Not installed yet	Ainda não instalado
+Auto Volume	Volume automático
+Every character comes out about as loud as your normal voice.	Todas as personagens saem com o volume da tua voz normal.
+Mic Boost	Ganho do micro
+Noise Gate	Porta de ruído
+Mutes the mic below this level: no keyboard or fan noise. -90 = off.	Corta o micro abaixo deste nível: sem barulho do teclado ou da ventoinha. -90 = desligado.
+Bass	Graves
+Treble	Agudos
+Extra effects (on top of the character)	Efeitos extra (por cima da personagem)
+Extra Echo	Eco extra
+Extra Room / Reverb	Sala / reverb extra
+Extra Robot	Robô extra
+Extra Distortion	Distorção extra
+Extra Crowd	Multidão extra
+Extra Whisper	Sussurro extra
+Effect Is On	Efeito ligado
+Only while holding the key	Só enquanto carregas na tecla
+Toggle with the key	Ligar/desligar com a tecla
+Effect Key	Tecla do efeito
+Next Character	Personagem seguinte
+Previous Character	Personagem anterior
+Random Character	Personagem ao calhas
+Show Character Name When Changed	Mostrar o nome ao mudar
+Only Minecraft	Só Minecraft
+Whole computer	PC todo
+Both	Os dois
+More options	Mais opções
+Mine	Minhas
+Pick a character and talk as them in any voice chat - or the whole computer: 60+ voices, from robot to dragon. Add your own too.	Escolhe uma personagem e fala como ela em qualquer chat de voz - ou no PC todo: mais de 60 vozes, do robô ao dragão. Podes juntar as tuas.
+Stop hearing myself	Parar de me ouvir
+Hear myself (test)	Ouvir-me (teste)
+My characters folder	Pasta das minhas personagens
+Close	Fechar
+Ready: starts when a voice chat records your mic	Pronto: começa quando um chat de voz grava o teu micro
+Simple Voice Chat, Plasmo Voice and every voice mod in Minecraft hear the character.	O Simple Voice Chat, o Plasmo Voice e todos os mods de voz do Minecraft ouvem a personagem.
+Discord / any app: pick the virtual microphone (BlackHole on Mac, VB-CABLE on Windows) as your mic.	Discord / qualquer app: escolhe o microfone virtual (BlackHole no Mac, VB-CABLE no Windows) como micro.
+Funny	Engraçadas
+Scary	Assustadoras
+Fantasy	Fantasia
+Animals	Animais
+Robots & Space	Robôs e espaço
+Places & Devices	Sítios e aparelhos
+Helium Balloon	Balão de hélio
+Silly Clown	Palhaço tonto
+Baby	Bebé
+Grandma	Avó
+Dizzy	Tonto
+Fast Forward	Acelerado
+Slow Motion	Câmara lenta
+Cowboy	Cowboy
+Pirate	Pirata
+Santa	Pai Natal
+Snowman	Boneco de neve
+Masked Villain	Vilão mascarado
+Monster	Monstro
+Goblin	Goblin
+Zombie	Zombie
+Vampire	Vampiro
+Skeleton	Esqueleto
+Creepy Doll	Boneca assustadora
+Old Wizard	Velho feiticeiro
+Elf	Elfo
+Fairy	Fada
+Unicorn	Unicórnio
+Dragon	Dragão
+Knight	Cavaleiro
+Kitty	Gatinho
+Bear	Urso
+Lion	Leão
+Frog	Sapo
+Duck	Pato
+Piggy	Porquinho
+Busy Bee	Abelha
+Cave Bat	Morcego
+Underwater	Debaixo de água
+Cyborg	Ciborgue
+UFO Captain	Capitão OVNI
+Astronaut	Astronauta
+Glitch	Glitch
+8-Bit	8-Bit
+Old Radio	Rádio antigo
+Megaphone	Megafone
+TV Host	Apresentador de TV
+Movie Trailer	Trailer de filme
+Stadium	Estádio
+Cathedral	Catedral
+Shower	Chuveiro
+Whisper	Sussurro
+Crowd	Multidão
+Mega Bass	Mega graves
+Your own voice	A tua voz
+Squeaky, nasal and always cheerful	Esganiçada, nasal e sempre alegre
+Tiny and super fast sounding	Pequenina e super rápida
+Just breathed a whole balloon	Acabou de respirar um balão inteiro
+Wobbly, bright and goofy	Tremida, aguda e pateta
+Tiny voice, big ideas	Voz pequenina, grandes ideias
+Young and bright	Jovem e aguda
+Old and shaky	Velha e a tremer
+Sweet and a little wobbly	Doce e um pouco tremida
+The room is spinning	O quarto está a girar
+Talking at double speed	A falar ao dobro da velocidade
+Sooo... slooow...	Muuuito... leeenta...
+Howdy partner, nasal drawl	Olá parceiro, sotaque arrastado
+Arr, gravelly sea dog	Arr, lobo do mar rouco
+Ho ho ho, warm and deep	Ho ho ho, quente e grave
+Cold, shivering and cheerful	Com frio, a tremer e alegre
+Deep, gritty, a little scary	Grave, rouca, um pouco assustadora
+Growly with a hellish echo	Rosnada com um eco infernal
+Heavy breathing behind a mask	Respiração pesada atrás de uma máscara
+Huge growling beast	Fera enorme a rosnar
+Sneaky, raspy little thing	Coisinha manhosa e rouca
+Brains... slow and broken	Cérebros... lenta e partida
+Breathy night voice	Voz da noite, sussurrada
+Hollow and floaty	Oca e a flutuar
+Rattly and thin	A chocalhar e fina
+Sweet... too sweet	Doce... doce demais
+Huge, slow and booming	Enorme, lenta e a ribombar
+Wise, echoing tower voice	Sábia, com eco de torre
+Light and magical	Leve e mágica
+Tiny sparkly voice	Vozinha cheia de brilho
+Shiny and dreamy	Brilhante e sonhadora
+Fire in the throat	Fogo na garganta
+Talking inside a helmet	A falar dentro de um elmo
+Meow-ish and purry	Tipo miau e ronronante
+Squeak squeak	Chiu chiu
+Big, warm and grumbly	Grande, quente e resmungona
+Roaring king	Rei a rugir
+Croaky and bubbly	Coaxante e borbulhante
+Quacky and nasal	Quá quá e nasal
+Snorty and round	A fungar e redondinha
+Buzzy and tiny	A zumbir e pequenina
+Squeaky echoes in the dark	Guinchos com eco no escuro
+Talking from the bottom of the sea	A falar do fundo do mar
+Metallic robot	Robô metálico
+Half human, half machine	Meio humano, meio máquina
+Warbly visitor from space	Visitante do espaço a tremelicar
+Signals from the mothership	Sinais da nave-mãe
+Radio from the space station	Rádio da estação espacial
+Broken game character	Personagem de jogo avariada
+Straight out of an old console	Saída de uma consola antiga
+Tinny telephone line	Linha de telefone metálica
+Crackly AM station	Estação AM com chiado
+LOUD announcements	Anúncios ALTOS
+Polished studio voice	Voz de estúdio polida
+In a world... deep and epic	Num mundo... grave e épica
+Announcer in a huge arena	Locutor numa arena enorme
+Giant stone hall	Salão de pedra gigante
+Talk from the inside of a cave	Fala de dentro de uma gruta
+Singing in the shower	A cantar no chuveiro
+Only air, like a secret	Só ar, como um segredo
+A whole group talking at once	Um grupo inteiro a falar ao mesmo tempo
+Boom boom low end	Bum bum, graves a fundo
+Pick who you want to be.	Escolhe quem queres ser.
+Turn on the Personas mod to use a character.	Liga o mod Personas para usar uma personagem.
+Voice Changer	Modificador de voz
+All voices	Todas as vozes
+CATEGORIES	CATEGORIAS
+Search voices	Procurar vozes
+Whole PC	PC todo
+Hear myself	Ouvir-me
+Voice changer	Modificador de voz
+Voice changer is off	Modificador de voz desligado
+Live on the whole PC	Ao vivo no PC todo
+Live in your voice chat	Ao vivo no teu chat de voz
+Ready	Pronto
+Higher	Mais aguda
+Deeper	Mais grave
+Robot	Robô
+Growl	Rosnar
+Echo	Eco
+Wobble	Tremer
+Radio	Rádio
+Right-click a voice (or its star) to add it here	Clica com o botão direito numa voz (ou na estrela) para a pôr aqui
+No voice found	Nenhuma voz encontrada
+My voices folder (name.json + name.png; pictures/<voice>.png changes a picture)	Pasta das minhas vozes (nome.json + nome.png; pictures/<voz>.png troca uma imagem)
+Voices	Vozes
+Click the star on a voice to add it here	Clica na estrela de uma voz para a pôr aqui

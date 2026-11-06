@@ -57,8 +57,11 @@ public final class PrivateConnection {
 	private static final ExecutorService POOL = Executors.newCachedThreadPool(r -> {
 		Thread t = new Thread(r, "Sleep-PrivateConnection");
 		t.setDaemon(true);
+		t.setPriority(Thread.MIN_PRIORITY); // background work never takes CPU from the game
 		return t;
 	});
+	/** Server lists downloaded / read at the same time (17 at once made the game stutter while they were parsed). */
+	private static final java.util.concurrent.Semaphore LISTS_PAR = new java.util.concurrent.Semaphore(3);
 
 	public static volatile boolean enabled;
 	public static volatile Server selected;
@@ -545,7 +548,7 @@ public final class PrivateConnection {
 	private static volatile long scanId;
 	/** Tests run on virtual threads (cheap while they wait for the network); this caps how many at the same time. */
 	private static final ExecutorService SCAN = Executors.newThreadPerTaskExecutor(Thread.ofVirtual().name("Sleep-PrivateConnection-Test", 0).factory());
-	private static final java.util.concurrent.Semaphore PARALLEL = new java.util.concurrent.Semaphore(384);
+	private static final java.util.concurrent.Semaphore PARALLEL = new java.util.concurrent.Semaphore(96); // fewer tests at once: 384 flooded the network (game lag)
 	/** How many servers of each country the background check may try (most free servers are dead)... */
 	private static final int SCAN_PER_COUNTRY = 40;
 	/** ...it stops for a country once this many answered. */
@@ -753,6 +756,11 @@ public final class PrivateConnection {
 				for (String[] l : LISTS) {
 					jobs.add(POOL.submit(() -> {
 						try {
+							LISTS_PAR.acquire();
+						} catch (InterruptedException ie) {
+							return;
+						}
+						try {
 							String body = fetch(20, mirrors(l[1]));
 							if (l[2].equals("txt")) {
 								loadGeo(); // these lists have no country: it comes from the address
@@ -762,6 +770,8 @@ public final class PrivateConnection {
 							}
 						} catch (Exception e) {
 							err[0] = String.valueOf(e.getMessage());
+						} finally {
+							LISTS_PAR.release();
 						}
 						listsDone++;
 						merge(fresh);
@@ -877,8 +887,35 @@ public final class PrivateConnection {
 	}
 
 	/** Groups the servers by country (best first) and swaps them in for the screen. */
+	private static volatile long lastPublish;
+	private static final java.util.concurrent.atomic.AtomicBoolean PUBLISH_LATER = new java.util.concurrent.atomic.AtomicBoolean();
+
+	/**
+	 * Re-sorts the 100 000+ servers for the screen. Called a lot while lists arrive and servers answer, so it runs at most
+	 * every 1.5 s (the calls in between are merged into one): sorting them on every answer made everything lag.
+	 */
 	private static void publish() {
+		long now = System.currentTimeMillis();
+		if (now - lastPublish < 1500) {
+			if (PUBLISH_LATER.compareAndSet(false, true)) {
+				POOL.execute(() -> {
+					try {
+						Thread.sleep(1500);
+					} catch (InterruptedException ignored) {
+						// publish now then
+					}
+					PUBLISH_LATER.set(false);
+					publishNow();
+				});
+			}
+			return;
+		}
+		publishNow();
+	}
+
+	private static void publishNow() {
 		synchronized (LIST_LOCK) {
+			lastPublish = System.currentTimeMillis();
 			publishLocked();
 		}
 	}

@@ -35,6 +35,7 @@ public final class KuboApi {
 	private static final List<Function<LivingEntity, Float>> SCALE = new CopyOnWriteArrayList<>();
 	private static final List<Predicate<ItemStack>> TOTEM = new CopyOnWriteArrayList<>();
 	private static final List<java.util.function.BooleanSupplier> HIDE_TOASTS = new CopyOnWriteArrayList<>();
+	private static final List<java.util.function.IntSupplier> STREAM_FPS = new CopyOnWriteArrayList<>();
 	private static final List<Runnable> STATS_CHANGED = new CopyOnWriteArrayList<>();
 	private static final List<java.util.function.BooleanSupplier> REPLACES_F3 = new CopyOnWriteArrayList<>();
 
@@ -267,6 +268,33 @@ public final class KuboApi {
 	/** Called when the Sleep stats (kills, distance, minigame records...) change. */
 	public void onStatsChanged(Runnable r) {
 		STATS_CHANGED.add(r);
+	}
+
+	/**
+	 * While you stream: return -1 when not streaming, 0 to keep the full frame rate even in the background (no
+	 * "lower FPS in background" / AFK limit, so the live never drops to 15 FPS when you click OBS), or a number to also
+	 * lock the game to that many FPS (steady frame pacing = a smoother stream).
+	 */
+	public void streamFps(java.util.function.IntSupplier s) {
+		STREAM_FPS.add(s);
+	}
+
+	/** -1 = nobody streams; 0 = keep full FPS; n = keep full FPS and lock to n. */
+	public static int streamFpsCap() {
+		int out = -1;
+		for (var s : STREAM_FPS) {
+			try {
+				int v = s.getAsInt();
+				if (v == 0 && out < 0) {
+					out = 0;
+				} else if (v > 0) {
+					out = out <= 0 ? v : Math.min(out, v);
+				}
+			} catch (Throwable ignored) {
+				// a broken extension never changes the frame rate
+			}
+		}
+		return out;
 	}
 
 	/** Return true while the extension draws its own F3 screen (vanilla debug HUD is then hidden). */

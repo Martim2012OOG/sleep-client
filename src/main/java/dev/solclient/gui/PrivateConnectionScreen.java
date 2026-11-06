@@ -193,8 +193,25 @@ public class PrivateConnectionScreen extends UiScreen {
 		}
 	}
 
-	/** "*" = fastest country, a country code, or one of my servers. */
+	private List<Object> rowsCache;
+	private String rowsKey = "";
+	private long rowsAt;
+
+	/** The list rows, made again only when something changed (or every 0.5 s while servers are being checked). */
 	private List<Object> rows() {
+		String key = nav + "|" + filter + "|" + search.text() + "|" + System.identityHashCode(PrivateConnection.free) + "|" + RECENT.size() + "|"
+				+ PrivateConnection.MINE.size();
+		long now = System.currentTimeMillis();
+		if (rowsCache == null || !key.equals(rowsKey) || now - rowsAt > 500) {
+			rowsCache = makeRows();
+			rowsKey = key;
+			rowsAt = now;
+		}
+		return rowsCache;
+	}
+
+	/** "*" = fastest country, a country code, or one of my servers. */
+	private List<Object> makeRows() {
 		List<Object> out = new ArrayList<>();
 		String q = search.text().trim().toLowerCase(Locale.ROOT);
 		if (nav == 2) {

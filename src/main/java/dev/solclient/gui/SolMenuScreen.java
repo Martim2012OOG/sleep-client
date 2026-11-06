@@ -7220,6 +7220,9 @@ public class SolMenuScreen extends Screen {
 			}
 			return true;
 		}
+		if (open instanceof dev.solclient.mods.PersonasMod && dev.solclient.voice.persona.PersonaPanel.INSTANCE.key(key)) {
+			return true; // backspace / escape in the voice search
+		}
 		if (key == SolClient.settings.modsKey.code()) {
 			closeMenu();
 			return true;
@@ -7250,6 +7253,9 @@ public class SolMenuScreen extends Screen {
 		}
 		if (focus == F_NONE && open == null && !friendsOpen && !editOpen && (view == V_MODS || view == V_SHOP || view == V_SKIN)) {
 			focus = view == V_MODS ? F_SEARCH : F_LOCKER; // just start typing: the search box takes it
+		}
+		if (focus == F_NONE && open instanceof dev.solclient.mods.PersonasMod) {
+			return dev.solclient.voice.persona.PersonaPanel.INSTANCE.typed(input.codepoint()); // typing searches the voices
 		}
 		if (focus == F_NONE) {
 			return false;
