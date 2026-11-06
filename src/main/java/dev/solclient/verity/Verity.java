@@ -90,6 +90,40 @@ public final class Verity {
 		VerityVoice.feed(sb, count, rate);
 	}
 
+	private static long hintAt, cueAt;
+
+	/** He cannot hear / answer yet: tells the player what to install (at most every 30 s). */
+	static void hintInstall() {
+		long now = System.currentTimeMillis();
+		if (now - hintAt < 30_000L) {
+			return;
+		}
+		hintAt = now;
+		String t = !Ollama.ready() ? Lang.tr("Verity has no brain yet: install it in his settings (Locker > Verity > Edit)", "O Verity ainda não tem cérebro: instala-o nas definições dele (Locker > Verity > Editar)")
+				: Lang.tr("Verity has no ears yet: install them in his settings (Locker > Verity > Edit)", "O Verity ainda não tem ouvidos: instala-os nas definições dele (Locker > Verity > Editar)");
+		MinecraftClient mc = MinecraftClient.getInstance();
+		mc.execute(() -> {
+			if (mc.inGameHud != null) {
+				mc.inGameHud.setOverlayMessage(Text.literal(t).formatted(Formatting.YELLOW), false);
+			}
+		});
+	}
+
+	/** Shows that he noticed you talking (at most every 3 s). */
+	static void cueListening() {
+		long now = System.currentTimeMillis();
+		if (now - cueAt < 3000L) {
+			return;
+		}
+		cueAt = now;
+		MinecraftClient mc = MinecraftClient.getInstance();
+		mc.execute(() -> {
+			if (mc.inGameHud != null) {
+				mc.inGameHud.setOverlayMessage(Text.literal(Lang.tr("Verity is listening...", "O Verity está a ouvir...")).formatted(Formatting.YELLOW), false);
+			}
+		});
+	}
+
 	static boolean listening() {
 		VerityMod m = VerityMod.instance;
 		return mine() && m.listenVoice.on() && Ears.ready() && Ollama.ready() && !thinking;
@@ -122,6 +156,9 @@ public final class Verity {
 		boolean down = mc.currentScreen == null && dev.solclient.Keys.down(m.talkKey.code());
 		if (down && !keyDown) {
 			keyDownAt = now;
+		}
+		if (down && now - keyDownAt > 250 && !VerityVoice.recording() && (!Ears.ready() || !Ollama.ready())) {
+			hintInstall();
 		}
 		if (down && now - keyDownAt > 250 && !VerityVoice.recording() && Ears.ready() && Ollama.ready()) {
 			VerityVoice.startRecording();

@@ -22,9 +22,9 @@ public class VerityMod extends Mod {
 
 	private final Option.Header hTalk = header("Talking to Verity");
 	public final Option.Bool listenVoice = bool("Listen In Voice Chat", true)
-			.tip("Verity hears you through your voice chat (Simple Voice Chat, Plasmo, Sleep's voice chat...). Say \"Verity\" to call him.");
-	public final Option.Bool wakeWord = bool("Only When You Say \"Verity\"", true)
-			.tip("In voice chat he only answers when you say his name, then keeps listening for 20 seconds. Off = he answers everything you say.");
+			.tip("Verity hears you through your voice chat (Simple Voice Chat, Plasmo, Sleep's voice chat...). Just talk: he listens.");
+	public final Option.Bool wakeWord = bool("Only Answer When You Say His Name", false)
+			.tip("Off = you just talk and he listens and answers (voice chat on). On = he only answers when you say \"Verity\", then keeps listening for 20 seconds.");
 	public final Option.Key talkKey = key("Talk Key (hold to speak, tap to type)", 74);
 	public final Option.Bool chatPrefix = bool("Chat Starting With \"Verity\" Goes To Him", true)
 			.tip("Messages that start with Verity, or with @v, are not sent to the server: Verity answers them.");

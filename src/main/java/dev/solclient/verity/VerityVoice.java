@@ -121,6 +121,17 @@ final class VerityVoice {
 	/** Samples from any voice chat's microphone (mono 16-bit), straight from the capture hook. */
 	static void feed(java.nio.ShortBuffer sb, int count, int sampleRate) {
 		if (!Verity.listening() || speaking()) {
+			VerityMod vm = VerityMod.instance;
+			if (Verity.mine() && vm != null && vm.listenVoice.on() && !speaking() && (!Ears.ready() || !Ollama.ready())) {
+				double s0 = 0;
+				for (int i = 0; i < count; i++) {
+					int v = sb.get(i);
+					s0 += (double) v * v;
+				}
+				if (Math.sqrt(s0 / Math.max(1, count)) > 1500) {
+					Verity.hintInstall(); // you are talking to him but he cannot hear yet
+				}
+			}
 			reset();
 			return;
 		}
@@ -142,6 +153,7 @@ final class VerityVoice {
 				inSpeech = true;
 				len = 0;
 				silent = 0;
+				Verity.cueListening();
 			}
 			for (int i = 0; i < count && len < MAX; i++) {
 				buf[len++] = sb.get(i);
