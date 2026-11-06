@@ -510,7 +510,18 @@ public final class Pet {
 				yaw = turn(yaw, want2, 7F); // too far to just turn the head: turns the body
 			}
 		}
-		walkPhase += (float) (hs * (hop ? 0 : 14.0 / Math.max(0.5, model.heightBlocks() + 0.35)));
+		if (model.kind == PetModel.Kind.ROLL) {
+			// walkPhase is the angle he has rolled: distance / radius; when he stops he settles with his face to the front again
+			double radius = Math.max(0.1, model.heightBlocks() * 0.5);
+			if (hs > 0.02) {
+				walkPhase += (float) (hs / radius);
+			} else {
+				float whole = (float) (Math.round(walkPhase / (2 * Math.PI)) * 2 * Math.PI);
+				walkPhase += (whole - walkPhase) * 0.12F;
+			}
+		} else {
+			walkPhase += (float) (hs * (hop ? 0 : 14.0 / Math.max(0.5, model.heightBlocks() + 0.35)));
+		}
 	}
 
 	// ================================================================ movement: flying / floating pets
@@ -744,7 +755,7 @@ public final class Pet {
 			}
 		}
 		// footsteps on the block under it
-		if (!flies() && onGround && walk > 0.4F && !inWater) {
+		if (!flies() && model.kind != PetModel.Kind.ROLL && onGround && walk > 0.4F && !inWater) {
 			int step = (int) (walkPhase / Math.PI);
 			if (step != stepSound) {
 				stepSound = step;
@@ -932,17 +943,26 @@ public final class Pet {
 						rz += (float) Math.sin(t * 0.07F) * 0.08F;
 						rx += (float) Math.sin(t * 0.05F) * 0.05F;
 					}
-					rx += 0.38F * st - 0.3F * bw;
-					oy -= st * legH * 0.3F + li * legH * 0.85F;
+					if (m.kind == PetModel.Kind.ROLL) {
+						rx -= ph; // rolls forward
+					} else {
+						rx += 0.38F * st - 0.3F * bw;
+						oy -= st * legH * 0.3F + li * legH * 0.85F;
+					}
 					float squish = hop ? sq : sq * 0.4F;
 					sx = sz = 1 + breathe * 0.6F + squish * 0.2F - sr * 0.07F;
 					sy = 1 + breathe - squish * 0.3F + sr * 0.12F;
 				}
 				case "head" -> {
 					ry -= hy; // the model turns the other way round than Minecraft's yaw
-					rx += -hp - 0.38F * st + 0.2F * bw + (float) Math.sin(ph * 2) * 0.05F * wk;
+					if (m.kind == PetModel.Kind.ROLL) {
+						rx += -hp;
+						ry += 0F;
+					} else {
+						rx += -hp - 0.38F * st + 0.2F * bw + (float) Math.sin(ph * 2) * 0.05F * wk;
+					}
 					rz += hr + (float) Math.sin(t * 0.04F) * 0.03F;
-					if (li > 0) {
+					if (li > 0 && m.kind != PetModel.Kind.ROLL) {
 						oy -= li * 0.6F;
 					}
 				}

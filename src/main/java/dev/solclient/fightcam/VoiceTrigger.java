@@ -32,7 +32,8 @@ import net.fabricmc.loader.api.FabricLoader;
 public final class VoiceTrigger {
 
 	public static final String[] LANGS = {"Portugues", "English"};
-	private static final String[] MODEL = {"vosk-model-small-pt-0.3", "vosk-model-small-en-us-0.15"};
+	private static final String[] MODEL = {"vosk-model-small-pt-0.3", "vosk-model-small-en-us-0.15", "vosk-model-small-es-0.42", "vosk-model-small-fr-0.22",
+			"vosk-model-small-de-0.15", "vosk-model-small-it-0.22"};
 
 	public static volatile String status = "Off";
 	public static volatile String heard = "";
@@ -723,7 +724,7 @@ public final class VoiceTrigger {
 			} catch (Exception e) {
 				last = e;
 				System.err.println("[Sleep] voice model from " + url + ": " + e);
-				if (!running) {
+				if (!running && !external) {
 					Files.deleteIfExists(zip);
 					return;
 				}
@@ -774,6 +775,78 @@ public final class VoiceTrigger {
 		Files.deleteIfExists(zip);
 	}
 
+	/** True while Verity's "Install ears" button downloads the model (the download is not stopped because the voice trigger is off). */
+	private static volatile boolean external;
+
+	/** Verity's ears: downloads the model like the voice trigger does and prepares the engine. Blocks: call it off the game thread. */
+	public static void installModelForVerity(int lang) throws Exception {
+		external = true;
+		try {
+			download(Math.max(0, Math.min(MODEL.length - 1, lang)));
+			if (!prepareNative()) {
+				throw new java.io.IOException(appleProblem.isEmpty() ? "speech engine not available" : appleProblem);
+			}
+		} finally {
+			external = false;
+		}
+	}
+
+	private static Engine earsEngine;
+	private static int earsLang = -1;
+
+	/**
+	 * Verity's ears: turns one sentence (16-bit mono samples at any rate) into text with the offline model. Blocks: call it off the
+	 * game thread.
+	 */
+	public static synchronized String transcribe(short[] pcm, int n, int rate, int lang) throws Exception {
+		int l = Math.max(0, Math.min(MODEL.length - 1, lang));
+		if (!modelInstalled(l)) {
+			throw new java.io.IOException("the ears are not installed");
+		}
+		if (!prepareNative()) {
+			throw new java.io.IOException("speech engine not available");
+		}
+		if (earsEngine == null || earsLang != l) {
+			if (earsEngine != null) {
+				earsEngine.close();
+				earsEngine = null;
+			}
+			String md = dir().resolve(MODEL[l]).toString();
+			earsEngine = macLib != null ? macEngine(macLib, md) : voskEngine(md);
+			earsLang = l;
+		}
+		// to 16 kHz, then a second of silence so the recognizer closes the sentence
+		int outN = (int) ((long) n * 16000 / Math.max(8000, rate));
+		byte[] b = new byte[(outN + 16000) * 2];
+		for (int i = 0; i < outN; i++) {
+			double src = i * (double) rate / 16000.0;
+			int i0 = Math.min(n - 1, (int) src), i1 = Math.min(n - 1, i0 + 1);
+			double f = src - i0;
+			short v = (short) (pcm[i0] * (1 - f) + pcm[i1] * f);
+			b[i * 2] = (byte) v;
+			b[i * 2 + 1] = (byte) (v >> 8);
+		}
+		earsEngine.reset();
+		StringBuilder text = new StringBuilder();
+		for (int off = 0; off < b.length; off += 4000) {
+			int c = Math.min(4000, b.length - off);
+			byte[] chunk = java.util.Arrays.copyOfRange(b, off, off + c);
+			if (earsEngine.accept(chunk, c)) {
+				text.append(' ').append(textOf(earsEngine.result()));
+			}
+		}
+		return text.toString().trim();
+	}
+
+	private static String textOf(String json) {
+		try {
+			var o = com.google.gson.JsonParser.parseString(json).getAsJsonObject();
+			return o.has("text") ? o.get("text").getAsString() : "";
+		} catch (RuntimeException e) {
+			return "";
+		}
+	}
+
 	private static void fetch(String url, Path to) throws Exception {
 		status = "Downloading voice model...";
 		HttpClient http = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.ALWAYS).connectTimeout(Duration.ofSeconds(20)).build();
@@ -792,7 +865,7 @@ public final class VoiceTrigger {
 				o.write(b, 0, n);
 				read += n;
 				status = total > 0 ? "Downloading voice model... " + Math.min(99, read * 100 / total) + "%" : "Downloading voice model... " + read / 1_000_000 + " MB";
-				if (!running) {
+				if (!running && !external) {
 					throw new java.io.IOException("stopped");
 				}
 			}

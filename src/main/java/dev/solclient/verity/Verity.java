@@ -26,7 +26,7 @@ import net.minecraft.util.Formatting;
 
 /**
  * Verity, the special pet: your personal helper friend. He follows you like the other pets (same brain), but he also
- * talks (Groq, with your own key), hears you in voice chat, and has moods: happy, bored, annoyed, angry... and when he is
+ * talks (a local model on this computer), hears you in voice chat, and has moods: happy, bored, annoyed, angry... and when he is
  * furious he grows huge. Every Sleep player near you sees his face, his size and his speech bubble, and hears him.
  */
 public final class Verity {
@@ -70,6 +70,11 @@ public final class Verity {
 		ClientSendMessageEvents.ALLOW_CHAT.register(msg -> !onChat(msg));
 	}
 
+	/** His local brain is installed (for the Locker button). */
+	public static boolean brainReady() {
+		return Ollama.ready();
+	}
+
 	/** You wear Verity and the mod is on. */
 	public static boolean mine() {
 		MinecraftClient mc = MinecraftClient.getInstance();
@@ -87,20 +92,23 @@ public final class Verity {
 
 	static boolean listening() {
 		VerityMod m = VerityMod.instance;
-		return mine() && m.listenVoice.on() && !m.apiKey.get().isBlank() && !thinking;
+		return mine() && m.listenVoice.on() && Ears.ready() && Ollama.ready() && !thinking;
 	}
 
 	// ================================================================ every tick
 	private static void tick(MinecraftClient mc) {
 		boolean on = mine();
 		if (on && !was) {
-			SPAWN.put(mc.player.getId(), System.currentTimeMillis()); // he comes out of his box
+			SPAWN.remove(mc.player.getId()); // he waits shut inside his box until you click it
 			if (lastUserAt == 0) {
 				lastUserAt = System.currentTimeMillis();
 			}
 			if (HISTORY.isEmpty()) {
 				greet();
 			}
+		}
+		if (!on && was && mc.player != null) {
+			SPAWN.remove(mc.player.getId());
 		}
 		was = on;
 		if (!on) {
@@ -115,7 +123,7 @@ public final class Verity {
 		if (down && !keyDown) {
 			keyDownAt = now;
 		}
-		if (down && now - keyDownAt > 250 && !VerityVoice.recording() && !m.apiKey.get().isBlank()) {
+		if (down && now - keyDownAt > 250 && !VerityVoice.recording() && Ears.ready() && Ollama.ready()) {
 			VerityVoice.startRecording();
 			mc.inGameHud.setOverlayMessage(Text.literal(Lang.tr("Verity is listening...", "O Verity está a ouvir...")).formatted(Formatting.YELLOW), false);
 		}
@@ -194,12 +202,12 @@ public final class Verity {
 	/** What the microphone heard (voice chat or talk key): to text, then to Verity if it was for him. */
 	static void heard(short[] pcm, int n, int rate, boolean voiceChat) {
 		VerityMod m = VerityMod.instance;
-		if (m == null || m.apiKey.get().isBlank()) {
+		if (m == null || !Ears.ready() || !Ollama.ready()) {
 			return;
 		}
 		Thread t = new Thread(() -> {
 			try {
-				String text = VerityAI.transcribe(m.apiKey.get(), pcm, n, rate);
+				String text = Ears.transcribe(pcm, n, rate);
 				if (text.isBlank() || text.length() < 2) {
 					return;
 				}
@@ -224,7 +232,7 @@ public final class Verity {
 	/** Something happened that Verity should react to (not said by the player). */
 	private static void event(String what) {
 		VerityMod m = VerityMod.instance;
-		if (m == null || m.apiKey.get().isBlank() || thinking) {
+		if (m == null || !Ollama.ready() || thinking) {
 			return;
 		}
 		send("[event, not said by the player] " + what, false);
@@ -233,8 +241,8 @@ public final class Verity {
 	private static void ask(String text) {
 		VerityMod m = VerityMod.instance;
 		lastUserAt = System.currentTimeMillis();
-		if (m.apiKey.get().isBlank()) {
-			reply(Lang.tr("I can't think yet! Give me a Groq key: Locker > Verity > Edit.", "Ainda não consigo pensar! Dá-me uma chave Groq: Locker > Verity > Editar."),
+		if (!Ollama.ready()) {
+			reply(Lang.tr("I can't think yet! Install my brain: Locker > Verity > Edit.", "Ainda não consigo pensar! Instala o meu cérebro: Locker > Verity > Editar."),
 					"sad");
 			return;
 		}
@@ -251,10 +259,10 @@ public final class Verity {
 		String system = VerityAI.systemPrompt(mc.getSession().getUsername(), days, m.creepy.on(), m.canAnger.on());
 		String context = context(mc);
 		List<String[]> hist = new ArrayList<>(HISTORY);
-		String key = m.apiKey.get(), model = m.model.get();
+		String model = m.model.get();
 		Thread t = new Thread(() -> {
 			try {
-				VerityAI.Reply r = VerityAI.chat(key, model, system, context, hist, text);
+				VerityAI.Reply r = VerityAI.chat(model, system, context, hist, text);
 				mc.execute(() -> {
 					thinking = false;
 					HISTORY.add(new String[] {"user", text});
@@ -408,7 +416,7 @@ public final class Verity {
 			rage();
 		}
 		if (boops == 2 || boops == 4 || anger >= 100) {
-			if (!m.apiKey.get().isBlank()) {
+			if (Ollama.ready()) {
 				event("The player just hit you (" + boops + " times in the last minute). React to it.");
 			} else {
 				String[] lines = anger >= 100 ? new String[] {Lang.tr("Stop. Now.", "Para. Já."), Lang.tr("You will regret that.", "Vais arrepender-te disso.")}
@@ -459,7 +467,27 @@ public final class Verity {
 	}
 
 	public static void seen(int ownerEntityId) {
+		MinecraftClient mc = MinecraftClient.getInstance();
+		if (mc.player != null && ownerEntityId == mc.player.getId()) {
+			return; // yours waits in his box until you click it
+		}
 		SPAWN.putIfAbsent(ownerEntityId, System.currentTimeMillis());
+	}
+
+	/** Your Verity is still shut inside his box on the ground (you have not clicked it yet). */
+	public static boolean boxed(int ownerEntityId) {
+		MinecraftClient mc = MinecraftClient.getInstance();
+		return mc.player != null && ownerEntityId == mc.player.getId() && !SPAWN.containsKey(ownerEntityId) && mine();
+	}
+
+	/** You clicked the box: the flaps open and he comes out. */
+	public static void openBox(int ownerEntityId) {
+		SPAWN.put(ownerEntityId, System.currentTimeMillis());
+	}
+
+	/** His pet is gone (unequipped, left the world): next time he comes in a new box. */
+	public static void forgetSpawn(int ownerEntityId) {
+		SPAWN.remove(ownerEntityId);
 	}
 
 	private static int myFace() {
@@ -555,15 +583,15 @@ public final class Verity {
 	// ================================================================ settings page
 	static void test() {
 		VerityMod m = VerityMod.instance;
-		if (m.apiKey.get().isBlank()) {
-			status = Lang.tr("Paste your Groq key first", "Cola primeiro a tua chave Groq");
+		if (!Ollama.ready()) {
+			status = Lang.tr("Install his brain first (Install button above)", "Instala primeiro o cérebro (botão Instalar acima)");
 			return;
 		}
 		status = Lang.tr("Asking Verity...", "A perguntar ao Verity...");
-		String key = m.apiKey.get(), model = m.model.get();
+		String model = m.model.get();
 		Thread t = new Thread(() -> {
 			try {
-				VerityAI.Reply r = VerityAI.chat(key, model, VerityAI.systemPrompt("Player", 0, false, true), "testing", List.of(), "Say hi in five words.");
+				VerityAI.Reply r = VerityAI.chat(model, VerityAI.systemPrompt("Player", 0, false, true), "testing", List.of(), "Say hi in five words.");
 				status = "OK: " + r.say();
 			} catch (Exception e) {
 				status = e.getMessage();

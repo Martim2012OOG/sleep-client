@@ -30,6 +30,8 @@ public final class PetModel {
 		WADDLE,
 		/** flaps its wings and flies around you, can land on your shoulder. */
 		FLY,
+		/** a ball that rolls along the ground (Verity). */
+		ROLL,
 		/** floats and drifts, goes through walls (ghosts). */
 		FLOAT
 	}
@@ -60,7 +62,19 @@ public final class PetModel {
 				float nx = ay * bz - az * by, ny = az * bx - ax * bz, nz = ax * by - ay * bx;
 				float len = (float) Math.sqrt(nx * nx + ny * ny + nz * nz);
 				if (len < 1e-6F) {
-					len = 1;
+					// corners 0 and 1 coincide (the pole of a ball): the diagonals still give the normal, so the top is not drawn black
+					float dx = verts[o + 10] - verts[o], dy = verts[o + 11] - verts[o + 1], dz = verts[o + 12] - verts[o + 2];
+					float ex = verts[o + 15] - verts[o + 5], ey = verts[o + 16] - verts[o + 6], ez = verts[o + 17] - verts[o + 7];
+					nx = dy * ez - dz * ey;
+					ny = dz * ex - dx * ez;
+					nz = dx * ey - dy * ex;
+					len = (float) Math.sqrt(nx * nx + ny * ny + nz * nz);
+					if (len < 1e-6F) {
+						nx = 0;
+						ny = 1;
+						nz = 0;
+						len = 1;
+					}
 				}
 				normals[q * 3] = nx / len;
 				normals[q * 3 + 1] = ny / len;

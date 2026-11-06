@@ -44,6 +44,8 @@ public abstract class Mod {
 	public boolean locked;
 	/** Not a mod in the list: its switch and options are at the end of Sleep Settings (Cinematic Intro...). */
 	public boolean inSettings;
+	/** Not shown in the mods grid or counted: its settings open from elsewhere (Verity: Locker > Edit Verity). */
+	public boolean hiddenFromList;
 	/** The card this mod lives in (Info HUD, Screen Tweaks...), or null for a card of its own. */
 	public Mod parent;
 	protected final MinecraftClient mc = MinecraftClient.getInstance();

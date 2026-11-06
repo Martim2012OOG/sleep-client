@@ -1,0 +1,15 @@
+-proc:none
+-Xmaxerrs
+2000
+-d
+/tmp/out2
+dev/solclient/verity/Ears.java
+dev/solclient/verity/Net.java
+dev/solclient/verity/Ollama.java
+dev/solclient/verity/Piper.java
+dev/solclient/verity/Verity.java
+dev/solclient/verity/VerityAI.java
+dev/solclient/verity/VerityLang.java
+dev/solclient/verity/VerityMod.java
+dev/solclient/verity/VerityVoice.java
+dev/solclient/fightcam/VoiceTrigger.java

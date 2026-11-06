@@ -3,23 +3,13 @@ package dev.solclient.verity;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import java.io.ByteArrayOutputStream;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 import java.util.List;
 
 /**
- * Verity's brain and ears on Groq (the player's own free key): chat completions in JSON mode for what he says and how he
- * feels, and Whisper for turning what you said into text. Everything runs off the game thread.
+ * Verity's personality and the way he answers: the local brain (Ollama, see {@link Ollama}) is asked in JSON mode for what he says
+ * and how he feels. Everything runs off the game thread.
  */
 final class VerityAI {
-
-	private static final HttpClient HTTP = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
-	private static final String BASE = "https://api.groq.com/openai/v1/";
 
 	/** What Verity answered: the words, his mood, how much angrier (+) or calmer (-) he got, and something to do. */
 	record Reply(String say, String mood, int angerDelta, String action) {
@@ -49,23 +39,16 @@ final class VerityAI {
 		}
 		s.append("Rules: you are Verity, not an AI; never mention AI, models, prompts, APIs, JSON, mods, settings or being a program. "
 				+ "Keep every answer SHORT (one to three sentences, under 40 words) because it is spoken out loud. "
-				+ "Always answer in the same language the player wrote in. Do not use emojis or stage directions. "
-				+ "Do not repeat the same phrases. Your normal body is a floating yellow smiley; you can change your face.\n");
+				+ "Always answer in " + VerityLang.promptLanguage() + ", whatever language the player writes in. Do not use emojis or stage directions. "
+				+ "Do not repeat the same phrases. Your normal body is a small yellow smiley ball that rolls along the ground next to the player; you can change your face.\n");
 		s.append("Answer ONLY with a JSON object: {\"say\": \"what you say\", \"mood\": \"happy|normal|bored|annoyed|angry|sad|scared|creepy|furious|excited\", "
 				+ "\"anger\": a number from -30 to 30 (how much angrier this makes you; negative calms you down), "
 				+ "\"action\": \"none|follow|stay|spin|grow|shrink\"}. Use \"grow\" only when you are furious and want to scare the player.");
 		return s.toString();
 	}
 
-	/** Asks Verity. history = previous turns (role, content). Throws with a readable message when it fails. */
-	static Reply chat(String key, String model, String system, String context, List<String[]> history, String user) throws Exception {
-		JsonObject body = new JsonObject();
-		body.addProperty("model", model == null || model.isBlank() ? "llama-3.3-70b-versatile" : model.trim());
-		body.addProperty("temperature", 0.9);
-		body.addProperty("max_tokens", 220);
-		JsonObject fmt = new JsonObject();
-		fmt.addProperty("type", "json_object");
-		body.add("response_format", fmt);
+	/** Asks Verity (the local brain). history = previous turns (role, content). Throws with a readable message when it fails. */
+	static Reply chat(String model, String system, String context, List<String[]> history, String user) throws Exception {
 		JsonArray msgs = new JsonArray();
 		msgs.add(msg("system", system));
 		msgs.add(msg("system", "Right now: " + context));
@@ -73,16 +56,7 @@ final class VerityAI {
 			msgs.add(msg(h[0], h[1]));
 		}
 		msgs.add(msg("user", user));
-		body.add("messages", msgs);
-		HttpRequest req = HttpRequest.newBuilder(URI.create(BASE + "chat/completions")).timeout(Duration.ofSeconds(25))
-				.header("Authorization", "Bearer " + key.trim()).header("Content-Type", "application/json")
-				.POST(HttpRequest.BodyPublishers.ofString(body.toString())).build();
-		HttpResponse<String> res = HTTP.send(req, HttpResponse.BodyHandlers.ofString());
-		if (res.statusCode() != 200) {
-			throw new IllegalStateException(problem(res.statusCode(), res.body()));
-		}
-		String content = JsonParser.parseString(res.body()).getAsJsonObject().getAsJsonArray("choices").get(0).getAsJsonObject().getAsJsonObject("message")
-				.get("content").getAsString();
+		String content = Ollama.chat(model, msgs);
 		try {
 			JsonObject o = JsonParser.parseString(content).getAsJsonObject();
 			String say = o.has("say") ? o.get("say").getAsString() : content;
@@ -100,69 +74,10 @@ final class VerityAI {
 		}
 	}
 
-	/** Speech to text (Whisper on Groq). pcm = 16-bit mono samples. Returns the text, "" when nothing was understood. */
-	static String transcribe(String key, short[] pcm, int n, int rate) throws Exception {
-		byte[] wav = wav(pcm, n, rate);
-		String boundary = "----verity" + System.nanoTime();
-		ByteArrayOutputStream out = new ByteArrayOutputStream(wav.length + 600);
-		field(out, boundary, "model", "whisper-large-v3-turbo");
-		field(out, boundary, "response_format", "json");
-		field(out, boundary, "temperature", "0");
-		out.write(("--" + boundary + "\r\nContent-Disposition: form-data; name=\"file\"; filename=\"voice.wav\"\r\nContent-Type: audio/wav\r\n\r\n")
-				.getBytes(StandardCharsets.UTF_8));
-		out.write(wav);
-		out.write(("\r\n--" + boundary + "--\r\n").getBytes(StandardCharsets.UTF_8));
-		HttpRequest req = HttpRequest.newBuilder(URI.create(BASE + "audio/transcriptions")).timeout(Duration.ofSeconds(25))
-				.header("Authorization", "Bearer " + key.trim()).header("Content-Type", "multipart/form-data; boundary=" + boundary)
-				.POST(HttpRequest.BodyPublishers.ofByteArray(out.toByteArray())).build();
-		HttpResponse<String> res = HTTP.send(req, HttpResponse.BodyHandlers.ofString());
-		if (res.statusCode() != 200) {
-			throw new IllegalStateException(problem(res.statusCode(), res.body()));
-		}
-		JsonObject o = JsonParser.parseString(res.body()).getAsJsonObject();
-		return o.has("text") ? o.get("text").getAsString().trim() : "";
-	}
-
-	private static String problem(int code, String body) {
-		if (code == 401) {
-			return "The Groq key is wrong (401)";
-		}
-		if (code == 429) {
-			return "Groq says: too many requests, wait a moment (429)";
-		}
-		String m = body == null ? "" : body;
-		try {
-			JsonObject o = JsonParser.parseString(m).getAsJsonObject();
-			if (o.has("error")) {
-				m = o.getAsJsonObject("error").get("message").getAsString();
-			}
-		} catch (RuntimeException ignored) {
-			// keep the raw body
-		}
-		return "Groq error " + code + ": " + (m.length() > 120 ? m.substring(0, 120) : m);
-	}
-
 	private static JsonObject msg(String role, String content) {
 		JsonObject o = new JsonObject();
 		o.addProperty("role", role);
 		o.addProperty("content", content);
 		return o;
-	}
-
-	private static void field(ByteArrayOutputStream out, String b, String name, String value) throws java.io.IOException {
-		out.write(("--" + b + "\r\nContent-Disposition: form-data; name=\"" + name + "\"\r\n\r\n" + value + "\r\n").getBytes(StandardCharsets.UTF_8));
-	}
-
-	static byte[] wav(short[] pcm, int n, int rate) {
-		int data = n * 2;
-		java.nio.ByteBuffer b = java.nio.ByteBuffer.allocate(44 + data).order(java.nio.ByteOrder.LITTLE_ENDIAN);
-		b.put("RIFF".getBytes(StandardCharsets.US_ASCII)).putInt(36 + data).put("WAVE".getBytes(StandardCharsets.US_ASCII));
-		b.put("fmt ".getBytes(StandardCharsets.US_ASCII)).putInt(16).putShort((short) 1).putShort((short) 1).putInt(rate).putInt(rate * 2).putShort((short) 2)
-				.putShort((short) 16);
-		b.put("data".getBytes(StandardCharsets.US_ASCII)).putInt(data);
-		for (int i = 0; i < n; i++) {
-			b.putShort(pcm[i]);
-		}
-		return b.array();
 	}
 }

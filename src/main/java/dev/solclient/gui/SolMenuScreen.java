@@ -634,7 +634,7 @@ public class SolMenuScreen extends Screen {
 		Gfx.rrectBorder(c, cx, y, bw, ROW_H, 9, SUB, Theme.CARD_BORDER);
 		int on = 0, total = 0;
 		for (Mod m : SolClient.MODS) {
-			if (!m.locked) {
+			if (!m.locked && !m.hiddenFromList) {
 				total++;
 				if (m.enabled) {
 					on++;
@@ -844,7 +844,7 @@ public class SolMenuScreen extends Screen {
 		// inside an extension folder the category filter does not apply
 		final int nav = openFolder != null ? 0 : this.nav;
 		for (Mod m0 : SolClient.MODS) {
-			if (m0.inSettings) {
+			if (m0.inSettings || m0.hiddenFromList) {
 				continue;
 			}
 			// extension mods live in their folder (shown flat only when searching)
@@ -4218,7 +4218,7 @@ public class SolMenuScreen extends Screen {
 		}
 		int by = y + h - 30, bx = x + 8, bw = w - 16;
 		final Social.Item fi = it;
-		if (it.wearable()) {
+		if (it.wearable() && !("verity".equalsIgnoreCase(it.id) || "verity".equalsIgnoreCase(it.modelId))) { // Verity is not an accessory
 			cosmeticEditor(c, mx, my, w, x, bx, bw, by, it);
 		}
 		if (!it.owned) {
@@ -4973,7 +4973,7 @@ public class SolMenuScreen extends Screen {
 		}
 		int by = y + h - 30, bx = x + 8, bw = w - 16;
 		final Social.Item fi = it;
-		if (it.wearable()) {
+		if (it.wearable() && !("verity".equalsIgnoreCase(it.id) || "verity".equalsIgnoreCase(it.modelId))) { // Verity is not an accessory
 			cosmeticEditor(c, mx, my, w, x, bx, bw, by, it);
 		}
 		if (!it.owned) {
@@ -5010,13 +5010,13 @@ public class SolMenuScreen extends Screen {
 		}
 	}
 
-	/** Verity (special pet): an Edit button above Equip, to his settings (Groq key, Fish Audio voice, moods...). */
+	/** Verity (special pet): an Edit button above Equip, to his settings (install brain / voice / ears, language, moods...). */
 	private void verityEdit(DrawContext c, int mx, int my, Social.Item it, int bx, int by, int bw) {
 		if (!("verity".equalsIgnoreCase(it.id) || "verity".equalsIgnoreCase(it.modelId)) || dev.solclient.verity.VerityMod.instance == null) {
 			return;
 		}
-		boolean noKey = dev.solclient.verity.VerityMod.instance.apiKey.get().isBlank();
-		button(c, mx, my, bx, by - 26, bw, 22, noKey ? dev.solclient.Lang.tr("Edit Verity (add key!)", "Editar Verity (pôr chave!)")
+		boolean noKey = !dev.solclient.verity.Verity.brainReady();
+		button(c, mx, my, bx, by - 26, bw, 22, noKey ? dev.solclient.Lang.tr("Edit Verity (install him!)", "Editar Verity (instalar!)")
 				: dev.solclient.Lang.tr("Edit Verity", "Editar Verity"), "lvedit", Theme.CARD, Theme.CARD_HOVER, Theme.TEXT,
 				() -> {
 					showView(V_MODS, 0);

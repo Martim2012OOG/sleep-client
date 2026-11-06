@@ -9,10 +9,10 @@ import javax.sound.sampled.TargetDataLine;
 /**
  * Verity's mouth and ears.
  * <ul>
- * <li>Mouth: the computer's own voice (macOS "say", Windows speech, Linux espeak), higher and bouncier when he is happy,
- * low and slow when he is angry. No download, no account.</li>
+ * <li>Mouth: his Piper voice in the language set in his settings (installed with one button, runs on this computer); without it
+ * the computer's own voice (macOS "say", Windows speech, Linux espeak), higher when he is happy, low and slow when he is angry.</li>
  * <li>Ears: what you say in ANY voice chat (the microphone hook every voice mod goes through) is cut into sentences by
- * loudness and sent to Whisper; plus a talk key that records the microphone directly.</li>
+ * loudness and turned into text by the offline model; plus a talk key that records the microphone directly.</li>
  * </ul>
  */
 final class VerityVoice {
@@ -31,53 +31,33 @@ final class VerityVoice {
 
 	private static javax.sound.sampled.Clip clip;
 	private static long sayId;
-	private static final java.net.http.HttpClient HTTP = java.net.http.HttpClient.newBuilder().connectTimeout(java.time.Duration.ofSeconds(10)).build();
 
-	/** Says the text out loud (stops what he was saying): with Verity's Fish Audio voice when there is a key, else the computer's voice. */
+	/** Says the text out loud (stops what he was saying): with his Piper voice when it is installed, else the computer's own voice. */
 	static synchronized void say(String text, String mood) {
 		stop();
 		if (text == null || text.isBlank()) {
 			return;
 		}
-		VerityMod m = VerityMod.instance;
-		if (m != null && !m.fishKey.get().isBlank()) {
+		if (Piper.ready()) {
 			long id = ++sayId;
-			String key = m.fishKey.get().trim(), voice = m.fishVoice.get().trim(), model = m.fishModel.get().trim();
 			boolean dark = mood.equals("angry") || mood.equals("furious") || mood.equals("creepy");
+			boolean happy = mood.equals("happy") || mood.equals("excited");
+			float length = dark ? 1.3F : happy ? 0.92F : 1.0F; // slower and heavier when he is angry, quicker when he is happy
 			Thread t = new Thread(() -> {
 				try {
-					com.google.gson.JsonObject b = new com.google.gson.JsonObject();
-					b.addProperty("text", text);
-					if (!voice.isEmpty()) {
-						b.addProperty("reference_id", voice);
-					}
-					b.addProperty("format", "wav");
-					b.addProperty("sample_rate", 44100);
-					b.addProperty("latency", "balanced");
-					com.google.gson.JsonObject pr = new com.google.gson.JsonObject();
-					pr.addProperty("speed", dark ? 0.85 : 1.05);
-					b.add("prosody", pr);
-					var req = java.net.http.HttpRequest.newBuilder(java.net.URI.create("https://api.fish.audio/v1/tts")).timeout(java.time.Duration.ofSeconds(30))
-							.header("Authorization", "Bearer " + key).header("Content-Type", "application/json")
-							.header("model", model.isEmpty() ? "s2.1-pro-free" : model).POST(java.net.http.HttpRequest.BodyPublishers.ofString(b.toString())).build();
-					var res = HTTP.send(req, java.net.http.HttpResponse.BodyHandlers.ofByteArray());
-					if (res.statusCode() != 200) {
-						Verity.status = "Fish Audio error " + res.statusCode() + ": " + new String(res.body(), java.nio.charset.StandardCharsets.UTF_8).replaceAll("\\s+", " ");
-						system(text, mood); // still say it, with the computer's voice
-						return;
-					}
+					byte[] wav = Piper.speak(text, length);
 					synchronized (VerityVoice.class) {
 						if (id != sayId) {
 							return; // something newer was said meanwhile
 						}
-						var in = AudioSystem.getAudioInputStream(new java.io.BufferedInputStream(new java.io.ByteArrayInputStream(res.body())));
+						var in = AudioSystem.getAudioInputStream(new java.io.BufferedInputStream(new java.io.ByteArrayInputStream(wav)));
 						clip = AudioSystem.getClip();
 						clip.open(in);
 						clip.start();
 					}
 				} catch (Exception e) {
-					Verity.status = "Fish Audio: " + e.getMessage();
-					system(text, mood);
+					Verity.status = "Voice: " + e.getMessage();
+					system(text, mood); // still say it, with the computer's voice
 				}
 			}, "kubo-verity-voice");
 			t.setDaemon(true);

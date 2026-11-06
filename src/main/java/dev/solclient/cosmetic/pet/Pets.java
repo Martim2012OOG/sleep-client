@@ -97,7 +97,11 @@ public final class Pets {
 	private static void tick(MinecraftClient mc) {
 		ClientWorld world = mc.world;
 		if (world == null || mc.player == null || SolClient.settings == null || !SolClient.settings.cosmetics.on()) {
+			for (Integer k : new ArrayList<>(PETS.keySet())) {
+				dev.solclient.verity.Verity.forgetSpawn(k);
+			}
 			PETS.clear();
+			BOX.clear();
 			return;
 		}
 		try {
@@ -122,7 +126,13 @@ public final class Pets {
 				pet.tick(p, world, live);
 				seen.add(p.getId());
 			}
+			for (Integer k : new ArrayList<>(PETS.keySet())) {
+				if (!seen.contains(k)) {
+					dev.solclient.verity.Verity.forgetSpawn(k);
+				}
+			}
 			PETS.keySet().retainAll(seen);
+			BOX.keySet().retainAll(seen);
 			interact(mc, world);
 		} catch (Throwable t) {
 			if (lastError == null) {
@@ -149,9 +159,27 @@ public final class Pets {
 		if (hr != null && hr.getType() != HitResult.Type.MISS) {
 			block = hr.getPos().distanceTo(eye);
 		}
+		// your Verity is still shut in his box: click the box to let him out
+		for (Pet p : PETS.values()) {
+			if (p.mine && "verity".equals(p.model.id) && dev.solclient.verity.Verity.boxed(p.ownerId)) {
+				double[] b = BOX.get(p.ownerId);
+				if (b != null) {
+					Optional<Vec3d> bh = new Box(b[0] - 0.45, b[1], b[2] - 0.45, b[0] + 0.45, b[1] + 0.6, b[2] + 0.45).raycast(eye, end);
+					if (bh.isPresent() && bh.get().distanceTo(eye) < block + 0.2) {
+						dev.solclient.verity.Verity.openBox(p.ownerId);
+						world.playSoundClient(b[0], b[1] + 0.3, b[2], net.minecraft.sound.SoundEvents.BLOCK_BARREL_OPEN, net.minecraft.sound.SoundCategory.NEUTRAL, 0.9F, 1.3F, false);
+						mc.player.swingHand(net.minecraft.util.Hand.MAIN_HAND);
+						return;
+					}
+				}
+			}
+		}
 		Pet best = null;
 		double bestD = 1e9;
 		for (Pet p : PETS.values()) {
+			if (p.mine && "verity".equals(p.model.id) && dev.solclient.verity.Verity.boxed(p.ownerId)) {
+				continue; // he is inside the box, nothing to pet yet
+			}
 			double w = Math.max(0.3, p.model.lengthBlocks() * 0.5), h = Math.max(0.4, p.model.heightBlocks());
 			Box box = new Box(p.x - w, p.y, p.z - w, p.x + w, p.y + h, p.z + w);
 			Optional<Vec3d> hit = box.raycast(eye, end);
@@ -172,6 +200,9 @@ public final class Pets {
 			} else {
 				dev.solclient.verity.Verity.onHit();
 			}
+		}
+		if ("verity".equals(best.model.id)) {
+			return; // Verity is not a pet to pat: no squish, hearts, pat sounds or boop
 		}
 		if (useNow) {
 			boolean food = mc.player.getMainHandStack().contains(DataComponentTypes.FOOD);
@@ -234,11 +265,25 @@ public final class Pets {
 			if (verity) {
 				dev.solclient.verity.Verity.seen(p.ownerId);
 				vSize = dev.solclient.verity.Verity.size(p.ownerId, vOwner);
+				double[] box0 = BOX.computeIfAbsent(p.ownerId, k -> new double[] {p.x, p.groundY, p.z});
+				if (dev.solclient.verity.Verity.boxed(p.ownerId)) {
+					// the box stands shut on the ground until you click it; he is not drawn yet
+					try {
+						VerityBox.draw(matrices, queue, cam, box0[0], box0[1], box0[2], 300L, mc.world);
+						if (cam.squaredDistanceTo(box0[0], box0[1], box0[2]) < 12 * 12) {
+							bubble(matrices, queue, cam, box0[0], box0[1] + 0.9, box0[2], dev.solclient.Lang.tr("Click the box!", "Clica na caixa!"));
+						}
+					} catch (RuntimeException e) {
+						// a broken box must never hide the other pets
+					}
+					continue;
+				}
 				// he comes out of his box: the box opens, he rises out of it, then the box sinks away
 				long age = System.currentTimeMillis() - dev.solclient.verity.Verity.spawnedAt(p.ownerId);
 				double[] bx = BOX.computeIfAbsent(p.ownerId, k -> new double[] {p.x, p.groundY, p.z});
 				if (age < 6000L) {
-					VerityBox.draw(matrices, queue, cam, bx[0], bx[1], bx[2], age, mc.world);
+					// your own box is already standing there (no fall-in): the flaps just open
+					VerityBox.draw(matrices, queue, cam, bx[0], bx[1], bx[2], p.mine ? age + 300L : age, mc.world);
 					if (age < 1800L) {
 						float k = Math.max(0F, (age - 700L) / 1100F);
 						x = bx[0] + (x - bx[0]) * k;
@@ -330,8 +375,9 @@ public final class Pets {
 		if (up > 4 || up < -0.5) {
 			return;
 		}
-		float a = (float) Math.max(0, 0.55 * (1 - up / 4));
-		float r = Math.max(0.25F, m.lengthBlocks() * 0.45F) * (float) (1 - up / 8);
+		boolean ball = "verity".equals(m.id);
+		float a = (float) Math.max(0, (ball ? 0.3 : 0.55) * (1 - up / 4));
+		float r = Math.max(ball ? 0.1F : 0.25F, m.lengthBlocks() * (ball ? 0.5F : 0.45F)) * (float) (1 - up / 8);
 		int alpha = (int) (a * 255);
 		matrices.push();
 		matrices.translate(x - cam.x, gy + 0.015 - cam.y, z - cam.z);

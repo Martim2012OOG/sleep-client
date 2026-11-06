@@ -4,19 +4,19 @@ import dev.solclient.mods.Mod;
 import dev.solclient.option.Option;
 
 /**
- * Settings of the Verity pet (Locker > Verity > Edit): the Groq key that makes him think and talk, how you talk to him
- * (voice chat, a key, or the chat), his voice, and how far his moods may go (angry, giant, creepier with the days).
+ * Settings of the Verity pet (Locker > Verity > Edit): install his brain, voice and ears (all run on this computer), the language
+ * he uses, how you talk to him (voice chat, a key, or the chat) and how far his moods may go (angry, giant, creepier with the days).
  */
 public class VerityMod extends Mod {
 
 	public static VerityMod instance;
 
-	private final Option.Header hAi = header("Brain (Groq)");
-	public final Option.Text apiKey = text("Groq API Key", "", 200, "gsk_...");
+	private final Option.Header hAi = header("Brain (on this computer)");
 	@SuppressWarnings("unused")
-	private final Option.Action getKey = action("Free Groq key", "Open", () -> net.minecraft.util.Util.getOperatingSystem().open("https://console.groq.com/keys"),
-			() -> apiKey.get().isBlank() ? "No key yet: Verity can't think" : "Key saved");
-	public final Option.Text model = text("Model", "llama-3.3-70b-versatile", 80, "llama-3.3-70b-versatile");
+	private final Option.Action brain = action("Install Verity's Brain", "Install", Ollama::install, Ollama::status);
+	public final Option.Text model = text("Model", Ollama.DEFAULT_MODEL, 80, "qwen2.5:3b");
+	public final Option.Choice language = choice("Language", 0, VerityLang.labels());
+	public final Option.Text otherLanguage = text("Other Language", "", 40, "e.g. Polish (only when Language is Other)");
 	@SuppressWarnings("unused")
 	private final Option.Action status = action("Verity Status", "Test", Verity::test, () -> Verity.status);
 
@@ -31,12 +31,10 @@ public class VerityMod extends Mod {
 
 	private final Option.Header hVoice = header("Voice");
 	public final Option.Bool speak = bool("Verity Speaks Out Loud", true);
-	public final Option.Text fishKey = text("Fish Audio API Key", "", 200, "for Verity's real voice");
 	@SuppressWarnings("unused")
-	private final Option.Action getFish = action("Fish Audio key", "Open", () -> net.minecraft.util.Util.getOperatingSystem().open("https://fish.audio/app/api-keys/"),
-			() -> fishKey.get().isBlank() ? "No key: the computer's voice is used" : "Key saved: Verity's voice");
-	public final Option.Text fishVoice = text("Fish Audio Voice ID", "8d21b053e2804e2a890e1cf62f267b6f", 80, "voice model id");
-	public final Option.Text fishModel = text("Fish Audio Model", "s2.1-pro-free", 40, "s2.1-pro-free / s2.1-pro / s1");
+	private final Option.Action voiceInstall = action("Install Verity's Voice", "Install", Piper::install, Piper::status);
+	@SuppressWarnings("unused")
+	private final Option.Action earsInstall = action("Install Verity's Ears", "Install", Ears::install, Ears::status);
 	public final Option.Bool hearOthers = bool("Hear Other Players' Verity", true);
 	public final Option.Bool bubbles = bool("Speech Bubble Above Him", true);
 
@@ -52,8 +50,7 @@ public class VerityMod extends Mod {
 		super("Verity", "verity", "Your personal helper friend (special pet): talks with AI, hears you in voice chat, has moods... don't make him angry.",
 				Category.UTILITY);
 		instance = this;
-		apiKey.secret = true;
-		fishKey.secret = true;
+		hiddenFromList = true; // his settings are in the Locker (pet Verity > Edit Verity), not in the mods grid
 	}
 
 	@Override
