@@ -96,6 +96,48 @@ public class TikTokLiveMod extends HudMod {
 			() -> dev.solclient.parkour.ParkourLive.test(dev.solclient.parkour.ParkourLive.Act.values()[pkTestPick.idx()]),
 			() -> dev.solclient.parkour.ParkourLive.giftOf(dev.solclient.parkour.ParkourLive.Act.values()[pkTestPick.idx()]));
 
+	private final Option.Action pkSndUp1 = action("Sound: UP 1 LVL", "Choose file", () -> pickSlot("pk_up1"), () -> pkSound(0));
+	private final Option.Action pkSndDown1 = action("Sound: DOWN 1 LVL", "Choose file", () -> pickSlot("pk_down1"), () -> pkSound(1));
+	private final Option.Action pkSndUp10 = action("Sound: UP 10 LVL", "Choose file", () -> pickSlot("pk_up10"), () -> pkSound(2));
+	private final Option.Action pkSndDown10 = action("Sound: DOWN 10 LVL", "Choose file", () -> pickSlot("pk_down10"), () -> pkSound(3));
+	private final Option.Action pkSndReset = action("Sound: RESET", "Choose file", () -> pickSlot("pk_reset"), () -> pkSound(4));
+	private final Option.Action pkSndSave = action("Sound: SAVE", "Choose file", () -> pickSlot("pk_save"), () -> pkSound(5));
+	private final Option.Action pkSndPunch = action("Sound: PUNCH", "Choose file", () -> pickSlot("pk_punch"), () -> pkSound(6));
+	private final Option.Action pkSndJail = action("Sound: JAIL", "Choose file", () -> pickSlot("pk_jail"), () -> pkSound(7));
+	private final Option.Action pkSndClear = action("Remove parkour sounds", "Clear", this::clearParkourSounds, () -> "");
+
+	private volatile String[] pkSoundNames = new String[8];
+
+	private String pkSound(int i) {
+		String n = pkSoundNames[i];
+		return n == null || n.isEmpty() ? "none" : n;
+	}
+
+	private static Path pkSoundFile(dev.solclient.parkour.ParkourLive.Act a) {
+		return TikSound.find(root().resolve("parkour"), "pk_" + a.name().toLowerCase(Locale.ROOT));
+	}
+
+	/** Plays your sound for this Parkour Live action (used by the test buttons / pktest). */
+	public void playParkourSound(dev.solclient.parkour.ParkourLive.Act a) {
+		float vol = Math.max(0.3F, volume.f() / 100F);
+		dev.solclient.social.Social.IO.execute(() -> TikSound.play(pkSoundFile(a), vol));
+	}
+
+	private void clearParkourSounds() {
+		dev.solclient.social.Social.IO.execute(() -> {
+			for (var a : dev.solclient.parkour.ParkourLive.Act.values()) {
+				for (String ext : new String[] {".mp3", ".ogg", ".wav"}) {
+					try {
+						Files.deleteIfExists(root().resolve("parkour").resolve("pk_" + a.name().toLowerCase(Locale.ROOT) + ext));
+					} catch (Exception ignored) {
+						// in use
+					}
+				}
+			}
+			refreshSlots();
+		});
+	}
+
 	/** The gift names (comma separated) that do this in Parkour Live. */
 	public String pkGifts(dev.solclient.parkour.ParkourLive.Act a) {
 		return switch (a) {
@@ -701,6 +743,13 @@ public class TikTokLiveMod extends HudMod {
 		int bigLimit = bigFrom.i();
 		dev.solclient.social.Social.IO.execute(() -> {
 			Path f = TikSound.find(root().resolve("gifts"), sanitize(gift));
+			if (f == null) {
+				// a Parkour Live gift (Galaxy = RESET...): your sound for that action
+				var act = dev.solclient.parkour.ParkourLive.actFor(gift);
+				if (act != null) {
+					f = pkSoundFile(act);
+				}
+			}
 			if (f == null && coins >= bigLimit) {
 				f = TikSound.find(root(), "big");
 			}
@@ -772,6 +821,11 @@ public class TikTokLiveMod extends HudMod {
 				}
 			}
 			bgSongs = List.copyOf(bg);
+			String[] pk = new String[8];
+			for (var a : dev.solclient.parkour.ParkourLive.Act.values()) {
+				pk[a.ordinal()] = nameOf(pkSoundFile(a));
+			}
+			pkSoundNames = pk;
 			bgNames = new String[] {nameOf(TikSound.find(root().resolve("music"), "bg1")), nameOf(TikSound.find(root().resolve("music"), "bg2"))};
 			pickStatus = "";
 		});
@@ -826,12 +880,12 @@ public class TikTokLiveMod extends HudMod {
 				pickStatus = "Use .mp3, .ogg or .wav";
 				return;
 			}
-			boolean music = slot.startsWith("bg");
+			boolean music = slot.startsWith("bg") || slot.startsWith("pk_");
 			if (Files.size(src) > (music ? 40L : 20L) * 1024 * 1024) {
 				pickStatus = "File too big (max " + (music ? 40 : 20) + " MB)";
 				return;
 			}
-			Path dir = music ? root().resolve("music") : root();
+			Path dir = slot.startsWith("pk_") ? root().resolve("parkour") : music ? root().resolve("music") : root();
 			Files.createDirectories(dir);
 			for (String ext : new String[] {".mp3", ".ogg", ".wav"}) {
 				Files.deleteIfExists(dir.resolve(slot + ext));
@@ -840,7 +894,9 @@ public class TikTokLiveMod extends HudMod {
 			Files.copy(src, dir.resolve(slot + ext), StandardCopyOption.REPLACE_EXISTING);
 			pickStatus = "";
 			refreshSlots();
-			if (music) {
+			if (slot.startsWith("pk_")) {
+				TikSound.play(dir.resolve(slot + ext), Math.max(0.3F, volume.f() / 100F)); // so you hear it right away
+			} else if (music) {
 				TikMusic.restart(); // starts again with the new song
 			} else {
 				TikSound.play(dir.resolve(slot + ext), Math.max(0.3F, volume.f() / 100F)); // so you hear it right away

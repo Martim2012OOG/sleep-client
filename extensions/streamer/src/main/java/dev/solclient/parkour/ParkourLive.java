@@ -110,6 +110,12 @@ public final class ParkourLive {
 		}
 	}
 
+	/** Which action this gift does (null = none), from the gift names in the settings. */
+	public static Act actFor(String gift) {
+		TikTokLiveMod m = TikTokLiveMod.instance;
+		return m == null ? null : actOf(m, gift);
+	}
+
 	private static Act actOf(TikTokLiveMod m, String gift) {
 		String k = TikGifts.key(gift);
 		if (k.isEmpty()) {
@@ -432,6 +438,10 @@ public final class ParkourLive {
 			return;
 		}
 		apply(a, 1, "Test");
+		TikTokLiveMod m = TikTokLiveMod.instance;
+		if (m != null) {
+			m.playParkourSound(a); // your sound for this gift, like a real one
+		}
 	}
 
 	// ================================================================ drawing

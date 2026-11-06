@@ -3122,3 +3122,12 @@ Background song 2	Música de fundo 2
 Remove background songs	Remover músicas de fundo
 Parkour Level	Nível do Parkour
 LEVEL X / 100 and the JAIL timer in the Parkour Paradise 3 map (Parkour Live). Move it in the HUD editor.	LEVEL X / 100 e o tempo da JAULA no mapa Parkour Paradise 3 (Parkour Live). Muda a posição no editor de HUD.
+Sound: UP 1 LVL	Som: UP 1 LVL
+Sound: DOWN 1 LVL	Som: DOWN 1 LVL
+Sound: UP 10 LVL	Som: UP 10 LVL
+Sound: DOWN 10 LVL	Som: DOWN 10 LVL
+Sound: RESET	Som: RESET
+Sound: SAVE	Som: SAVE
+Sound: PUNCH	Som: PUNCH (soco)
+Sound: JAIL	Som: JAIL (jaula)
+Remove parkour sounds	Remover sons do parkour
