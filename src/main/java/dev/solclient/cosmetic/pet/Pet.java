@@ -225,6 +225,9 @@ public final class Pet {
 	}
 
 	private void setMode(Mode m) {
+		if (model.kind == PetModel.Kind.ROLL && m != Mode.FOLLOW) {
+			m = Mode.FOLLOW; // Verity never sits, naps, plays, runs laps or sniffs: he just rolls about
+		}
 		if (mode == Mode.PERCH && m != Mode.PERCH) {
 			perched = false;
 			vy = 0.25; // takes off from your shoulder
@@ -245,7 +248,34 @@ public final class Pet {
 		double fx = -Math.sin(oy), fz = Math.cos(oy); // where you look
 		double rx = -Math.cos(oy), rz = -Math.sin(oy); // your right
 		// default: it trots after you in a spot that keeps drifting (never the same place twice); when you stop it goes exploring
-		if (ownerStill < 25 && !flies()) {
+		if (model.kind == PetModel.Kind.ROLL) {
+			// Verity does his own thing: he rolls about near where he is and never lines up behind you when you turn or look at him;
+			// only when you get far away does he come after you
+			boolean reached = sq(wanderX - x, 0, wanderZ - z) < 0.12;
+			boolean far = dOwner > 8 || sq(wanderX - owner.getX(), 0, wanderZ - owner.getZ()) > 8 * 8;
+			boolean pick = false;
+			if (far) {
+				pick = true;
+			} else if (reached) {
+				if (pauseUntil == 0) {
+					pauseUntil = age + 25 + rnd.nextInt(70); // got there: rests a moment
+				} else if (age >= pauseUntil) {
+					pick = true;
+				}
+			} else if (age >= wanderUntil) {
+				pick = true; // could not get there
+			}
+			if (pick) {
+				double ang = rnd.nextDouble() * Math.PI * 2, r = 1.0 + rnd.nextDouble() * 2.6;
+				double cx = far ? owner.getX() : x, cz = far ? owner.getZ() : z;
+				wanderX = cx + Math.cos(ang) * r;
+				wanderZ = cz + Math.sin(ang) * r;
+				wanderUntil = age + 60 + rnd.nextInt(110);
+				pauseUntil = 0;
+			}
+			tx = wanderX;
+			tz = wanderZ;
+		} else if (ownerStill < 25 && !flies()) {
 			double a = Math.sin(age * 0.011 + seedA) * 1.5 + ((ownerId & 1) == 0 ? 0.6 : -0.6);
 			double dd = 1.7 + 1.0 * Math.sin(age * 0.017 + seedB) + 0.5 * Math.sin(age * 0.041 + seedA);
 			tx = owner.getX() - fx * dd * Math.cos(a) + rx * dd * Math.sin(a);

@@ -70,7 +70,7 @@ final class Ollama {
 	/** A model name Ollama knows: an old Groq name left in the config ("llama-3.3-70b-versatile", "openai/gpt-oss-20b") becomes the default. */
 	static String normalize(String s) {
 		String n = s == null ? "" : s.trim();
-		return n.isEmpty() || n.contains("versatile") || n.contains("gpt-oss") || n.contains("/") ? DEFAULT_MODEL : n;
+		return n.isEmpty() || n.contains("versatile") || n.contains("instant") || n.contains("gpt-oss") || n.contains("/") || n.startsWith("llama-") || n.startsWith("gemma2-") ? DEFAULT_MODEL : n;
 	}
 
 	/** The ollama program: the one we downloaded, or one the player already installed. */
