@@ -33,6 +33,8 @@ public class VerityMod extends Mod {
 	public final Option.Bool speak = bool("Verity Speaks Out Loud", true);
 	@SuppressWarnings("unused")
 	private final Option.Action voiceInstall = action("Install Verity's Voice", "Install", Piper::install, Piper::status);
+	public final Option.Bool originalVoice = bool("Use His Original Voice", true)
+			.tip("The same voice as the original Verity mod (Ryan, downloaded once with Install). It speaks any language, with an English accent. Off = a voice of your language.");
 	@SuppressWarnings("unused")
 	private final Option.Action earsInstall = action("Install Verity's Ears", "Install", Ears::install, Ears::status);
 	public final Option.Bool hearOthers = bool("Hear Other Players' Verity", true);

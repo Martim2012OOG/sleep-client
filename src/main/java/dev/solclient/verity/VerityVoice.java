@@ -42,7 +42,7 @@ final class VerityVoice {
 			long id = ++sayId;
 			boolean dark = mood.equals("angry") || mood.equals("furious") || mood.equals("creepy");
 			boolean happy = mood.equals("happy") || mood.equals("excited");
-			float length = dark ? 1.3F : happy ? 0.92F : 1.0F; // slower and heavier when he is angry, quicker when he is happy
+			float length = Piper.original() ? 1.0F : dark ? 1.3F : happy ? 0.92F : 1.0F; // slower and heavier when he is angry, quicker when he is happy
 			Thread t = new Thread(() -> {
 				try {
 					byte[] wav = Piper.speak(text, length);

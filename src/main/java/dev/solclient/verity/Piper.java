@@ -8,6 +8,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
@@ -30,7 +31,7 @@ final class Piper {
 		if (busy || !status.isEmpty()) {
 			return status;
 		}
-		if (VerityLang.current() == null) {
+		if (!original() && VerityLang.current() == null) {
 			return Lang.tr("No Piper voice for this language: the computer's own voice speaks it", "Sem voz Piper para esta língua: fala com a voz do próprio computador");
 		}
 		return ready() ? Lang.tr("Ready", "Pronto") : Lang.tr("Not installed: press Install (one download)", "Não instalado: carrega em Instalar (uma só descarga)");
@@ -40,17 +41,34 @@ final class Piper {
 		return Net.find(Net.root().resolve("piper"), "piper", "piper.exe");
 	}
 
+	private static final String ORIGINAL = "en_US-ryan-medium";
+	/** The voice of the original Verity mod (Piper, en_US ryan medium). */
+	private static final VerityLang.L RYAN = new VerityLang.L("English", "English", "en/en_US/ryan/medium", ORIGINAL, 1);
+
+	/** His original voice (the one of the Verity mod: Ryan, downloaded once); it speaks any language, with an English accent. */
+	static boolean original() {
+		VerityMod m = VerityMod.instance;
+		return m == null || m.originalVoice.on();
+	}
+
+	private static Path voicePath() {
+		if (original()) {
+			return Net.root().resolve("voices").resolve(ORIGINAL + ".onnx");
+		}
+		VerityLang.L l = VerityLang.current();
+		return l == null ? null : voice(l);
+	}
+
 	private static Path voice(VerityLang.L l) {
 		return Net.root().resolve("voices").resolve(l.piperFile() + ".onnx");
 	}
 
 	/** Piper and the voice of the chosen language are installed (false for "Other": the computer's own voice speaks). */
 	static boolean ready() {
-		VerityLang.L l = VerityLang.current();
-		if (l == null) {
+		Path v = voicePath();
+		if (v == null) {
 			return false;
 		}
-		Path v = voice(l);
 		return binary() != null && Files.isRegularFile(v) && Files.isRegularFile(v.resolveSibling(v.getFileName() + ".json"));
 	}
 
@@ -58,8 +76,9 @@ final class Piper {
 		if (busy) {
 			return;
 		}
+		boolean orig = original();
 		VerityLang.L lang = VerityLang.current();
-		if (lang == null) {
+		if (!orig && lang == null) {
 			status = Lang.tr("No Piper voice for this language: the computer's own voice speaks it", "Sem voz Piper para esta língua: fala com a voz do próprio computador");
 			return;
 		}
@@ -70,9 +89,9 @@ final class Piper {
 				if (binary() == null) {
 					downloadProgram();
 				}
-				Path v = voice(lang);
+				Path v = voicePath();
 				if (!Files.isRegularFile(v) || !Files.isRegularFile(v.resolveSibling(v.getFileName() + ".json"))) {
-					downloadVoice(lang);
+					downloadVoice(orig ? RYAN : lang);
 				}
 				status = "";
 			} catch (Exception e) {
@@ -155,8 +174,7 @@ final class Piper {
 	/** Speaks the text to a WAV (bytes). lengthScale: 1 normal, bigger = slower and deeper-feeling. Blocks: call it off the game thread. */
 	static byte[] speak(String text, float lengthScale) throws Exception {
 		Path bin = binary();
-		VerityLang.L lang = VerityLang.current();
-		Path v = lang == null ? null : voice(lang);
+		Path v = voicePath();
 		if (bin == null || v == null || !Files.isRegularFile(v)) {
 			throw new IOException("voice not installed");
 		}
