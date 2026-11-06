@@ -4248,10 +4248,8 @@ public class SolMenuScreen extends Screen {
 				Gfx.textFit(c, "Owned", x + w / 2, w - 6, by + 7, Theme.DIM);
 			}
 		} else if (it.equipped) {
-			verityEdit(c, mx, my, it, bx, by, bw);
 			button(c, mx, my, bx, by, bw, 22, "Unequip", "luneq", Theme.OFF_BG, Theme.OFF_BG_HOVER, Theme.TEXT, () -> Social.equip(fi, false));
 		} else {
-			verityEdit(c, mx, my, it, bx, by, bw);
 			button(c, mx, my, bx, by, bw, 22, "Equip", "leq", accent, Theme.accentHover(), 0xFFFFFFFF, () -> Social.equip(fi, true));
 		}
 	}
@@ -5002,26 +5000,10 @@ public class SolMenuScreen extends Screen {
 				Gfx.textFit(c, "Owned", x + w / 2, w - 6, by + 7, Theme.DIM);
 			}
 		} else if (it.equipped) {
-			verityEdit(c, mx, my, it, bx, by, bw);
 			button(c, mx, my, bx, by, bw, 22, "Unequip", "luneq", Theme.OFF_BG, Theme.OFF_BG_HOVER, Theme.TEXT, () -> Social.equip(fi, false));
 		} else {
-			verityEdit(c, mx, my, it, bx, by, bw);
 			button(c, mx, my, bx, by, bw, 22, "Equip", "leq", accent, Theme.accentHover(), 0xFFFFFFFF, () -> Social.equip(fi, true));
 		}
-	}
-
-	/** Verity (special pet): an Edit button above Equip, to his settings (install brain / voice / ears, language, moods...). */
-	private void verityEdit(DrawContext c, int mx, int my, Social.Item it, int bx, int by, int bw) {
-		if (!("verity".equalsIgnoreCase(it.id) || "verity".equalsIgnoreCase(it.modelId)) || dev.solclient.verity.VerityMod.instance == null) {
-			return;
-		}
-		boolean noKey = !dev.solclient.verity.Verity.brainReady();
-		button(c, mx, my, bx, by - 26, bw, 22, noKey ? dev.solclient.Lang.tr("Edit Verity (install him!)", "Editar Verity (instalar!)")
-				: dev.solclient.Lang.tr("Edit Verity", "Editar Verity"), "lvedit", Theme.CARD, Theme.CARD_HOVER, Theme.TEXT,
-				() -> {
-					showView(V_MODS, 0);
-					openSettings(dev.solclient.verity.VerityMod.instance);
-				});
 	}
 
 	private static int parseColour(String s, int def) {

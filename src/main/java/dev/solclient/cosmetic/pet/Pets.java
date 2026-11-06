@@ -97,11 +97,7 @@ public final class Pets {
 	private static void tick(MinecraftClient mc) {
 		ClientWorld world = mc.world;
 		if (world == null || mc.player == null || SolClient.settings == null || !SolClient.settings.cosmetics.on()) {
-			for (Integer k : new ArrayList<>(PETS.keySet())) {
-				dev.solclient.verity.Verity.forgetSpawn(k);
-			}
 			PETS.clear();
-			BOX.clear();
 			return;
 		}
 		try {
@@ -126,13 +122,7 @@ public final class Pets {
 				pet.tick(p, world, live);
 				seen.add(p.getId());
 			}
-			for (Integer k : new ArrayList<>(PETS.keySet())) {
-				if (!seen.contains(k)) {
-					dev.solclient.verity.Verity.forgetSpawn(k);
-				}
-			}
 			PETS.keySet().retainAll(seen);
-			BOX.keySet().retainAll(seen);
 			interact(mc, world);
 		} catch (Throwable t) {
 			if (lastError == null) {
@@ -159,27 +149,9 @@ public final class Pets {
 		if (hr != null && hr.getType() != HitResult.Type.MISS) {
 			block = hr.getPos().distanceTo(eye);
 		}
-		// your Verity is still shut in his box: click the box to let him out
-		for (Pet p : PETS.values()) {
-			if (p.mine && "verity".equals(p.model.id) && dev.solclient.verity.Verity.boxed(p.ownerId)) {
-				double[] b = BOX.get(p.ownerId);
-				if (b != null) {
-					Optional<Vec3d> bh = new Box(b[0] - 0.45, b[1], b[2] - 0.45, b[0] + 0.45, b[1] + 0.6, b[2] + 0.45).raycast(eye, end);
-					if (bh.isPresent() && bh.get().distanceTo(eye) < block + 0.2) {
-						dev.solclient.verity.Verity.openBox(p.ownerId);
-						world.playSoundClient(b[0], b[1] + 0.3, b[2], net.minecraft.sound.SoundEvents.BLOCK_BARREL_OPEN, net.minecraft.sound.SoundCategory.NEUTRAL, 0.9F, 1.3F, false);
-						mc.player.swingHand(net.minecraft.util.Hand.MAIN_HAND);
-						return;
-					}
-				}
-			}
-		}
 		Pet best = null;
 		double bestD = 1e9;
 		for (Pet p : PETS.values()) {
-			if (p.mine && "verity".equals(p.model.id) && dev.solclient.verity.Verity.boxed(p.ownerId)) {
-				continue; // he is inside the box, nothing to pet yet
-			}
 			double w = Math.max(0.3, p.model.lengthBlocks() * 0.5), h = Math.max(0.4, p.model.heightBlocks());
 			Box box = new Box(p.x - w, p.y, p.z - w, p.x + w, p.y + h, p.z + w);
 			Optional<Vec3d> hit = box.raycast(eye, end);
@@ -193,16 +165,6 @@ public final class Pets {
 		}
 		if (best == null) {
 			return;
-		}
-		if ("verity".equals(best.model.id) && best.mine) {
-			if (useNow) {
-				dev.solclient.verity.Verity.onPet();
-			} else {
-				dev.solclient.verity.Verity.onHit();
-			}
-		}
-		if ("verity".equals(best.model.id)) {
-			return; // Verity is not a pet to pat: no squish, hearts, pat sounds or boop
 		}
 		if (useNow) {
 			boolean food = mc.player.getMainHandStack().contains(DataComponentTypes.FOOD);
@@ -260,45 +222,6 @@ public final class Pets {
 			}
 			PetModel m = p.model;
 			boolean verity = "verity".equals(m.id);
-			UUID vOwner = verity ? CosmeticFeatureRenderer.uuidOf(p.ownerId) : null;
-			float vSize = 1F, vSy = 1F, vSxz = 1F;
-			if (verity) {
-				dev.solclient.verity.Verity.seen(p.ownerId);
-				vSize = dev.solclient.verity.Verity.size(p.ownerId, vOwner);
-				double[] box0 = BOX.computeIfAbsent(p.ownerId, k -> new double[] {p.x, p.groundY, p.z});
-				if (dev.solclient.verity.Verity.boxed(p.ownerId)) {
-					// the box stands shut on the ground until you click it; he is not drawn yet
-					try {
-						VerityBox.draw(matrices, queue, cam, box0[0], box0[1], box0[2], -1L, mc.world);
-						if (cam.squaredDistanceTo(box0[0], box0[1], box0[2]) < 12 * 12) {
-							bubble(matrices, queue, cam, box0[0], box0[1] + 0.9, box0[2], dev.solclient.Lang.tr("Click the box!", "Clica na caixa!"));
-						}
-					} catch (RuntimeException e) {
-						// a broken box must never hide the other pets
-					}
-					continue;
-				}
-				// he comes out of his box: the box opens, he drops out of it with a bounce, then the box shrinks away
-				long age = System.currentTimeMillis() - dev.solclient.verity.Verity.spawnedAt(p.ownerId);
-				double[] bx = BOX.computeIfAbsent(p.ownerId, k -> new double[] {p.x, p.groundY, p.z});
-				if (age < 2200L) {
-					VerityBox.draw(matrices, queue, cam, bx[0], bx[1], bx[2], age, mc.world);
-				}
-				if (age < 3200L) {
-					if (age < 600L) {
-						continue; // still inside the box
-					}
-					float k = Math.min(1F, (age - 600L) / 1200F);
-					x = bx[0] + (x - bx[0]) * k;
-					z = bx[2] + (z - bx[2]) * k;
-					float bt = (age - 600L) / 50F; // ticks
-					vSy = VeritySphere.bounceScaleY(bt);
-					vSxz = VeritySphere.bounceScaleXZ(bt);
-					y += VeritySphere.bounceYOffset(bt);
-				} else {
-					BOX.remove(p.ownerId);
-				}
-			}
 			int light = m.glow ? LightmapTextureManager.MAX_LIGHT_COORDINATE
 					: WorldRenderer.getLightmapCoordinates(mc.world, BlockPos.ofFloored(x, y + Math.min(0.5, m.heightBlocks() * 0.5), z));
 			if (poseBuf.length < m.bones.length * 9) {
@@ -309,20 +232,9 @@ public final class Pets {
 				shadow(matrices, queue, cam, x, p.groundY, y, z, m, light);
 			}
 			if (verity) {
-				// exactly like the original mod: a sphere with the face projected on it, turned to the camera, rolling
-				if (dev.solclient.verity.Verity.talking(p.ownerId, vOwner)) {
-					// he wobbles while he talks
-					float wob = 1F + (float) Math.sin((p.age + d) * 0.6F) * 0.12F;
-					vSy *= wob;
-					vSxz *= 1F + (1F - wob) * 0.5F;
-				}
+				// a simple ball pet: always the happy face, normal size, rolls along
 				float roll = p.prevWalkPhase + (p.walkPhase - p.prevWalkPhase) * d;
-				VeritySphere.draw(matrices, queue, cam, x, y, z, dev.solclient.verity.Verity.face(p.ownerId, vOwner), roll, p.renderYaw(d), vSize, vSy,
-						vSxz, light);
-				String say0 = dev.solclient.verity.Verity.bubble(p.ownerId, vOwner);
-				if (!say0.isEmpty()) {
-					bubble(matrices, queue, cam, x, y + 0.5 * vSize + 0.45, z, say0);
-				}
+				VeritySphere.draw(matrices, queue, cam, x, y, z, 13, roll, p.renderYaw(d), 1F, 1F, 1F, light);
 				continue;
 			}
 			matrices.push();
@@ -344,50 +256,18 @@ public final class Pets {
 				float sq = (float) Math.sin(Math.PI * pk);
 				matrices.scale(1F + 0.10F * sq, 1F - 0.22F * sq, 1F + 0.10F * sq);
 			}
-			if (verity) {
-				s *= vSize;
-			}
 			matrices.scale(s, s, s);
 			RenderLayer layer = RenderLayers.entityCutoutNoCull(verity
-					? dev.solclient.Gfx.id("textures/cosmetics/verity_f" + dev.solclient.verity.Verity.face(p.ownerId, vOwner) + ".png") : m.texture);
+					? dev.solclient.Gfx.id("textures/cosmetics/verity_f13.png") : m.texture);
 			drawBones(m, poseBuf, matrices, (bone) -> queue.submitCustom(matrices, layer, (entry, vc) -> emit(bone, entry, vc, light)));
 			matrices.pop();
-			if (verity) {
-				String say = dev.solclient.verity.Verity.bubble(p.ownerId, vOwner);
-				if (!say.isEmpty()) {
-					bubble(matrices, queue, cam, x, y + m.heightBlocks() * vSize + 0.45, z, say);
-				}
-			}
 		}
 	}
-
-	/** Where each Verity's box stands while he comes out of it. Key: owner entity id. */
-	private static final Map<Integer, double[]> BOX = new HashMap<>();
 
 	/** Position of a player's live pet (blocks), or null. Key: owner entity id. */
 	public static double[] petPos(int ownerId) {
 		Pet p = PETS.get(ownerId);
 		return p == null ? null : new double[] {p.x, p.y + p.model.heightBlocks() * 0.5, p.z};
-	}
-
-	/** A speech bubble that faces the camera, wrapped over a few lines. */
-	private static void bubble(MatrixStack matrices, OrderedRenderCommandQueue queue, Vec3d cam, double x, double y, double z, String text) {
-		MinecraftClient mc = MinecraftClient.getInstance();
-		var tr = mc.textRenderer;
-		List<net.minecraft.text.OrderedText> lines = tr.wrapLines(net.minecraft.text.Text.literal(text), 170);
-		if (lines.size() > 6) {
-			lines = lines.subList(0, 6);
-		}
-		matrices.push();
-		matrices.translate(x - cam.x, y - cam.y + lines.size() * 0.25F, z - cam.z);
-		matrices.multiply(mc.gameRenderer.getCamera().getRotation());
-		matrices.scale(0.025F, -0.025F, 0.025F);
-		for (int i = 0; i < lines.size(); i++) {
-			float w = tr.getWidth(lines.get(i));
-			queue.submitText(matrices, -w / 2F, i * 10F, lines.get(i), false, net.minecraft.client.font.TextRenderer.TextLayerType.NORMAL,
-					LightmapTextureManager.MAX_LIGHT_COORDINATE, 0xFFFFFFFF, 0xA0101018, 0);
-		}
-		matrices.pop();
 	}
 
 	/** Soft round shadow on the ground, fainter the higher the pet is. */

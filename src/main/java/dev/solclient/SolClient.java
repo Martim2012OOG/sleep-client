@@ -113,7 +113,6 @@ public class SolClient implements ClientModInitializer {
 		MODS.add(new DayCounterMod());
 		MODS.add(new dev.solclient.voice.VoiceChatMod());
 		MODS.add(new dev.solclient.mods.PersonasMod());
-		MODS.add(new dev.solclient.verity.VerityMod());
 		MODS.add(new dev.solclient.mods.TrustRadarMod());
 		MODS.add(new dev.solclient.mods.RealisticLiquidsMod());
 		MODS.add(new dev.solclient.mods.WavesMod());
@@ -247,11 +246,8 @@ public class SolClient implements ClientModInitializer {
 		dev.solclient.social.Presence.onEmote = dev.solclient.emote.EmoteManager::playRemote;
 
 		ClientTickEvents.END_CLIENT_TICK.register(SolClient::tick);
-		try {
-			dev.solclient.verity.Verity.init();
-		} catch (Throwable t) {
-			System.err.println("[Sleep] Verity unavailable: " + t);
-		}
+		removeOldVerityFiles();
+		dev.solclient.gui.WorldTransfer.register();
 		HudRenderCallback.EVENT.register((context, tickCounter) -> renderHud(context));
 		dev.solclient.social.ServerShare.register();
 		dev.solclient.video.WatchPartyHooks.register();
@@ -658,5 +654,34 @@ public class SolClient implements ClientModInitializer {
 		if (MinecraftClient.getInstance().currentScreen == null) {
 			dev.solclient.gui.Notify.draw(context); // with a screen open it is drawn over the screen (NotifyScreenMixin)
 		}
+	}
+
+	/**
+	 * Verity is now a plain pet. The old Verity downloaded his AI brain (Ollama + models), his voice (Piper) and kept a config:
+	 * delete all of that once, in the background, so it does not keep taking disk space.
+	 */
+	private static void removeOldVerityFiles() {
+		Thread t = new Thread(() -> {
+			try {
+				java.nio.file.Path dir = net.fabricmc.loader.api.FabricLoader.getInstance().getGameDir().resolve("kubo").resolve("verity");
+				if (java.nio.file.Files.isDirectory(dir, java.nio.file.LinkOption.NOFOLLOW_LINKS)) {
+					try (java.util.stream.Stream<java.nio.file.Path> walk = java.nio.file.Files.walk(dir)) {
+						walk.sorted(java.util.Comparator.reverseOrder()).forEach(f -> {
+							try {
+								java.nio.file.Files.deleteIfExists(f);
+							} catch (Exception ignored) {
+								// a file in use: it goes next time
+							}
+						});
+					}
+					System.out.println("[Sleep] removed the old Verity downloads");
+				}
+				java.nio.file.Files.deleteIfExists(net.fabricmc.loader.api.FabricLoader.getInstance().getConfigDir().resolve("kubo-verity.json"));
+			} catch (Throwable e) {
+				System.err.println("[Sleep] could not remove the old Verity files: " + e);
+			}
+		}, "Sleep-verity-cleanup");
+		t.setDaemon(true);
+		t.start();
 	}
 }

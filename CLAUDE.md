@@ -30,3 +30,8 @@ in the hotbar and an identical potion became invisible until a slot was clicked.
 - Optional / heavy mods live in `extensions/<name>`. Their jars are nested inside the Kubo jar (`include project(...)` in build.gradle); nothing is downloaded. An extension does nothing until the player installs it in Mods > Extensions (installed ids: config/kubo-extensions.txt); installed ones show up as a folder in All Mods.
 - The core must **never** reference an extension class. Only use the hooks in `dev.solclient.ext.KuboApi`; add a new hook there if needed.
 - Extension mixins use their own package `dev.kuboext.<name>.mixin` and their own mixin json.
+
+## Vanilla textures
+- Never put files in `src/main/resources/assets/minecraft/` that replace vanilla textures (water, blocks, items...). They apply to
+  everyone all the time, even with the mod that wanted them turned off. The old Realistic Liquids water textures did this and
+  replaced Minecraft's water with a cyan pattern; they were removed.
