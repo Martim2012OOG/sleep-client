@@ -33,13 +33,15 @@ public final class TikSound {
 	private static final Map<String, Boolean> LOADING = new ConcurrentHashMap<>();
 	private static final ConcurrentLinkedQueue<Play> READY = new ConcurrentLinkedQueue<>();
 	private static final List<int[]> VOICES = new ArrayList<>(); // {source, buffer}
+	/** Which file each voice plays (same order as VOICES): the same sound never plays twice at once. */
+	private static final List<String> VOICE_KEYS = new ArrayList<>();
 	/** Ticks to stay away from OpenAL after a (re)load of the sound engine. */
 	private static int quiet = 100;
 
 	private record Pcm(short[] data, int channels, int rate, long modified) {
 	}
 
-	private record Play(Pcm pcm, float volume) {
+	private record Play(Pcm pcm, float volume, String key) {
 	}
 
 	private TikSound() {
@@ -59,7 +61,7 @@ public final class TikSound {
 		}
 		Pcm cached = CACHE.get(key);
 		if (cached != null && cached.modified == mod) {
-			READY.add(new Play(cached, volume));
+			READY.add(new Play(cached, volume, key));
 			return;
 		}
 		if (LOADING.putIfAbsent(key, Boolean.TRUE) != null) {
@@ -69,7 +71,7 @@ public final class TikSound {
 			try {
 				Pcm p = decode(file, mod);
 				CACHE.put(key, p);
-				READY.add(new Play(p, volume));
+				READY.add(new Play(p, volume, key));
 			} catch (Throwable t) {
 				System.err.println("[Sleep TikTok] could not play " + file.getFileName() + ": " + t);
 			} finally {
@@ -84,6 +86,7 @@ public final class TikSound {
 		// While Minecraft (re)loads its sound engine, touching OpenAL breaks it: stay away (same rule as SeasonMusic)
 		if (mc.getOverlay() != null || mc.getSoundManager() == null) {
 			VOICES.clear();
+			VOICE_KEYS.clear();
 			READY.clear();
 			quiet = 100;
 			return;
@@ -99,6 +102,7 @@ public final class TikSound {
 					AL10.alDeleteSources(v[0]);
 					AL10.alDeleteBuffers(v[1]);
 					VOICES.remove(i);
+					VOICE_KEYS.remove(i);
 				}
 			}
 			Play p;
@@ -107,11 +111,15 @@ public final class TikSound {
 				if (VOICES.size() >= MAX_VOICES) {
 					continue; // too many at once: skip
 				}
+				if (VOICE_KEYS.contains(p.key)) {
+					continue; // this sound is still playing: let it play on, no second copy on top
+				}
 				start(p);
 				started++;
 			}
 		} catch (Throwable t) {
 			VOICES.clear();
+			VOICE_KEYS.clear();
 			READY.clear();
 			quiet = 100;
 		}
@@ -134,6 +142,7 @@ public final class TikSound {
 			// sound engine is gone already
 		}
 		VOICES.clear();
+		VOICE_KEYS.clear();
 	}
 
 	private static void start(Play p) {
@@ -149,6 +158,7 @@ public final class TikSound {
 		AL10.alSourcef(source, AL10.AL_GAIN, Math.max(0F, Math.min(1F, gain)));
 		AL10.alSourcePlay(source);
 		VOICES.add(new int[] {source, buffer});
+		VOICE_KEYS.add(p.key);
 	}
 
 	/** File called name.mp3 / name.ogg / name.wav (any case) in a folder, or null. */
