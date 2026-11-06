@@ -38,7 +38,7 @@ public class BetterF3Mod extends Mod {
 
 	public static boolean active() {
 		var mc = net.minecraft.client.MinecraftClient.getInstance();
-		return instance != null && instance.enabled && mc.getDebugHud().shouldShowDebugHud();
+		return instance != null && instance.enabled && dev.solclient.ext.KuboApi.f3Open();
 	}
 
 	private record Row(String k, String v, int col) {

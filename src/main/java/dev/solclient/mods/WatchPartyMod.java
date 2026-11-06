@@ -8,7 +8,7 @@ import net.minecraft.util.Formatting;
 
 /**
  * Watch Party: watch YouTube together on screens in the world. Needs the free "MCEF Modern" mod (a Chromium browser
- * for Minecraft). Commands: /kubo video &lt;link&gt;, pause, play, seek, size, move, remove.
+ * for Minecraft). Commands: /kubo video play &lt;link&gt;, pause, play, seek, size, move, remove.
  */
 public class WatchPartyMod extends Mod {
 
@@ -120,7 +120,7 @@ public class WatchPartyMod extends Mod {
 		String[] lines = {
 				"Press " + keyName() + ": aim at the 4 corner blocks on a wall (press " + keyName() + " on each)",
 				"Press " + keyName() + " again: panel to change video, pause, skip, redraw or remove",
-				"/kubo video <youtube link> | pause | play | seek 1:30 | remove | cancel",
+				"/kubo video play <youtube link> | pause | play | seek 1:30 | remove | cancel",
 				Mcef.installed() ? "Video engine: " + Mcef.status() : "Video engine missing"};
 		for (String l : lines) {
 			mc.inGameHud.getChatHud().addMessage(Text.literal(l).formatted(Formatting.GRAY));

@@ -15,7 +15,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
 /**
- * Emote wheel: just the ring with your 8 equipped emotes (equip / swap them in the Locker: Right Shift > Locker > Emotes).
+ * Emote wheel: the ring with your 8 equipped emotes, each shown in 3D (playing while the mouse is over it) (equip / swap them in the Locker: Right Shift > Locker > Emotes).
  * Opens / closes with the Emote Wheel key (B by default) or Esc. Keys 1-8 play a slot; an empty slot opens the Locker.
  */
 public class EmoteWheelScreen extends Screen {
@@ -136,14 +136,22 @@ public class EmoteWheelScreen extends Screen {
 				} else {
 					Gfx.circle(c, sx, sy, Math.max(2F, ro * 0.014F), 0x22FFFFFF);
 				}
-			} else if (info.icon()) {
-				int isz = Math.round(Math.min(ro - ri, rm * 0.78F) * (i == hov ? 0.86F : 0.76F));
-				if (!dev.solclient.cosmetic.SkinPreview.drawEmoteCard(c, info, i == hov, Math.round(sx - isz / 2F), Math.round(sy - isz / 2F), isz, isz)) {
-					Gfx.tex(c, info.iconId(), Math.round(sx - isz / 2F), Math.round(sy - isz / 2F), isz, isz, 256, 256, 0xFFFFFFFF);
-				}
 			} else {
+				// the emote in 3D (the same mannequin as the Locker), playing while the mouse is over it; its name under it
+				int isz = Math.round(Math.min(ro - ri, rm * 0.78F) * (i == hov ? 0.80F : 0.70F));
+				int fy = Math.round(sy - isz / 2F - ro * 0.04F);
+				boolean drawn = dev.solclient.cosmetic.SkinPreview.drawEmoteCard(c, info, i == hov, Math.round(sx - isz / 2F), fy, isz, isz);
+				if (!drawn && info.icon()) {
+					Gfx.tex(c, info.iconId(), Math.round(sx - isz / 2F), fy, isz, isz, 256, 256, 0xFFFFFFFF);
+					drawn = true;
+				}
 				String n = info.name();
-				Gfx.textC(c, n.length() > 9 ? n.substring(0, 9) : n, Math.round(sx), Math.round(sy) - 4, 0xFFFFFFFF);
+				n = n.length() > 11 ? n.substring(0, 10) + "." : n;
+				if (drawn) {
+					Gfx.textC(c, n, Math.round(sx), fy + isz - 2, i == hov ? 0xFFFFFFFF : 0xCCFFFFFF);
+				} else {
+					Gfx.textC(c, n, Math.round(sx), Math.round(sy) - 4, 0xFFFFFFFF);
+				}
 			}
 			// (no dot under the emote that is playing)
 		}

@@ -208,6 +208,7 @@ public final class KuboLink {
 		}
 		long now = System.currentTimeMillis();
 		String nick = Json.str(kx, "n");
+		ProfileBadges.rememberUuid(uuid, nick);
 		if (kx.has("bd") && nick != null) {
 			lastRecvAt = now;
 			lastRecvNick = nick;

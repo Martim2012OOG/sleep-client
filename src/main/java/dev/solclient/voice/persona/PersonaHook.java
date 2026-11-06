@@ -20,6 +20,8 @@ public final class PersonaHook {
 	public static final class Tune {
 		public volatile float pitchAdd, amount = 1F, gainDb, micBoostDb, gateDb = -90, bassDb, trebleDb;
 		public volatile float addEcho, addReverb, addRobot, addDrive, addChorus, addWhisper;
+		/** Extra voice "size" in semitones on top of the character (Voice Disguise). */
+		public volatile float formantAdd;
 		public volatile boolean autoLevel = true;
 	}
 

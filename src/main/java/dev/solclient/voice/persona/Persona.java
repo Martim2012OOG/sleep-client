@@ -21,6 +21,8 @@ public final class Persona {
 	public final float pitch, tone, peakHz, peakDb, ring, ringHz, drive, crush, echo, reverb, vibrato, vibratoHz, tremolo, bandLow, bandHigh, gainDb;
 	/** Crowd (several voices at once) and whisper (only breath), 0..1. */
 	public final float chorus, whisper;
+	/** Where the formants (voice "size") end up, in semitones from your own voice; NaN = they move with the pitch (old behaviour). */
+	public final float formant;
 	/** Picture: a bundled texture, or a file from the kubo/personas folder (registered when first drawn). */
 	public final Identifier image;
 	public final Path imageFile;
@@ -49,6 +51,7 @@ public final class Persona {
 		gainDb = v[15];
 		chorus = v.length > 16 ? v[16] : 0;
 		whisper = v.length > 17 ? v[17] : 0;
+		formant = v.length > 18 ? v[18] : Float.NaN;
 		this.image = image;
 		this.imageFile = file;
 		this.custom = custom;
@@ -56,10 +59,10 @@ public final class Persona {
 
 	public boolean neutral() {
 		return pitch == 0 && tone == 0 && peakDb == 0 && ring == 0 && drive == 0 && crush == 0 && echo == 0 && reverb == 0 && vibrato == 0
-				&& tremolo == 0 && bandLow == 0 && bandHigh == 0 && gainDb == 0 && chorus == 0 && whisper == 0;
+				&& tremolo == 0 && bandLow == 0 && bandHigh == 0 && gainDb == 0 && chorus == 0 && whisper == 0 && Float.isNaN(formant);
 	}
 
-	// order: pitch tone peakHz peakDb ring ringHz drive crush echo reverb vibrato vibratoHz tremolo bandLow bandHigh gainDb chorus whisper
+	// order: pitch tone peakHz peakDb ring ringHz drive crush echo reverb vibrato vibratoHz tremolo bandLow bandHigh gainDb chorus whisper [formant]
 	// (made by tools/personas/voices.py; pictures: Google Noto 3D emoji, open licence; famous / characters: see PERSONA-IMAGES.md)
 	private static Persona b(String id, String name, String tag, String cat, float... v) {
 		return new Persona(id, name, tag, cat, v, Gfx.id("textures/persona/" + id + ".png"), null, false);
@@ -71,72 +74,72 @@ public final class Persona {
 
 	private static final List<Persona> BUILTIN = List.of(
 			b("me", "Just Me", "Your own voice", "all", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-			b("ronaldo", "Cristiano Ronaldo", "SIUUUU! Confident and full of energy", "famous", 1.0F, 0.15F, 2200, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0),
-			b("messi", "Messi", "Calm and soft spoken", "famous", 1.5F, 0.1F, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-			b("speed", "IShowSpeed", "Screams everything, always at max", "famous", 2.0F, 0.2F, 2500, 6, 0, 0, 0.35F, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0),
-			b("mrbeast", "MrBeast", "YouTube video energy", "famous", 1.0F, 0.2F, 3000, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0),
-			b("patrickjane", "Patrick Jane", "Calm, charming and knows everything", "famous", -1.5F, -0.1F, 200, 2, 0, 0, 0, 0, 0, 0.1F, 0, 0, 0, 0, 0, 0, 0, 0),
-			b("patrick", "Patrick Star", "Slow, silly and happy", "characters", -2.0F, -0.15F, 700, 5, 0, 0, 0, 0, 0, 0, 0.1F, 3, 0, 0, 0, 0, 0, 0),
-			b("squidward", "Squidward", "Nasal and always annoyed", "characters", -1.0F, 0, 1400, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 300, 0, 0, 0, 0),
-			b("krabs", "Mr. Krabs", "Money! Raspy old sailor", "characters", -3.0F, -0.1F, 900, 4, 0, 0, 0.3F, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-			b("plankton", "Plankton", "Tiny evil genius", "characters", 5.0F, 0.2F, 0, 0, 0.1F, 80, 0.2F, 0, 0, 0.2F, 0, 0, 0, 0, 0, 0, 0, 0),
-			b("shrek", "Shrek", "Deep Scottish ogre", "characters", -5.0F, -0.3F, 250, 4, 0, 0, 0.15F, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-			b("donkey", "Donkey", "Never stops talking", "characters", 3.0F, 0.2F, 1500, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-			b("minion", "Minion", "Banana!", "characters", 10.0F, 0.35F, 1600, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.2F, 0),
-			b("pikachu", "Pikachu", "Pika pika!", "characters", 11.0F, 0.4F, 2500, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-			b("sonic", "Sonic", "Gotta go fast", "characters", 4.0F, 0.2F, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-			b("homer", "Homer", "D'oh!", "characters", -3.0F, -0.2F, 600, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-			b("peppa", "Peppa Pig", "Oink oink", "characters", 6.0F, 0.2F, 1000, 8, 0, 0, 0.1F, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-			b("vader", "Darth Vader", "Heavy breathing, helmet voice", "characters", -7.0F, -0.3F, 0, 0, 0.15F, 30, 0.2F, 0, 0, 0.25F, 0, 0, 0, 0, 5000, 0, 0, 0),
-			b("yoda", "Yoda", "Wise and small, backwards he talks", "characters", 3.0F, 0, 1200, 6, 0, 0, 0, 0, 0, 0, 0.15F, 4, 0, 0, 0, 0, 0, 0),
-			b("gollum", "Gollum", "My precious...", "characters", 2.0F, 0.2F, 1800, 8, 0, 0, 0.45F, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.2F),
-			b("groot", "Groot", "I am Groot", "characters", -9.0F, -0.4F, 150, 5, 0, 0, 0, 0, 0, 0.2F, 0, 0, 0, 0, 0, 0, 0, 0),
-			b("venom", "Venom", "We are Venom", "characters", -10.0F, -0.3F, 0, 0, 0.1F, 35, 0.5F, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.35F, 0),
-			b("joker", "Joker", "Why so serious?", "characters", 1.0F, 0.1F, 1500, 4, 0, 0, 0.15F, 0, 0, 0, 0.3F, 5, 0, 0, 0, 0, 0, 0),
-			b("batman", "Batman", "Raspy and mysterious", "characters", -6.0F, -0.35F, 0, 0, 0, 0, 0.35F, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.15F),
-			b("optimus", "Optimus Prime", "Autobots, roll out!", "characters", -5.0F, -0.1F, 0, 0, 0.3F, 70, 0, 0, 0, 0.2F, 0, 0, 0, 0, 0, 0, 0, 0),
-			b("stitch", "Stitch", "Ohana!", "characters", 4.0F, 0, 1200, 8, 0, 0, 0.4F, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-			b("goku", "Goku", "Kamehameha!", "characters", 3.0F, 0.2F, 2000, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-			b("herobrine", "Herobrine", "He is watching you...", "characters", -8.0F, -0.3F, 0, 0, 0, 0, 0, 0, 0.3F, 0.6F, 0, 0, 0, 0, 0, 0, 0, 0.3F),
-			b("creeper", "Creeper", "Tssss... BOOM", "characters", 0, 0.3F, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.3F, 0, 0, 0, 0, 0.8F),
-			b("villager", "Villager", "Hmm. Hrrm.", "characters", -1.0F, -0.1F, 500, 10, 0, 0, 0, 0, 0, 0, 0.2F, 6, 0, 0, 0, 0, 0, 0),
-			b("enderman", "Enderman", "Glitchy and creepy", "characters", -6.0F, 0, 0, 0, 0.25F, 120, 0, 0.3F, 0, 0.4F, 0.6F, 4, 0, 0, 0, 0, 0, 0),
+			b("ronaldo", "Cristiano Ronaldo", "SIUUUU! Confident and full of energy", "famous", 1.0F, 0.15F, 2200, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, -2.0F),
+			b("messi", "Messi", "Calm and soft spoken", "famous", 1.5F, 0.1F, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2.5F),
+			b("speed", "IShowSpeed", "Screams everything, always at max", "famous", 2.0F, 0.2F, 2500, 6, 0, 0, 0.35F, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 1.0F),
+			b("mrbeast", "MrBeast", "YouTube video energy", "famous", 1.0F, 0.2F, 3000, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 2.0F),
+			b("patrickjane", "Patrick Jane", "Calm, charming and knows everything", "famous", -1.5F, -0.1F, 200, 2, 0, 0, 0, 0, 0, 0.1F, 0, 0, 0, 0, 0, 0, 0, 0, -3.0F),
+			b("patrick", "Patrick Star", "Slow, silly and happy", "characters", -2.0F, -0.15F, 700, 5, 0, 0, 0, 0, 0, 0, 0.1F, 3, 0, 0, 0, 0, 0, 0, -4.0F),
+			b("squidward", "Squidward", "Nasal and always annoyed", "characters", -1.0F, 0, 1400, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 300, 0, 0, 0, 0, -3.0F),
+			b("krabs", "Mr. Krabs", "Money! Raspy old sailor", "characters", -3.0F, -0.1F, 900, 4, 0, 0, 0.3F, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1.0F),
+			b("plankton", "Plankton", "Tiny evil genius", "characters", 5.0F, 0.2F, 0, 0, 0.1F, 80, 0.2F, 0, 0, 0.2F, 0, 0, 0, 0, 0, 0, 0, 0, 6.0F),
+			b("shrek", "Shrek", "Deep Scottish ogre", "characters", -5.0F, -0.3F, 250, 4, 0, 0, 0.15F, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -6.0F),
+			b("donkey", "Donkey", "Never stops talking", "characters", 3.0F, 0.2F, 1500, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1.0F),
+			b("minion", "Minion", "Banana!", "characters", 10.0F, 0.35F, 1600, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.2F, 0, 9.0F),
+			b("pikachu", "Pikachu", "Pika pika!", "characters", 11.0F, 0.4F, 2500, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10.0F),
+			b("sonic", "Sonic", "Gotta go fast", "characters", 4.0F, 0.2F, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3.0F),
+			b("homer", "Homer", "D'oh!", "characters", -3.0F, -0.2F, 600, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -4.0F),
+			b("peppa", "Peppa Pig", "Oink oink", "characters", 6.0F, 0.2F, 1000, 8, 0, 0, 0.1F, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5.0F),
+			b("vader", "Darth Vader", "Heavy breathing, helmet voice", "characters", -7.0F, -0.3F, 0, 0, 0.15F, 30, 0.2F, 0, 0, 0.25F, 0, 0, 0, 0, 5000, 0, 0, 0, -5.0F),
+			b("yoda", "Yoda", "Wise and small, backwards he talks", "characters", 3.0F, 0, 1200, 6, 0, 0, 0, 0, 0, 0, 0.15F, 4, 0, 0, 0, 0, 0, 0, 4.0F),
+			b("gollum", "Gollum", "My precious...", "characters", 2.0F, 0.2F, 1800, 8, 0, 0, 0.45F, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.2F, 3.0F),
+			b("groot", "Groot", "I am Groot", "characters", -9.0F, -0.4F, 150, 5, 0, 0, 0, 0, 0, 0.2F, 0, 0, 0, 0, 0, 0, 0, 0, -8.0F),
+			b("venom", "Venom", "We are Venom", "characters", -10.0F, -0.3F, 0, 0, 0.1F, 35, 0.5F, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.35F, 0, -6.0F),
+			b("joker", "Joker", "Why so serious?", "characters", 1.0F, 0.1F, 1500, 4, 0, 0, 0.15F, 0, 0, 0, 0.3F, 5, 0, 0, 0, 0, 0, 0, -1.0F),
+			b("batman", "Batman", "Raspy and mysterious", "characters", -6.0F, -0.35F, 0, 0, 0, 0, 0.35F, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.15F, -4.0F),
+			b("optimus", "Optimus Prime", "Autobots, roll out!", "characters", -5.0F, -0.1F, 0, 0, 0.3F, 70, 0, 0, 0, 0.2F, 0, 0, 0, 0, 0, 0, 0, 0, -3.0F),
+			b("stitch", "Stitch", "Ohana!", "characters", 4.0F, 0, 1200, 8, 0, 0, 0.4F, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5.0F),
+			b("goku", "Goku", "Kamehameha!", "characters", 3.0F, 0.2F, 2000, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2.0F),
+			b("herobrine", "Herobrine", "He is watching you...", "characters", -8.0F, -0.3F, 0, 0, 0, 0, 0, 0, 0.3F, 0.6F, 0, 0, 0, 0, 0, 0, 0, 0.3F, -6.0F),
+			b("creeper", "Creeper", "Tssss... BOOM", "characters", 0, 0.3F, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.3F, 0, 0, 0, 0, 0.8F, 0.0F),
+			b("villager", "Villager", "Hmm. Hrrm.", "characters", -1.0F, -0.1F, 500, 10, 0, 0, 0, 0, 0, 0, 0.2F, 6, 0, 0, 0, 0, 0, 0, -2.0F),
+			b("enderman", "Enderman", "Glitchy and creepy", "characters", -6.0F, 0, 0, 0, 0.25F, 120, 0, 0.3F, 0, 0.4F, 0.6F, 4, 0, 0, 0, 0, 0, 0, -4.0F),
 			b("sponge", "Square Sponge", "Squeaky, nasal and always cheerful", "funny", 4.5F, 0.25F, 1300, 6, 0, 0, 0, 0, 0, 0, 0.12F, 5.5F, 0, 0, 0, 0, 0, 0),
-			b("chipmunk", "Chip", "Tiny and super fast sounding", "funny", 9, 0.3F, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-			b("helium", "Helium Balloon", "Just breathed a whole balloon", "funny", 12, 0.35F, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+			b("chipmunk", "Chip", "Tiny and super fast sounding", "funny", 9, 0.3F, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7.0F),
+			b("helium", "Helium Balloon", "Just breathed a whole balloon", "funny", 12, 0.35F, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6.0F),
 			b("clown", "Silly Clown", "Wobbly, bright and goofy", "funny", 5, 0.3F, 1500, 6, 0, 0, 0, 0, 0, 0, 0.5F, 8, 0, 0, 0, 0, 0, 0),
-			b("baby", "Baby", "Tiny voice, big ideas", "funny", 7, 0.3F, 0, 0, 0, 0, 0, 0, 0, 0, 0.15F, 7, 0, 0, 0, 0, 0, 0),
-			b("kid", "Little Kid", "Young and bright", "funny", 6, 0.2F, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-			b("grandpa", "Grandpa", "Old and shaky", "funny", -3.5F, -0.2F, 0, 0, 0, 0, 0, 0, 0, 0, 0.35F, 5, 0.1F, 0, 4200, 0, 0, 0),
+			b("baby", "Baby", "Tiny voice, big ideas", "funny", 7, 0.3F, 0, 0, 0, 0, 0, 0, 0, 0, 0.15F, 7, 0, 0, 0, 0, 0, 0, 6.0F),
+			b("kid", "Little Kid", "Young and bright", "funny", 6, 0.2F, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4.0F),
+			b("grandpa", "Grandpa", "Old and shaky", "funny", -3.5F, -0.2F, 0, 0, 0, 0, 0, 0, 0, 0, 0.35F, 5, 0.1F, 0, 4200, 0, 0, 0, -2.0F),
 			b("grandma", "Grandma", "Sweet and a little wobbly", "funny", 2, -0.1F, 0, 0, 0, 0, 0, 0, 0, 0, 0.3F, 5, 0, 0, 5000, 0, 0, 0),
 			b("dizzy", "Dizzy", "The room is spinning", "funny", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1.5F, 1.5F, 0.3F, 0, 0, 0, 0, 0),
 			b("fast", "Fast Forward", "Talking at double speed", "funny", 7, 0.2F, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 			b("slow", "Slow Motion", "Sooo... slooow...", "funny", -8, -0.3F, 0, 0, 0, 0, 0, 0, 0, 0, 0.1F, 1, 0, 0, 0, 0, 0, 0),
 			b("cowboy", "Cowboy", "Howdy partner, nasal drawl", "funny", -2, -0.1F, 900, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 			b("pirate", "Pirate", "Arr, gravelly sea dog", "funny", -3, -0.2F, 0, 0, 0, 0, 0.2F, 0, 0, 0, 0.15F, 3, 0, 0, 0, 0, 0, 0),
-			b("santa", "Santa", "Ho ho ho, warm and deep", "funny", -5, -0.3F, 0, 0, 0, 0, 0, 0, 0, 0.2F, 0, 0, 0, 0, 0, 1, 0, 0),
+			b("santa", "Santa", "Ho ho ho, warm and deep", "funny", -5, -0.3F, 0, 0, 0, 0, 0, 0, 0, 0.2F, 0, 0, 0, 0, 0, 1, 0, 0, -4.0F),
 			b("snowman", "Snowman", "Cold, shivering and cheerful", "funny", 3, 0.2F, 0, 0, 0, 0, 0, 0, 0, 0.3F, 0, 0, 0.35F, 0, 0, 0, 0, 0),
 			b("hacker", "Hooded Hacker", "Deep, gritty, a little scary", "scary", -7.5F, -0.35F, 180, 3, 0.22F, 55, 0.32F, 0.3F, 0, 0.08F, 0, 0, 0, 0, 5200, -4, 0, 0),
-			b("demon", "Imp Lord", "Growly with a hellish echo", "scary", -9, -0.3F, 0, 0, 0.12F, 40, 0.5F, 0, 0.3F, 0.2F, 0.1F, 4, 0, 0, 0, 0, 0, 0),
+			b("demon", "Imp Lord", "Growly with a hellish echo", "scary", -9, -0.3F, 0, 0, 0.12F, 40, 0.5F, 0, 0.3F, 0.2F, 0.1F, 4, 0, 0, 0, 0, 0, 0, -6.0F),
 			b("villain", "Masked Villain", "Heavy breathing behind a mask", "scary", -6, -0.3F, 0, 0, 0.1F, 30, 0.25F, 0, 0, 0.2F, 0, 0, 0, 0, 6000, 0, 0, 0),
-			b("monster", "Monster", "Huge growling beast", "scary", -11, -0.4F, 0, 0, 0, 0, 0.45F, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.3F, 0),
+			b("monster", "Monster", "Huge growling beast", "scary", -11, -0.4F, 0, 0, 0, 0, 0.45F, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.3F, 0, -7.0F),
 			b("goblin", "Goblin", "Sneaky, raspy little thing", "scary", 3, 0, 1200, 6, 0, 0, 0.4F, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 			b("zombie", "Zombie", "Brains... slow and broken", "scary", -4, -0.2F, 0, 0, 0, 0, 0.35F, 0.1F, 0, 0, 0.6F, 3, 0.2F, 0, 0, 0, 0, 0),
 			b("vampire", "Vampire", "Breathy night voice", "scary", -3, 0.1F, 0, 0, 0, 0, 0, 0, 0, 0.5F, 0, 0, 0, 0, 0, 0, 0, 0.25F),
 			b("ghost", "Boo", "Hollow and floaty", "scary", -2, 0.2F, 0, 0, 0, 0, 0, 0, 0.2F, 0.75F, 0.5F, 4.5F, 0.35F, 0, 0, 0, 0, 0),
 			b("skeleton", "Skeleton", "Rattly and thin", "scary", 1, 0.4F, 0, 0, 0, 0, 0, 0.3F, 0, 0, 0, 0, 0.5F, 600, 0, 0, 0, 0),
 			b("doll", "Creepy Doll", "Sweet... too sweet", "scary", 6, 0, 0, 0, 0.15F, 220, 0, 0, 0, 0.3F, 0, 0, 0, 0, 0, 0, 0, 0.3F),
-			b("giant", "Big Rock", "Huge, slow and booming", "scary", -10, -0.5F, 120, 4, 0, 0, 0, 0, 0, 0.18F, 0, 0, 0, 0, 0, -3, 0, 0),
+			b("giant", "Big Rock", "Huge, slow and booming", "scary", -10, -0.5F, 120, 4, 0, 0, 0, 0, 0, 0.18F, 0, 0, 0, 0, 0, -3, 0, 0, -7.0F),
 			b("wizard", "Old Wizard", "Wise, echoing tower voice", "fantasy", -4, -0.1F, 0, 0, 0, 0, 0, 0, 0.15F, 0.6F, 0.1F, 3, 0, 0, 0, 0, 0, 0),
 			b("elf", "Elf", "Light and magical", "fantasy", 4, 0.3F, 0, 0, 0, 0, 0, 0, 0, 0.25F, 0, 0, 0, 0, 0, 0, 0.15F, 0),
-			b("fairy", "Fairy", "Tiny sparkly voice", "fantasy", 10, 0.4F, 0, 0, 0, 0, 0, 0, 0, 0.55F, 0.2F, 7, 0, 0, 0, 0, 0.3F, 0),
+			b("fairy", "Fairy", "Tiny sparkly voice", "fantasy", 10, 0.4F, 0, 0, 0, 0, 0, 0, 0, 0.55F, 0.2F, 7, 0, 0, 0, 0, 0.3F, 0, 7.0F),
 			b("unicorn", "Unicorn", "Shiny and dreamy", "fantasy", 9, 0.4F, 0, 0, 0, 0, 0, 0, 0, 0.3F, 0, 0, 0, 0, 0, 0, 0.3F, 0),
 			b("dragon", "Dragon", "Fire in the throat", "fantasy", -9, 0, 0, 0, 0.08F, 25, 0.55F, 0, 0, 0.3F, 0, 0, 0, 0, 0, 0, 0.25F, 0),
 			b("knight", "Knight", "Talking inside a helmet", "fantasy", -2, 0, 0, 0, 0.1F, 60, 0, 0, 0, 0.2F, 0, 0, 0, 0, 3000, 0, 0, 0),
 			b("cat", "Kitty", "Meow-ish and purry", "animals", 6, 0, 2500, 6, 0, 0, 0, 0, 0, 0, 0.4F, 6, 0, 0, 0, 0, 0, 0),
-			b("mouse", "Mouse", "Squeak squeak", "animals", 11, 0.4F, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 400, 0, 0, 0, 0),
-			b("bear", "Bear", "Big, warm and grumbly", "animals", -7, -0.4F, 200, 4, 0, 0, 0.15F, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-			b("lion", "Lion", "Roaring king", "animals", -8, -0.3F, 0, 0, 0, 0, 0.5F, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.2F, 0),
+			b("mouse", "Mouse", "Squeak squeak", "animals", 11, 0.4F, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 400, 0, 0, 0, 0, 8.0F),
+			b("bear", "Bear", "Big, warm and grumbly", "animals", -7, -0.4F, 200, 4, 0, 0, 0.15F, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -5.0F),
+			b("lion", "Lion", "Roaring king", "animals", -8, -0.3F, 0, 0, 0, 0, 0.5F, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.2F, 0, -5.0F),
 			b("frog", "Frog", "Croaky and bubbly", "animals", -2, 0, 600, 9, 0, 0, 0.3F, 0, 0, 0, 0, 0, 0.3F, 0, 0, 0, 0, 0),
 			b("duck", "Duck", "Quacky and nasal", "animals", 4, 0, 1600, 10, 0, 0, 0.2F, 0, 0, 0, 0, 0, 0, 500, 0, 0, 0, 0),
 			b("pig", "Piggy", "Snorty and round", "animals", 3, 0, 1000, 8, 0, 0, 0.25F, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
@@ -154,7 +157,7 @@ public final class Persona {
 			b("radio", "Old Radio", "Crackly AM station", "places", 0, 0, 0, 0, 0, 0, 0.3F, 0.25F, 0, 0, 0, 0, 0, 500, 2800, 4, 0, 0),
 			b("megaphone", "Megaphone", "LOUD announcements", "places", 0, 0, 1800, 6, 0, 0, 0.6F, 0, 0, 0, 0, 0, 0, 600, 3600, 2, 0, 0),
 			b("tvhost", "TV Host", "Polished studio voice", "places", 0, 0, 2500, 4, 0, 0, 0.1F, 0, 0, 0, 0, 0, 0, 120, 7000, 2, 0, 0),
-			b("trailer", "Movie Trailer", "In a world... deep and epic", "places", -5, -0.3F, 120, 5, 0, 0, 0, 0, 0, 0.25F, 0, 0, 0, 0, 0, 2, 0, 0),
+			b("trailer", "Movie Trailer", "In a world... deep and epic", "places", -5, -0.3F, 120, 5, 0, 0, 0, 0, 0, 0.25F, 0, 0, 0, 0, 0, 2, 0, 0, -4.0F),
 			b("stadium", "Stadium", "Announcer in a huge arena", "places", 0, 0, 0, 0, 0, 0, 0.1F, 0, 0.45F, 0.7F, 0, 0, 0, 200, 0, 3, 0, 0),
 			b("cathedral", "Cathedral", "Giant stone hall", "places", 0, 0, 0, 0, 0, 0, 0, 0, 0.2F, 1, 0, 0, 0, 0, 0, 0, 0, 0),
 			b("cave", "Cave Echo", "Talk from the inside of a cave", "places", 0, 0, 0, 0, 0, 0, 0, 0, 0.35F, 0.9F, 0, 0, 0, 0, 0, 0, 0, 0),
@@ -203,7 +206,7 @@ public final class Persona {
 						JsonObject o = JsonParser.parseReader(r).getAsJsonObject();
 						float[] v = {n(o, "pitch"), n(o, "tone"), n(o, "peakHz"), n(o, "peakDb"), n(o, "ring"), n(o, "ringHz"), n(o, "drive"), n(o, "crush"),
 								n(o, "echo"), n(o, "reverb"), n(o, "vibrato"), n(o, "vibratoHz"), n(o, "tremolo"), n(o, "bandLow"), n(o, "bandHigh"), n(o, "gainDb"),
-								n(o, "chorus"), n(o, "whisper")};
+								n(o, "chorus"), n(o, "whisper"), o.has("formant") ? n(o, "formant") : Float.NaN};
 						String name = o.has("name") ? o.get("name").getAsString() : base;
 						String tag = o.has("tagline") ? o.get("tagline").getAsString() : "Your own character";
 						Path img = dir.resolve(base + ".png");

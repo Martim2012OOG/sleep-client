@@ -35,7 +35,7 @@ public final class PauseClassic {
 			Consumer<ButtonWidget> addButton, Consumer<Drawable> addDrawable) {
 		MinecraftClient mc = MinecraftClient.getInstance();
 		var st = SolClient.settings;
-		if (st == null || !st.customPause.on() || st.pauseStyle.idx() != 1 || mc.world == null) {
+		if (st == null || !st.customPause.on() || !st.classicPause() || mc.world == null) {
 			return;
 		}
 

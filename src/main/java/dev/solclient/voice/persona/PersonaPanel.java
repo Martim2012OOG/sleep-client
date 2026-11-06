@@ -92,6 +92,156 @@ public final class PersonaPanel {
 		return null;
 	}
 
+	/** Real pictures: the photo of each voice's Wikipedia article, downloaded once and kept in kubo/personas/cache. */
+	private static final Map<String, String> WIKI = Map.ofEntries(Map.entry("ronaldo", "Cristiano_Ronaldo"), Map.entry("messi", "Lionel_Messi"),
+			Map.entry("speed", "IShowSpeed"), Map.entry("mrbeast", "MrBeast"), Map.entry("patrickjane", "Patrick_Jane"), Map.entry("patrick", "Patrick_Star"),
+			Map.entry("krabs", "Mr._Krabs"), Map.entry("plankton", "Plankton_and_Karen"),
+			Map.entry("shrek", "Shrek_(character)"), Map.entry("donkey", "Donkey_(Shrek)"), Map.entry("minion", "Minions_(Despicable_Me)"),
+			Map.entry("pikachu", "Pikachu"), Map.entry("sonic", "Sonic_the_Hedgehog_(character)"), Map.entry("homer", "Homer_Simpson"),
+			Map.entry("peppa", "Peppa_Pig"), Map.entry("vader", "Darth_Vader"), Map.entry("yoda", "Yoda"), Map.entry("gollum", "Gollum"),
+			Map.entry("groot", "Groot"), Map.entry("venom", "Venom_(character)"), Map.entry("joker", "Joker_(character)"), Map.entry("batman", "Batman"),
+			Map.entry("optimus", "Optimus_Prime"), Map.entry("stitch", "Stitch_(Lilo_&_Stitch)"), Map.entry("goku", "Goku"),
+			Map.entry("herobrine", "Herobrine"), Map.entry("creeper", "Creeper_(Minecraft)"),  
+			Map.entry("enderman", "Enderman"), Map.entry("chipmunk", "Chipmunk"), Map.entry("helium", "Balloon"), Map.entry("clown", "Clown"),
+			Map.entry("baby", "Infant"), Map.entry("kid", "Child"), Map.entry("grandpa", "Grandparent"), Map.entry("grandma", "Grandmother"),
+			Map.entry("dizzy", "Dizziness"), Map.entry("fast", "Cheetah"), Map.entry("slow", "Sloth"), Map.entry("cowboy", "Cowboy"),
+			Map.entry("pirate", "Piracy"), Map.entry("santa", "Santa_Claus"), Map.entry("snowman", "Snowman"), Map.entry("hacker", "Anonymous_(hacker_group)"),
+			Map.entry("demon", "Demon"), Map.entry("villain", "Villain"), Map.entry("monster", "Monster"), Map.entry("goblin", "Goblin"),
+			Map.entry("zombie", "Zombie"), Map.entry("vampire", "Vampire"), Map.entry("ghost", "Ghost"), Map.entry("skeleton", "Human_skeleton"),
+			Map.entry("doll", "Doll"), Map.entry("giant", "Giant"), Map.entry("wizard", "Wizard_(fantasy)"), Map.entry("elf", "Elf"),
+			Map.entry("fairy", "Fairy"), Map.entry("unicorn", "Unicorn"), Map.entry("dragon", "Dragon"), Map.entry("knight", "Knight"),
+			Map.entry("cat", "Cat"), Map.entry("mouse", "House_mouse"), Map.entry("bear", "Brown_bear"), Map.entry("lion", "Lion"),
+			Map.entry("frog", "Frog"), Map.entry("duck", "Duck"), Map.entry("pig", "Pig"), Map.entry("bee", "Western_honey_bee"), Map.entry("bat", "Bat"),
+			Map.entry("fish", "Clownfish"), Map.entry("robot", "Robot"), Map.entry("cyborg", "Cyborg"), Map.entry("alien", "Grey_alien"),
+			Map.entry("ufo", "Unidentified_flying_object"), Map.entry("astronaut", "Astronaut"), Map.entry("glitch", "Glitch"),
+			Map.entry("8bit", "Pixel_art"), Map.entry("phone", "Rotary_dial"), Map.entry("radio", "Radio_receiver"), Map.entry("megaphone", "Megaphone"),
+			Map.entry("tvhost", "Television_presenter"), Map.entry("trailer", "Trailer_(promotion)"), Map.entry("stadium", "Stadium"),
+			Map.entry("cathedral", "Cathedral"), Map.entry("cave", "Cave"), Map.entry("bathroom", "Shower"), Map.entry("whisper", "Whispering"),
+			Map.entry("crowd", "Crowd"), Map.entry("bass", "Subwoofer"));
+
+	private static final java.net.http.HttpClient HTTP = java.net.http.HttpClient.newBuilder().followRedirects(java.net.http.HttpClient.Redirect.NORMAL)
+			.connectTimeout(java.time.Duration.ofSeconds(6)).build();
+
+	private static Path cacheDir() {
+		return picturesDir().getParent().resolve("cache");
+	}
+
+	private static final String UA = "SleepClient/1.0 (Minecraft mod; voice changer pictures)";
+	private static Map<String, String> thumbs;
+	/** Wikipedia said "too many requests": no more downloads until the game restarts (the bundled pictures are used). */
+	private static volatile boolean slowDown;
+	private static final Object DOWNLOAD = new Object();
+
+	private static String http(String url) throws Exception {
+		var res = HTTP.send(java.net.http.HttpRequest.newBuilder(java.net.URI.create(url)).header("User-Agent", UA).timeout(java.time.Duration.ofSeconds(10))
+				.build(), java.net.http.HttpResponse.BodyHandlers.ofString());
+		if (res.statusCode() == 429) {
+			slowDown = true;
+		}
+		return res.statusCode() == 200 ? res.body() : null;
+	}
+
+	/** voice id -> picture URL, for all voices at once (2 requests; kept on disk for a week). */
+	private static synchronized Map<String, String> thumbs() {
+		if (thumbs != null) {
+			return thumbs;
+		}
+		Map<String, String> out = new java.util.HashMap<>();
+		Path f = cacheDir().resolve("pictures.json");
+		try {
+			if (Files.isRegularFile(f) && System.currentTimeMillis() - Files.getLastModifiedTime(f).toMillis() < 7L * 86_400_000L) {
+				var o = com.google.gson.JsonParser.parseString(Files.readString(f)).getAsJsonObject();
+				for (String k : o.keySet()) {
+					out.put(k, o.get(k).getAsString());
+				}
+				return thumbs = out;
+			}
+			List<String> ids = new ArrayList<>(WIKI.keySet());
+			Map<String, String> byTitle = new java.util.HashMap<>();
+			for (int i = 0; i < ids.size(); i += 45) {
+				StringBuilder titles = new StringBuilder();
+				for (String id : ids.subList(i, Math.min(ids.size(), i + 45))) {
+					titles.append(titles.length() == 0 ? "" : "|").append(WIKI.get(id).replace('_', ' '));
+				}
+				String body = http("https://en.wikipedia.org/w/api.php?action=query&format=json&redirects=1&prop=pageimages&piprop=thumbnail&pithumbsize=400&titles="
+						+ java.net.URLEncoder.encode(titles.toString(), java.nio.charset.StandardCharsets.UTF_8));
+				if (body == null) {
+					return out; // offline / busy: try again next time the game starts (not cached)
+				}
+				var q = com.google.gson.JsonParser.parseString(body).getAsJsonObject().getAsJsonObject("query");
+				Map<String, String> moved = new java.util.HashMap<>();
+				for (String arr : new String[] {"normalized", "redirects"}) {
+					if (q.has(arr)) {
+						for (var e : q.getAsJsonArray(arr)) {
+							moved.put(e.getAsJsonObject().get("from").getAsString(), e.getAsJsonObject().get("to").getAsString());
+						}
+					}
+				}
+				for (var e : q.getAsJsonObject("pages").entrySet()) {
+					var pg = e.getValue().getAsJsonObject();
+					if (pg.has("thumbnail")) {
+						byTitle.put(pg.get("title").getAsString(), pg.getAsJsonObject("thumbnail").get("source").getAsString());
+					}
+				}
+				for (String id : ids.subList(i, Math.min(ids.size(), i + 45))) {
+					String t = WIKI.get(id).replace('_', ' ');
+					for (int hop = 0; hop < 3 && moved.containsKey(t); hop++) {
+						t = moved.get(t);
+					}
+					if (byTitle.containsKey(t)) {
+						out.put(id, byTitle.get(t));
+					}
+				}
+			}
+			Files.createDirectories(cacheDir());
+			com.google.gson.JsonObject o = new com.google.gson.JsonObject();
+			out.forEach(o::addProperty);
+			Files.writeString(f, o.toString());
+		} catch (Throwable e) {
+			System.err.println("[Sleep] voice pictures: " + e);
+		}
+		return thumbs = out;
+	}
+
+	/** The voice's real picture (its Wikipedia article's photo), downloaded once into kubo/personas/cache; null offline / when there is none. */
+	private static BufferedImage wiki(Persona p) {
+		if (!WIKI.containsKey(p.id)) {
+			return null;
+		}
+		Path f = cacheDir().resolve(p.id + ".img");
+		try {
+			if (Files.isRegularFile(f)) {
+				return readFile(f);
+			}
+			String url = thumbs().get(p.id);
+			if (url == null || slowDown) {
+				return null;
+			}
+			synchronized (DOWNLOAD) { // one download at a time, a little apart: Wikipedia limits how fast you may ask
+				if (slowDown) {
+					return null;
+				}
+				var img = HTTP.send(java.net.http.HttpRequest.newBuilder(java.net.URI.create(url)).header("User-Agent", UA)
+						.timeout(java.time.Duration.ofSeconds(10)).build(), java.net.http.HttpResponse.BodyHandlers.ofByteArray());
+				Thread.sleep(120);
+				if (img.statusCode() == 429) {
+					slowDown = true;
+				}
+				if (img.statusCode() != 200) {
+					return null;
+				}
+				BufferedImage b = decode(img.body());
+				if (b != null) {
+					Files.createDirectories(cacheDir());
+					Files.write(f, img.body());
+				}
+				return b;
+			}
+		} catch (Throwable e) {
+			return null; // offline: the bundled picture is used
+		}
+	}
+
 	private static String key(Persona p) {
 		Path f = override(p.id);
 		if (f == null) {
@@ -112,7 +262,13 @@ public final class PersonaPanel {
 			Path file = override(p.id);
 			pool.submit(() -> {
 				try {
-					BufferedImage img = file != null ? readFile(file) : p.imageFile != null ? readFile(p.imageFile) : p.custom ? null : readResource(p.image);
+					BufferedImage img = file != null ? readFile(file) : p.imageFile != null ? readFile(p.imageFile) : null;
+					if (img == null && !p.custom) {
+						img = wiki(p);
+					}
+					if (img == null && !p.custom) {
+						img = readResource(p.image);
+					}
 					if (img == null) {
 						pic.state = 4;
 						return;
@@ -174,7 +330,9 @@ public final class PersonaPanel {
 	/** Centre square, scaled smoothly to PIC x PIC, cut into a rounded square with soft (anti-aliased) corners. */
 	private static int[] round(BufferedImage src) {
 		int s = Math.min(src.getWidth(), src.getHeight());
-		BufferedImage sq = src.getSubimage((src.getWidth() - s) / 2, (src.getHeight() - s) / 2, s, s);
+		// tall photos (people): keep the upper part, where the face is
+		int oy = src.getHeight() > src.getWidth() ? Math.round((src.getHeight() - s) * 0.15F) : (src.getHeight() - s) / 2;
+		BufferedImage sq = src.getSubimage((src.getWidth() - s) / 2, oy, s, s);
 		// halve while it is much bigger: smoother than one big bicubic step
 		while (s / 2 >= PIC * 2) {
 			s /= 2;
@@ -531,13 +689,10 @@ public final class PersonaPanel {
 		// ---------------------------------------------------------- grid of round photos
 		List<Persona> list = shown(m);
 		int cols = Math.max(3, w / CELL), cwid = w / cols;
-		int vh = MinecraftClient.getInstance().getWindow().getScaledHeight();
+		// (no off-screen skipping: the menu has its own coordinates and scissor, the window height means nothing here)
 		for (int i = 0; i < list.size(); i++) {
 			Persona p = list.get(i);
 			int gx = x + (i % cols) * cwid, gy = y + (i / cols) * ROW_H;
-			if (gy + ROW_H < 0 || gy > vh) {
-				continue; // off screen: no drawing, no picture loading
-			}
 			boolean sel = p.id.equals(m.character.get()), hov = in(mx, my, gx, gy, cwid, ROW_H);
 			int pcxx = gx + cwid / 2, pcyy = gy + 31;
 			int size = hov ? 58 : 54;

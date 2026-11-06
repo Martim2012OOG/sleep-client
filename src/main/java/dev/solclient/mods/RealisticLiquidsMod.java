@@ -31,6 +31,9 @@ public class RealisticLiquidsMod extends Mod {
 	public static RealisticLiquidsMod instance;
 
 	private final Option.Choice level = tabs("Realism", 1, "Low", "Realistic", "Very Realistic", "Real Life");
+	private final Option.Bool ownRenderer = bool("Sleep Water Renderer", true)
+			.tip("Sleep's own liquid renderer (no Iris, no shader pack): glossy water that reflects the sky, moving waves, sun glints, foam, spray from waterfalls and splashes, molten lava.");
+	private final Option.Bool spray = bool("Spray, Splashes And Foam", true);
 	private final Option.Bool tint = bool("Clear Water Colour", true);
 	private final Option.Bool glints = bool("Sun Glints On Water", true);
 	private final Option.Bool foam = bool("Foam On Currents", true);
@@ -57,11 +60,20 @@ public class RealisticLiquidsMod extends Mod {
 	}, () -> hookHits > 0 ? "Colour hook active (" + hookHits + " lookups)" : "Colour hook not seen yet (fallback in use)");
 	@SuppressWarnings("unused")
 	private final Option.Action shader = action("3D Realistic Water (shader)", "Install", dev.solclient.pack.ShaderInstaller::install, dev.solclient.pack.ShaderInstaller::status);
+	@SuppressWarnings("unused")
+	private final Option.Action rendererStatus = action("Water Renderer Status", "Refresh", () -> {
+	}, () -> dev.solclient.fx.water.KuboWater.status);
+	/** Effect radius (blocks) of Sleep's own renderer per level, and how many particles. */
+	private static final int[] OWN_RADIUS = {24, 36, 48, 64};
+	private static final float[] OWN_AMOUNT = {0.35F, 0.6F, 0.85F, 1F};
 	private int applied = -1;
 
 	public RealisticLiquidsMod() {
 		super("Realistic Liquids", "realistic_liquids", "Clearer water, sun glints, foam on rivers, lava embers and underwater life. Four levels from light to heavy.", Category.VISUAL);
 		instance = this;
+		shader.showIf(() -> false); // replaced by Sleep's own renderer (no Iris)
+		spray.showIf(ownRenderer::on);
+		rendererStatus.showIf(ownRenderer::on);
 	}
 
 	@Override
@@ -76,6 +88,11 @@ public class RealisticLiquidsMod extends Mod {
 			return;
 		}
 		hooked = true;
+		try {
+			dev.solclient.fx.water.KuboWater.init();
+		} catch (Throwable t) {
+			System.err.println("[Sleep] own liquid renderer unavailable: " + t);
+		}
 		try {
 			SimpleFluidRenderHandler h = new SimpleFluidRenderHandler(SimpleFluidRenderHandler.WATER_STILL, SimpleFluidRenderHandler.WATER_FLOWING,
 					SimpleFluidRenderHandler.WATER_OVERLAY) {
@@ -106,6 +123,7 @@ public class RealisticLiquidsMod extends Mod {
 
 	@Override
 	protected void onDisable() {
+		dev.solclient.fx.water.KuboWater.SETTINGS.on = false;
 		applied = -1;
 		if (mc.worldRenderer != null && mc.world != null) {
 			mc.worldRenderer.reload(); // the water goes back to the biome colour
@@ -140,16 +158,24 @@ public class RealisticLiquidsMod extends Mod {
 			applied = key;
 		}
 		float q = quality();
+		int lv = level.idx();
+		var ks = dev.solclient.fx.water.KuboWater.SETTINGS;
+		boolean own = ownRenderer.on();
+		ks.on = own;
+		ks.radius = OWN_RADIUS[lv];
+		ks.spray = spray.on();
+		ks.lavaFx = lava.on();
+		ks.amount = OWN_AMOUNT[lv] * q;
+		dev.solclient.fx.water.KuboWater.tick(mc);
 		if (q <= 0F) {
 			return;
 		}
-		int lv = level.idx();
 		ThreadLocalRandom rnd = ThreadLocalRandom.current();
 		double px = mc.player.getX(), py = mc.player.getY(), pz = mc.player.getZ();
 		int radius = RADIUS[lv];
 		boolean sunny = w.isDay() && w.getRainGradient(1F) < 0.3F;
 
-		if (glints.on() && sunny) {
+		if (glints.on() && sunny && !own) {
 			for (int i = tries(GLINT[lv] * q); i > 0; i--) {
 				double a = rnd.nextDouble() * Math.PI * 2, r = radius * Math.sqrt(rnd.nextDouble());
 				double x = px + Math.cos(a) * r, z = pz + Math.sin(a) * r;
@@ -179,7 +205,7 @@ public class RealisticLiquidsMod extends Mod {
 						0.9 + rnd.nextDouble() * 0.9 + lv * 0.25, 0, wind);
 			}
 		}
-		if (foam.on()) {
+		if (foam.on() && !own) {
 			for (int i = tries(FOAM[lv] * q); i > 0; i--) {
 				BlockPos bp = BlockPos.ofFloored(px + (rnd.nextDouble() * 2 - 1) * radius, py + rnd.nextInt(-6, 7), pz + (rnd.nextDouble() * 2 - 1) * radius);
 				FluidState fs = w.getFluidState(bp);
@@ -194,7 +220,7 @@ public class RealisticLiquidsMod extends Mod {
 						v.x * 0.06, 0, v.z * 0.06);
 			}
 		}
-		if (lava.on()) {
+		if (lava.on() && !own) {
 			int lr = Math.min(radius, 22);
 			for (int i = tries(LAVA[lv] * q); i > 0; i--) {
 				BlockPos bp = BlockPos.ofFloored(px + (rnd.nextDouble() * 2 - 1) * lr, py + rnd.nextInt(-8, 9), pz + (rnd.nextDouble() * 2 - 1) * lr);
@@ -213,7 +239,7 @@ public class RealisticLiquidsMod extends Mod {
 				}
 			}
 		}
-		if (physics.on()) {
+		if (physics.on() && !own) {
 			physics(w, rnd, px, py, pz, lv, radius, q);
 		}
 		if (motes.on() && mc.player.isSubmergedInWater()) {

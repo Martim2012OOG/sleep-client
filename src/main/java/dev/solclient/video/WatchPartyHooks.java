@@ -33,7 +33,10 @@ public final class WatchPartyHooks {
 							.then(ClientCommandManager.literal("play").executes(c -> {
 								VideoScreens.pause(false);
 								return 1;
-							}))
+							}).then(ClientCommandManager.argument("link", StringArgumentType.greedyString()).executes(c -> {
+								VideoScreens.play(StringArgumentType.getString(c, "link"));
+								return 1;
+							})))
 							.then(ClientCommandManager.literal("remove").executes(c -> {
 								VideoScreens.remove();
 								return 1;
@@ -59,10 +62,7 @@ public final class WatchPartyHooks {
 								VideoScreens.size(IntegerArgumentType.getInteger(c, "width"));
 								return 1;
 							})))
-							.then(ClientCommandManager.argument("link", StringArgumentType.greedyString()).executes(c -> {
-								VideoScreens.play(StringArgumentType.getString(c, "link"));
-								return 1;
-							})))));
+							)));
 		} catch (Throwable t) {
 			System.err.println("[Sleep] Watch Party commands unavailable: " + t);
 		}

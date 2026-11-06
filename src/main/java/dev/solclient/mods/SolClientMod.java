@@ -21,6 +21,8 @@ public class SolClientMod extends Mod {
 	public final Option.Bool customPause;
 	/** 0 = Sleep's own simple pause screen, 1 = Minecraft's pause screen (Essential / Mod Menu buttons stay) with Sleep's buttons + your player. */
 	public final Option.Choice pauseStyle;
+	/** With Essential installed: its pause menu (and its player preview) instead of Sleep's. */
+	public final Option.Bool pauseEssential;
 	public final Option.Bool pausePlayer;
 	/** 0 = Sleep's "Mods" tab, 1 = the original Mod Menu screen. */
 	public final Option.Choice modsScreen;
@@ -198,11 +200,15 @@ public class SolClientMod extends Mod {
 		customTitle.tip("Replaces Minecraft's title screen with Sleep's.");
 		customPause = bool("Sleep Pause Menu", true);
 		customPause.tip("Replaces the pause menu (Esc) with Sleep's.");
-		pauseStyle = choice("Pause Menu Style", 1, "Sleep (simple)", "Classic + Sleep");
-		pauseStyle.showIf(() -> customPause.on());
-		pauseStyle.tip("Classic keeps Minecraft's own pause menu and adds Sleep's buttons.");
+		// (new name: everyone starts on the simple one; the old option defaulted to Classic)
+		pauseStyle = choice("Pause Menu Look", 0, "Sleep (simple)", "Classic + Sleep");
+		pauseStyle.tip("Simple = Sleep's small pause menu. Classic = Minecraft's own pause menu with Sleep's buttons and your player.");
+		pauseEssential = bool("Essential's Pause Menu When Installed", true);
+		pauseEssential.showIf(() -> customPause.on() && dev.solclient.gui.ModMenuLink.essentialPresent());
+		pauseEssential.tip("With Essential installed, its own pause menu and player preview are used; Sleep only adds its small row of buttons.");
+		pauseStyle.showIf(() -> customPause.on() && !(dev.solclient.gui.ModMenuLink.essentialPresent() && pauseEssential.on()));
 		pausePlayer = bool("Your Player In The Pause Menu", true);
-		pausePlayer.showIf(() -> customPause.on() && pauseStyle.idx() == 1);
+		pausePlayer.showIf(() -> customPause.on() && pauseStyle.idx() == 1 && !dev.solclient.gui.ModMenuLink.essentialPresent());
 		modsScreen = choice("Mods Screen", 0, "Sleep", "Mod Menu (original)");
 		modsScreen.showIf(dev.solclient.gui.ModMenuLink::present);
 		seasonal = choice("Seasonal Decorations", 0, "Automatic", "Off", "Halloween", "Christmas");
@@ -409,5 +415,10 @@ public class SolClientMod extends Mod {
 		} catch (RuntimeException e) {
 			System.err.println("[Sleep] could not change the Minecraft language: " + e);
 		}
+	}
+
+	/** Minecraft's own pause screen is used (Classic, or Essential's menu): Sleep only adds to it. */
+	public boolean classicPause() {
+		return pauseStyle.idx() == 1 || (pauseEssential.on() && dev.solclient.gui.ModMenuLink.essentialPresent());
 	}
 }

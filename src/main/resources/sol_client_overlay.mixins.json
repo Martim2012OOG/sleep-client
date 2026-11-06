@@ -35,7 +35,6 @@
     "HurtCamRenderMixin",
     "TpsMixin",
     "AspectRatioMixin",
-    "NoRenderMixin",
     "CrystalBounceMixin",
     "WeatherMixin",
     "InactivityFpsMixin",

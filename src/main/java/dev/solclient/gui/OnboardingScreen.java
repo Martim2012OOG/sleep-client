@@ -22,7 +22,7 @@ public class OnboardingScreen extends UiScreen {
 	private int step;
 	private int lang = Lang.idx(), perf = 1, hud = 1, theme, glass;
 	/** ESC menu: 0 Sleep (simple), 1 Classic + Sleep, 2 Minecraft's own. Mods screen: 0 Sleep, 1 Mod Menu. */
-	private int pause = 1, modsScr;
+	private int pause = 0, modsScr;
 	private boolean intro, seasonal, music, animatedCapes, badge;
 	private static final int STEPS = 6;
 	private static final int[] GLASS = {0, 20, 40, 60};

@@ -28,7 +28,7 @@ public final class Menus {
 			return XmasCardScreen.maybeShow(home);
 		}
 		if (s.getClass() == GameMenuScreen.class && SolClient.settings.customPause.on()) {
-			if (SolClient.settings.pauseStyle.idx() == 1) {
+			if (SolClient.settings.classicPause()) {
 				return s; // "Classic + Sleep": the real Minecraft screen (so Essential / Mod Menu add their buttons); PauseClassicMixin adds Sleep's
 			}
 			if (PlegumoPauseScreen.allowVanilla) {

@@ -591,9 +591,75 @@ public final class ProfileBadges {
 	}
 
 	/** {@code name} followed (to the right) by the badge and, when turned on, the country flag. */
+	/** Account uuid (no dashes) -> nick of the Sleep players we heard from (fills in for servers whose tab rows are not real players). */
+	private static final Map<String, String> NICK_BY_UUID = new java.util.concurrent.ConcurrentHashMap<>();
+
+	/** Called for every profile message: remember whose account this is. */
+	public static void rememberUuid(String uuid, String nick) {
+		if (uuid != null && nick != null) {
+			NICK_BY_UUID.put(uuid.replace("-", "").toLowerCase(Locale.ROOT), nick);
+		}
+	}
+
+	private static boolean knownRemote(String nick) {
+		if (nick == null) {
+			return false;
+		}
+		String k = nick.toLowerCase(Locale.ROOT);
+		return REMOTE_AT.containsKey(k) || REMOTE_LOOK_AT.containsKey(k) || REMOTE_FLAG_AT.containsKey(k);
+	}
+
+	/**
+	 * Which Sleep player a name belongs to. Many servers (tab plugins, BungeeCord / Velocity lobbies) fill the tab list with
+	 * fake rows: the profile name is something like "!a01" and the real nick is only in the text shown. Then the badge, name
+	 * style and flag were never found and only YOU saw your crown. Tries the profile nick, then the account uuid, then a nick
+	 * written in the shown text.
+	 */
+	private static String resolveNick(UUID id, String nick, Text name) {
+		if (knownRemote(nick)) {
+			return nick;
+		}
+		if (id != null) {
+			String byId = NICK_BY_UUID.get(id.toString().replace("-", "").toLowerCase(Locale.ROOT));
+			if (byId != null) {
+				return byId;
+			}
+		}
+		String shown = name.getString();
+		for (String n : NICK_BY_UUID.values()) {
+			if (n.length() >= 3 && containsWord(shown, n)) {
+				return n;
+			}
+		}
+		return nick;
+	}
+
+	/** The nick appears in the text as a whole word (not inside another nick). */
+	private static boolean containsWord(String text, String nick) {
+		String t = text.toLowerCase(Locale.ROOT), n = nick.toLowerCase(Locale.ROOT);
+		int i = t.indexOf(n);
+		while (i >= 0) {
+			boolean left = i == 0 || !isNickChar(t.charAt(i - 1)), right = i + n.length() >= t.length() || !isNickChar(t.charAt(i + n.length()));
+			if (left && right) {
+				return true;
+			}
+			i = t.indexOf(n, i + 1);
+		}
+		return false;
+	}
+
+	private static boolean isNickChar(char c) {
+		return Character.isLetterOrDigit(c) || c == '_';
+	}
+
 	public static Text decorate(UUID id, String nick, Text name) {
 		if (name == null) {
 			return name;
+		}
+		if (!isMe(id, nick)) {
+			nick = resolveNick(id, nick, name);
+		} else if (nick == null || !nick.equalsIgnoreCase(MinecraftClient.getInstance().getSession().getUsername())) {
+			nick = MinecraftClient.getInstance().getSession().getUsername();
 		}
 		Text out = decorateBadge(id, nick, name);
 		String cc = flagOf(isMe(id, nick), nick);

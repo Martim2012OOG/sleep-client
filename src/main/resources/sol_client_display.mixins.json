@@ -4,8 +4,7 @@
   "package": "dev.solclient.mixin.display",
   "compatibilityLevel": "JAVA_21",
   "client": [
-    "TextDisplayDataMixin",
-    "TextDisplayTextDataMixin"
+    "TextDisplayDataMixin"
   ],
   "injectors": { "defaultRequire": 0 }
 }

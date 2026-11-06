@@ -36,8 +36,9 @@ public class PerformanceMod extends Mod {
 	public final Option.Num maxPlayers = num("Max Players Drawn", 32, 8, 128, 4, "");
 	public final Option.Num playerDistance = num("Players Draw Distance", 64, 24, 160, 8, " blocks");
 	/** Mac: full Retina resolution (sharp, about 4x slower to draw). Read from a file at start, before the window exists. */
-	public final Option.Bool sharpRetina = bool("Mac: Sharp Retina Resolution (slower)", true)
-			.tip("Off = Minecraft draws at the normal screen resolution: about 4x fewer pixels, much more FPS on a Mac. Restart the game after changing it.");
+	// (new name and file: the old "fast" choice drew everything, text included, at half resolution = pixelated text; everyone starts sharp again)
+	public final Option.Bool sharpRetina = bool("Mac: Sharp Text and Menus (Retina)", true)
+			.tip("On = sharp text and menus. Off = the whole game, text included, is drawn at half resolution: more FPS on a Mac, but blurry / pixelated text. Restart the game after changing it.");
 	public final Option.Bool crowdMode = bool("Crowd Mode (lobbies full of NPCs)", true)
 			.tip("When many NPCs, holograms or animals are around you, only the nearest are drawn. Real players and monsters are never hidden.");
 	public final Option.Num crowdAbove = num("Crowd Mode Starts With", 25, 10, 120, 5, " NPCs");
@@ -119,7 +120,7 @@ public class PerformanceMod extends Mod {
 	}
 
 	private static java.nio.file.Path retinaFile() {
-		return net.fabricmc.loader.api.FabricLoader.getInstance().getConfigDir().resolve("kubo-retina.txt");
+		return net.fabricmc.loader.api.FabricLoader.getInstance().getConfigDir().resolve("kubo-retina-v2.txt");
 	}
 
 	/** Read at start-up (before the settings are loaded): true = keep the full Retina resolution. */

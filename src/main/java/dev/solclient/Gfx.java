@@ -298,60 +298,79 @@ public final class Gfx {
 		c.getMatrices().popMatrix();
 	}
 
-	/** Rounded rect in real pixels (the matrix must already be scaled by 1/guiScale). */
-	private static final Identifier[] RR = new Identifier[65];
-
-	/** Fast path: 4 pre-baked anti-aliased corner quads + 3 solid fills (instead of ~6 fills per corner row). */
-	private static void roundTex(DrawContext c, int px, int py, int pw, int ph, int s, int color) {
-		Identifier id = RR[s];
-		if (id == null) {
-			id = RR[s] = id("textures/gui/rr/c" + s + ".png");
-		}
-		int t = s * 2;
-		c.drawTexture(RenderPipelines.GUI_TEXTURED, id, px, py, 0f, 0f, s, s, s, s, t, t, color);
-		c.drawTexture(RenderPipelines.GUI_TEXTURED, id, px + pw - s, py, (float) s, 0f, s, s, s, s, t, t, color);
-		c.drawTexture(RenderPipelines.GUI_TEXTURED, id, px, py + ph - s, 0f, (float) s, s, s, s, s, t, t, color);
-		c.drawTexture(RenderPipelines.GUI_TEXTURED, id, px + pw - s, py + ph - s, (float) s, (float) s, s, s, s, s, t, t, color);
-		if (pw - 2 * s > 0) {
-			c.fill(px + s, py, px + pw - s, py + ph, color);
-		}
-		if (ph - 2 * s > 0) {
-			c.fill(px, py + s, px + s, py + ph - s, color);
-			c.fill(px + pw - s, py + s, px + pw, py + ph - s, color);
-		}
-	}
-
+	/** Rounded rect in real pixels (the matrix must already be scaled by 1/guiScale): one GUI element (see QuadBatch). */
 	private static void roundPx(DrawContext c, int px, int py, int pw, int ph, int pr, int color) {
 		pr = Math.min(pr, Math.min(pw, ph) / 2);
 		if (pr <= 0) {
 			c.fill(px, py, px + pw, py + ph, color);
 			return;
 		}
-		if (pr >= 2 && pr <= 64) {
-			roundTex(c, px, py, pw, ph, pr, color);
+		QuadBatch b = new QuadBatch();
+		roundInto(b, px, py, pw, ph, pr, color);
+		b.submit(c);
+	}
+
+	/** Per radius: for each corner row, how far in the row is fully covered, and the coverage (0..1) of the pixels before that. */
+	private static final float[][][] COVER = new float[257][][];
+
+	private static float[][] cover(int pr) {
+		float[][] t = pr < COVER.length ? COVER[pr] : null;
+		if (t != null) {
+			return t;
+		}
+		t = new float[pr][];
+		for (int i = 0; i < pr; i++) {
+			float dy = pr - i - 0.5F;
+			int full = pr;
+			float[] row = new float[pr];
+			for (int x = 0; x < pr; x++) {
+				float dx = pr - x - 0.5F;
+				float cv = Math.max(0F, Math.min(1F, pr - (float) Math.sqrt(dx * dx + dy * dy) + 0.5F));
+				row[x] = cv;
+				if (cv >= 0.999F && full == pr) {
+					full = x;
+				}
+			}
+			float[] r = new float[full + 1];
+			r[0] = full;
+			System.arraycopy(row, 0, r, 1, full);
+			t[i] = r;
+		}
+		if (pr < COVER.length) {
+			COVER[pr] = t;
+		}
+		return t;
+	}
+
+	/** An anti-aliased rounded rectangle (real pixels) added to a batch: full rows as spans, edge pixels with their coverage. */
+	static void roundInto(QuadBatch b, int px, int py, int pw, int ph, int pr, int color) {
+		pr = Math.min(pr, Math.min(pw, ph) / 2);
+		if (pr <= 0) {
+			b.add(px, py, px + pw, py + ph, color);
 			return;
 		}
-		int a0 = (color >>> 24) & 255;
+		float[][] cv = cover(pr);
+		int a0 = (color >>> 24) & 255, rgb = color & 0xFFFFFF;
 		for (int i = 0; i < pr; i++) {
-			double dy = pr - i - 0.5;
-			double edge = pr - Math.sqrt(pr * (double) pr - dy * dy);
-			int k = (int) Math.floor(edge);
-			float cov = (float) (k + 1 - edge);
-			int edgeCol = (Math.round(a0 * Math.min(1F, cov)) << 24) | (color & 0xFFFFFF);
+			float[] r = cv[i];
+			int full = (int) r[0];
 			int ty = py + i, by = py + ph - 1 - i;
-			if (px + pw - k - 1 > px + k + 1) {
-				c.fill(px + k + 1, ty, px + pw - k - 1, ty + 1, color);
-				c.fill(px + k + 1, by, px + pw - k - 1, by + 1, color);
-			}
-			if (cov > 0.04F) {
-				c.fill(px + k, ty, px + k + 1, ty + 1, edgeCol);
-				c.fill(px + pw - k - 1, ty, px + pw - k, ty + 1, edgeCol);
-				c.fill(px + k, by, px + k + 1, by + 1, edgeCol);
-				c.fill(px + pw - k - 1, by, px + pw - k, by + 1, edgeCol);
+			b.add(px + full, ty, px + pw - full, ty + 1, color);
+			b.add(px + full, by, px + pw - full, by + 1, color);
+			for (int x = 0; x < full; x++) {
+				int a = Math.round(a0 * r[x + 1]);
+				if (a <= 2) {
+					continue;
+				}
+				int col = (a << 24) | rgb;
+				b.add(px + x, ty, px + x + 1, ty + 1, col);
+				b.add(px + pw - x - 1, ty, px + pw - x, ty + 1, col);
+				b.add(px + x, by, px + x + 1, by + 1, col);
+				b.add(px + pw - x - 1, by, px + pw - x, by + 1, col);
 			}
 		}
 		if (ph - 2 * pr > 0) {
-			c.fill(px, py + pr, px + pw, py + ph - pr, color);
+			b.add(px, py + pr, px + pw, py + ph - pr, color);
 		}
 	}
 
@@ -369,30 +388,36 @@ public final class Gfx {
 		border = fade(border);
 		c.getMatrices().pushMatrix();
 		c.getMatrices().scale(1F / s, 1F / s);
+		QuadBatch qb = new QuadBatch(); // border + fill = one GUI element
 		if (((fill >>> 24) & 255) >= 250) {
-			roundPx(c, px, py, pw, ph, pr, border);
-			roundPx(c, px + t, py + t, pw - 2 * t, ph - 2 * t, Math.max(0, pr - t), fill);
+			roundInto(qb, px, py, pw, ph, Math.min(pr, Math.min(pw, ph) / 2), border);
+			if (pw - 2 * t > 0 && ph - 2 * t > 0) {
+				roundInto(qb, px + t, py + t, pw - 2 * t, ph - 2 * t, Math.max(0, pr - t), fill);
+			}
 		} else {
 			// see-through panel: fill, then only the border ring (no darker border showing through the fill)
-			roundPx(c, px + t, py + t, pw - 2 * t, ph - 2 * t, Math.max(0, pr - t), fill);
-			ringPx(c, px, py, pw, ph, Math.min(pr, Math.min(pw, ph) / 2), border, t);
+			if (pw - 2 * t > 0 && ph - 2 * t > 0) {
+				roundInto(qb, px + t, py + t, pw - 2 * t, ph - 2 * t, Math.max(0, pr - t), fill);
+			}
+			ringPx(qb, px, py, pw, ph, Math.min(pr, Math.min(pw, ph) / 2), border, t);
 		}
+		qb.submit(c);
 		c.getMatrices().popMatrix();
 	}
 
 	/** Outline of a rounded rectangle, thickness t (real pixels). */
-	private static void ringPx(DrawContext c, int px, int py, int pw, int ph, int pr, int color, int t) {
+	private static void ringPx(QuadBatch c, int px, int py, int pw, int ph, int pr, int color, int t) {
 		if (pr <= 0) {
-			c.fill(px, py, px + pw, py + t, color);
-			c.fill(px, py + ph - t, px + pw, py + ph, color);
-			c.fill(px, py + t, px + t, py + ph - t, color);
-			c.fill(px + pw - t, py + t, px + pw, py + ph - t, color);
+			c.add(px, py, px + pw, py + t, color);
+			c.add(px, py + ph - t, px + pw, py + ph, color);
+			c.add(px, py + t, px + t, py + ph - t, color);
+			c.add(px + pw - t, py + t, px + pw, py + ph - t, color);
 			return;
 		}
-		c.fill(px + pr, py, px + pw - pr, py + t, color);
-		c.fill(px + pr, py + ph - t, px + pw - pr, py + ph, color);
-		c.fill(px, py + pr, px + t, py + ph - pr, color);
-		c.fill(px + pw - t, py + pr, px + pw, py + ph - pr, color);
+		c.add(px + pr, py, px + pw - pr, py + t, color);
+		c.add(px + pr, py + ph - t, px + pw - pr, py + ph, color);
+		c.add(px, py + pr, px + t, py + ph - pr, color);
+		c.add(px + pw - t, py + pr, px + pw, py + ph - pr, color);
 		double ri = Math.max(0, pr - t);
 		for (int i = 0; i < pr; i++) {
 			double dy = pr - i - 0.5;
@@ -407,10 +432,10 @@ public final class Gfx {
 				kIn = kOut + 1;
 			}
 			int ty = py + i, by = py + ph - 1 - i;
-			c.fill(px + kOut, ty, px + kIn, ty + 1, color);
-			c.fill(px + pw - kIn, ty, px + pw - kOut, ty + 1, color);
-			c.fill(px + kOut, by, px + kIn, by + 1, color);
-			c.fill(px + pw - kIn, by, px + pw - kOut, by + 1, color);
+			c.add(px + kOut, ty, px + kIn, ty + 1, color);
+			c.add(px + pw - kIn, ty, px + pw - kOut, ty + 1, color);
+			c.add(px + kOut, by, px + kIn, by + 1, color);
+			c.add(px + pw - kIn, by, px + pw - kOut, by + 1, color);
 		}
 	}
 

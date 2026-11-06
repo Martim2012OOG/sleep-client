@@ -516,13 +516,26 @@ public class SolClient implements ClientModInitializer {
 			return;
 		}
 		hudWhyTold = true;
-		String m = "[Sleep] HUD did not draw: " + hudDiag() + " | hudHidden=" + mc.options.hudHidden + " F3=" + mc.getDebugHud().shouldShowDebugHud() + " overlay="
+		String m = "[Sleep] HUD did not draw: " + hudDiag() + " | hudHidden=" + mc.options.hudHidden + " F3=" + f3Open(mc) + " overlay="
 				+ (mc.getOverlay() == null ? "none" : mc.getOverlay().getClass().getName());
 		System.out.println(m);
 		mc.inGameHud.getChatHud().addMessage(net.minecraft.text.Text.literal(m));
 	}
 
 	private static int hudWorldFrames;
+
+	/**
+	 * The full F3 screen is open (the key was pressed). Not DebugHud.shouldShowDebugHud(): since 1.21.9 that is also true while
+	 * any single debug line is set to "always shown" (F3 + F6, or a mod / profile that keeps the FPS line on), which hid the
+	 * whole Sleep HUD forever on some computers.
+	 */
+	public static boolean f3Open(MinecraftClient mc) {
+		try {
+			return mc.debugHudEntryList.isF3Enabled() && !mc.options.hudHidden;
+		} catch (Throwable t) {
+			return mc.getDebugHud().shouldShowDebugHud();
+		}
+	}
 
 	private static void renderHudInner(DrawContext context) {
 		MinecraftClient mc = MinecraftClient.getInstance();
@@ -561,7 +574,7 @@ public class SolClient implements ClientModInitializer {
 			return;
 		}
 		dev.solclient.ext.KuboApi.drawF3(context);
-		if (!settings.hudInF3.on() && mc.getDebugHud().shouldShowDebugHud()) {
+		if (!settings.hudInF3.on() && f3Open(mc)) {
 			if (TabListMod.replacesVanilla() && mc.options.playerListKey.isPressed()) {
 				TabListMod.instance.draw(context); // the tab list still shows in F3, like vanilla
 			}

@@ -52,6 +52,8 @@ public class PersonasMod extends Mod {
 	public final Option.Num pitch = num("Fine Pitch", 0, -12, 12, 0.5F, " st");
 	public final Option.Num amount = num("Effect Strength", 100, 0, 150, 5, "%");
 	public final Option.Num volume = num("Loudness", 0, -12, 12, 1, " dB");
+	public final Option.Num disguise = num("Voice Disguise", 0, -6, 6, 0.5F, " st")
+			.tip("Changes the size of your throat and mouth without changing the pitch: below 0 = bigger / older, above 0 = smaller / younger. Makes your voice much harder to recognise.");
 	public final Option.Bool autoLevel = bool("Auto Volume", true).tip("Every character comes out about as loud as your normal voice.");
 
 	// ---- microphone
@@ -219,8 +221,9 @@ public class PersonasMod extends Mod {
 		t.addDrive = xDrive.f() / 100F;
 		t.addChorus = xCrowd.f() / 100F;
 		t.addWhisper = xWhisper.f() / 100F;
+		t.formantAdd = disguise.f();
 		boolean extras = micBoost.f() != 0 || gate.f() > -90 || bass.f() != 0 || treble.f() != 0 || xEcho.f() + xRoom.f() + xRobot.f() + xDrive.f() + xCrowd.f() + xWhisper.f() > 0;
-		boolean nothing = p.neutral() && pitch.f() == 0 && volume.f() == 0 && !extras;
+		boolean nothing = p.neutral() && pitch.f() == 0 && volume.f() == 0 && disguise.f() == 0 && !extras;
 		PersonaHook.active = nothing || !effOn ? null : p;
 
 		// whole computer

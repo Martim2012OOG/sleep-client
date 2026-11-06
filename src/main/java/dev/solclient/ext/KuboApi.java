@@ -63,6 +63,11 @@ public final class KuboApi {
 		SOUND.add(l);
 	}
 
+	/** The full F3 screen is open (not just one "always shown" debug line). */
+	public static boolean f3Open() {
+		return dev.solclient.SolClient.f3Open(net.minecraft.client.MinecraftClient.getInstance());
+	}
+
 	public static void worldSound(String id, double x, double y, double z) {
 		for (var l : SOUND) {
 			try {

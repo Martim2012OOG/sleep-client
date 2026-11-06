@@ -42,6 +42,8 @@ final class VoiceDsp {
 	private int seed = 12345;
 	// noise gate, bass / treble shelves
 	private float gEnv, gGain = 1F, shLow, shHigh;
+	// voice size (formants), made when first needed
+	private FormantShift formants;
 	// auto volume: the character comes out as loud as your normal voice
 	private float lvIn, lvOut, lvGain = 1F;
 
@@ -80,6 +82,13 @@ final class VoiceDsp {
 		float lpA = (float) (1 - Math.exp(-2 * Math.PI * 1500 / sr));
 		float gain = (float) Math.pow(10, (p.gainDb + t.gainDb) / 20.0);
 		boolean pitchOn = st != 0 || vib != 0;
+		// the pitch shifter moves the formants together with the pitch; this puts them where the character wants them
+		float fTarget = Float.isNaN(p.formant) ? st : p.pitch + (p.formant - p.pitch) * amt + t.pitchAdd;
+		float fCorr = fTarget - st + t.formantAdd;
+		boolean formantOn = Math.abs(fCorr) > 0.05F;
+		if (formantOn && formants == null) {
+			formants = new FormantShift(sr);
+		}
 		float hpA = p.bandLow > 0 ? (float) Math.exp(-2 * Math.PI * p.bandLow / sr) : 0;
 		float lpB = p.bandHigh > 0 ? (float) (1 - Math.exp(-2 * Math.PI * p.bandHigh / sr)) : 0;
 		int bits = 16 - Math.round(crush * 9), hold = 1 + Math.round(crush * 3);
@@ -112,6 +121,10 @@ final class VoiceDsp {
 				g2 *= g2;
 				s = tap(phase * window) * g1 + tap(p2 * window) * g2;
 				w = (w + 1) % ring.length;
+			}
+			// ---- voice size: a different throat / mouth = a different person
+			if (formantOn) {
+				s = formants.process(s, fCorr);
 			}
 			// ---- tone tilt
 			if (tone != 0) {

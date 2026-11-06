@@ -3041,3 +3041,15 @@ Raspy and mysterious	Rouco e misterioso
 Autobots, roll out!	Autobots, avançar!
 He is watching you...	Ele está a ver-te...
 Glitchy and creepy	Com falhas e assustador
+Voice Disguise	Disfarce da voz
+Changes the size of your throat and mouth without changing the pitch: below 0 = bigger / older, above 0 = smaller / younger. Makes your voice much harder to recognise.	Muda o tamanho da garganta e da boca sem mudar o tom: abaixo de 0 = maior / mais velho, acima de 0 = mais pequeno / mais novo. Torna a tua voz muito mais difícil de reconhecer.
+Mac: Sharp Text and Menus (Retina)	Mac: Texto e menus nítidos (Retina)
+On = sharp text and menus. Off = the whole game, text included, is drawn at half resolution: more FPS on a Mac, but blurry / pixelated text. Restart the game after changing it.	Ligado = texto e menus nítidos. Desligado = o jogo todo, incluindo o texto, é desenhado a metade da resolução: mais FPS no Mac, mas texto desfocado / pixelado. Reinicia o jogo depois de mudar.
+Pause Menu Look	Aspeto do menu de pausa
+Simple = Sleep's small pause menu. Classic = Minecraft's own pause menu with Sleep's buttons and your player.	Simples = o menu de pausa pequeno do Sleep. Clássico = o menu de pausa do Minecraft com os botões do Sleep e o teu jogador.
+Essential's Pause Menu When Installed	Menu de pausa do Essential quando instalado
+With Essential installed, its own pause menu and player preview are used; Sleep only adds its small row of buttons.	Com o Essential instalado, usa-se o menu de pausa e a pré-visualização do jogador dele; o Sleep só junta a sua pequena fila de botões.
+Sleep Water Renderer	Renderizador de água do Sleep
+Sleep's own liquid renderer (no Iris, no shader pack): glossy water that reflects the sky, moving waves, sun glints, foam, spray from waterfalls and splashes, molten lava.	O renderizador de líquidos do próprio Sleep (sem Iris, sem shader pack): água brilhante que reflete o céu, ondas, reflexos do sol, espuma, salpicos de cascatas e mergulhos, lava derretida.
+Spray, Splashes And Foam	Salpicos e espuma
+Water Renderer Status	Estado do renderizador de água
