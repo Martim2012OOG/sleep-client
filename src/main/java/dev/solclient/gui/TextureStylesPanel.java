@@ -30,11 +30,19 @@ public final class TextureStylesPanel {
 
 	public static final TextureStylesPanel INSTANCE = new TextureStylesPanel();
 
-	private static final int TILE = 56, GAP = 6, PAGE = 40;
+	private static final int TILE = 56, GAP = 6, PAGE = 40, PIC = 128;
+
+	/** Smooth (linear) filtering: the 3D pictures are drawn smaller than they are, so no jagged edges. */
+	private static final class Smooth extends NativeImageBackedTexture {
+		Smooth(String id, NativeImage img) {
+			super(() -> "kubo_style_" + id, img);
+			this.sampler = com.mojang.blaze3d.systems.RenderSystem.getSamplerCache().get(com.mojang.blaze3d.textures.FilterMode.LINEAR);
+		}
+	}
 
 	private static final class Tile {
 		volatile int state; // 0 not started, 1 loading, 2 ready (picture bytes), 3 no texture / failed
-		volatile byte[] png;
+		volatile dev.solclient.pack.StylePreview3D.Pic pic;
 		volatile TextureStyles.Choice choice;
 		Identifier id;
 		int w, h;
@@ -47,7 +55,7 @@ public final class TextureStylesPanel {
 	private volatile String error = "";
 	private int loadId, offset;
 	private volatile String note = "";
-	private final ExecutorService pool = Executors.newFixedThreadPool(3, r -> {
+	private final ExecutorService pool = Executors.newFixedThreadPool(6, r -> {
 		Thread t = new Thread(r, "kubo-styles-preview");
 		t.setDaemon(true);
 		return t;
@@ -115,15 +123,14 @@ public final class TextureStylesPanel {
 		t.state = 1;
 		pool.submit(() -> {
 			try {
-				TextureStyles.Choice ch = TextureStyles.resolve(h);
-				Path p = TextureStyles.download(ch);
-				byte[] png = TextureStyles.previewPng(p, c);
-				if (png == null) {
+				// 3D picture; only the few bytes it needs are downloaded, and it is kept on disk for next time
+				TextureStyles.Preview pv = TextureStyles.preview(h, c, PIC);
+				if (pv.pic() == null) {
 					t.state = 3;
 					return;
 				}
-				t.choice = ch;
-				t.png = png;
+				t.choice = pv.choice();
+				t.pic = pv.pic();
 				t.state = 2;
 			} catch (Throwable e) {
 				t.state = 3;
@@ -133,16 +140,21 @@ public final class TextureStylesPanel {
 
 	/** Makes the GPU picture on the render thread. */
 	private void upload(Hit h, Tile t) {
-		if (t.id != null || t.png == null) {
+		if (t.id != null || t.pic == null) {
 			return;
 		}
-		byte[] png = t.png;
-		t.png = null;
+		var pic = t.pic;
+		t.pic = null;
 		try {
-			NativeImage img = NativeImage.read(png);
-			t.w = img.getWidth();
-			t.h = img.getHeight();
-			NativeImageBackedTexture tex = new NativeImageBackedTexture(() -> "kubo_style_" + h.id(), img);
+			NativeImage img = new NativeImage(pic.w(), pic.h(), false);
+			for (int y = 0; y < pic.h(); y++) {
+				for (int x = 0; x < pic.w(); x++) {
+					img.setColorArgb(x, y, pic.px()[y * pic.w() + x]);
+				}
+			}
+			t.w = pic.w();
+			t.h = pic.h();
+			NativeImageBackedTexture tex = new Smooth(h.id(), img);
 			tex.upload();
 			Identifier id = Gfx.id("style_" + Integer.toHexString(h.id().hashCode()) + "_" + cat);
 			MinecraftClient.getInstance().getTextureManager().registerTexture(id, tex);
@@ -255,9 +267,8 @@ public final class TextureStylesPanel {
 			boolean hov = in(mx, my, tx, ty, TILE, TILE);
 			Gfx.rrectBorder(c, tx, ty, TILE, TILE, 8, active ? Theme.GREEN_BG : hov ? Theme.CARD_HOVER : Theme.CARD, active ? Theme.GREEN : Theme.CARD_BORDER);
 			if (t.id != null) {
-				int side = t.w; // first square (animated strips are taller than wide)
-				int s = TILE - 12;
-				Gfx.texUv(c, t.id, tx + 6, ty + 6, s, s, 0, 0, side, Math.min(side, t.h), t.w, t.h, 0xFFFFFFFF);
+				int s = hov ? TILE - 4 : TILE - 8; // grows a little under the mouse
+				Gfx.texUv(c, t.id, tx + (TILE - s) / 2, ty + (TILE - s) / 2, s, s, 0, 0, t.w, t.h, t.w, t.h, 0xFFFFFFFF);
 				final Hit hh = h;
 				final Tile tt = t;
 				reg.region(tx, ty, TILE, TILE, () -> use(hh, tt));

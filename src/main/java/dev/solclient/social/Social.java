@@ -1709,6 +1709,14 @@ public final class Social {
 				coins = Json.num(r.obj(), "coins", coins);
 				say("Bought " + it.name + "!", false);
 				it.owned = true;
+				// every copy of the item (the "All" list, the category list...) is yours now, so equipping works at once
+				for (List<Item> l : SHOP_CACHE.values()) {
+					for (Item o : l) {
+						if (o.id != null && o.id.equals(it.id)) {
+							o.owned = true;
+						}
+					}
+				}
 				shopChanged();
 				refreshOwned();
 				if (afterBuy != null) {
@@ -2361,9 +2369,23 @@ public final class Social {
 		if (all == null || !sellsKillEffects()) {
 			return localKill();
 		}
-		String mine = MY_EQUIP.get("Kill Effects");
+		// the site may spell the category "Kill Effects", "KillEffects", "Kill effects"...
+		String mine = null;
+		for (Map.Entry<String, String> e : MY_EQUIP.entrySet()) {
+			if (e.getKey() != null && e.getKey().replace(" ", "").equalsIgnoreCase("KillEffects")) {
+				mine = e.getValue();
+			}
+		}
+		// the one you just equipped wins (even before the shop list says you own it: it was just bought)
+		if (mine != null) {
+			for (Item it : all) {
+				if (isKillEffect(it) && mine.equals(it.id)) {
+					return killEffectKey(it);
+				}
+			}
+		}
 		for (Item it : all) {
-			if (isKillEffect(it) && it.owned && (it.equipped || it.id != null && it.id.equals(mine))) {
+			if (isKillEffect(it) && it.owned && it.equipped) {
 				if (MY_UNEQUIP.contains(it.category) && !it.id.equals(mine)) {
 					continue;
 				}

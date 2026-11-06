@@ -126,49 +126,232 @@ public final class Gifs {
 	}
 
 	// ------------------------------------------------------------------ search
+	/** What the picker shows: 0 GIFs, 1 stickers (transparent), 2 the ones you sent lately, 3 your favourites. */
+	public static volatile int tab;
+	public static final String[] TABS = {"GIFs", "Stickers", "Recent", "Favourites"};
+	/** Quick searches shown as chips under the search box ("" = trending). */
+	public static final String[] QUICK = {"", "lol", "gg", "ez", "dance", "rage", "sad", "wow", "hype", "bye", "minecraft", "cat"};
+	private static volatile int lastTab = -1, offset;
+	private static volatile boolean loadingMore, noMore;
+
+	public static void setTab(int t) {
+		if (t != tab) {
+			tab = t;
+			lastQuery = null;
+		}
+	}
+
 	public static void search(String q) {
 		String query = q == null ? "" : q.trim();
-		if (query.equals(lastQuery) && !results.isEmpty()) {
+		if (tab >= 2) {
+			// local lists: filter by what was typed (in the link, which holds the GIF's name on GIPHY)
+			lastQuery = query;
+			lastTab = tab;
+			List<Result> src = tab == 2 ? recent() : favourites();
+			List<Result> out = new ArrayList<>();
+			for (Result r : src) {
+				if (query.isEmpty() || r.url().toLowerCase().contains(query.toLowerCase())) {
+					out.add(r);
+				}
+			}
+			results = out;
+			state = !out.isEmpty() ? "" : tab == 2 ? "GIFs you send show up here" : "Right-click a GIF to add it to your favourites";
+			return;
+		}
+		if (query.equals(lastQuery) && lastTab == tab && !results.isEmpty()) {
 			return;
 		}
 		lastQuery = query;
+		lastTab = tab;
+		offset = 0;
+		noMore = false;
 		String k = key();
 		if (k.isEmpty()) {
 			state = "GIF search needs a GIPHY key. You can still paste a GIF link from giphy.com or tenor.com in the chat box and send it.";
 			results = List.of();
 			return;
 		}
+		results = List.of();
 		state = "Loading...";
+		fetch(query, tab, 0, k);
+	}
+
+	/** The next page of the same search (called when the grid is scrolled to the bottom). */
+	public static void more() {
+		if (tab >= 2 || loadingMore || noMore || results.isEmpty() || lastQuery == null || results.size() >= 240) {
+			return;
+		}
+		String k = key();
+		if (!k.isEmpty()) {
+			fetch(lastQuery, tab, results.size(), k);
+		}
+	}
+
+	private static void fetch(String query, int t, int from, String k) {
+		loadingMore = from > 0;
 		dev.solclient.social.Social.IO.execute(() -> {
 			try {
+				String kind = t == 1 ? "stickers" : "gifs";
 				String u = query.isEmpty()
-						? "https://api.giphy.com/v1/gifs/trending?limit=24&rating=pg-13&api_key=" + k
-						: "https://api.giphy.com/v1/gifs/search?limit=24&rating=pg-13&api_key=" + k + "&q=" + java.net.URLEncoder.encode(query, StandardCharsets.UTF_8);
+						? "https://api.giphy.com/v1/" + kind + "/trending?limit=24&offset=" + from + "&rating=pg-13&api_key=" + k
+						: "https://api.giphy.com/v1/" + kind + "/search?limit=24&offset=" + from + "&rating=pg-13&api_key=" + k + "&q="
+								+ java.net.URLEncoder.encode(query, StandardCharsets.UTF_8);
 				byte[] data = SolarApi.download(u);
-				if (!query.equals(lastQuery)) {
+				if (!query.equals(lastQuery) || t != tab) {
 					return;
 				}
 				if (data == null) {
-					state = "Could not load GIFs (check the GIPHY key)";
+					if (from == 0) {
+						state = "Could not load GIFs (check the GIPHY key)";
+					}
 					return;
 				}
 				JsonObject o = JsonParser.parseString(new String(data, StandardCharsets.UTF_8)).getAsJsonObject();
-				List<Result> out = new ArrayList<>();
+				List<Result> out = from == 0 ? new ArrayList<>() : new ArrayList<>(results);
+				java.util.Set<String> seen = new java.util.HashSet<>();
+				for (Result r : out) {
+					seen.add(r.id());
+				}
+				int got = 0;
 				for (JsonElement e : o.getAsJsonArray("data")) {
 					JsonObject g = e.getAsJsonObject();
 					JsonObject img = g.getAsJsonObject("images");
 					String prev = url(img, "fixed_width_small_still", "fixed_width_still", "downsized_still");
 					String send = url(img, "fixed_width_small", "fixed_width", "downsized");
-					if (prev != null && send != null) {
-						out.add(new Result(g.get("id").getAsString(), prev, send));
+					String id = g.get("id").getAsString();
+					if (prev != null && send != null && seen.add(id)) {
+						out.add(new Result(id, prev, send));
+						got++;
 					}
 				}
+				noMore = got == 0;
 				results = out;
 				state = out.isEmpty() ? "No GIFs found" : "";
 			} catch (Exception ex) {
-				state = "Could not load GIFs";
+				if (from == 0) {
+					state = "Could not load GIFs";
+				}
+			} finally {
+				loadingMore = false;
 			}
 		});
+	}
+
+	public static boolean loadingMore() {
+		return loadingMore;
+	}
+
+	// ------------------------------------------------------------------ recent + favourites (config/kubo-gifs.json)
+	private static List<Result> recentList, favList;
+
+	private static synchronized void loadLists() {
+		if (recentList != null) {
+			return;
+		}
+		recentList = new ArrayList<>();
+		favList = new ArrayList<>();
+		try {
+			Path p = FabricLoader.getInstance().getConfigDir().resolve("kubo-gifs.json");
+			if (Files.exists(p)) {
+				JsonObject o = JsonParser.parseString(Files.readString(p)).getAsJsonObject();
+				readList(o, "recent", recentList);
+				readList(o, "favourites", favList);
+			}
+		} catch (Exception ignored) {
+			// a broken file: start empty
+		}
+	}
+
+	private static void readList(JsonObject o, String k, List<Result> into) {
+		if (o.has(k)) {
+			for (JsonElement e : o.getAsJsonArray(k)) {
+				JsonObject r = e.getAsJsonObject();
+				into.add(new Result(r.get("id").getAsString(), r.get("preview").getAsString(), r.get("url").getAsString()));
+			}
+		}
+	}
+
+	private static synchronized void saveLists() {
+		JsonObject o = new JsonObject();
+		o.add("recent", writeList(recentList));
+		o.add("favourites", writeList(favList));
+		String text = o.toString();
+		dev.solclient.social.Social.IO.execute(() -> {
+			try {
+				Files.writeString(FabricLoader.getInstance().getConfigDir().resolve("kubo-gifs.json"), text);
+			} catch (Exception ignored) {
+				// read-only config folder: lists only last this session
+			}
+		});
+	}
+
+	private static JsonArray writeList(List<Result> l) {
+		JsonArray a = new JsonArray();
+		for (Result r : l) {
+			JsonObject j = new JsonObject();
+			j.addProperty("id", r.id());
+			j.addProperty("preview", r.preview());
+			j.addProperty("url", r.url());
+			a.add(j);
+		}
+		return a;
+	}
+
+	private static Result fromUrl(String url) {
+		return new Result(url, url, url);
+	}
+
+	public static synchronized List<Result> recent() {
+		loadLists();
+		return new ArrayList<>(recentList);
+	}
+
+	public static synchronized List<Result> favourites() {
+		loadLists();
+		return new ArrayList<>(favList);
+	}
+
+	/** Remember a GIF you sent (newest first, at most 60). */
+	public static synchronized void sent(Result r) {
+		loadLists();
+		recentList.removeIf(x -> x.url().equals(r.url()));
+		recentList.add(0, r);
+		while (recentList.size() > 60) {
+			recentList.remove(recentList.size() - 1);
+		}
+		saveLists();
+	}
+
+	public static void sent(String url) {
+		sent(fromUrl(url.trim()));
+	}
+
+	public static synchronized boolean isFavourite(String url) {
+		loadLists();
+		for (Result r : favList) {
+			if (r.url().equals(url)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/** Adds or removes a favourite; true when it is a favourite now. */
+	public static synchronized boolean toggleFavourite(Result r) {
+		loadLists();
+		boolean had = favList.removeIf(x -> x.url().equals(r.url()));
+		if (!had) {
+			favList.add(0, r);
+		}
+		saveLists();
+		if (tab == 3) {
+			lastQuery = null;
+		}
+		return !had;
+	}
+
+	public static boolean toggleFavourite(String url) {
+		return toggleFavourite(fromUrl(url.trim()));
 	}
 
 	private static String url(JsonObject images, String... keys) {

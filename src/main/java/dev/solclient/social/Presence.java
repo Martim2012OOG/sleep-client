@@ -241,6 +241,23 @@ public final class Presence {
 	}
 
 	/** The uuid the backend knows for this world player: their account uuid when bridged, else the entity uuid. */
+	/** Account uuid of a friend who is online in Sleep and plays with this nick, or null. */
+	private static UUID friendAccount(String nick) {
+		if (nick == null) {
+			return null;
+		}
+		try {
+			for (Social.User u : Social.friends) {
+				if (u != null && u.online() && nick.equalsIgnoreCase(u.mcUsername) && u.mcUuid != null && !u.mcUuid.isBlank()) {
+					return dashed(u.mcUuid.replace("-", "").toLowerCase(java.util.Locale.ROOT));
+				}
+			}
+		} catch (RuntimeException ignored) {
+			// list changed while reading
+		}
+		return null;
+	}
+
 	public static UUID backendId(net.minecraft.entity.player.PlayerEntity p) {
 		if (p == null) {
 			return null;
@@ -260,6 +277,9 @@ public final class Presence {
 			return (UUID) c[1];
 		}
 		UUID acc = dashed(accountId(p.getName().getString()));
+		if (acc == null) {
+			acc = friendAccount(p.getName().getString()); // a friend with this nick: their account, even when presence missed them
+		}
 		UUID out = acc != null ? acc : p.getUuid();
 		if (BACKEND_CACHE.size() > 512) {
 			BACKEND_CACHE.clear();

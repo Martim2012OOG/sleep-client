@@ -1,0 +1,11 @@
+-proc:none
+-d
+/tmp/claude-0/-home-claude/bdd64f24-dd99-5481-b26b-e18a4624d981/scratchpad/jc2
+-sourcepath
+src/main/java
+src/main/java/dev/solclient/pack/TextureStyles.java
+src/main/java/dev/solclient/gui/TextureStylesPanel.java
+src/main/java/dev/solclient/chat/Gifs.java
+src/main/java/dev/solclient/social/SolarBadge.java
+src/main/java/dev/solclient/social/Social.java
+src/main/java/dev/solclient/gui/SolMenuScreen.java

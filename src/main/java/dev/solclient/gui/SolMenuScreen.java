@@ -2511,14 +2511,8 @@ public class SolMenuScreen extends Screen {
 			Gfx.tex(c, Gfx.id("textures/gui/flag/" + LANG_FLAGS[Math.min(i, LANG_FLAGS.length - 1)] + ".png"), bx + 10, ry + 4, 16, 16, 72, 72, 0xFFFFFFFF);
 			Gfx.textRaw(c, ch.names[i], bx + 32, ry + 8, sel ? 0xFFFFFFFF : Theme.TEXT);
 			if (sel) {
-				// check mark
-				int cx = bx + bw - 18, cy = ry + 12;
-				for (int k = 0; k < 3; k++) {
-					c.fill(cx - 4 + k, cy - 1 + k, cx - 3 + k, cy + 1 + k, 0xFFFFFFFF);
-				}
-				for (int k = 0; k < 6; k++) {
-					c.fill(cx - 1 + k, cy + 2 - k, cx + k, cy + 4 - k, 0xFFFFFFFF);
-				}
+				// check mark (a smooth icon: hand-drawn pixels broke apart at some GUI scales)
+				Gfx.tex(c, Theme.icon2("check"), bx + bw - 24, ry + 5, 14, 14, 64, 64, 0xFFFFFFFF);
 			}
 			final int idx = i;
 			region(bx + 4, ry, bw - 8, rh, () -> {
@@ -5897,7 +5891,7 @@ public class SolMenuScreen extends Screen {
 		if (!removing && (muted || hov)) {
 			int mxp = ix + rw - 34, myp = ry + rh / 2 - 6;
 			boolean hm2 = in(mx, my, mxp - 2, myp - 2, 16, 16) && my >= ly0 && my < ly1;
-			Gfx.tex(c, Theme.icon2("speaker_off"), mxp, myp, 12, 12, 64, 64, muted ? Theme.RED : hm2 ? Theme.TEXT : Theme.DIM);
+			Gfx.tex(c, Theme.icon2("volume_off"), mxp, myp, 12, 12, 64, 64, muted ? Theme.RED : hm2 ? Theme.TEXT : Theme.DIM);
 			if (hm2) {
 				tooltipText = muted ? "Muted on this client - click to unmute" : "Mute (no pop-ups, only on this client)";
 			}
@@ -6241,7 +6235,7 @@ public class SolMenuScreen extends Screen {
 		// ---------------- input bar (bottom): GIF, emoji, text, send
 		int iy = y + h - 32, ib = 22;
 		int fieldX = ix + 3 * (ib + 3), sendX = ix + iw - ib, fieldW = sendX - 3 - fieldX;
-		int pickerH = picker != 0 ? 128 : 0;
+		int pickerH = picker == 2 ? 178 : picker != 0 ? 128 : 0;
 		int editH = editing != null ? 14 : 0;
 		int my0 = y + 42, my1 = iy - 6 - pickerH - editH;
 
@@ -6669,6 +6663,9 @@ public class SolMenuScreen extends Screen {
 		if (m.body != null) {
 			items.add(new String[]{"copy", dev.solclient.chat.Gifs.isGif(m.body) ? "Copy GIF link" : "Copy text"});
 		}
+		if (m.body != null && dev.solclient.chat.Gifs.isGif(m.body)) {
+			items.add(new String[]{"fav", dev.solclient.chat.Gifs.isFavourite(m.body.trim()) ? "Remove from favourite GIFs" : "Add to favourite GIFs"});
+		}
 		if (m.mine) {
 			items.add(new String[]{"delete", "Delete"});
 		}
@@ -6730,6 +6727,7 @@ public class SolMenuScreen extends Screen {
 							Social.say("Copied", false);
 						}
 						case "delete" -> Social.deleteMessage(chatId, m);
+						case "fav" -> Social.say(dev.solclient.chat.Gifs.toggleFavourite(m.body) ? "Added to favourites" : "Removed from favourites", false);
 						default -> {
 						}
 					}
@@ -6738,6 +6736,51 @@ public class SolMenuScreen extends Screen {
 			}
 			iy0 += 15;
 		}
+	}
+
+	private float gifChipScroll;
+	private int gifChipMax, gifChipY = -100;
+	private String gifClipUsed, gifClipText;
+	private long gifClipAt;
+
+	/** A GIF link (or GIPHY / Tenor page) on the clipboard that was not sent yet, else null. Checked twice a second. */
+	private String gifClip(long now) {
+		if (now - gifClipAt > 500) {
+			gifClipAt = now;
+			try {
+				String t = MinecraftClient.getInstance().keyboard.getClipboard();
+				gifClipText = t == null || t.length() > 600 ? null : t.trim();
+			} catch (Exception e) {
+				gifClipText = null;
+			}
+		}
+		String t = gifClipText;
+		if (t == null || t.isEmpty() || t.equals(gifClipUsed)) {
+			return null;
+		}
+		return dev.solclient.chat.Gifs.isGif(t) || dev.solclient.chat.Gifs.isGifPage(t) ? t : null;
+	}
+
+	/** Sends a GIF link or page (pages are turned into the direct link first) and remembers it in Recent. */
+	private void sendGif(String link) {
+		String target = chatId;
+		if (target == null) {
+			return;
+		}
+		if (dev.solclient.chat.Gifs.isGifPage(link)) {
+			dev.solclient.chat.Gifs.resolvePage(link, direct -> {
+				String u = direct != null ? direct : link;
+				if (direct != null) {
+					dev.solclient.chat.Gifs.sent(u);
+				}
+				Social.sendMessage(target, u);
+			});
+		} else {
+			dev.solclient.chat.Gifs.sent(link);
+			Social.sendMessage(target, link.trim());
+		}
+		picker = 0;
+		chatScroll = 0;
 	}
 
 	/** Emoji grid (insert / react) or GIF search grid. */
@@ -6753,32 +6796,95 @@ public class SolMenuScreen extends Screen {
 			});
 		}
 		if (picker == 2) {
+			int tab = dev.solclient.chat.Gifs.tab;
+			// tabs: GIFs / Stickers / Recent / Favourites
+			int tx = x + 4, tw = (w - 8 - 6) / 4;
+			for (int i = 0; i < 4; i++) {
+				int bx = tx + i * (tw + 2);
+				boolean on = tab == i, ht = in(mx, my, bx, y + 4, tw, 14);
+				Gfx.rrect(c, bx, y + 4, tw, 14, 5, on ? accent : ht ? 0xFF2E3140 : 0xFF22242E);
+				Gfx.textFit(c, dev.solclient.chat.Gifs.TABS[i], bx + tw / 2, tw - 4, y + 7, on ? 0xFFFFFFFF : Theme.TEXT);
+				if (settled) {
+					final int ti = i;
+					region(bx, y + 4, tw, 14, () -> {
+						dev.solclient.chat.Gifs.setTab(ti);
+						gifAsked = null;
+						pickerScroll = 0;
+					});
+				}
+			}
 			// search box
-			field(c, x + 4, y + 4, w - 8, 18, gifSearch, "Search GIPHY...", focus == F_GIF, accent, true);
+			int sy = y + 21;
+			field(c, x + 4, sy, w - 8, 16, gifSearch, tab == 1 ? "Search stickers..." : tab >= 2 ? "Filter..." : "Search GIPHY...", focus == F_GIF, accent, true);
 			if (settled) {
-				region(x + 4, y + 4, w - 8, 18, () -> focus = F_GIF);
+				region(x + 4, sy, w - 8, 16, () -> focus = F_GIF);
 			}
 			String q = gifSearch.text().trim();
 			long now = System.currentTimeMillis();
-			if (!q.equals(gifAsked) && now - gifTyped > 450) {
+			if (!q.equals(gifAsked) && now - gifTyped > 450 || gifAsked == null) {
 				gifAsked = q;
 				dev.solclient.chat.Gifs.search(q);
 			}
-			int gy0 = y + 26, gy1 = y + h - 4;
+			int gy0 = sy + 19;
+			// a GIF link copied somewhere (browser, Discord...): one click sends it
+			String clip = gifClip(now);
+			if (clip != null) {
+				boolean hc = in(mx, my, x + 4, gy0, w - 8, 13);
+				Gfx.rrect(c, x + 4, gy0, w - 8, 13, 4, hc ? Gfx.blend(0xFF22242E, accent, 0.45F) : Gfx.blend(0xFF22242E, accent, 0.25F));
+				Gfx.textFit(c, "Send the GIF link you copied", x + w / 2, w - 14, gy0 + 3, 0xFFFFFFFF);
+				if (settled) {
+					region(x + 4, gy0, w - 8, 13, () -> {
+						sendGif(clip);
+						gifClipUsed = clip;
+					});
+				}
+				gy0 += 16;
+			}
+			// quick searches
+			if (tab < 2) {
+				int cx0 = x + 4 - Math.round(gifChipScroll), cyq = gy0;
+				c.enableScissor(x + 4, cyq, x + w - 4, cyq + 13);
+				for (String k : dev.solclient.chat.Gifs.QUICK) {
+					String label = k.isEmpty() ? "Trending" : k;
+					int cw0 = Gfx.tw(label) + 10;
+					boolean on = q.equalsIgnoreCase(k), hq = in(mx, my, cx0, cyq, cw0, 12) && mx >= x + 4 && mx < x + w - 4;
+					Gfx.rrect(c, cx0, cyq, cw0, 12, 6, on ? Gfx.blend(0xFF22242E, accent, 0.6F) : hq ? 0xFF2E3140 : 0xFF1E2029);
+					Gfx.text(c, label, cx0 + 5, cyq + 2, on ? 0xFFFFFFFF : Theme.DIM);
+					if (settled && cx0 + cw0 > x + 4 && cx0 < x + w - 4) {
+						region(Math.max(x + 4, cx0), cyq, Math.min(cx0 + cw0, x + w - 4) - Math.max(x + 4, cx0), 12, () -> {
+							gifSearch.set(k);
+							gifAsked = null;
+							pickerScroll = 0;
+						});
+					}
+					cx0 += cw0 + 3;
+				}
+				c.disableScissor();
+				gifChipMax = Math.max(0, cx0 + Math.round(gifChipScroll) - (x + w - 4));
+				gifChipY = cyq;
+				gy0 += 15;
+			} else {
+				gifChipMax = 0;
+			}
+			int gy1 = y + h - 4;
 			List<dev.solclient.chat.Gifs.Result> res = dev.solclient.chat.Gifs.results;
 			String st = dev.solclient.chat.Gifs.state;
 			if (res.isEmpty()) {
+				int ty = gy0 + 10;
 				for (String l : wrap(st == null || st.isEmpty() ? "Type to search" : st, w - 16, 3)) {
-					Gfx.textFit(c, l, x + w / 2, w - 6, gy0 + 20, Theme.DIM);
-					gy0 += 10;
+					Gfx.textFit(c, l, x + w / 2, w - 6, ty, Theme.DIM);
+					ty += 10;
 				}
 				pickerMax = 0;
 				return;
 			}
 			int cols = 3, gap = 3, cw = (w - 8 - (cols - 1) * gap) / cols, ch = Math.round(cw * 0.75F);
 			int rows = (res.size() + cols - 1) / cols;
-			pickerMax = Math.max(0, rows * (ch + gap) - (gy1 - gy0));
+			pickerMax = Math.max(0, rows * (ch + gap) - (gy1 - gy0) + (tab < 2 ? 12 : 0));
 			pickerScroll = Math.max(0, Math.min(pickerMax, pickerScroll));
+			if (tab < 2 && pickerScroll >= pickerMax - ch) {
+				dev.solclient.chat.Gifs.more(); // near the bottom: load the next page
+			}
 			c.enableScissor(x, gy0, x + w, gy1);
 			for (int i = 0; i < res.size(); i++) {
 				var r = res.get(i);
@@ -6792,24 +6898,45 @@ public class SolMenuScreen extends Screen {
 				if (a == null && hv) {
 					a = dev.solclient.chat.Gifs.get(r.preview());
 				}
+				if (tab == 1) {
+					Gfx.rrect(c, cx, cy, cw, ch, 3, 0xFF1E2029); // stickers are see-through
+				}
 				if (a != null) {
 					dev.solclient.chat.Gifs.draw(c, a, cx, cy, cw, ch);
 				} else {
 					Gfx.rrect(c, cx, cy, cw, ch, 3, 0xFF22242E);
 				}
+				boolean fav = dev.solclient.chat.Gifs.isFavourite(r.url());
+				if (fav || hv) {
+					Gfx.circle(c, cx + cw - 6, cy + 6, 4.5F, 0xC0000000);
+					Gfx.tex(c, Theme.icon2("favourite"), cx + cw - 10, cy + 2, 8, 8, 64, 64, fav ? 0xFFFFC94A : 0xFFFFFFFF);
+				}
 				if (hv) {
 					Gfx.rrect(c, cx, cy + ch - 2, cw, 2, 0, accent);
+					tooltipText = fav ? "Click: send - right click: remove from favourites" : "Click: send - right click: add to favourites";
 				}
 				if (settled) {
-					region(cx, cy, cw, ch, () -> {
-						Social.sendMessage(chatId, r.url());
-						picker = 0;
-						chatScroll = 0;
-					});
+					region(cx, cy, cw, ch, b -> {
+						if (b == 1) {
+							boolean nowFav = dev.solclient.chat.Gifs.toggleFavourite(r);
+							Social.say(nowFav ? "Added to favourites" : "Removed from favourites", false);
+						} else {
+							dev.solclient.chat.Gifs.sent(r);
+							Social.sendMessage(chatId, r.url());
+							picker = 0;
+							chatScroll = 0;
+						}
+					}, null);
 				}
 			}
+			if (dev.solclient.chat.Gifs.loadingMore()) {
+				int ly = gy0 + rows * (ch + gap) - Math.round(pickerScroll);
+				Gfx.textFit(c, "Loading more...", x + w / 2, w - 8, ly + 1, Theme.DIM);
+			}
 			c.disableScissor();
-			Gfx.text(c, "via GIPHY", x + w - 4 - Gfx.tw("via GIPHY"), y + h - 11, 0x55FFFFFF);
+			if (tab < 2) {
+				Gfx.text(c, "via GIPHY", x + w - 4 - Gfx.tw("via GIPHY"), y + h - 11, 0x55FFFFFF);
+			}
 			return;
 		}
 		// emojis

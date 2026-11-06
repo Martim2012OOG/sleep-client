@@ -423,6 +423,243 @@ public final class TextureStyles {
 		}
 	}
 
+	// ------------------------------------------------------------------ 3D pictures (fast: only the needed bytes)
+	/** Files of a zip, wherever it is (on disk or on the web). */
+	interface Src {
+		Iterable<String> names();
+
+		long size(String name);
+
+		byte[] read(String name) throws IOException;
+	}
+
+	private record ZipSrc(ZipFile z) implements Src {
+		@Override
+		public Iterable<String> names() {
+			List<String> l = new ArrayList<>();
+			var en = z.entries();
+			while (en.hasMoreElements()) {
+				ZipEntry e = en.nextElement();
+				if (!e.isDirectory()) {
+					l.add(e.getName());
+				}
+			}
+			return l;
+		}
+
+		@Override
+		public long size(String name) {
+			ZipEntry e = z.getEntry(name);
+			return e == null ? -1 : e.getSize();
+		}
+
+		@Override
+		public byte[] read(String name) throws IOException {
+			ZipEntry e = z.getEntry(name);
+			return e == null ? null : TextureStyles.read(z, e);
+		}
+	}
+
+	/** Shapes that are drawn in 3D from an entity texture (preferred over the flat item picture). */
+	private static boolean model3d(String rel) {
+		return rel.startsWith("textures/entity/end_crystal/") || rel.startsWith("textures/entity/shulker/") || rel.startsWith("textures/entity/chest/")
+				|| rel.startsWith("textures/entity/equipment/humanoid") || rel.startsWith("textures/entity/shield")
+				|| rel.startsWith("textures/entity/equipment/wings/") || rel.startsWith("textures/entity/elytra");
+	}
+
+	/** Picks the texture that shows the category best and draws it (3D when it has a shape). Null when the pack has none. */
+	static StylePreview3D.Pic preview(Src src, Cat cat, int size) throws IOException {
+		String pre = null;
+		for (String n : src.names()) {
+			int i = n.indexOf("assets/minecraft/");
+			if (i >= 0) {
+				pre = n.substring(0, i) + "assets/minecraft/";
+				break;
+			}
+		}
+		if (pre == null) {
+			return null;
+		}
+		Pattern rx = Pattern.compile(cat.rx());
+		String best = null;
+		int bestScore = -1;
+		Set<String> all = new HashSet<>();
+		for (String n : src.names()) {
+			all.add(n);
+			if (!n.startsWith(pre) || !n.endsWith(".png")) {
+				continue;
+			}
+			String rel = n.substring(pre.length());
+			if (!rx.matcher(rel).matches() || rel.contains("/models/") || src.size(n) > 2_000_000) {
+				continue;
+			}
+			String base = rel.substring(rel.lastIndexOf('/') + 1);
+			int score = 1;
+			if (base.equals(cat.item() + ".png")) {
+				score = 100;
+			} else if (base.startsWith(cat.item())) {
+				score = 50;
+			} else if (base.contains(cat.item())) {
+				score = 20;
+			}
+			if (rel.startsWith("textures/item/") || rel.startsWith("textures/block/")) {
+				score += 5;
+			}
+			if (model3d(rel)) {
+				score += 150;
+				if (base.equals("shulker.png") || base.equals("ender.png") || base.equals("end_crystal.png") || base.equals("shield_base_nopattern.png")) {
+					score += 10;
+				}
+			}
+			if (base.contains("_side") && !base.contains("_side0") && rel.startsWith("textures/block/respawn_anchor")) {
+				score -= 3; // the empty anchor
+			}
+			if (base.contains("_top") || base.contains("_bottom")) {
+				score -= 2; // a block's side shows it better
+			}
+			if (score > bestScore) {
+				best = n;
+				bestScore = score;
+			}
+		}
+		if (best == null) {
+			return null;
+		}
+		StylePreview3D.Tex t = decode(src.read(best));
+		if (t == null) {
+			return null;
+		}
+		String rel = best.substring(pre.length());
+		StylePreview3D.Tex top = null;
+		if (rel.startsWith("textures/block/")) {
+			String dir = best.substring(0, best.lastIndexOf('/') + 1), b = best.substring(best.lastIndexOf('/') + 1, best.length() - 4);
+			String stem = b.replaceAll("_side\\d*$", "");
+			for (String c : new String[]{dir + stem + "_top.png", dir + b + "_top.png"}) {
+				if (all.contains(c)) {
+					top = decode(src.read(c));
+					break;
+				}
+			}
+		}
+		return StylePreview3D.of(rel, t, top, size);
+	}
+
+	private static StylePreview3D.Tex decode(byte[] png) {
+		if (png == null) {
+			return null;
+		}
+		try (net.minecraft.client.texture.NativeImage img = net.minecraft.client.texture.NativeImage.read(png)) {
+			int w = img.getWidth(), h = img.getHeight();
+			if (w <= 0 || h <= 0 || (long) w * h > 4_000_000L) {
+				return null;
+			}
+			int[] px = new int[w * h];
+			for (int y = 0; y < h; y++) {
+				for (int x = 0; x < w; x++) {
+					px[y * w + x] = img.getColorArgb(x, y);
+				}
+			}
+			return new StylePreview3D.Tex(px, w, h);
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	/** A finished picture plus the file it came from (null pic = this pack has no texture for the category). */
+	public record Preview(Choice choice, StylePreview3D.Pic pic) {
+	}
+
+	private static Path previewFile(String project, Cat cat) {
+		return cacheDir().resolve("previews").resolve(project.replaceAll("[^A-Za-z0-9_-]", "_") + "_" + cat.id() + ".json");
+	}
+
+	/** The picture of a pack for a category: from the disk cache (instant), else read straight from Modrinth. Blocking. */
+	public static Preview preview(Hit h, Cat cat, int size) throws Exception {
+		Path f = previewFile(h.id(), cat);
+		try {
+			if (Files.isRegularFile(f) && System.currentTimeMillis() - Files.getLastModifiedTime(f).toMillis() < 14L * 24 * 3600 * 1000) {
+				JsonObject o = JsonParser.parseString(Files.readString(f, StandardCharsets.UTF_8)).getAsJsonObject();
+				Choice c = new Choice(str(o, "project"), str(o, "title"), str(o, "author"), str(o, "url"), str(o, "sha1"), str(o, "file"));
+				if (o.has("none")) {
+					return new Preview(c, null);
+				}
+				int w = o.get("w").getAsInt(), hh = o.get("h").getAsInt();
+				if (w == size) {
+					byte[] z = java.util.Base64.getDecoder().decode(str(o, "px"));
+					java.util.zip.Inflater inf = new java.util.zip.Inflater();
+					inf.setInput(z);
+					byte[] raw = new byte[w * hh * 4];
+					int n = 0;
+					while (n < raw.length && !inf.finished()) {
+						int k = inf.inflate(raw, n, raw.length - n);
+						if (k == 0 && inf.needsInput()) {
+							break;
+						}
+						n += k;
+					}
+					inf.end();
+					if (n == raw.length) {
+						int[] px = new int[w * hh];
+						java.nio.ByteBuffer.wrap(raw).asIntBuffer().get(px);
+						return new Preview(c, new StylePreview3D.Pic(px, w, hh));
+					}
+				}
+			}
+		} catch (Exception ignored) {
+			// broken cache file: make it again
+		}
+		Choice c = resolve(h);
+		StylePreview3D.Pic pic;
+		Path local = cacheDir().resolve((c.sha1().isEmpty() ? Integer.toHexString(c.url().hashCode()) : c.sha1()) + ".zip");
+		if (Files.isRegularFile(local) && Files.size(local) > 0) {
+			try (ZipFile z = new ZipFile(local.toFile())) {
+				pic = preview(new ZipSrc(z), cat, size);
+			}
+		} else {
+			StylePreview3D.Pic p2;
+			try {
+				p2 = preview(RemoteZip.open(c.url(), UA), cat, size); // only the table of contents + one or two textures
+			} catch (IOException noRanges) {
+				try (ZipFile z = new ZipFile(download(c).toFile())) { // server without ranges: whole file, as before
+					p2 = preview(new ZipSrc(z), cat, size);
+				}
+			}
+			pic = p2;
+		}
+		try {
+			JsonObject o = new JsonObject();
+			o.addProperty("project", c.project());
+			o.addProperty("title", c.title());
+			o.addProperty("author", c.author());
+			o.addProperty("url", c.url());
+			o.addProperty("sha1", c.sha1());
+			o.addProperty("file", c.file());
+			if (pic == null) {
+				o.addProperty("none", true);
+			} else {
+				java.nio.ByteBuffer bb = java.nio.ByteBuffer.allocate(pic.px().length * 4);
+				bb.asIntBuffer().put(pic.px());
+				java.util.zip.Deflater d = new java.util.zip.Deflater(6);
+				d.setInput(bb.array());
+				d.finish();
+				java.io.ByteArrayOutputStream bo = new java.io.ByteArrayOutputStream();
+				byte[] buf = new byte[8192];
+				while (!d.finished()) {
+					bo.write(buf, 0, d.deflate(buf));
+				}
+				d.end();
+				o.addProperty("w", pic.w());
+				o.addProperty("h", pic.h());
+				o.addProperty("px", java.util.Base64.getEncoder().encodeToString(bo.toByteArray()));
+			}
+			Files.createDirectories(f.getParent());
+			Files.writeString(f, o.toString(), StandardCharsets.UTF_8);
+		} catch (Exception ignored) {
+			// no cache this time
+		}
+		return new Preview(c, pic);
+	}
+
 	/** Result of {@link #buildPack()}. */
 	public record Built(String packFile, Map<String, Integer> files) {
 	}

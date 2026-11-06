@@ -45,6 +45,9 @@ public final class SolarBadge {
 		if (Presence.inServerRoom(id, nick) || Presence.inLobby(id, nick)) {
 			return true; // the lobby is the global room: it also finds players who joined this server by another address
 		}
+		if (onlineFriend(nick)) {
+			return true; // a friend online in Sleep with this nick: they use it even when the presence rooms missed them
+		}
 		// you: always (you ARE using Plegumo), even while the presence connection is down
 		MinecraftClient mc = MinecraftClient.getInstance();
 		UUID me = mc.getSession().getUuidOrNull();
@@ -74,12 +77,30 @@ public final class SolarBadge {
 			return (boolean) c[1];
 		}
 		String nick = p.getName().getString();
-		boolean r = Presence.inServerRoom(p.getUuid(), nick) || Presence.inServerRoom(Presence.backendId(p), nick) || Presence.inLobby(p.getUuid(), nick);
+		boolean r = Presence.inServerRoom(p.getUuid(), nick) || Presence.inServerRoom(Presence.backendId(p), nick) || Presence.inLobby(p.getUuid(), nick)
+				|| onlineFriend(nick);
 		if (USES_CACHE.size() > 512) {
 			USES_CACHE.clear();
 		}
 		USES_CACHE.put(p.getUuid(), new Object[] {now + 500L, r});
 		return r;
+	}
+
+	/** A friend of yours who is online in Sleep right now and plays with this nick. */
+	public static boolean onlineFriend(String nick) {
+		if (nick == null || nick.isEmpty()) {
+			return false;
+		}
+		try {
+			for (Social.User u : Social.friends) {
+				if (u != null && u.online() && (nick.equalsIgnoreCase(u.mcUsername) || nick.equalsIgnoreCase(u.display()))) {
+					return true;
+				}
+			}
+		} catch (RuntimeException ignored) {
+			// the list changed while reading: next frame
+		}
+		return false;
 	}
 
 	private static final java.util.Map<java.util.UUID, Object[]> USES_CACHE = new java.util.concurrent.ConcurrentHashMap<>();
