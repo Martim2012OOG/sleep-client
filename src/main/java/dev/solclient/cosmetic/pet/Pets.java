@@ -74,6 +74,13 @@ public final class Pets {
 		if (player == null) {
 			return null;
 		}
+		if ("1".equals(System.getProperty("kubo.verityTest")) && MinecraftClient.getInstance().player != null
+				&& player.equals(MinecraftClient.getInstance().player.getUuid())) {
+			CosmeticModels.Def v = CosmeticModels.all().get("verity"); // test only (-Dkubo.verityTest=1): Verity without buying him
+			if (v != null) {
+				return v;
+			}
+		}
 		for (CosmeticModels.Def d : Cosmetics.worn(player)) {
 			if (d.livePet()) {
 				return d;
@@ -159,6 +166,13 @@ public final class Pets {
 		if (best == null) {
 			return;
 		}
+		if ("verity".equals(best.model.id) && best.mine) {
+			if (useNow) {
+				dev.solclient.verity.Verity.onPet();
+			} else {
+				dev.solclient.verity.Verity.onHit();
+			}
+		}
 		if (useNow) {
 			boolean food = mc.player.getMainHandStack().contains(DataComponentTypes.FOOD);
 			best.pet(world, food);
@@ -214,6 +228,27 @@ public final class Pets {
 				continue;
 			}
 			PetModel m = p.model;
+			boolean verity = "verity".equals(m.id);
+			UUID vOwner = verity ? CosmeticFeatureRenderer.uuidOf(p.ownerId) : null;
+			float vSize = 1F;
+			if (verity) {
+				dev.solclient.verity.Verity.seen(p.ownerId);
+				vSize = dev.solclient.verity.Verity.size(p.ownerId, vOwner);
+				// he comes out of his box: the box opens, he rises out of it, then the box sinks away
+				long age = System.currentTimeMillis() - dev.solclient.verity.Verity.spawnedAt(p.ownerId);
+				double[] bx = BOX.computeIfAbsent(p.ownerId, k -> new double[] {p.x, p.groundY, p.z});
+				if (age < 6000L) {
+					VerityBox.draw(matrices, queue, cam, bx[0], bx[1], bx[2], age, mc.world);
+					if (age < 1800L) {
+						float k = Math.max(0F, (age - 700L) / 1100F);
+						x = bx[0] + (x - bx[0]) * k;
+						z = bx[2] + (z - bx[2]) * k;
+						y = bx[1] + 0.1 + (y - bx[1] - 0.1) * k * k;
+					}
+				} else {
+					BOX.remove(p.ownerId);
+				}
+			}
 			int light = m.glow ? LightmapTextureManager.MAX_LIGHT_COORDINATE
 					: WorldRenderer.getLightmapCoordinates(mc.world, BlockPos.ofFloored(x, y + Math.min(0.5, m.heightBlocks() * 0.5), z));
 			if (poseBuf.length < m.bones.length * 9) {
@@ -242,11 +277,50 @@ public final class Pets {
 				float sq = (float) Math.sin(Math.PI * pk);
 				matrices.scale(1F + 0.10F * sq, 1F - 0.22F * sq, 1F + 0.10F * sq);
 			}
+			if (verity) {
+				s *= vSize;
+			}
 			matrices.scale(s, s, s);
-			RenderLayer layer = RenderLayers.entityCutoutNoCull(m.texture);
+			RenderLayer layer = RenderLayers.entityCutoutNoCull(verity
+					? dev.solclient.Gfx.id("textures/cosmetics/verity_f" + dev.solclient.verity.Verity.face(p.ownerId, vOwner) + ".png") : m.texture);
 			drawBones(m, poseBuf, matrices, (bone) -> queue.submitCustom(matrices, layer, (entry, vc) -> emit(bone, entry, vc, light)));
 			matrices.pop();
+			if (verity) {
+				String say = dev.solclient.verity.Verity.bubble(p.ownerId, vOwner);
+				if (!say.isEmpty()) {
+					bubble(matrices, queue, cam, x, y + m.heightBlocks() * vSize + 0.45, z, say);
+				}
+			}
 		}
+	}
+
+	/** Where each Verity's box stands while he comes out of it. Key: owner entity id. */
+	private static final Map<Integer, double[]> BOX = new HashMap<>();
+
+	/** Position of a player's live pet (blocks), or null. Key: owner entity id. */
+	public static double[] petPos(int ownerId) {
+		Pet p = PETS.get(ownerId);
+		return p == null ? null : new double[] {p.x, p.y + p.model.heightBlocks() * 0.5, p.z};
+	}
+
+	/** A speech bubble that faces the camera, wrapped over a few lines. */
+	private static void bubble(MatrixStack matrices, OrderedRenderCommandQueue queue, Vec3d cam, double x, double y, double z, String text) {
+		MinecraftClient mc = MinecraftClient.getInstance();
+		var tr = mc.textRenderer;
+		List<net.minecraft.text.OrderedText> lines = tr.wrapLines(net.minecraft.text.Text.literal(text), 170);
+		if (lines.size() > 6) {
+			lines = lines.subList(0, 6);
+		}
+		matrices.push();
+		matrices.translate(x - cam.x, y - cam.y + lines.size() * 0.25F, z - cam.z);
+		matrices.multiply(mc.gameRenderer.getCamera().getRotation());
+		matrices.scale(0.025F, -0.025F, 0.025F);
+		for (int i = 0; i < lines.size(); i++) {
+			float w = tr.getWidth(lines.get(i));
+			queue.submitText(matrices, -w / 2F, i * 10F, lines.get(i), false, net.minecraft.client.font.TextRenderer.TextLayerType.NORMAL,
+					LightmapTextureManager.MAX_LIGHT_COORDINATE, 0xFFFFFFFF, 0xA0101018, 0);
+		}
+		matrices.pop();
 	}
 
 	/** Soft round shadow on the ground, fainter the higher the pet is. */

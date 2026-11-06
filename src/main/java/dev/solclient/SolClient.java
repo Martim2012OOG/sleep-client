@@ -113,6 +113,7 @@ public class SolClient implements ClientModInitializer {
 		MODS.add(new DayCounterMod());
 		MODS.add(new dev.solclient.voice.VoiceChatMod());
 		MODS.add(new dev.solclient.mods.PersonasMod());
+		MODS.add(new dev.solclient.verity.VerityMod());
 		MODS.add(new dev.solclient.mods.TrustRadarMod());
 		MODS.add(new dev.solclient.mods.RealisticLiquidsMod());
 		MODS.add(new dev.solclient.mods.WavesMod());
@@ -246,6 +247,11 @@ public class SolClient implements ClientModInitializer {
 		dev.solclient.social.Presence.onEmote = dev.solclient.emote.EmoteManager::playRemote;
 
 		ClientTickEvents.END_CLIENT_TICK.register(SolClient::tick);
+		try {
+			dev.solclient.verity.Verity.init();
+		} catch (Throwable t) {
+			System.err.println("[Sleep] Verity unavailable: " + t);
+		}
 		HudRenderCallback.EVENT.register((context, tickCounter) -> renderHud(context));
 		dev.solclient.social.ServerShare.register();
 		dev.solclient.video.WatchPartyHooks.register();

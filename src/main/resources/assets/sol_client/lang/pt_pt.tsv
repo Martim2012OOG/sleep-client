@@ -3053,3 +3053,37 @@ Sleep Water Renderer	Renderizador de água do Sleep
 Sleep's own liquid renderer (no Iris, no shader pack): glossy water that reflects the sky, moving waves, sun glints, foam, spray from waterfalls and splashes, molten lava.	O renderizador de líquidos do próprio Sleep (sem Iris, sem shader pack): água brilhante que reflete o céu, ondas, reflexos do sol, espuma, salpicos de cascatas e mergulhos, lava derretida.
 Spray, Splashes And Foam	Salpicos e espuma
 Water Renderer Status	Estado do renderizador de água
+Your personal helper friend (special pet): talks with AI, hears you in voice chat, has moods... don't make him angry.	O teu amigo ajudante pessoal (pet especial): fala com IA, ouve-te no voice chat, tem humores... não o deixes zangado.
+Brain (Groq)	Cérebro (Groq)
+Groq API Key	Chave API do Groq
+Free Groq key	Chave Groq grátis
+Model	Modelo
+Verity Status	Estado do Verity
+Talking to Verity	Falar com o Verity
+Listen In Voice Chat	Ouvir no voice chat
+Verity hears you through your voice chat (Simple Voice Chat, Plasmo, Sleep's voice chat...). Say "Verity" to call him.	O Verity ouve-te pelo teu voice chat (Simple Voice Chat, Plasmo, o voice chat do Sleep...). Diz "Verity" para o chamar.
+Only When You Say "Verity"	Só quando dizes "Verity"
+In voice chat he only answers when you say his name, then keeps listening for 20 seconds. Off = he answers everything you say.	No voice chat só responde quando dizes o nome dele, e depois continua a ouvir 20 segundos. Desligado = responde a tudo o que dizes.
+Talk Key (hold to speak, tap to type)	Tecla para falar (segura para falar, toca para escrever)
+Chat Starting With "Verity" Goes To Him	Chat a começar por "Verity" vai para ele
+Messages that start with Verity, or with @v, are not sent to the server: Verity answers them.	As mensagens que começam por Verity, ou por @v, não vão para o servidor: o Verity responde.
+Voice	Voz
+Verity Speaks Out Loud	O Verity fala em voz alta
+Fish Audio API Key	Chave API do Fish Audio
+Fish Audio key	Chave Fish Audio
+Fish Audio Voice ID	ID da voz Fish Audio
+Fish Audio Model	Modelo Fish Audio
+Hear Other Players' Verity	Ouvir o Verity dos outros
+Speech Bubble Above Him	Balão de fala por cima dele
+Personality	Personalidade
+Can Get Angry	Pode ficar zangado
+Grows Huge When Furious	Fica enorme quando furioso
+Gets Creepier Over The Days	Fica mais assustador com os dias
+Talks By Himself Sometimes	Às vezes fala sozinho
+Memory	Memória
+Forget everything	Esquecer tudo
+Test	Testar
+Open	Abrir
+World Resolution	Resolução do mundo
+Draws the 3D world smaller and stretches it, while menus and text stay sharp. Auto = half on a Retina Mac (same FPS as before, sharp text), full elsewhere.	Desenha o mundo 3D mais pequeno e estica-o, enquanto os menus e o texto ficam nítidos. Auto = metade num Mac Retina (os mesmos FPS de antes, texto nítido), completo nos outros.
+World Resolution Now	Resolução do mundo agora

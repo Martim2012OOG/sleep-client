@@ -10,7 +10,11 @@
     "FrameSyncMixin",
     "ArmorStandPoseMixin",
     "KillFxHideMixin",
-    "RetinaMixin"
+    "RetinaMixin",
+    "WorldScaleMixin",
+    "WorldScaleFramebufferMixin"
   ],
-  "injectors": { "defaultRequire": 0 }
+  "injectors": {
+    "defaultRequire": 0
+  }
 }

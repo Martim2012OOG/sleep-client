@@ -51,6 +51,17 @@ public final class PersonaHook {
 	/** Called by the mixin after alcCaptureSamples filled 'addr' with 'count' samples. */
 	public static void samples(long device, long addr, int count) {
 		lastHookAt = System.currentTimeMillis();
+		// Verity listens to what you say in any voice chat (raw voice, before the voice changer)
+		if (addr != 0 && count > 0) {
+			int[] vf = FORMAT.get(device);
+			if (vf != null && vf[1] == 0x1101 && dev.solclient.verity.Verity.mine()) {
+				try {
+					dev.solclient.verity.Verity.feedMic(MemoryUtil.memShortBuffer(addr, count), count, vf[0]);
+				} catch (Throwable ignored) {
+					// never break the microphone
+				}
+			}
+		}
 		Persona p = active;
 		if (p == null || addr == 0 || count <= 0 || onlyDevice != 0 && device != onlyDevice) {
 			return;
@@ -100,6 +111,9 @@ public final class PersonaHook {
 
 	/** Used by the client's own voice chat when the hook is not in: same effect, applied to its own samples. */
 	public static void fallback(short[] pcm, int rate) {
+		if (!hookAlive() && dev.solclient.verity.Verity.mine()) {
+			dev.solclient.verity.Verity.feedMic(java.nio.ShortBuffer.wrap(pcm), pcm.length, rate); // Sleep's own voice chat
+		}
 
 		Persona p = active;
 		if (p == null || hookAlive()) {

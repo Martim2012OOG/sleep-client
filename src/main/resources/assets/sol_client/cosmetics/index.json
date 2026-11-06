@@ -2374,5 +2374,19 @@
    64
   ],
   "source": "pack"
+ },
+ {
+  "id": "verity",
+  "name": "Verity",
+  "category": "Pets",
+  "geometry": "pet3d_verity",
+  "texture": "verity_f13",
+  "anim": "pet",
+  "pet": "verity",
+  "credit": "Verity faces by c00lzer (CC-BY-4.0, https://sketchfab.com/3d-models/all-verity-faces-sikayd-fc0d1b191ae94432b374ca09f18ad0b3); box by Jojojossy76 (CC-BY-4.0, https://sketchfab.com/3d-models/minecraft-verity-box-a5030ff354a5455b9163673465b537a8)",
+  "textureSize": [
+   512,
+   256
+  ]
  }
 ]

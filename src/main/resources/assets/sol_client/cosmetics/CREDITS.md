@@ -45,3 +45,8 @@ All models are licensed under Creative Commons Attribution 4.0. Converted for Pl
 - **Mobloom Mowo by IMO (CC-BY-4.0, https://sketchfab.com/3d-models/mobloom-mowo-a662f916ba134c2bafdd6411eee9310f)**: Mowo
 - **Original Sleep art**: Baby Dragon, Boo the Ghost, Buzzy Bee, Night Bat
 - **Rehiga (free to edit and use in servers/content with credit, not for resale)**: Elven Ranger Wings (Royal), Mini Crewmate (Black), Mini Crewmate (Blue), Mini Crewmate (Green), Mini Crewmate (Purple), Mini Crewmate (Red), Mini Crewmate (White), Mini Crewmate (Yellow)
+
+## Verity (special pet)
+- Faces / body: "ALL VERITY FACES (SIKAYD)" by c00lzer, CC-BY-4.0 — https://sketchfab.com/3d-models/all-verity-faces-sikayd-fc0d1b191ae94432b374ca09f18ad0b3
+- Box: "Minecraft Verity Box" by Jojojossy76, CC-BY-4.0 — https://sketchfab.com/3d-models/minecraft-verity-box-a5030ff354a5455b9163673465b537a8
+- Verity is a character by ThatMob. Sleep's Verity is a fan-made pet; the AI personality and behaviour are written for Sleep.

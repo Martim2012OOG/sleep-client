@@ -1,5 +1,5 @@
 {
- "count": 128,
+ "count": 129,
  "note": "Items with 'variants' are ONE item with a colour picker; variants[0] is the default colour.",
  "cosmetics": [
   {
@@ -1451,6 +1451,16 @@
    "rarity": "legendary",
    "live_pet": true,
    "image": "images/cosmetics/ghost.png"
+  },
+  {
+   "id": "verity",
+   "name": "Verity",
+   "category": "Pets",
+   "price": 20000,
+   "rarity": "special",
+   "badge": "SPECIAL",
+   "live_pet": true,
+   "image": "images/cosmetics/verity.png"
   }
  ]
 }

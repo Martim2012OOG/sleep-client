@@ -101,17 +101,18 @@ public final class KuboLink {
 		String myLook = dev.solclient.mods.NameColourMod.encodeMine();
 		String myFlag = ProfileBadges.myFlagCode();
 		JsonObject myCx = myCosmetics(mc);
-		String sig = myBadge + "|" + myLook + "|" + ProfileBadges.myColourOn() + "|" + myFlag + "|" + myCx;
+		String sig = myBadge + "|" + myLook + "|" + ProfileBadges.myColourOn() + "|" + myFlag + "|" + myCx + "|" + dev.solclient.verity.Verity.syncSig();
 		lobbyTick(mc, now, sig, myBadge, myLook, myFlag, myCx);
-		boolean badgeDue = mc.player != null && (!sig.equals(lastBadge) ? now - lastBadgeAt > 1500L
-				: (!myBadge.isEmpty() || !myLook.isEmpty() || !myFlag.isEmpty() || myCx.size() > 0) && now - lastBadgeAt > 12_000L);
+		boolean badgeDue = mc.player != null && (!sig.equals(lastBadge) ? now - lastBadgeAt > (dev.solclient.verity.Verity.mine() ? 400L : 1500L)
+				: (!myBadge.isEmpty() || !myLook.isEmpty() || !myFlag.isEmpty() || myCx.size() > 0 || dev.solclient.verity.Verity.mine())
+						&& now - lastBadgeAt > 12_000L);
 		if (mc.player == null || mc.world == null || !(wantParty || wantPings && outgoing != null || badgeDue)) {
 			return;
 		}
 		if (outgoing != null && now - outgoing.at > 3500L) {
 			outgoing = null; // repeated for a few seconds so nobody misses it, then dropped
 		}
-		long every = outgoing != null ? 700L : 1500L;
+		long every = outgoing != null ? 700L : dev.solclient.verity.Verity.mine() ? 450L : 1500L;
 		if (now - lastSend < every) {
 			return;
 		}
@@ -134,6 +135,7 @@ public final class KuboLink {
 		if (myCx.size() > 0) {
 			kx.add("cx", myCx);
 		}
+		dev.solclient.verity.Verity.write(kx); // his face, size and what he says: for the players near you
 		if (outgoing != null) {
 			JsonArray a = new JsonArray();
 			a.add(Math.round(outgoing.x * 10) / 10.0);
@@ -209,6 +211,7 @@ public final class KuboLink {
 		long now = System.currentTimeMillis();
 		String nick = Json.str(kx, "n");
 		ProfileBadges.rememberUuid(uuid, nick);
+		dev.solclient.verity.Verity.onRemote(uuid, nick, kx);
 		if (kx.has("bd") && nick != null) {
 			lastRecvAt = now;
 			lastRecvNick = nick;

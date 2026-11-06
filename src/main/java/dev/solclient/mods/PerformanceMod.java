@@ -37,6 +37,27 @@ public class PerformanceMod extends Mod {
 	public final Option.Num playerDistance = num("Players Draw Distance", 64, 24, 160, 8, " blocks");
 	/** Mac: full Retina resolution (sharp, about 4x slower to draw). Read from a file at start, before the window exists. */
 	// (new name and file: the old "fast" choice drew everything, text included, at half resolution = pixelated text; everyone starts sharp again)
+	/** Auto = on a Retina Mac the world is drawn at half size (old fast-mode FPS) while menus and text stay sharp. */
+	public final Option.Choice worldRes = choice("World Resolution", 0, "Auto", "100%", "75%", "50%")
+			.tip("Draws the 3D world smaller and stretches it, while menus and text stay sharp. Auto = half on a Retina Mac (same FPS as before, sharp text), full elsewhere.");
+	@SuppressWarnings("unused")
+	private final Option.Action worldResStatus = action("World Resolution Now", "Refresh", () -> {
+	}, () -> dev.solclient.render.WorldScale.status);
+
+	/** How big the world is drawn compared to the screen (1 = full). */
+	public static float worldScale(net.minecraft.client.MinecraftClient mc) {
+		PerformanceMod m = instance;
+		if (m == null || mc.getWindow() == null) {
+			return 1F;
+		}
+		return switch (m.worldRes.idx()) {
+			case 1 -> 1F;
+			case 2 -> 0.75F;
+			case 3 -> 0.5F;
+			default -> mc.getWindow().getFramebufferWidth() >= mc.getWindow().getWidth() * 1.5F ? 0.5F : 1F; // Retina: half
+		};
+	}
+
 	public final Option.Bool sharpRetina = bool("Mac: Sharp Text and Menus (Retina)", true)
 			.tip("On = sharp text and menus. Off = the whole game, text included, is drawn at half resolution: more FPS on a Mac, but blurry / pixelated text. Restart the game after changing it.");
 	public final Option.Bool crowdMode = bool("Crowd Mode (lobbies full of NPCs)", true)
