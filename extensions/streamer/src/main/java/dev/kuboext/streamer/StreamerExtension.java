@@ -17,6 +17,7 @@ public class StreamerExtension implements KuboExtension {
 		api.addMod(new StreamerModeMod());
 		api.addMod(new TikTokLiveMod());
 		api.addMod(new dev.solclient.mods.TikTokViewersMod());
+		api.addMod(new dev.solclient.mods.ParkourLevelMod());
 		// while you are live: full FPS even with OBS in front, optionally locked to a steady number
 		api.streamFps(() -> TikTokLiveMod.instance == null ? -1 : TikTokLiveMod.instance.streamFps());
 		ClientTickEvents.END_CLIENT_TICK.register(c -> StreamerModeMod.pollKey());

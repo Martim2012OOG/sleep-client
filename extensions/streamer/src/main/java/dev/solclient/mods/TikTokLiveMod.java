@@ -80,7 +80,6 @@ public class TikTokLiveMod extends HudMod {
 	private final Option.Header hParkour = header("Parkour Live (Parkour Paradise 3)");
 	public final Option.Bool pkOn = bool("Parkour Live", true)
 			.tip("In the Parkour Paradise 3 map (Add-ons): LEVEL X / 100 on screen instead of the boss bar, and gifts move you up or down, start a RESET timer, save you or punch you.");
-	public final Option.Text pkTitle = text("Parkour Title", "I HAVE TO BEAT THIS PARKOUR", 60, "I HAVE TO BEAT THIS PARKOUR");
 	private final Option.Text pkUp1 = text("UP 1 LVL gifts", "Paper Crane, Heart Me", 200, "gift names, separated by commas");
 	private final Option.Text pkDown1 = text("DOWN 1 LVL gifts", "Hat and Mustache, Cowboy Hat", 200, "gift names, separated by commas");
 	private final Option.Text pkUp10 = text("UP 10 LVL gifts", "Panda", 200, "gift names, separated by commas");

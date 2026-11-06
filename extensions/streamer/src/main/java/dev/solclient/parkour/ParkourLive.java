@@ -443,90 +443,29 @@ public final class ParkourLive {
 		}
 		int w = mc.getWindow().getScaledWidth(), h = mc.getWindow().getScaledHeight();
 		long now = System.currentTimeMillis();
-		int ty = Math.max(8, (int) (h * 0.12));
-		drawTitle(c, m.pkTitle.get().isBlank() ? "I HAVE TO BEAT THIS PARKOUR" : m.pkTitle.get(), w / 2, ty, w);
-		drawLevel(c, w / 2, ty + 30, now);
-		drawPanel(c, w, h);
 		drawSweep(c, w, h, now);
 		if (resetEnd > 0) {
 			drawReset(c, w, h, now);
 		}
-		if (jailEnd > 0) {
-			drawJail(c, w, ty + 52, now);
-		}
 	}
 
-	/** Big white text with a thick black outline (like the stream title). */
-	private static void drawTitle(DrawContext c, String s, int cx, int y, int sw) {
-		var tr = MinecraftClient.getInstance().textRenderer;
-		Text t = Text.literal(s).styled(st -> st.withBold(true));
-		int tw = tr.getWidth(t);
-		float sc = Math.max(1F, Math.min(2.6F, (sw * 0.72F) / Math.max(1, tw)));
-		c.getMatrices().pushMatrix();
-		c.getMatrices().translate(cx, y);
-		c.getMatrices().scale(sc, sc);
-		int x = -tw / 2;
-		for (int dx = -1; dx <= 1; dx++) {
-			for (int dy = -1; dy <= 1; dy++) {
-				if (dx != 0 || dy != 0) {
-					c.drawText(tr, t, x + dx, dy, 0xFF000000, false);
-				}
-			}
-		}
-		c.drawText(tr, t, x, 0, 0xFFFFFFFF, false);
-		c.getMatrices().popMatrix();
+	// ---- for the "Parkour Level" HUD element
+	/** In the parkour map with Parkour Live on. */
+	public static boolean showing() {
+		return inMap && mod() != null;
 	}
 
-	/** "LEVEL 91 / 100" in a dark box with a cyan edge; pops and shines when the level changes. */
-	private static void drawLevel(DrawContext c, int cx, int y, long now) {
-		var tr = MinecraftClient.getInstance().textRenderer;
-		int lv = Math.max(0, level);
-		String s = "LEVEL " + lv + " / " + MAX;
-		float pop = Math.max(0F, 1F - (now - levelPopAt) / 450F);
-		float sc = 1.5F + 0.35F * (float) Math.sin(Math.PI * Math.min(1F, (now - levelPopAt) / 450F)) * (pop > 0 ? 1 : 0);
-		int tw = tr.getWidth(s);
-		c.getMatrices().pushMatrix();
-		c.getMatrices().translate(cx, y);
-		c.getMatrices().scale(sc, sc);
-		int bw = tw + 10, bh = 13, bx = -bw / 2, by = -2;
-		Gfx.fill(c, bx, by, bx + bw, by + bh, 0x99181C24);
-		Gfx.fill(c, bx, by, bx + 2, by + bh, 0xFF35D0F5);
-		// progress line under the text
-		Gfx.fill(c, bx + 2, by + bh - 1, bx + 2 + (bw - 2) * lv / MAX, by + bh, 0xFF35D0F5);
-		// shine sweeping over the box after a change
-		float shine = (now - levelPopAt) / 700F;
-		if (shine >= 0 && shine < 1) {
-			int sx = bx + (int) ((bw + 16) * shine) - 8;
-			for (int i = 0; i < 6; i++) {
-				int a = (int) (90 * (1 - Math.abs(i - 2.5F) / 3F));
-				Gfx.fill(c, Math.max(bx, sx + i), by, Math.min(bx + bw, sx + i + 1), by + bh, Gfx.withAlpha(0xFFFFFF, Math.max(0, a)));
-			}
-		}
-		c.drawText(tr, Text.literal(s), -tw / 2 + 2, 1, 0xFFD8DCE4, true);
-		c.getMatrices().popMatrix();
+	public static int level() {
+		return Math.max(0, level);
 	}
 
-	/** The gift panel on the right: icon (with how many were sent) + what it does. */
-	private static void drawPanel(DrawContext c, int w, int h) {
-		var tr = MinecraftClient.getInstance().textRenderer;
-		Act[] rows = {Act.UP1, Act.DOWN1, Act.UP10, Act.DOWN10, Act.RESET, Act.SAVE};
-		int rowH = 24, pw = 96, ph = rows.length * rowH + 14;
-		int px = w - pw - 6, py = Math.max(30, (int) (h * 0.2));
-		Gfx.rrect(c, px, py, pw, ph, 5, 0x8C1E2130);
-		for (int i = 0; i < rows.length; i++) {
-			int ry = py + 6 + i * rowH;
-			drawGift(c, rows[i], px + 6, ry, 18);
-			c.drawText(tr, Text.literal(rows[i].label).styled(st -> st.withBold(true)), px + 30, ry + 5, 0xFFFFFFFF, true);
-		}
-		// little "^" at the bottom, like the stream overlay
-		Gfx.textC(c, "^", px + pw / 2, py + ph - 9, 0x88FFFFFF);
-		// punch, under the panel
-		int ry = py + ph + 6;
-		Gfx.rrect(c, px, ry, pw, 48, 5, 0x8C1E2130);
-		drawGift(c, Act.JAIL, px + 6, ry + 3, 18);
-		c.drawText(tr, Text.literal("= JAIL").styled(st -> st.withBold(true)), px + 30, ry + 8, 0xFFFFFFFF, true);
-		drawGift(c, Act.PUNCH, px + 6, ry + 27, 18);
-		c.drawText(tr, Text.literal("= PUNCH").styled(st -> st.withBold(true)), px + 30, ry + 32, 0xFFFFFFFF, true);
+	public static long levelChangedAt() {
+		return levelPopAt;
+	}
+
+	/** Seconds of JAIL left, 0 = free. */
+	public static int jailLeft() {
+		return jailEnd <= 0 ? 0 : (int) Math.ceil(Math.max(0, jailEnd - System.currentTimeMillis()) / 1000.0);
 	}
 
 	/** The gift's real picture when known, else a coloured badge; the count is drawn over its bottom. */
@@ -600,24 +539,6 @@ public final class ParkourLive {
 			int sw = tr.getWidth(sweepSub);
 			float sx = w - (w / 2F + sw / 2F) * ein - (w / 2F + sw) * eout; // comes from the other side
 			c.drawText(tr, Text.literal(sweepSub), (int) sx, cy + 10, 0xFFFFFFFF, true);
-		}
-	}
-
-	/** JAIL + seconds left, with bars over it, under the level. */
-	private static void drawJail(DrawContext c, int w, int y, long now) {
-		var tr = MinecraftClient.getInstance().textRenderer;
-		int sec = (int) Math.ceil(Math.max(0, jailEnd - now) / 1000.0);
-		String s = "JAIL " + sec + "s";
-		int tw = tr.getWidth(s);
-		int bw = tw * 2 + 24, bh = 26, bx = w / 2 - bw / 2;
-		Gfx.rrect(c, bx, y, bw, bh, 4, 0xB0101014);
-		c.getMatrices().pushMatrix();
-		c.getMatrices().translate(w / 2F, y + 6);
-		c.getMatrices().scale(2F, 2F);
-		c.drawText(tr, Text.literal(s).styled(st -> st.withBold(true)), -tw / 2, 0, 0xFFE0E4EC, true);
-		c.getMatrices().popMatrix();
-		for (int x = bx + 6; x < bx + bw - 3; x += 9) {
-			Gfx.fill(c, x, y, x + 2, y + bh, 0xC08A93A6); // the bars
 		}
 	}
 
