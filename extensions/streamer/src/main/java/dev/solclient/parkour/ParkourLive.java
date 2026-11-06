@@ -1,7 +1,6 @@
 package dev.solclient.parkour;
 
 import dev.solclient.Gfx;
-import dev.solclient.Lang;
 import dev.solclient.mods.TikTokLiveMod;
 import dev.solclient.tiktok.TikEvent;
 import dev.solclient.tiktok.TikGifts;
@@ -142,11 +141,11 @@ public final class ParkourLive {
 		switch (a) {
 			case UP1, DOWN1, UP10, DOWN10 -> {
 				if (counting) {
-					sweep(Lang.tr("BLOCKED", "BLOQUEADO"), Lang.tr("The RESET timer is running", "O tempo de RESET está a contar"), 0xFFFF5555);
+					sweep("BLOCKED", "The RESET timer is running", 0xFFFF5555);
 					return;
 				}
 				if (jailEnd > 0) {
-					sweep(Lang.tr("BLOCKED", "BLOQUEADO"), Lang.tr("You are in JAIL", "Estás na JAULA"), 0xFFFF5555);
+					sweep("BLOCKED", "You are in JAIL", 0xFFFF5555);
 					return;
 				}
 				int step = a == Act.UP1 ? 1 : a == Act.DOWN1 ? -1 : a == Act.UP10 ? 10 : -10;
@@ -171,7 +170,7 @@ public final class ParkourLive {
 					return;
 				}
 				resetEnd = 0;
-				sweep(Lang.tr("SAVED!", "SALVO!"), who, 0xFF55FF7F);
+				sweep("SAVED!", who, 0xFF55FF7F);
 				mc.getSoundManager().play(PositionedSoundInstance.ui(SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, 1.2F, 0.7F));
 			}
 			case PUNCH -> punches = Math.min(punches + n, 20);
@@ -233,7 +232,10 @@ public final class ParkourLive {
 				return;
 			}
 			int now = Math.max(0, level);
-			int target = Math.max(0, Math.min(MAX, to != null ? to : now + delta));
+			if (to == null && delta < 0 && now <= 1) {
+				return; // already at the start: nothing to go down to
+			}
+			int target = Math.max(1, Math.min(MAX, to != null ? to : now + delta));
 			if (target == now && to == null) {
 				return;
 			}
@@ -351,7 +353,7 @@ public final class ParkourLive {
 			levelPopAt = System.currentTimeMillis();
 			boolean byGift = giftNote != null && System.currentTimeMillis() - giftNoteAt < 3000L;
 			if (lv > lastLevel && !byGift) {
-				sweep(Lang.tr("CHECKPOINT!", "CHECKPOINT!"), "LEVEL " + lv, 0xFFFFD23C);
+				sweep("CHECKPOINT!", "LEVEL " + lv, 0xFFFFD23C);
 			}
 			giftNote = null;
 		}
@@ -366,8 +368,8 @@ public final class ParkourLive {
 			}
 			if (left <= 0) {
 				resetEnd = 0;
-				setLevel(mc, 0, 0);
-				sweep("RESET!", Lang.tr("Back to level 0", "De volta ao nível 0"), 0xFFFF4040);
+				setLevel(mc, 1, 0); // back to checkpoint 1
+				sweep("RESET!", "Back to checkpoint 1", 0xFFFF4040);
 				mc.getSoundManager().play(PositionedSoundInstance.ui(SoundEvents.BLOCK_ANVIL_LAND, 0.5F, 0.8F));
 			}
 		}
@@ -375,7 +377,7 @@ public final class ParkourLive {
 		if (jailEnd > 0 && System.currentTimeMillis() >= jailEnd) {
 			jailEnd = 0;
 			server.execute(() -> release(server));
-			sweep(Lang.tr("FREE!", "LIVRE!"), "", 0xFF55FF7F);
+			sweep("FREE!", "", 0xFF55FF7F);
 			mc.getSoundManager().play(PositionedSoundInstance.ui(SoundEvents.BLOCK_IRON_DOOR_OPEN, 1F, 0.8F));
 		}
 		// golden punches: one after the other
@@ -425,10 +427,10 @@ public final class ParkourLive {
 	// ================================================================ tests (no live needed)
 	public static void test(Act a) {
 		if (!inMap) {
-			sweep(Lang.tr("NOT IN THE MAP", "NÃO ESTÁS NO MAPA"), Lang.tr("Open Parkour Paradise 3 in Add-ons", "Abre o Parkour Paradise 3 nos Add-ons"), 0xFFFF6B6B);
+			sweep("NOT IN THE MAP", "Open Parkour Paradise 3 in Add-ons", 0xFFFF6B6B);
 			return;
 		}
-		apply(a, 1, Lang.tr("Test", "Teste"));
+		apply(a, 1, "Test");
 	}
 
 	// ================================================================ drawing
@@ -470,9 +472,17 @@ public final class ParkourLive {
 
 	/** The gift's real picture when known, else a coloured badge; the count is drawn over its bottom. */
 	private static void drawGift(DrawContext c, Act a, int x, int y, int s) {
-		Identifier icon = TikGifts.icon(giftOf(a));
+		Identifier icon = null;
+		TikTokLiveMod mm = TikTokLiveMod.instance;
+		for (String name : (mm == null ? giftOf(a) : mm.pkGifts(a)).split("[,;]")) {
+			if (icon == null && !name.isBlank()) {
+				icon = TikGifts.icon(name.trim());
+			}
+		}
 		if (icon != null) {
 			c.drawTexture(net.minecraft.client.gl.RenderPipelines.GUI_TEXTURED, icon, x, y, 0, 0, s, s, s, s);
+		} else if (a == Act.SAVE) {
+			watermelon(c, x, y, s);
 		} else {
 			int col = switch (a) {
 				case UP1, UP10 -> 0xFF3FB950;
@@ -504,6 +514,18 @@ public final class ParkourLive {
 			c.getMatrices().scale(0.75F, 0.75F);
 			c.drawText(tr, Text.literal(n).styled(st -> st.withBold(true)), -tr.getWidth(n) / 2, 0, 0xFFFFFFFF, true);
 			c.getMatrices().popMatrix();
+		}
+	}
+
+	/** A round watermelon slice (green rind, red, black seeds) until TikTok gives us the real picture. */
+	private static void watermelon(DrawContext c, int x, int y, int s) {
+		float cx = x + s / 2F, cy = y + s / 2F, r = s / 2F;
+		Gfx.circle(c, cx, cy, r, 0xFF2E8B3A);
+		Gfx.circle(c, cx, cy, r * 0.86F, 0xFFB8E68A);
+		Gfx.circle(c, cx, cy, r * 0.78F, 0xFFF0465A);
+		for (int i = 0; i < 7; i++) {
+			double an = i * Math.PI * 2 / 7 + 0.3;
+			Gfx.circle(c, cx + (float) Math.cos(an) * r * 0.45F, cy + (float) Math.sin(an) * r * 0.45F, Math.max(1F, r * 0.07F), 0xFF1A1A1A);
 		}
 	}
 
@@ -547,30 +569,22 @@ public final class ParkourLive {
 		var tr = MinecraftClient.getInstance().textRenderer;
 		long left = Math.max(0, resetEnd - now);
 		int sec = (int) Math.ceil(left / 1000.0);
-		int cx = w / 2, cy = (int) (h * 0.5);
+		int cx = w / 2, cy = (int) (h * 0.42);
 		boolean hurry = sec <= 10;
-		float blink = hurry ? (float) (0.5 + 0.5 * Math.sin(now / 90.0)) : 1F;
-		String hint = "SAVE: " + giftOf(Act.SAVE);
-		int bw = Math.max(92, tr.getWidth(hint) + 14), bh = 92;
-		Gfx.rrect(c, cx - bw / 2, cy - 46, bw, bh, 6, 0x99101014);
-		if (hurry) {
-			Gfx.rrectBorder(c, cx - bw / 2, cy - 46, bw, bh, 6, 0, Gfx.withAlpha(0xFF3030, (int) (255 * blink)));
-		}
+		int red = hurry && (now / 250) % 2 == 0 ? 0xFFFF8080 : 0xFFFF3B3B;
 		c.getMatrices().pushMatrix();
-		c.getMatrices().translate(cx, cy - 40);
-		c.getMatrices().scale(1.4F, 1.4F);
-		c.drawText(tr, Text.literal("RESET"), -tr.getWidth("RESET") / 2, 0, 0xFFFF3B3B, true);
+		c.getMatrices().translate(cx, cy - 30);
+		c.getMatrices().scale(1.6F, 1.6F);
+		c.drawText(tr, Text.literal("RESET"), -tr.getWidth("RESET") / 2, 0, red, true);
 		c.getMatrices().popMatrix();
 		String n = String.valueOf(sec);
 		c.getMatrices().pushMatrix();
-		c.getMatrices().translate(cx, cy - 24);
-		c.getMatrices().scale(3F, 3F);
+		c.getMatrices().translate(cx, cy - 14);
+		c.getMatrices().scale(3.2F, 3.2F);
 		c.drawText(tr, Text.literal(n), -tr.getWidth(n) / 2, 0, 0xFFFFFFFF, true);
 		c.getMatrices().popMatrix();
-		drawGift(c, Act.SAVE, cx - 14, cy + 4, 28);
-		c.drawText(tr, Text.literal(hint), cx - tr.getWidth(hint) / 2, cy + 35, 0xFFFFD23C, true);
-		if (!resetBy.isEmpty()) {
-			Gfx.textC(c, resetBy, cx, cy + 50, 0xAAFFFFFF);
-		}
+		// the SAVE gift, gently bobbing
+		int bob = (int) Math.round(Math.sin(now / 300.0) * 2);
+		drawGift(c, Act.SAVE, cx - 20, cy + 16 + bob, 40);
 	}
 }

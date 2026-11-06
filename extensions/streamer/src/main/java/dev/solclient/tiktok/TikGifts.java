@@ -77,7 +77,7 @@ public final class TikGifts {
 	/** The gift's picture as a texture, or null while it is not known / still downloading. Call on the render thread. */
 	public static Identifier icon(String name) {
 		load();
-		String k = key(name);
+		String k = resolve(key(name));
 		Identifier id = TEX.get(k);
 		if (id != null) {
 			return id;
@@ -91,6 +91,21 @@ public final class TikGifts {
 		t.setDaemon(true);
 		t.start();
 		return null;
+	}
+
+	/** The known gift for a name: the same name, else one whose name contains it (or is contained in it). */
+	private static String resolve(String k) {
+		if (k.isEmpty() || INFO.containsKey(k)) {
+			return k;
+		}
+		if (k.length() >= 5) {
+			for (String o : INFO.keySet()) {
+				if (o.contains(k) || (o.length() >= 5 && k.contains(o))) {
+					return o;
+				}
+			}
+		}
+		return k;
 	}
 
 	/** Saves what was learnt (call now and then, e.g. every few seconds). */
