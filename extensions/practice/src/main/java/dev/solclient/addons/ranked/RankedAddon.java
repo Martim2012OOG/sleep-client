@@ -36,6 +36,11 @@ public class RankedAddon implements Addon {
 	}
 
 	@Override
+	public Screen embed(Screen back) {
+		return new RankedScreen(back, true);
+	}
+
+	@Override
 	public void open(Screen parent) {
 		MinecraftClient.getInstance().setScreen(new RankedScreen(parent));
 	}

@@ -29,4 +29,12 @@ public interface Addon {
 
 	/** Opens the add-on. {@code parent} is the screen to come back to. */
 	void open(Screen parent);
+
+	/**
+	 * A screen drawn inside the Sleep menu's panel (like the mods' settings) instead of opening on its own, or null
+	 * to use {@link #open}. Calling {@code client.setScreen(back)} from it closes it again.
+	 */
+	default Screen embed(Screen back) {
+		return null;
+	}
 }

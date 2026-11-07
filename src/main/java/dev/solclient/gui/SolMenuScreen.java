@@ -1044,7 +1044,7 @@ public class SolMenuScreen extends Screen {
 			return;
 		}
 		if (gameModsTab) {
-			if (embedded != null) {
+			if (embedded != null && !embeddedAddon) {
 				drawEmbedded(c, mx, my, ix0, ix1, iy0, iy1);
 				return;
 			}
@@ -1282,8 +1282,36 @@ public class SolMenuScreen extends Screen {
 	private String embeddedName = "";
 	private int eX, eY, eW, eH, eInitW, eInitH;
 
-	private boolean openEmbedded(String modId, String name) {
-		net.minecraft.client.gui.screen.Screen parent = new net.minecraft.client.gui.screen.Screen(Text.empty()) {
+	/** True when the embedded screen is an add-on (shown in Add-ons) and not a mod's settings (shown in Mods). */
+	private boolean embeddedAddon;
+
+	private boolean embedOn() {
+		return embedded != null && (embeddedAddon ? view == V_ADDONS && open == null : gameModsTab);
+	}
+
+	private void openAddon(dev.solclient.addons.Addon a) {
+		net.minecraft.client.gui.screen.Screen s = null;
+		try {
+			s = a.embed(backProxy());
+		} catch (Throwable t) {
+			System.err.println("[Sleep] add-on " + a.id() + ": " + t);
+		}
+		if (s == null) {
+			a.open(this);
+			return;
+		}
+		closeEmbedded();
+		embedded = s;
+		embeddedAddon = true;
+		embeddedName = a.name();
+		eInitW = -1;
+		scroll = 0;
+		scrollTarget = 0;
+	}
+
+	/** A screen that, when something switches to it ("Done" / "Back"), closes the embedded screen instead. */
+	private net.minecraft.client.gui.screen.Screen backProxy() {
+		return new net.minecraft.client.gui.screen.Screen(Text.empty()) {
 			@Override
 			protected void init() {
 				// the settings screen asked to go back (Done / Cancel): close it inside our window
@@ -1296,11 +1324,15 @@ public class SolMenuScreen extends Screen {
 				});
 			}
 		};
-		var s = dev.solclient.gamemods.GameMods.createConfig(modId, parent);
+	}
+
+	private boolean openEmbedded(String modId, String name) {
+		var s = dev.solclient.gamemods.GameMods.createConfig(modId, backProxy());
 		if (s == null) {
 			return false;
 		}
 		closeEmbedded();
+		embeddedAddon = false;
 		embedded = s;
 		embeddedName = name;
 		eInitW = -1;
@@ -1360,7 +1392,7 @@ public class SolMenuScreen extends Screen {
 	}
 
 	private boolean inEmbedded(double vx, double vy) {
-		return embedded != null && gameModsTab && vx >= eX && vx < eX + eW && vy >= eY && vy < eY + eH;
+		return embedOn() && vx >= eX && vx < eX + eW && vy >= eY && vy < eY + eH;
 	}
 
 	private double embX(double vx) {
@@ -3564,6 +3596,11 @@ public class SolMenuScreen extends Screen {
 	private void drawAddons(DrawContext c, int mx, int my, int x, int y, int w, int h, int ix0, int ix1, int iy0, int iy1, int accent) {
 		Gfx.text(c, "Add-ons", ix0, y + 13, Theme.TEXT);
 		Gfx.text(c, "Extra features of the client. More coming.", ix0 + Gfx.tw("Add-ons") + 14, y + 13, Theme.DIM);
+		if (embedded != null && embeddedAddon) {
+			drawEmbedded(c, mx, my, ix0, ix1, iy0, iy1);
+			maxScroll = 0;
+			return;
+		}
 		List<dev.solclient.addons.Addon> list = dev.solclient.addons.Addons.list();
 		int rowH = 44, gap = 8, ry = iy0;
 		if (list.isEmpty()) {
@@ -3594,7 +3631,7 @@ public class SolMenuScreen extends Screen {
 			int bw = 64, bx = ix0 + rw - bw - 12;
 			pill(c, mx, my, bx, ry + 11, bw, 22, 7, "addonopen" + a.id(), false, 0, accent, Theme.accentHover());
 			Gfx.textFit(c, "Open", bx + bw / 2, bw - 6, ry + 18, 0xFFFFFFFF);
-			region(ix0, ry, rw, rowH, () -> a.open(this));
+			region(ix0, ry, rw, rowH, () -> openAddon(a));
 			ry += rowH + gap;
 		}
 		maxScroll = 0;
@@ -7413,7 +7450,7 @@ public class SolMenuScreen extends Screen {
 	@Override
 	public boolean keyPressed(KeyInput input) {
 		int key = input.key();
-		if (embedded != null && gameModsTab) {
+		if (embedOn()) {
 			if (key == 256) {
 				closeEmbedded();
 				return true;
@@ -7526,7 +7563,7 @@ public class SolMenuScreen extends Screen {
 
 	@Override
 	public boolean charTyped(CharInput input) {
-		if (embedded != null && gameModsTab) {
+		if (embedOn()) {
 			embedded.charTyped(input);
 			return true;
 		}

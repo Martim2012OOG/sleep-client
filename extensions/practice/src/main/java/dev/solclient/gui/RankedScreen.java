@@ -31,6 +31,9 @@ public class RankedScreen extends Screen {
 	private static final String OVERALL = "overall";
 
 	private final Screen parent;
+	/** Drawn inside the Sleep menu's panel: no own window, fills the area it gets. */
+	private final boolean embedded;
+	private final Map<String, Float> hover = new HashMap<>();
 	private int tab;
 	private String mode = "1v1", kit = "sword";
 	private String teammate, opponent1, opponent2;
@@ -48,8 +51,13 @@ public class RankedScreen extends Screen {
 	private static final Map<String, ItemStack> ICONS = new HashMap<>();
 
 	public RankedScreen(Screen parent) {
+		this(parent, false);
+	}
+
+	public RankedScreen(Screen parent, boolean embedded) {
 		super(Text.literal("Ranked PvP"));
 		this.parent = parent;
+		this.embedded = embedded;
 		Ranked.loadRankings(rankKit, rankMode);
 	}
 
@@ -77,21 +85,68 @@ public class RankedScreen extends Screen {
 		return mx >= x && mx < x + w && my >= y && my < y + h;
 	}
 
+	/** Smooth 0..1 hover amount per element (like the Sleep menu). */
+	private float anim(String key, boolean on) {
+		float v = hover.getOrDefault(key, 0F);
+		v += ((on ? 1F : 0F) - v) * 0.35F;
+		hover.put(key, v);
+		return v;
+	}
+
+	/** A small toggle button: the same neutral / pressed button as the Sleep menu. */
 	private void chip(DrawContext c, int mx, int my, int x, int y, int w, int h, String label, boolean sel, Runnable run) {
 		boolean hov = in(mx, my, x, y, w, h);
-		int bg = sel ? Theme.accent() : hov ? Theme.CARD_HOVER : Theme.CARD;
-		Gfx.rrectBorder(c, x, y, w, h, 7, bg, sel ? Theme.accent() : hov ? Theme.CARD_BORDER_HOVER : Theme.CARD_BORDER);
-		Gfx.textFit(c, label, x + w / 2, w - 6, y + (h - 8) / 2, sel ? 0xFFFFFFFF : Theme.TEXT);
+		KuboButton.bg(c, x, y, w, h, anim("c" + x + "," + y, hov), sel);
+		Gfx.textFit(c, label, x + w / 2, w - 6, y + (h - 8) / 2, sel ? 0xFFFFFFFF : Gfx.blend(Theme.DIM, Theme.TEXT, 0.6F + 0.4F * anim("t" + x + "," + y, hov)));
 		if (run != null) {
 			hits.add(new Hit(x, y, w, h, run));
 		}
 	}
 
+	/** Main buttons: the same as the mods' "Install" / "Installed" buttons. */
 	private void bigButton(DrawContext c, int mx, int my, int x, int y, int w, int h, String label, int col, Runnable run) {
 		boolean hov = in(mx, my, x, y, w, h);
-		Gfx.rrect(c, x, y, w, h, 8, hov ? Gfx.blend(col, 0xFFFFFFFF, 0.15F) : col);
-		Gfx.textC(c, label, x + w / 2, y + (h - 8) / 2, 0xFFFFFFFF);
+		if (col == Theme.accent()) {
+			KuboButton.primary(c, x, y, w, h, label, hov);
+		} else if (col == DISABLED) {
+			KuboButton.neutral(c, x, y, w, h, label, hov);
+		} else {
+			KuboButton.draw(c, x, y, w, h, label, hov, col, Gfx.blend(col, 0xFFFFFFFF, 0.12F), 0xFFFFFFFF);
+		}
 		hits.add(new Hit(x, y, w, h, run));
+	}
+
+	private static final int DISABLED = 0xFF3A3D49;
+
+	/** Tabs like the mods page ("All Mods | Mods | Extensions"): one bar, a sliding highlight on the open tab. */
+	private void tabs(DrawContext c, int mx, int my, int x, int y, String[] names) {
+		int[] ws = new int[names.length];
+		int total = 0;
+		for (int i = 0; i < names.length; i++) {
+			ws[i] = Gfx.tw(names[i]) + 18;
+			total += ws[i] + (i > 0 ? 4 : 0);
+		}
+		Gfx.rrect(c, x - 2, y - 2, total + 4, 24, 9, Theme.ROW);
+		int tx = x;
+		for (int i = 0; i < names.length; i++) {
+			if (i == tab) {
+				SlideBg.draw(c, "rankedTab", tx, y, ws[i], 20, 7F, SlideBg.colour(), true);
+			}
+			tx += ws[i] + 4;
+		}
+		tx = x;
+		for (int i = 0; i < names.length; i++) {
+			boolean hov = in(mx, my, tx, y, ws[i], 20);
+			Gfx.textFit(c, names[i], tx + ws[i] / 2, ws[i] - 6, y + 6, i == tab ? 0xFFFFFFFF : hov ? Theme.TEXT : Theme.DIM);
+			final int t = i;
+			hits.add(new Hit(tx, y, ws[i], 20, () -> {
+				tab = t;
+				scroll = 0;
+				openedAt = System.currentTimeMillis() - 150;
+				rankAt = System.currentTimeMillis();
+			}));
+			tx += ws[i] + 4;
+		}
 	}
 
 	private static void tierBadge(DrawContext c, int x, int y, String tier) {
@@ -107,29 +162,36 @@ public class RankedScreen extends Screen {
 		super.render(c, mx, my, delta);
 		hits.clear();
 		tip = null;
-		int w = Math.min(width - 16, 520), h = Math.min(height - 16, 330);
 		float k = Math.min(1F, (System.currentTimeMillis() - openedAt) / 220F);
-		int x = (width - w) / 2, y = (height - h) / 2 + Math.round((1F - k) * 12F);
-		Gfx.rrect(c, x, y, w, h, 10, Theme.PANEL);
-		int ix = x + 14, iw = w - 28;
-		Gfx.text(c, "Ranked PvP", ix, y + 10, Theme.TEXT);
-		Gfx.text(c, Lang.tr("Tiers like the PvP servers: HT1 is the best, LT5 the lowest.", "Tiers como nos servidores de PvP: HT1 é o melhor, LT5 o mais baixo."),
-				ix + Gfx.tw("Ranked PvP") + 10, y + 10, Theme.DIM);
+		int w, h, x, y, ix, iw;
+		if (embedded) {
+			// inside the Sleep menu's panel: use all of it, the menu already shows the title and "< Back"
+			w = width;
+			h = height;
+			x = 0;
+			y = Math.round((1F - k) * 6F) - 22;
+			ix = 6;
+			iw = w - 12;
+		} else {
+			w = Math.min(width - 16, 520);
+			h = Math.min(height - 16, 330);
+			x = (width - w) / 2;
+			y = (height - h) / 2 + Math.round((1F - k) * 12F);
+			Gfx.rrect(c, x, y, w, h, 10, Theme.PANEL);
+			ix = x + 14;
+			iw = w - 28;
+			Gfx.text(c, "Ranked PvP", ix, y + 10, Theme.TEXT);
+		}
 		if (Ranked.siteMissing) {
 			Gfx.text(c, Lang.tr("The Sleep site doesn't have Ranked PvP yet (Lovable prompt).", "O site do Sleep ainda não tem o Ranked PvP (prompt do Lovable)."), ix, y + h - 14, 0xFFFF8A8A);
 		}
 		String[] tabs = {"Ranked", Lang.tr("Duel", "Duelo"), "Bots", "Leaderboard", Lang.tr("My tiers", "Os meus tiers")};
-		int tw = (iw - 4 * 4) / 5;
-		for (int i = 0; i < tabs.length; i++) {
-			final int t = i;
-			chip(c, mx, my, ix + i * (tw + 4), y + 26, tw, 18, tabs[i], tab == i, () -> {
-				tab = t;
-				scroll = 0;
-				openedAt = System.currentTimeMillis() - 150;
-				rankAt = System.currentTimeMillis();
-			});
+		tabs(c, mx, my, ix + 2, y + 28, tabs);
+		String hint = Lang.tr("HT1 is the best tier, LT5 the lowest", "HT1 é o melhor tier, LT5 o mais baixo");
+		if (iw > 520) {
+			Gfx.text(c, hint, ix + iw - Gfx.tw(hint), y + 34, Theme.DIM);
 		}
-		int cy = y + 54;
+		int cy = y + 58;
 		switch (tab) {
 			case 0 -> ranked(c, mx, my, ix, iw, cy);
 			case 1 -> duel(c, mx, my, ix, iw, cy);
@@ -180,8 +242,9 @@ public class RankedScreen extends Screen {
 			}
 			int x = ix + (i % cols) * (size + gap), y = cy + (i / cols) * (size + gap);
 			boolean s = id.equals(sel), hov = in(mx, my, x, y, size, size);
-			int bg = s ? Gfx.withAlpha(Theme.accent() & 0xFFFFFF, 0x66) : hov ? Theme.CARD_HOVER : Theme.CARD;
-			Gfx.rrectBorder(c, x, y, size, size, 6, bg, s ? Theme.accent() : hov ? Theme.CARD_BORDER_HOVER : Theme.CARD_BORDER);
+			float a = anim("k" + id + y, hov);
+			int bg = s ? Gfx.blend(Theme.TILE, Theme.accent() | 0xFF000000, 0.28F) : Gfx.blend(Theme.TILE, Theme.TILE_HOVER, a);
+			Gfx.rrectBorder(c, x, y, size, size, 6, bg, s ? Theme.accent() : Gfx.blend(Theme.CARD_BORDER, Theme.accent(), a));
 			float bob = s ? (float) Math.sin(t / 220.0) * 1.2F : hov ? -1F : 0F;
 			c.getMatrices().pushMatrix();
 			c.getMatrices().translate(0, bob);
@@ -276,7 +339,7 @@ public class RankedScreen extends Screen {
 		} else {
 			boolean ok = mode.equals("1v1") || teammate != null;
 			bigButton(c, mx, my, ix, cy, iw, 26, ok ? Lang.tr("Find a match", "Procurar partida") : Lang.tr("Pick a teammate first", "Escolhe primeiro um colega"),
-					ok ? Theme.accent() : 0xFF3A3D49, () -> {
+					ok ? Theme.accent() : DISABLED, () -> {
 						if (mode.equals("1v1") || teammate != null) {
 							Ranked.queue(mode, kit, mode.equals("2v2") ? teammate : null);
 						}
@@ -301,7 +364,7 @@ public class RankedScreen extends Screen {
 		}
 		boolean ok = mode.equals("1v1") ? opponent1 != null : teammate != null && opponent1 != null && opponent2 != null;
 		bigButton(c, mx, my, ix, cy, iw, 26, ok ? Lang.tr("Send challenge · first to ", "Enviar desafio · primeiro a ") + firstTo : Lang.tr("Pick the players", "Escolhe os jogadores"),
-				ok ? Theme.accent() : 0xFF3A3D49, () -> {
+				ok ? Theme.accent() : DISABLED, () -> {
 					if (mode.equals("1v1") && opponent1 != null) {
 						Ranked.challenge(mode, kit, null, List.of(opponent1), firstTo);
 					} else if (teammate != null && opponent1 != null && opponent2 != null) {
@@ -337,7 +400,7 @@ public class RankedScreen extends Screen {
 		}
 		PracticeSession.difficulty = BotDifficulty.values()[botDiff];
 		PracticeSession.botCount = bots;
-		PracticeWorld.go(this, PracticeWorld.PVP, "PvP Practice", PracticeSession::begin);
+		PracticeWorld.go(embedded ? parent : this, PracticeWorld.PVP, "PvP Practice", PracticeSession::begin);
 	}
 
 	// ---------------------------------------------------------------- leaderboard
