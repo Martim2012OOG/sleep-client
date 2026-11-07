@@ -29,6 +29,11 @@ public final class RankedServer {
 	/** Slowness level used as the freeze: the client knows from it that the intro (254) or a round countdown (253) runs. */
 	static final int INTRO_MARK = 254, ROUND_MARK = 253;
 	private static final int WAIT_MAX = 90 * 20, ROUND_END_TICKS = 60, DONE_TICKS = 200;
+	/** World height limit: walls go up to it, and anyone above it is out at once. */
+	static final int BOTTOM_Y = -64, TOP_Y = 319;
+	/** The arena of the current round (its walls are built a moment after the round starts, once its chunks loaded). */
+	private static RankedWorld.Arena cur;
+	private static boolean wallsBuilt;
 
 	private static volatile Ranked.Match m;
 	private static volatile Phase phase = Phase.IDLE;
@@ -105,6 +110,9 @@ public final class RankedServer {
 		switch (phase) {
 			case WAITING -> waiting(s, mm);
 			case COUNTDOWN -> {
+				if (!wallsBuilt && (ticks == 10 || ticks == 40)) {
+					walls(s, ticks == 40);
+				}
 				if (--countdown <= 0) {
 					phase = Phase.FIGHT;
 					run(s, "effect clear @a minecraft:slowness");
@@ -118,10 +126,10 @@ public final class RankedServer {
 				}
 			}
 			case FIGHT -> {
-				// someone fell out of the arena (into the void): eliminated
+				// out of the arena: into the void, above the height limit, or somehow past the walls = eliminated at once
 				for (String n : allNames()) {
 					ServerPlayerEntity p = player(s, n);
-					if (p != null && !DEAD.contains(n.toLowerCase(Locale.ROOT)) && p.getY() < -100) {
+					if (p != null && !DEAD.contains(n.toLowerCase(Locale.ROOT)) && outside(p)) {
 						eliminate(s, p);
 					}
 				}
@@ -199,6 +207,12 @@ public final class RankedServer {
 		int n = Math.max(1, RankedWorld.arenas().size());
 		int id = ((Math.max(1, mm.arena()) - 1 + round - 1) % n) + 1;
 		RankedWorld.Arena arena = RankedWorld.arena(id);
+		cur = arena;
+		wallsBuilt = false;
+		if (arena != null) {
+			// load the arena's chunks now; the walls are built a few ticks later (see COUNTDOWN)
+			run(s, "forceload add " + (arena.x1() - 2) + " " + (arena.z1() - 2) + " " + (arena.x2() + 2) + " " + (arena.z2() + 2));
+		}
 		List<String> kit = Ranked.kitLines(mm.kit());
 		place(s, team("A"), arena == null ? null : arena.a(), arena == null ? null : arena.a2(), kit);
 		place(s, team("B"), arena == null ? null : arena.b(), arena == null ? null : arena.b2(), kit);
@@ -213,6 +227,48 @@ public final class RankedServer {
 		}
 		phase = Phase.COUNTDOWN;
 		ticks = 0;
+	}
+
+	/**
+	 * Invisible barrier walls all around the round's arena, from the bottom of the world to the height limit, so nobody
+	 * can leave it (only air is replaced: the map itself is never changed). No roof: above the limit you're out.
+	 */
+	private static void walls(MinecraftServer s, boolean last) {
+		RankedWorld.Arena a = cur;
+		if (a == null) {
+			wallsBuilt = true;
+			return;
+		}
+		int x1 = a.x1() - 1, z1 = a.z1() - 1, x2 = a.x2() + 1, z2 = a.z2() + 1;
+		int mid = (BOTTOM_Y + TOP_Y) / 2;
+		boolean ok = true;
+		for (int[] ys : new int[][] {{BOTTOM_Y, mid}, {mid + 1, TOP_Y}}) {
+			// a fill is limited to 32768 blocks: each side in two halves (bottom / top)
+			ok &= fill(s, x1, ys[0], z1, x2, ys[1], z1);
+			ok &= fill(s, x1, ys[0], z2, x2, ys[1], z2);
+			ok &= fill(s, x1, ys[0], z1, x1, ys[1], z2);
+			ok &= fill(s, x2, ys[0], z1, x2, ys[1], z2);
+		}
+		wallsBuilt = ok || last;
+	}
+
+	private static boolean fill(MinecraftServer s, int x1, int y1, int z1, int x2, int y2, int z2) {
+		try {
+			s.getCommandManager().getDispatcher().execute("fill " + x1 + " " + y1 + " " + z1 + " " + x2 + " " + y2 + " " + z2
+					+ " minecraft:barrier replace minecraft:air", s.getCommandSource().withSilent());
+			return true;
+		} catch (Exception e) {
+			return false; // chunks not loaded yet: tried again a bit later
+		}
+	}
+
+	/** Below the arena, above the height limit, or past the walls. */
+	private static boolean outside(ServerPlayerEntity p) {
+		if (p.getY() < -100 || p.getY() > TOP_Y + 1) {
+			return true;
+		}
+		RankedWorld.Arena a = cur;
+		return a != null && (p.getX() < a.x1() - 3 || p.getX() > a.x2() + 4 || p.getZ() < a.z1() - 3 || p.getZ() > a.z2() + 4);
 	}
 
 	private static void place(MinecraftServer s, List<String> names, RankedWorld.Spot first, RankedWorld.Spot second, List<String> kit) {

@@ -1,7 +1,7 @@
 # Prompt for Lovable: chat bubble styles, group logos + owner crown
 
 Paste everything below the line into Lovable, in the project that hosts the Sleep client API (the same project and auth as `/messages`).
-Upload `crown.svg` and `bubbles.css` from this zip to the project too.
+Upload `crown.svg` and the `bubbles/` folder (11 PNG pictures) from this zip to the project too.
 
 ---
 
@@ -9,7 +9,7 @@ The Sleep Minecraft client now has **chat bubble styles** (like the bubble style
 
 ## 1. Chat bubble styles
 
-Allowed style ids (anything else = default): `""` (default), `frog`, `cat`, `ghost`, `pumpkin`, `web`, `bear`, `shark`, `bunny`, `dino`, `cloud`, `galaxy`, `fire`.
+Allowed style ids (anything else = default): `""` (default), `cat`, `frog`, `sakura`, `catpaw`, `heart`, `dog`, `star`, `galaxy`, `minecraft`, `fire`, `snow`. Old ids saved before (`ghost`, `pumpkin`, `web`, `bear`, `shark`, `bunny`, `dino`, `cloud`) now count as default.
 
 **API**
 - Add a nullable text column `bubble` to `messages` (default `''`).
@@ -23,8 +23,8 @@ Allowed style ids (anything else = default): `""` (default), `frog`, `cat`, `gho
 - Add `bubble` to the user profile too (`GET /me` returns `"bubble": "frog"`; `PATCH /me` with `{ "bubble": "frog" }` saves it). The website uses it as the style for messages sent from the site.
 
 **Website**
-- Use `bubbles.css` (from the zip) for the chat bubbles: `<div class="sleep-bubble sb-<id>">` (`sb-frog`, `sb-cat`, …), plus the class `mine` on my own messages so the little mascot sits on the other corner. The default style keeps the current bubble look.
-- In the chat, add a **"Bubble style"** button that opens a grid with a preview of every style and its name (Default, Frog, Cat, Ghost, Pumpkin, Spider Web, Bear, Shark, Bunny, Dino, Cloud, Galaxy, Fire). Clicking one saves it with `PATCH /me` and shows the text: "Applies to every chat. Only messages you send after saving."
+- Each style is a picture in `bubbles/<id>.png` (made by the Sleep owner: use them as they are, never redraw them). Draw it behind the message with CSS `border-image` (9-slice) so the mascot / decorations keep their size and only the middle grows with the text, e.g. `border-image: url(bubbles/cat.png) 14 10 8 74 fill / auto; border-style: solid;` (slice = top right bottom left in picture pixels = where the text area starts: cat 14 10 8 74, frog 26 10 14 12, sakura 28 10 20 56, catpaw 22 50 14 10, heart 31 25 16 26, dog 14 33 17 72, star 22 23 21 18, galaxy 22 57 21 24, minecraft 22 12 12 10 with `border-image-repeat: round` (repeat the texture), fire 16 26 28 26 with `round`, snow 18 11 19 52). On messages from other people mirror the picture (`transform: scaleX(-1)` on a background layer, not on the text) so the mascot is on the side away from their avatar. Text colour: dark `#3A2A2A` on cat / sakura / catpaw / heart / dog / star, `#1E4A22` on frog, `#1E3550` on snow, white on galaxy / minecraft / fire. The default style keeps the current bubble look.
+- In the chat, add a **"Bubble style"** button that opens a grid with a preview of every style and its name (Default, Cat, Frog, Sakura, Cat Paw, Heart, Dog, Star, Galaxy, Minecraft, Fire, Snow — in this order, 3 per row, like the client). Clicking one saves it with `PATCH /me` and shows the text: "Applies to every chat. Only messages you send after saving."
 
 ## 2. Group logos
 

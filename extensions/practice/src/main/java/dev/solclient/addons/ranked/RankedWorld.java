@@ -25,7 +25,8 @@ public final class RankedWorld {
 	public record Spot(double x, double y, double z, float yaw) {
 	}
 
-	public record Arena(int id, Spot a, Spot b, Spot a2, Spot b2) {
+	/** x1, z1, x2, z2 = the arena's outline (measured from the map); the barrier walls go just outside it. */
+	public record Arena(int id, Spot a, Spot b, Spot a2, Spot b2, int x1, int z1, int x2, int z2) {
 	}
 
 	private static List<Arena> arenas;
@@ -41,7 +42,9 @@ public final class RankedWorld {
 				JsonArray a = JsonParser.parseString(new String(in.readAllBytes(), StandardCharsets.UTF_8)).getAsJsonArray();
 				for (var e : a) {
 					JsonObject o = e.getAsJsonObject();
-					out.add(new Arena(o.get("id").getAsInt(), spot(o, "spawnA"), spot(o, "spawnB"), spot(o, "spawnA2"), spot(o, "spawnB2")));
+					JsonArray box = o.getAsJsonArray("box");
+					out.add(new Arena(o.get("id").getAsInt(), spot(o, "spawnA"), spot(o, "spawnB"), spot(o, "spawnA2"), spot(o, "spawnB2"),
+							box.get(0).getAsInt(), box.get(1).getAsInt(), box.get(2).getAsInt(), box.get(3).getAsInt()));
 				}
 			} catch (Exception e) {
 				System.err.println("[Sleep] ranked arenas: " + e);

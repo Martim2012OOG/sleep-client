@@ -6304,7 +6304,8 @@ public class SolMenuScreen extends Screen {
 				Gfx.rrectBorder(c, cx0, cy0, cw, ch, 6, 0, accent);
 			}
 			// preview bubble
-			int pbw = cw - 22, pbh = 15, pbx = cx0 + 8, pby = cy0 + 15;
+			int[] ex = dev.solclient.chat.Bubbles.extents(st, 15);
+			int pbh = 15, pbx = cx0 + 6 + ex[0], pbw = cw - 12 - ex[0] - ex[2], pby = cy0 + 4 + Math.max(4, ex[1]);
 			dev.solclient.chat.Bubbles.draw(c, st, pbx, pby, pbw, pbh, accent, false);
 			boolean styled = !st.plain();
 			Gfx.text(c, fit("Hey!", pbw - 8), pbx + 5, pby + 3, styled ? st.text() : 0xFFFFFFFF);
@@ -6585,6 +6586,11 @@ public class SolMenuScreen extends Screen {
 				by -= statusH + reactH + bhh;
 				boolean visible = !(by - headerH > my1 || by + bhh + reactH + statusH < my0);
 				int bx = m.mine ? ix + iw - avatar - 6 - bw : ix + avatar + 6;
+				if (!big && !m.failed) {
+					// the picture of a styled bubble goes a bit past the text on the head's side: keep it off the head
+					int side = dev.solclient.chat.Bubbles.extents(dev.solclient.chat.Bubbles.of(m.bubble), bhh)[2];
+					bx += m.mine ? -Math.max(0, side - 4) : Math.max(0, side - 4);
+				}
 				if (visible) {
 					// new messages slide in from their side and settle (first 260 ms after they appear)
 					long seenAt = seenAt(m, chatOpenedAnim);
@@ -6753,7 +6759,8 @@ public class SolMenuScreen extends Screen {
 					}
 				}
 				boolean mascotRoom = !big && !m.failed && !dev.solclient.chat.Bubbles.of(m.bubble).plain();
-				by -= headerH + (groupStart ? 8 : 2) + (mascotRoom && !groupStart ? 12 : mascotRoom ? 4 : 0);
+				int picTop = mascotRoom ? dev.solclient.chat.Bubbles.extents(dev.solclient.chat.Bubbles.of(m.bubble), bhh)[1] : 0;
+				by -= headerH + (groupStart ? 8 : 2) + (mascotRoom ? Math.max(0, picTop - (groupStart ? 4 : 0)) : 0);
 				// day separator above the first message of a day
 				if (t != null && (tp == null || !tp.toLocalDate().equals(t.toLocalDate()))) {
 					by -= 18;
