@@ -5569,7 +5569,22 @@ public class SolMenuScreen extends Screen {
 	}
 
 	/** Two stacked heads of a group (the first members that are not you). */
+	/** A small speech bubble with three dots (friend list "chat" hint). */
+	private static void chatGlyph(DrawContext c, int x, int y, int col) {
+		Gfx.rrect(c, x, y, 12, 9, 3, col);
+		c.fill(x + 2, y + 8, x + 5, y + 11, col);
+		c.fill(x + 3, y + 10, x + 4, y + 11, col);
+		for (int i = 0; i < 3; i++) {
+			c.fill(x + 3 + i * 3, y + 4, x + 4 + i * 3, y + 5, 0xFF16181F);
+		}
+	}
+
 	private void groupHeads(DrawContext c, Social.Group g, int x, int y, int s) {
+		dev.solclient.chat.GroupIcons.Preset logo = dev.solclient.chat.GroupIcons.of(g.icon);
+		if (logo != null) {
+			dev.solclient.chat.GroupIcons.draw(c, logo, x, y, s);
+			return;
+		}
 		List<Social.User> others = new ArrayList<>();
 		for (Social.User u : g.members) {
 			if (Social.me == null || u.id == null || !u.id.equals(Social.me.id)) {
@@ -5875,29 +5890,17 @@ public class SolMenuScreen extends Screen {
 		// friend
 		Gfx.text(c, fit(removing ? "Remove " + u.display() + "?" : u.display(), rw - 48), ix + 31, ry + 7,
 				removing ? Theme.RED : u.online() ? Theme.TEXT : 0xFFB0B4C0);
-		String line = removing ? "right click again" : friendLine(u);
-		Gfx.text(c, fit(line, rw - 48), ix + 31, ry + 18, removing ? 0xFFB06A6E : u.onMyServer() ? accent : u.online() ? 0xFF7FD69A : Theme.DIM);
+		boolean typingNow = !removing && dev.solclient.social.KuboLive.isTyping(u.display());
+		String line = removing ? "right click again" : typingNow ? dev.solclient.Lang.tr("typing...", "a escrever...") : friendLine(u);
+		Gfx.text(c, fit(line, rw - 48), ix + 31, ry + 18, removing ? 0xFFB06A6E : typingNow ? accent : u.onMyServer() ? accent : u.online() ? 0xFF7FD69A : Theme.DIM);
 		Integer unread = Social.unreadByUser.get(u.id);
 		if (unread != null && unread > 0 && !sel) {
 			badge(c, ix + rw - 12, ry + rh / 2, unread);
 		} else if (hov && !removing) {
-			Gfx.tex(c, Theme.icon2("chat"), ix + rw - 18, ry + rh / 2 - 6, 12, 12, 64, 64, Theme.DIM);
+			chatGlyph(c, ix + rw - 18, ry + rh / 2 - 5, Theme.DIM);
 		}
 		if (hov) {
 			tooltipText = removing ? null : "Click: chat - right click: remove";
-		}
-		// mute (only on this client): always visible when muted, on hover otherwise
-		boolean muted = dev.solclient.social.Mutes.isMuted(u);
-		if (!removing && (muted || hov)) {
-			int mxp = ix + rw - 34, myp = ry + rh / 2 - 6;
-			boolean hm2 = in(mx, my, mxp - 2, myp - 2, 16, 16) && my >= ly0 && my < ly1;
-			Gfx.tex(c, Theme.icon2("volume_off"), mxp, myp, 12, 12, 64, 64, muted ? Theme.RED : hm2 ? Theme.TEXT : Theme.DIM);
-			if (hm2) {
-				tooltipText = muted ? "Muted on this client - click to unmute" : "Mute (no pop-ups, only on this client)";
-			}
-			if (settled) {
-				region(mxp - 2, myp - 2, 16, 16, () -> dev.solclient.social.Mutes.toggle(u));
-			}
 		}
 		if (settled) {
 			region(ix, ry, rw, rh, b -> {
@@ -5909,6 +5912,24 @@ public class SolMenuScreen extends Screen {
 					openChatWith(u.id);
 				}
 			}, null);
+		}
+		// mute (only on this client): always visible when muted, on hover otherwise
+		boolean muted = dev.solclient.social.Mutes.isMuted(u);
+		if (!removing && (muted || hov)) {
+			int mxp = ix + rw - 34, myp = ry + rh / 2 - 6;
+			boolean hm2 = in(mx, my, mxp - 2, myp - 2, 16, 16) && my >= ly0 && my < ly1;
+			Gfx.tex(c, Theme.icon2("volume_off"), mxp, myp, 12, 12, 64, 64, muted ? Theme.RED : hm2 ? Theme.TEXT : Theme.DIM);
+			if (hm2) {
+				tooltipText = muted ? "Muted on this client - click to unmute" : "Mute (no pop-ups, only on this client)";
+			}
+			if (settled) {
+				region(mxp - 2, myp - 2, 16, 16, () -> {
+					dev.solclient.social.Mutes.toggle(u);
+					boolean nowMuted = dev.solclient.social.Mutes.isMuted(u);
+					Social.say(nowMuted ? dev.solclient.Lang.tr("Muted ", "Silenciaste ") + u.display() + dev.solclient.Lang.tr(" (click the icon again to unmute)", " (clica outra vez no ícone para tirar)")
+							: dev.solclient.Lang.tr("Unmuted ", "Tiraste o silêncio a ") + u.display(), false);
+				});
+			}
 		}
 		// "Join" when your friend is playing on a server you are not on
 		String srv = removing ? null : dev.solclient.social.ServerShare.serverOf(u);
@@ -5998,6 +6019,9 @@ public class SolMenuScreen extends Screen {
 	private void closeChat() {
 		chatId = null;
 		membersOpen = false;
+		bubblePicker = false;
+		logoPicker = false;
+		hoverMsg = null;
 		menuMsg = null;
 		editing = null;
 		picker = 0;
@@ -6070,6 +6094,36 @@ public class SolMenuScreen extends Screen {
 
 	// chat extras: message menu (react / edit / delete / copy), emoji + GIF pickers, editing, group members
 	private Social.Msg menuMsg;
+	/** Discord-like quick reaction bar over the message under the mouse. */
+	private Social.Msg hoverMsg;
+	private int hoverBarX, hoverBarY;
+	private long hoverMsgAt;
+	private static final String[] QUICK_REACTIONS = {"\u2705", "\u2764\uFE0F", "\uD83D\uDD25"};
+	private static final int HOVER_BAR_W = 4 * 16 + 6;
+	/** When each message was first drawn: new ones slide in. */
+	private final java.util.Map<String, Long> msgSeen = new java.util.HashMap<>();
+	/** When your last "sending..." message appeared: its real copy from the site keeps the same animation. */
+	private long lastPendingSeen;
+
+	private long seenAt(Social.Msg m, boolean opening) {
+		String key = m.id > 0 && m.id != Long.MAX_VALUE ? "id:" + m.id : "p:" + System.identityHashCode(m);
+		Long v = msgSeen.get(key);
+		if (v == null) {
+			long now = System.currentTimeMillis();
+			v = opening ? 0L : m.mine && m.id > 0 && now - lastPendingSeen < 3000L ? lastPendingSeen : now;
+			if (m.pending) {
+				lastPendingSeen = v == 0L ? now : v;
+			}
+			if (msgSeen.size() > 600) {
+				msgSeen.clear();
+			}
+			msgSeen.put(key, v);
+		}
+		return v;
+	}
+	/** True during the first frame of an open chat: the messages that are already there do not slide in. */
+	private boolean chatOpenedAnim = true;
+	private String animChatId;
 	private int menuX, menuY;
 	private Social.Msg editing;
 	private int picker; // 0 none, 1 emoji, 2 GIF, 3 emoji for a reaction
@@ -6082,6 +6136,9 @@ public class SolMenuScreen extends Screen {
 	private boolean membersOpen;
 	/** The chat's bubble style picker (button in the chat header). */
 	private boolean bubblePicker;
+	/** The group logo picker (the owner clicks the logo in the chat header). */
+	private boolean logoPicker;
+	private long pickerOpenedAt;
 
 	private static final int BUBBLE_OTHER = 0xFF262833;
 
@@ -6140,6 +6197,49 @@ public class SolMenuScreen extends Screen {
 		return out;
 	}
 
+	/** Grid of group logos (gradient + symbol); the first one is the members' heads. Only the owner opens it. */
+	private void drawLogoPicker(DrawContext c, int mx, int my, Social.Group g, int ix, int iw, int y0, int y1, boolean settled, int accent) {
+		Gfx.text(c, dev.solclient.Lang.tr("Group logo", "Logótipo do grupo"), ix + 2, y0, 0xFFFFFFFF);
+		Gfx.text(c, fit(dev.solclient.Lang.tr("Everyone in the group sees it.", "Toda a gente no grupo o vê."), iw - 4), ix + 2, y0 + 11, Theme.DIM);
+		var all = dev.solclient.chat.GroupIcons.ALL;
+		int cols = 4, gap = 6, cw = (iw - gap * (cols - 1)) / cols, ch = 44, top = y0 + 30;
+		for (int i = 0; i < all.size(); i++) {
+			var p = all.get(i);
+			int cx0 = ix + (i % cols) * (cw + gap), cy0 = top + (i / cols) * (ch + gap);
+			if (cy0 + ch > y1) {
+				break;
+			}
+			float pop = Math.min(1F, Math.max(0F, (System.currentTimeMillis() - pickerOpenedAt - i * 20L) / 180F));
+			if (pop <= 0F) {
+				continue;
+			}
+			cy0 += Math.round((1F - pop) * 8F);
+			boolean sel = p.id().equals(g.icon == null ? "" : g.icon);
+			boolean hov = in(mx, my, cx0, cy0, cw, ch);
+			Gfx.rrect(c, cx0, cy0, cw, ch, 6, sel ? Gfx.withAlpha(accent & 0xFFFFFF, 0x40) : hov ? 0x22FFFFFF : 0x10FFFFFF);
+			if (sel) {
+				Gfx.rrectBorder(c, cx0, cy0, cw, ch, 6, 0, accent);
+			}
+			int ls = hov ? 24 : 22, lx = cx0 + cw / 2 - ls / 2, ly = cy0 + 5 - (ls - 22) / 2;
+			if (p.id().isEmpty()) {
+				String keep = g.icon;
+				g.icon = "";
+				groupHeads(c, g, lx, ly, ls);
+				g.icon = keep;
+			} else {
+				dev.solclient.chat.GroupIcons.draw(c, p, lx, ly, ls);
+			}
+			Gfx.textFit(c, p.name(), cx0 + cw / 2, cw - 4, cy0 + ch - 11, sel ? 0xFFFFFFFF : Theme.DIM);
+			if (settled) {
+				final String id = p.id();
+				region(cx0, cy0, cw, ch, () -> {
+					Social.setGroupIcon(g, id);
+					logoPicker = false;
+				});
+			}
+		}
+	}
+
 	/** Grid of bubble styles with a preview each (like phone chat apps): click one to use it for the messages you send next. */
 	private void drawBubblePicker(DrawContext c, int mx, int my, int ix, int iw, int y0, int y1, boolean settled, int accent) {
 		Gfx.text(c, dev.solclient.Lang.tr("Bubble style", "Estilo de balão"), ix + 2, y0, 0xFFFFFFFF);
@@ -6157,6 +6257,11 @@ public class SolMenuScreen extends Screen {
 			}
 			boolean sel = st.id().equals(mine);
 			boolean hov = in(mx, my, cx0, cy0, cw, ch);
+			float pop = Math.min(1F, Math.max(0F, (System.currentTimeMillis() - pickerOpenedAt - i * 25L) / 180F));
+			if (pop <= 0F) {
+				continue;
+			}
+			cy0 += Math.round((1F - pop) * 8F);
 			Gfx.rrect(c, cx0, cy0, cw, ch, 6, sel ? Gfx.withAlpha(accent & 0xFFFFFF, 0x40) : hov ? 0x22FFFFFF : 0x10FFFFFF);
 			if (sel) {
 				Gfx.rrectBorder(c, cx0, cy0, cw, ch, 6, 0, accent);
@@ -6189,6 +6294,8 @@ public class SolMenuScreen extends Screen {
 			return;
 		}
 		boolean settled = aC >= 0.99F;
+		chatOpenedAnim = !java.util.Objects.equals(animChatId, chatId);
+		animChatId = chatId;
 		int px = right - CW;
 		c.enableScissor(x, y, right, y + h);
 		int ix = px + 8, iw = CW - 16;
@@ -6213,6 +6320,21 @@ public class SolMenuScreen extends Screen {
 		}
 		if (g != null) {
 			groupHeads(c, g, ix + 24, y + 7, 22);
+			if (g.owner()) {
+				boolean hl = in(mx, my, ix + 24, y + 7, 22, 22);
+				if (hl) {
+					Gfx.rrectBorder(c, ix + 23, y + 6, 24, 24, 6, 0, accent);
+					tooltipText = dev.solclient.Lang.tr("Change the group logo", "Mudar o logótipo do grupo");
+				}
+				if (settled) {
+					region(ix + 24, y + 7, 22, 22, () -> {
+						logoPicker = !logoPicker;
+						bubblePicker = false;
+						membersOpen = false;
+						pickerOpenedAt = System.currentTimeMillis();
+					});
+				}
+			}
 		} else {
 			int dot = u.onMyServer() ? accent : u.online() ? 0xFF4ADE80 : 0xFF5A5E6E;
 			head(c, u.mcUsername, u, ix + 24, y + 8, 20, dot);
@@ -6235,7 +6357,9 @@ public class SolMenuScreen extends Screen {
 			if (settled) {
 				region(bbx, cyb, 20, 20, () -> {
 					bubblePicker = !bubblePicker;
+					logoPicker = false;
 					membersOpen = false;
+					pickerOpenedAt = System.currentTimeMillis();
 				});
 			}
 		}
@@ -6294,6 +6418,11 @@ public class SolMenuScreen extends Screen {
 			c.disableScissor();
 			return;
 		}
+		if (logoPicker && g != null && g.owner()) {
+			drawLogoPicker(c, mx, my, g, ix, iw, y + 44, y + h - 8, settled, accent);
+			c.disableScissor();
+			return;
+		}
 
 		// ---------------- input bar (bottom): GIF, emoji, text, send
 		int iy = y + h - 32, ib = 22;
@@ -6340,6 +6469,9 @@ public class SolMenuScreen extends Screen {
 			// heads on both sides (yours on the right), so bubbles leave room for two
 			int maxBw = iw - 2 * (avatar + 6) - 4;
 			String myNick = MinecraftClient.getInstance().getSession().getUsername();
+			// the reaction bar stays while the mouse is on it (moving from the message up to the bar)
+			Social.Msg barMsg = hoverMsg != null && menuMsg == null && in(mx, my, hoverBarX, hoverBarY, HOVER_BAR_W, 16) ? hoverMsg : null;
+			int rbarX = hoverBarX, rbarY = hoverBarY;
 			for (int n = msgs.size() - 1; n >= 0; n--) {
 				Social.Msg m = msgs.get(n);
 				Social.Msg next = n + 1 < msgs.size() ? msgs.get(n + 1) : null;
@@ -6417,6 +6549,16 @@ public class SolMenuScreen extends Screen {
 				boolean visible = !(by - headerH > my1 || by + bhh + reactH + statusH < my0);
 				int bx = m.mine ? ix + iw - avatar - 6 - bw : ix + avatar + 6;
 				if (visible) {
+					// new messages slide in from their side and settle (first 260 ms after they appear)
+					long seenAt = seenAt(m, chatOpenedAnim);
+					float ak = seenAt == 0L ? 1F : Math.min(1F, (System.currentTimeMillis() - seenAt) / 260F);
+					float ae = 1F - (1F - ak) * (1F - ak) * (1F - ak);
+					boolean animating = ae < 1F;
+					if (animating) {
+						c.getMatrices().pushMatrix();
+						c.getMatrices().translate((m.mine ? 14F : -14F) * (1F - ae), 6F * (1F - ae));
+					}
+					try {
 					int bg = m.failed ? 0xFF4A1C1F : m.mine ? (m.pending ? Gfx.blend(accent, SUB, 0.45F) : accent) : BUBBLE_OTHER;
 					dev.solclient.chat.Bubbles.Style bst = dev.solclient.chat.Bubbles.of(m.failed ? "" : m.bubble);
 					boolean styled = bst.deco() != dev.solclient.chat.Bubbles.Deco.NONE;
@@ -6436,9 +6578,9 @@ public class SolMenuScreen extends Screen {
 						// head of whoever sent it (yours too) with a status ring, and their name + time above the bubbles
 						int hx2 = m.mine ? ix + iw - avatar : ix, hy2 = by - headerH;
 						Social.User hu = m.mine ? Social.me : sender;
-						int ring = m.mine ? accent : hu != null && hu.onMyServer() ? accent : hu != null && hu.online() ? 0xFF4ADE80 : 0xFF3A3D49;
-						Gfx.rrect(c, hx2 - 2, hy2 - 2, avatar + 4, avatar + 4, 6, ring);
-						head(c, m.mine ? myNick : sender != null ? sender.mcUsername : null, hu, hx2, hy2, avatar, 0);
+						// status like Discord: a small dot on the corner of the head (no ring around it)
+						int dot = m.mine ? 0xFF4ADE80 : hu != null && hu.onMyServer() ? accent : hu != null && hu.online() ? 0xFF4ADE80 : 0xFF5A5E6E;
+						head(c, m.mine ? myNick : sender != null ? sender.mcUsername : null, hu, hx2, hy2, avatar, dot);
 						int nameCol = m.mine ? Gfx.blend(accent, 0xFFFFFFFF, 0.35F) : nameColour(headerName);
 						String hn = fitRaw(headerName, maxBw - 40);
 							int hnw = Gfx.twRaw(hn);
@@ -6549,6 +6691,11 @@ public class SolMenuScreen extends Screen {
 					}
 					if (settled) {
 						final Social.Msg fm = m;
+						if (barMsg == null && hm2 && !fm.pending && !fm.failed && fm.id > 0) {
+							barMsg = fm;
+							rbarX = m.mine ? Math.max(ix, bx - 2) : Math.min(ix + iw - HOVER_BAR_W, bx + bw - HOVER_BAR_W + 2);
+							rbarY = by - 11;
+						}
 						region(bx, by, bw, bhh, b -> {
 							if (b == 1) {
 								MinecraftClient.getInstance().keyboard.setClipboard(fm.body == null ? "" : fm.body);
@@ -6562,6 +6709,11 @@ public class SolMenuScreen extends Screen {
 							}
 						}, null);
 					}
+									} finally {
+						if (animating) {
+							c.getMatrices().popMatrix();
+						}
+					}
 				}
 				by -= headerH + (groupStart ? 8 : 2);
 				// day separator above the first message of a day
@@ -6572,6 +6724,51 @@ public class SolMenuScreen extends Screen {
 						int dw = Gfx.tw(d) + 14;
 						Gfx.rrect(c, px + CW / 2 - dw / 2, by + 3, dw, 13, 4, 0xFF1C1E26);
 						Gfx.textFit(c, d, px + CW / 2, CW - 6, by + 6, Theme.DIM);
+					}
+				}
+			}
+			if (barMsg != hoverMsg) {
+				hoverMsgAt = System.currentTimeMillis();
+			}
+			hoverMsg = barMsg;
+			hoverBarX = rbarX;
+			hoverBarY = rbarY;
+			if (barMsg != null && settled) {
+				float k = Math.min(1F, (System.currentTimeMillis() - hoverMsgAt) / 120F);
+				int yy = rbarY + Math.round((1F - k) * 4F);
+				Gfx.rrect(c, rbarX - 1, yy - 1, HOVER_BAR_W + 2, 18, 6, 0xFF0E1015);
+				Gfx.rrect(c, rbarX, yy, HOVER_BAR_W, 16, 5, 0xFF262935);
+				final Social.Msg fm = barMsg;
+				for (int qi = 0; qi < QUICK_REACTIONS.length + 1; qi++) {
+					int qx = rbarX + 3 + qi * 16;
+					boolean hq = in(mx, my, qx, yy + 1, 15, 14);
+					if (hq) {
+						Gfx.rrect(c, qx, yy + 1, 15, 14, 4, 0xFF353949);
+					}
+					if (qi < QUICK_REACTIONS.length) {
+						String em = QUICK_REACTIONS[qi];
+						c.getMatrices().pushMatrix();
+						float sc = hq ? 1.25F : 1.1F;
+						c.getMatrices().translate(qx + 7.5F, yy + 8F);
+						c.getMatrices().scale(sc, sc);
+						dev.solclient.chat.Emoji.draw(c, em, -4, -4, 0xFFFFFFFF);
+						c.getMatrices().popMatrix();
+						if (hq) {
+							tooltipText = dev.solclient.Lang.tr("React", "Reagir");
+						}
+						region(qx, yy + 1, 15, 14, () -> Social.react(chatId, fm, em));
+					} else {
+						// "+": the full menu (all reactions, reply, copy, edit...)
+						Gfx.textC(c, "+", qx + 8, yy + 4, hq ? 0xFFFFFFFF : Theme.DIM);
+						if (hq) {
+							tooltipText = dev.solclient.Lang.tr("Add reaction", "Adicionar reação");
+						}
+						final int ox = qx, oy = yy + 16;
+						region(qx, yy + 1, 15, 14, () -> {
+							menuMsg = fm;
+							menuX = ox;
+							menuY = oy;
+						});
 					}
 				}
 			}
@@ -6689,7 +6886,21 @@ public class SolMenuScreen extends Screen {
 		}
 		// "<name> is typing..." with three bouncing dots, like Discord (only friend chats: KuboLive)
 		Social.User typingFriend = Social.friend(chatId);
-		if (typingFriend != null && dev.solclient.social.KuboLive.isTyping(typingFriend.display())) {
+		Social.Group typingGroup = Social.group(chatId);
+		List<String> gTypers = typingGroup == null ? List.of() : dev.solclient.social.KuboLive.groupTypers(typingGroup.id);
+		if (!gTypers.isEmpty()) {
+			long t = System.currentTimeMillis();
+			int dy0 = iy - 9;
+			for (int i = 0; i < 3; i++) {
+				double ph = ((t + i * 160) % 1200) / 1200.0;
+				float lift = ph < 0.35 ? (float) Math.sin(ph / 0.35 * Math.PI) * 2.2F : 0F;
+				Gfx.circle(c, fieldX + 4 + i * 5, dy0 + 3 - lift, 1.6F, ph < 0.35 ? Theme.TEXT : Theme.DIM);
+			}
+			String who = gTypers.size() > 2 ? gTypers.size() + dev.solclient.Lang.tr(" people", " pessoas") : String.join(", ", gTypers);
+			String rest = gTypers.size() == 1 ? dev.solclient.Lang.tr(" is typing...", " está a escrever...") : dev.solclient.Lang.tr(" are typing...", " estão a escrever...");
+			Gfx.textRaw(c, fitRaw(who, 120), fieldX + 20, dy0, Theme.TEXT);
+			Gfx.textRaw(c, dev.solclient.Lang.t(rest), fieldX + 20 + Gfx.twRaw(fitRaw(who, 120)), dy0, Theme.DIM);
+		} else if (typingFriend != null && dev.solclient.social.KuboLive.isTyping(typingFriend.display())) {
 			long t = System.currentTimeMillis();
 			int dy0 = iy - 9;
 			for (int i = 0; i < 3; i++) {
@@ -7337,6 +7548,8 @@ public class SolMenuScreen extends Screen {
 			Social.User tf = Social.friend(chatId);
 			if (tf != null) {
 				dev.solclient.social.KuboLive.typing(tf.display(), true);
+			} else if (Social.group(chatId) != null) {
+				dev.solclient.social.KuboLive.groupTyping(Social.group(chatId));
 			}
 		}
 		if (box != null) {

@@ -2054,6 +2054,8 @@ public final class Social {
 
 	public static final class Group {
 		public String id, name, ownerId, lastBody, lastAt;
+		/** Group logo chosen by the owner ("" = the members' heads), see dev.solclient.chat.GroupIcons. */
+		public String icon = "";
 		public List<User> members = List.of();
 
 		public String key() {
@@ -2117,6 +2119,8 @@ public final class Social {
 			Group g = new Group();
 			g.id = Json.str(o, "id");
 			g.name = Json.str(o, "name");
+			String gi = Json.str(o, "icon", "logo");
+			g.icon = gi != null ? gi : GROUP_ICONS.getOrDefault(g.id, "");
 			g.ownerId = Json.str(o, "ownerId", "owner_id");
 			JsonObject last = Json.obj(o, "lastMessage");
 			if (last != null) {
@@ -2207,6 +2211,48 @@ public final class Social {
 		boolean leaving = me != null && userId.equals(me.id);
 		action(() -> groupResult(SolarApi.delete("/groups/" + SolarApi.enc(g.id) + "/members/" + SolarApi.enc(userId)),
 				leaving ? "You left " + g.name : "Removed from " + g.name));
+	}
+
+	/** Logos you chose, kept on this computer too (until the site sends "icon" back with the group). */
+	private static final Map<String, String> GROUP_ICONS = loadGroupIcons();
+
+	private static Map<String, String> loadGroupIcons() {
+		Map<String, String> m = new java.util.concurrent.ConcurrentHashMap<>();
+		try {
+			java.nio.file.Path f = net.fabricmc.loader.api.FabricLoader.getInstance().getConfigDir().resolve("kubo").resolve("group-icons.json");
+			if (java.nio.file.Files.exists(f)) {
+				JsonObject o = com.google.gson.JsonParser.parseString(java.nio.file.Files.readString(f)).getAsJsonObject();
+				for (var e : o.entrySet()) {
+					m.put(e.getKey(), e.getValue().getAsString());
+				}
+			}
+		} catch (Exception ignored) {
+			// only a cache
+		}
+		return m;
+	}
+
+	/** The owner picks the group's logo (a preset from GroupIcons, "" = members' heads). */
+	public static void setGroupIcon(Group g, String icon) {
+		if (g == null || !g.owner()) {
+			return;
+		}
+		g.icon = icon == null ? "" : icon;
+		GROUP_ICONS.put(g.id, g.icon);
+		action(() -> {
+			try {
+				JsonObject o = new JsonObject();
+				GROUP_ICONS.forEach(o::addProperty);
+				java.nio.file.Path f = net.fabricmc.loader.api.FabricLoader.getInstance().getConfigDir().resolve("kubo").resolve("group-icons.json");
+				java.nio.file.Files.createDirectories(f.getParent());
+				java.nio.file.Files.writeString(f, o.toString());
+			} catch (Exception ignored) {
+				// only a cache
+			}
+			JsonObject b = new JsonObject();
+			b.addProperty("icon", g.icon);
+			groupResult(SolarApi.patch("/groups/" + SolarApi.enc(g.id), b), null);
+		});
 	}
 
 	public static void renameGroup(Group g, String name) {

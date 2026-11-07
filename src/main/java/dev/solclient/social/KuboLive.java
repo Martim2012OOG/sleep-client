@@ -152,6 +152,48 @@ public final class KuboLive {
 		sendTo(friendName, o);
 	}
 
+	// ---- typing in a group chat: sent to every member, shown as "A, B are typing..."
+	/** group id -> (member name lower case -> typing until ms). */
+	private static final Map<String, Map<String, Long>> GTYPING = new ConcurrentHashMap<>();
+	private static final Map<String, Long> GSENT = new ConcurrentHashMap<>();
+
+	/** Call on every key typed in a group chat box (sends at most every 2.5 s). */
+	public static void groupTyping(Social.Group g) {
+		if (g == null || g.id == null) {
+			return;
+		}
+		long now = System.currentTimeMillis();
+		Long last = GSENT.get(g.id);
+		if (last != null && now - last < 2_500L) {
+			return;
+		}
+		GSENT.put(g.id, now);
+		for (Social.User u : g.members) {
+			if (Social.me != null && u.id != null && u.id.equals(Social.me.id)) {
+				continue;
+			}
+			JsonObject o = new JsonObject();
+			o.addProperty("t", "gtyping");
+			o.addProperty("g", g.id);
+			sendTo(u.display(), o);
+		}
+	}
+
+	/** Names typing in this group right now. */
+	public static List<String> groupTypers(String groupId) {
+		List<String> out = new ArrayList<>();
+		Map<String, Long> m = groupId == null ? null : GTYPING.get(groupId);
+		if (m != null) {
+			long now = System.currentTimeMillis();
+			for (var e : m.entrySet()) {
+				if (e.getValue() > now) {
+					out.add(e.getKey());
+				}
+			}
+		}
+		return out;
+	}
+
 	/** True while this friend is typing to you. */
 	public static boolean isTyping(String friendName) {
 		if (friendName == null) {
@@ -230,6 +272,11 @@ public final class KuboLive {
 					connecting = false;
 					backoff = 5_000L;
 					lastPing = System.currentTimeMillis();
+				}
+				case "gtyping" -> {
+					if (from != null && o.has("g")) {
+						GTYPING.computeIfAbsent(o.get("g").getAsString(), k -> new ConcurrentHashMap<>()).put(from, System.currentTimeMillis() + 6_000L);
+					}
 				}
 				case "typing" -> {
 					if (from != null) {
