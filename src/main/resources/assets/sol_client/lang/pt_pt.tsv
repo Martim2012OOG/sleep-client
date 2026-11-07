@@ -3131,3 +3131,22 @@ Sound: SAVE	Som: SAVE
 Sound: PUNCH	Som: PUNCH (soco)
 Sound: JAIL	Som: JAIL (jaula)
 Remove parkour sounds	Remover sons do parkour
+Parkour Race	Corrida de Parkour
+Everyone's level in the Parkour Paradise 3 map when you play with friends (/pkrace start). Move it in the HUD editor.	O nível de toda a gente no mapa Parkour Paradise 3 quando jogas com amigos (/pkrace start). Muda a posição no editor de HUD.
+SAVE picture (PNG)	Imagem do SAVE (PNG)
+SAVE picture: back to the watermelon	Imagem do SAVE: voltar à melancia
+Allow Non-Premium Accounts	Permitir contas não originais
+Friends whose Minecraft account is not an original (Microsoft) one can join too. Names are then not checked with Mojang, so keep World Privacy on Whitelist if you don't trust everyone with the address.	Os amigos cuja conta de Minecraft não é original (Microsoft) também podem entrar. Os nomes deixam de ser confirmados com a Mojang, por isso põe a Privacidade em Whitelist se não confias em toda a gente que tem o endereço.
+Gifts Affect	Presentes afetam
+Only Me	Só eu
+Everyone	Toda a gente
+My Friends Only	Só os meus amigos
+Who the parkour gifts move, reset, punch and jail when friends play your hosted map with you.	Quem os presentes do parkour sobem, descem, fazem reset, dão soco e prendem quando os teus amigos jogam o teu mapa contigo.
+Show Title	Mostrar título
+Max Players	Máximo de jogadores
+Show Rank Number	Mostrar posição
+Highlight Me	Destacar-me
+Title Colour	Cor do título
+Leader Colour	Cor do líder
+My Colour	A minha cor
+Others Colour	Cor dos outros

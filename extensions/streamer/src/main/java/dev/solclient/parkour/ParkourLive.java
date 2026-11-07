@@ -42,6 +42,48 @@ public final class ParkourLive {
 
 	private static final int MAX = 100;
 	private static final Identifier WATERMELON = Identifier.of("sol_client", "textures/parkour/watermelon.png");
+	/** Your own SAVE picture (kubo-tiktok/save.png), chosen in the TikTok Live settings; null = the watermelon. */
+	private static volatile Identifier customSave;
+	private static volatile int savePicW, savePicH;
+	private static volatile boolean saveChecked;
+
+	/** The file of your own SAVE picture. */
+	public static java.nio.file.Path savePictureFile() {
+		return MinecraftClient.getInstance().runDirectory.toPath().resolve("kubo-tiktok").resolve("save.png");
+	}
+
+	/** Loads the SAVE picture again (after you chose a new one or went back to the watermelon). */
+	public static void reloadSavePicture() {
+		customSave = null;
+		saveChecked = false;
+	}
+
+	private static Identifier savePicture() {
+		if (!saveChecked) {
+			saveChecked = true;
+			java.nio.file.Path f = savePictureFile();
+			dev.solclient.social.Social.IO.execute(() -> {
+				try {
+					if (!java.nio.file.Files.isRegularFile(f)) {
+						return;
+					}
+					net.minecraft.client.texture.NativeImage img = net.minecraft.client.texture.NativeImage.read(java.nio.file.Files.newInputStream(f));
+					MinecraftClient mc = MinecraftClient.getInstance();
+					mc.execute(() -> {
+						Identifier id = Identifier.of("sol_client", "parkour/custom_save_" + System.nanoTime());
+						mc.getTextureManager().registerTexture(id, new net.minecraft.client.texture.NativeImageBackedTexture(() -> "kubo_save_picture", img));
+						savePicW = img.getWidth();
+						savePicH = img.getHeight();
+						customSave = id;
+					});
+				} catch (Exception e) {
+					System.err.println("[Sleep] SAVE picture: " + e);
+				}
+			});
+		}
+		Identifier c = customSave;
+		return c != null ? c : WATERMELON;
+	}
 
 	// ---- synced with the map (written on the server thread, read on the client thread)
 	private static volatile boolean inMap;
@@ -57,6 +99,7 @@ public final class ParkourLive {
 	private static int lastBeep;
 	private static String resetBy = "";
 	private static int punches;
+	private static int lastBarSec;
 	/** When the jail opens (ms), 0 = free. */
 	private static long jailEnd;
 	/** Blocks of the cage that we placed (only where there was air), to take away again. Server thread only. */
@@ -222,6 +265,28 @@ public final class ParkourLive {
 		}
 	}
 
+	/** Who the gifts hit (server thread): you, everyone in the map, or only your friends. */
+	private static java.util.List<ServerPlayerEntity> targets(MinecraftServer server, UUID me) {
+		TikTokLiveMod m = mod();
+		int mode = m == null ? 0 : m.pkTargets.idx();
+		java.util.List<ServerPlayerEntity> out = new java.util.ArrayList<>();
+		for (ServerPlayerEntity p : server.getPlayerManager().getPlayerList()) {
+			boolean isMe = p.getUuid().equals(me);
+			if (mode == 0 ? isMe : mode == 1 || !isMe) {
+				out.add(p);
+			}
+		}
+		return out;
+	}
+
+	/** A line above the hotbar of the players a gift hit (friends without Kubo see what happened too). */
+	private static void actionbar(MinecraftServer server, java.util.List<ServerPlayerEntity> who, String text, String colour) {
+		String t = text.replaceAll("[\\\"]", "");
+		for (ServerPlayerEntity p : who) {
+			command(server, "title " + p.getUuidAsString() + " actionbar {text:\"" + t + "\",color:\"" + colour + "\",bold:true}");
+		}
+	}
+
 	/** Moves you up / down and teleports you to that checkpoint (0 = the start of the parkour). */
 	private static void changeLevel(MinecraftClient mc, int delta) {
 		setLevel(mc, null, delta);
@@ -238,23 +303,31 @@ public final class ParkourLive {
 			if (!inMap) {
 				return;
 			}
-			int now = Math.max(0, level);
-			if (to == null && delta < 0 && now <= 1) {
-				return; // already at the start: nothing to go down to
-			}
-			int target = Math.max(1, Math.min(MAX, to != null ? to : now + delta));
-			if (target == now && to == null) {
-				return;
-			}
-			String u = me.toString();
+			ScoreboardObjective obj = server.getScoreboard().getNullableObjective("pk_level");
+			var who = targets(server, me);
 			release(server);
-			command(server, "scoreboard players set " + u + " pk_level " + target);
-			if (target == 0) {
-				command(server, "execute as " + u + " at @s run function main:player/tp/to_start");
-			} else {
+			for (ServerPlayerEntity p : who) {
+				var sc = server.getScoreboard().getScore(p, obj);
+				int now = Math.max(0, sc == null ? 0 : sc.getScore());
+				if (to == null && delta < 0 && now <= 1) {
+					continue; // already at the start: nothing to go down to
+				}
+				int target = Math.max(1, Math.min(MAX, to != null ? to : now + delta));
+				if (target == now && to == null) {
+					continue;
+				}
+				String u = p.getUuidAsString();
+				command(server, "scoreboard players set " + u + " pk_level " + target);
 				command(server, "execute as " + u + " at @s run function pk:to_checkpoint");
+				if (p.getUuid().equals(me)) {
+					level = target;
+				}
 			}
-			level = target;
+			if (to != null) {
+				actionbar(server, who, "RESET! Back to checkpoint 1", "red");
+			} else {
+				actionbar(server, who, (delta > 0 ? "+" : "") + delta + " LVL", delta > 0 ? "green" : "red");
+			}
 		});
 	}
 
@@ -267,13 +340,19 @@ public final class ParkourLive {
 		UUID me = mc.player.getUuid();
 		server.execute(() -> {
 			release(server);
-			ServerPlayerEntity p = server.getPlayerManager().getPlayer(me);
-			if (p == null) {
-				return;
+			var who = targets(server, me);
+			for (ServerPlayerEntity p : who) {
+				cage(server, p);
 			}
+			actionbar(server, who, "JAIL!", "gray");
+		});
+	}
+
+	private static void cage(MinecraftServer server, ServerPlayerEntity p) {
+		{
 			var world = p.getEntityWorld();
 			var c = p.getBlockPos();
-			String u = me.toString();
+			String u = p.getUuidAsString();
 			// in the middle of the cage, standing still
 			command(server, "tp " + u + " " + (c.getX() + 0.5) + " " + c.getY() + " " + (c.getZ() + 0.5));
 			cageWorld = world.getRegistryKey();
@@ -298,7 +377,7 @@ public final class ParkourLive {
 				}
 			}
 			command(server, "execute at " + u + " run playsound minecraft:block.iron_door.close master " + u + " ~ ~ ~ 1 0.7");
-		});
+		}
 	}
 
 	/** Takes the cage away again (only the blocks we put there and that are still bars / deepslate). Server thread. */
@@ -325,7 +404,180 @@ public final class ParkourLive {
 			for (int i = 0; i <= MAX; i++) {
 				command(server, "bossbar set pk:lvl_" + i + " visible false");
 			}
+			// the level in the tab list: that also sends everyone's level to your friends' clients (Parkour Race)
+			command(server, "scoreboard objectives setdisplay list pk_level");
 		});
+	}
+
+	// ================================================================ race (Host World with friends)
+	private static boolean raceOn;
+	private static int raceCount = -1;
+	private static final Map<String, Integer> RIVALS = new HashMap<>();
+
+	/** Everyone in the parkour map with their level, best first (from the scoreboard every client gets). */
+	public static java.util.List<Map.Entry<String, Integer>> standings() {
+		MinecraftClient mc = MinecraftClient.getInstance();
+		java.util.List<Map.Entry<String, Integer>> out = new java.util.ArrayList<>();
+		if (mc.world == null || mc.getNetworkHandler() == null) {
+			return out;
+		}
+		ScoreboardObjective obj = mc.world.getScoreboard().getNullableObjective("pk_level");
+		if (obj == null) {
+			return out;
+		}
+		for (var e : mc.world.getScoreboard().getScoreboardEntries(obj)) {
+			if (mc.getNetworkHandler().getPlayerListEntry(e.owner()) != null) { // only players who are here now
+				out.add(Map.entry(e.owner(), e.value()));
+			}
+		}
+		out.sort((a, b) -> b.getValue() - a.getValue());
+		return out;
+	}
+
+	public static boolean racing() {
+		return raceOn;
+	}
+
+	/** /pkrace start: everyone back to checkpoint 1, 3-2-1-GO, first to level 100 wins. Only the host can. */
+	public static void startRace() {
+		MinecraftClient mc = MinecraftClient.getInstance();
+		MinecraftServer server = mc.getServer();
+		if (server == null || !inMap) {
+			sweep("HOST ONLY", "Host the Parkour Paradise 3 map to start a race", 0xFFFF6B6B);
+			return;
+		}
+		resetEnd = 0;
+		jailEnd = 0;
+		server.execute(() -> {
+			release(server);
+			command(server, "scoreboard objectives setdisplay list pk_level");
+			command(server, "scoreboard players set @a pk_level 1");
+			command(server, "execute as @a at @s run function pk:to_checkpoint");
+			command(server, "effect give @a minecraft:slowness 5 255 true");
+			command(server, "attribute @a minecraft:jump_strength base set 0");
+			command(server, "title @a times 0 25 5");
+		});
+		raceOn = true;
+		raceCount = 60; // 3, 2, 1 (one second each), then GO
+	}
+
+	public static void stopRace() {
+		MinecraftServer server = MinecraftClient.getInstance().getServer();
+		raceOn = false;
+		raceCount = -1;
+		if (server != null) {
+			server.execute(() -> {
+				command(server, "attribute @a minecraft:jump_strength base reset");
+				command(server, "effect clear @a minecraft:slowness");
+				command(server, "title @a title {text:\"RACE STOPPED\",color:\"gray\",bold:true}");
+			});
+		}
+	}
+
+	private static void raceTick(MinecraftClient mc, MinecraftServer server) {
+		if (!raceOn) {
+			return;
+		}
+		if (raceCount >= 0) {
+			if (raceCount % 20 == 0) {
+				int n = raceCount / 20;
+				String t = "{text:\"" + n + "\",color:\"gold\",bold:true}";
+				server.execute(() -> {
+					if (n > 0) {
+						command(server, "title @a title " + t);
+						command(server, "execute as @a at @s run playsound minecraft:block.note_block.hat master @s ~ ~ ~ 1 1.2");
+					} else {
+						command(server, "attribute @a minecraft:jump_strength base reset");
+						command(server, "effect clear @a minecraft:slowness");
+						command(server, "title @a title {text:\"GO!\",color:\"green\",bold:true}");
+						command(server, "execute as @a at @s run playsound minecraft:block.note_block.bell master @s ~ ~ ~ 1 1.6");
+					}
+				});
+			}
+			raceCount--;
+			return;
+		}
+		if (ticks % 10 != 0) {
+			return;
+		}
+		server.execute(() -> {
+			ScoreboardObjective obj = server.getScoreboard().getNullableObjective("pk_level");
+			if (obj == null || !raceOn) {
+				return;
+			}
+			for (ServerPlayerEntity p : server.getPlayerManager().getPlayerList()) {
+				var sc = server.getScoreboard().getScore(p, obj);
+				if (sc != null && sc.getScore() >= MAX) {
+					raceOn = false;
+					String name = p.getName().getString().replaceAll("[^A-Za-z0-9_]", "");
+					command(server, "title @a times 5 80 20");
+					command(server, "title @a subtitle {text:\"reached level 100 first!\",color:\"white\"}");
+					command(server, "title @a title {text:\"" + name + " WINS!\",color:\"gold\",bold:true}");
+					command(server, "execute as @a at @s run playsound minecraft:ui.toast.challenge_complete master @s ~ ~ ~ 1 1");
+					return;
+				}
+			}
+		});
+	}
+
+	/** "X PASSED YOU!" / "YOU PASSED X!" when the order changes. */
+	private static void watchRivals(MinecraftClient mc) {
+		if (ticks % 10 != 0 || mc.player == null) {
+			return;
+		}
+		String me = mc.player.getName().getString();
+		var list = standings();
+		if (list.size() < 2) {
+			RIVALS.clear();
+			return;
+		}
+		int mine = 0;
+		for (var e : list) {
+			if (e.getKey().equals(me)) {
+				mine = e.getValue();
+			}
+		}
+		for (var e : list) {
+			String who = e.getKey();
+			if (who.equals(me)) {
+				continue;
+			}
+			Integer before = RIVALS.get(who);
+			Integer myBefore = RIVALS.get(me);
+			if (before != null && myBefore != null) {
+				if (before <= myBefore && e.getValue() > mine) {
+					sweep(who.toUpperCase(java.util.Locale.ROOT) + " PASSED YOU!", "LEVEL " + e.getValue(), 0xFFFF5555);
+				} else if (before >= myBefore && e.getValue() < mine) {
+					sweep("YOU PASSED " + who.toUpperCase(java.util.Locale.ROOT) + "!", "LEVEL " + mine, 0xFF55FF7F);
+				}
+			}
+		}
+		RIVALS.clear();
+		for (var e : list) {
+			RIVALS.put(e.getKey(), e.getValue());
+		}
+	}
+
+	/** A friend in your hosted parkour map: your level comes from the scoreboard the host sends. */
+	private static void guestTick(MinecraftClient mc) {
+		ScoreboardObjective obj = mc.world.getScoreboard().getNullableObjective("pk_level");
+		if (obj == null) {
+			inMap = false;
+			lastLevel = -1;
+			return;
+		}
+		inMap = true;
+		var sc = mc.world.getScoreboard().getScore(net.minecraft.scoreboard.ScoreHolder.fromName(mc.player.getName().getString()), obj);
+		int lv = sc == null ? 0 : sc.getScore();
+		level = lv;
+		if (lastLevel >= 0 && lv != lastLevel) {
+			levelPopAt = System.currentTimeMillis();
+			if (lv > lastLevel) {
+				sweep("CHECKPOINT!", "LEVEL " + lv, 0xFFFFD23C);
+			}
+		}
+		lastLevel = lv;
+		watchRivals(mc);
 	}
 
 	// ================================================================ tick
@@ -333,6 +585,10 @@ public final class ParkourLive {
 		ticks++;
 		TikGifts.saveSoon();
 		MinecraftServer server = mc.getServer();
+		if (server == null && mc.player != null && mc.world != null && mod() != null) {
+			guestTick(mc);
+			return;
+		}
 		if (server == null || mc.player == null || mod() == null) {
 			inMap = false;
 			wasInMap = false;
@@ -354,6 +610,8 @@ public final class ParkourLive {
 			hideBars(server);
 		}
 		wasInMap = true;
+		raceTick(mc, server);
+		watchRivals(mc);
 		// reached a new checkpoint (by playing or by a gift)
 		int lv = level;
 		if (lastLevel >= 0 && lv != lastLevel) {
@@ -369,6 +627,14 @@ public final class ParkourLive {
 		if (resetEnd > 0) {
 			long left = resetEnd - System.currentTimeMillis();
 			int sec = (int) Math.ceil(left / 1000.0);
+			TikTokLiveMod tm = mod();
+			if (sec != lastBarSec && sec > 0 && tm != null && tm.pkTargets.idx() != 0) {
+				lastBarSec = sec; // friends see the countdown above their hotbar
+				UUID me = mc.player.getUuid();
+				int s0 = sec;
+				String save = giftOf(Act.SAVE);
+				server.execute(() -> actionbar(server, targets(server, me), "RESET " + s0 + "s - SAVE: " + save, "red"));
+			}
 			if (sec != lastBeep && sec <= 10 && sec > 0) {
 				lastBeep = sec;
 				mc.getSoundManager().play(PositionedSoundInstance.ui(SoundEvents.BLOCK_NOTE_BLOCK_HAT, sec <= 3 ? 1.6F : 1.2F));
@@ -404,6 +670,29 @@ public final class ParkourLive {
 			return;
 		}
 		TikTokLiveMod m = mod();
+		MinecraftServer server = mc.getServer();
+		if (m != null && m.pkTargets.idx() != 0 && server != null) {
+			double ks = m.pkPunchStrength.i() / 100.0;
+			UUID me = p.getUuid();
+			server.execute(() -> {
+				for (ServerPlayerEntity t : targets(server, me)) {
+					Vec3d lk = t.getRotationVec(1F);
+					double x = -lk.x, z = -lk.z, l = Math.sqrt(x * x + z * z);
+					if (l < 1e-4) {
+						x = 1;
+						z = 0;
+						l = 1;
+					}
+					t.setVelocity(x / l * 1.5 * ks, 0.55 * Math.min(1.5, ks), z / l * 1.5 * ks);
+					t.networkHandler.sendPacket(new net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket(t));
+					String u = t.getUuidAsString();
+					command(server, "execute at " + u + " run playsound minecraft:block.note_block.bell master " + u + " ~ ~ ~ 1 1.2");
+					command(server, "execute at " + u + " run playsound minecraft:entity.arrow.hit_player master " + u + " ~ ~ ~ 1 0.6");
+					command(server, "execute at " + u + " run particle minecraft:crit ~ ~1 ~ 0.4 0.4 0.4 0.3 14");
+				}
+			});
+			return;
+		}
 		double k = (m == null ? 100 : m.pkPunchStrength.i()) / 100.0;
 		Vec3d look = p.getRotationVec(1F);
 		double hx = -look.x, hz = -look.z, len = Math.sqrt(hx * hx + hz * hz);
@@ -462,6 +751,15 @@ public final class ParkourLive {
 		}
 	}
 
+	/** True for the parkour map's world on the built-in server: nothing in it may be broken or trampled. */
+	public static boolean protects(net.minecraft.world.World world) {
+		try {
+			return world instanceof net.minecraft.server.world.ServerWorld sw && sw.getServer().getScoreboard().getNullableObjective("pk_level") != null;
+		} catch (Throwable t) {
+			return false;
+		}
+	}
+
 	// ---- for the "Parkour Level" HUD element
 	/** In the parkour map with Parkour Live on. */
 	public static boolean showing() {
@@ -485,7 +783,12 @@ public final class ParkourLive {
 	private static void drawGift(DrawContext c, Act a, int x, int y, int s) {
 		if (a == Act.SAVE) {
 			// the watermelon picture shipped with the client: the same as on the stream, even before TikTok connects
-			c.drawTexture(net.minecraft.client.gl.RenderPipelines.GUI_TEXTURED, WATERMELON, x, y, 0, 0, s, s, s, s);
+			Identifier pic = savePicture();
+			int pw = pic == WATERMELON ? s : savePicW, ph = pic == WATERMELON ? s : savePicH;
+			// keeps the picture's shape: fits it inside the s x s square
+			float k = Math.min(s / (float) Math.max(1, pw), s / (float) Math.max(1, ph));
+			int dw = Math.max(1, Math.round(pw * k)), dh = Math.max(1, Math.round(ph * k));
+			c.drawTexture(net.minecraft.client.gl.RenderPipelines.GUI_TEXTURED, pic, x + (s - dw) / 2, y + (s - dh) / 2, 0, 0, dw, dh, dw, dh);
 			return;
 		}
 		Identifier icon = null;

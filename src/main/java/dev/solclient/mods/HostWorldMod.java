@@ -17,6 +17,8 @@ public class HostWorldMod extends Mod {
 	public final Option.Num slots = num("Max Slots", 8, 2, 20, 1, "");
 	public final Option.Choice privacy = choice("World Privacy", 0, "Whitelist", "Friends Only", "Public");
 	public final Option.Bool autoHost = bool("Auto Host On Join", false);
+	public final Option.Bool nonPremium = bool("Allow Non-Premium Accounts", true)
+			.tip("Friends whose Minecraft account is not an original (Microsoft) one can join too. Names are then not checked with Mojang, so keep World Privacy on Whitelist if you don't trust everyone with the address.");
 	public final Option.Text port = text("Custom Port", "", 5, "Automatic");
 	public final Option.Bool anywhere = bool("Friends From Anywhere (Sleep Relay)", true);
 	public final Option.Bool openRouter = bool("Also Open The Router Port (UPnP)", true);

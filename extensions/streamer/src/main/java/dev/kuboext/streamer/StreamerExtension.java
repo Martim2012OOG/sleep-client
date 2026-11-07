@@ -18,6 +18,7 @@ public class StreamerExtension implements KuboExtension {
 		api.addMod(new TikTokLiveMod());
 		api.addMod(new dev.solclient.mods.TikTokViewersMod());
 		api.addMod(new dev.solclient.mods.ParkourLevelMod());
+		api.addMod(new dev.solclient.mods.ParkourRaceMod());
 		// while you are live: full FPS even with OBS in front, optionally locked to a steady number
 		api.streamFps(() -> TikTokLiveMod.instance == null ? -1 : TikTokLiveMod.instance.streamFps());
 		ClientTickEvents.END_CLIENT_TICK.register(c -> StreamerModeMod.pollKey());
@@ -28,6 +29,20 @@ public class StreamerExtension implements KuboExtension {
 			parkourHooked = true;
 			// the jail cage never stays in the map, even if you close the world while locked up
 			net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents.SERVER_STOPPING.register(dev.solclient.parkour.ParkourLive::release);
+			// the parkour map can't be broken (buttons, doors and levers still work: they are not breaking); creative mode still can, to fix the map
+			net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents.BEFORE.register(
+					(world, player, pos, state, be) -> player.isCreative() || !dev.solclient.parkour.ParkourLive.protects(world));
+			// /pkrace start | stop : parkour race with your friends in your hosted map
+			net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback.EVENT.register((d, reg) -> d.register(
+					net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal("pkrace")
+							.then(net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal("start").executes(ctx -> {
+								dev.solclient.parkour.ParkourLive.startRace();
+								return 1;
+							}))
+							.then(net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal("stop").executes(ctx -> {
+								dev.solclient.parkour.ParkourLive.stopRace();
+								return 1;
+							}))));
 			// /pktest up1 | down1 | up10 | down10 | reset | save | punch | jail : try every gift without being live
 			net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback.EVENT.register((d, reg) -> d.register(
 					net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal("pktest")

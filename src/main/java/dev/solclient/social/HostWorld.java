@@ -159,6 +159,12 @@ public final class HostWorld {
 		if (server == null) {
 			return;
 		}
+		// non-original accounts: a hosted world checks every login with Mojang, and those friends drop out while joining
+		try {
+			server.setOnlineMode(!HostWorldMod.instance.nonPremium.on());
+		} catch (Throwable ignored) {
+			// keep Minecraft's default
+		}
 		Difficulty d = switch (HostWorldMod.instance.difficulty.idx()) {
 			case 0 -> Difficulty.PEACEFUL;
 			case 1 -> Difficulty.EASY;

@@ -89,6 +89,8 @@ public class TikTokLiveMod extends HudMod {
 	private final Option.Text pkPunch = text("PUNCH gifts", "Boxing Gloves", 200, "gift names, separated by commas");
 	private final Option.Text pkJail = text("JAIL gifts", "Sunglasses", 200, "gift names, separated by commas");
 	public final Option.Num pkJailSeconds = num("Jail Time", 20, 5, 60, 1, "s");
+	public final Option.Choice pkTargets = choice("Gifts Affect", 0, "Only Me", "Everyone", "My Friends Only")
+			.tip("Who the parkour gifts move, reset, punch and jail when friends play your hosted map with you.");
 	public final Option.Num pkResetSeconds = num("Reset Timer", 60, 10, 300, 5, "s");
 	public final Option.Num pkPunchStrength = num("Punch Strength", 100, 30, 300, 10, "%");
 	private final Option.Choice pkTestPick = choice("Test Parkour Gift", 0, "UP 1 LVL", "DOWN 1 LVL", "UP 10 LVL", "DOWN 10 LVL", "RESET", "SAVE", "PUNCH", "JAIL");
@@ -105,6 +107,63 @@ public class TikTokLiveMod extends HudMod {
 	private final Option.Action pkSndPunch = action("Sound: PUNCH", "Choose file", () -> pickSlot("pk_punch"), () -> pkSound(6));
 	private final Option.Action pkSndJail = action("Sound: JAIL", "Choose file", () -> pickSlot("pk_jail"), () -> pkSound(7));
 	private final Option.Action pkSndClear = action("Remove parkour sounds", "Clear", this::clearParkourSounds, () -> "");
+	private final Option.Action pkSavePic = action("SAVE picture (PNG)", "Choose file", this::pickSavePicture, () -> this.savePicStatus);
+	private final Option.Action pkSavePicReset = action("SAVE picture: back to the watermelon", "Reset", this::resetSavePicture, () -> "");
+	private volatile String savePicStatus = "";
+
+	private void pickSavePicture() {
+		savePicStatus = "Choosing...";
+		Thread t = new Thread(() -> {
+			String path;
+			try (MemoryStack stack = MemoryStack.stackPush()) {
+				PointerBuffer filters = stack.mallocPointer(1);
+				filters.put(stack.UTF8("*.png"));
+				filters.flip();
+				path = TinyFileDialogs.tinyfd_openFileDialog("Choose the SAVE picture (PNG)", "", filters, "PNG pictures", false);
+			} catch (Throwable e) {
+				savePicStatus = "No file picker";
+				return;
+			}
+			if (path == null || path.isBlank()) {
+				savePicStatus = "";
+				return;
+			}
+			try {
+				Path src = Path.of(path);
+				if (Files.size(src) > 8L * 1024 * 1024) {
+					savePicStatus = "Picture too big (max 8 MB)";
+					return;
+				}
+				byte[] head = new byte[8];
+				try (var in = Files.newInputStream(src)) {
+					in.readNBytes(head, 0, 8);
+				}
+				if ((head[0] & 0xFF) != 0x89 || head[1] != 'P' || head[2] != 'N' || head[3] != 'G') {
+					savePicStatus = "Use a .png picture";
+					return;
+				}
+				Path dst = dev.solclient.parkour.ParkourLive.savePictureFile();
+				Files.createDirectories(dst.getParent());
+				Files.copy(src, dst, StandardCopyOption.REPLACE_EXISTING);
+				savePicStatus = src.getFileName().toString();
+				dev.solclient.parkour.ParkourLive.reloadSavePicture();
+			} catch (Exception e) {
+				savePicStatus = "Could not copy the picture";
+			}
+		}, "kubo-save-picture");
+		t.setDaemon(true);
+		t.start();
+	}
+
+	private void resetSavePicture() {
+		try {
+			Files.deleteIfExists(dev.solclient.parkour.ParkourLive.savePictureFile());
+		} catch (Exception ignored) {
+			// in use
+		}
+		savePicStatus = "";
+		dev.solclient.parkour.ParkourLive.reloadSavePicture();
+	}
 
 	private volatile String[] pkSoundNames = new String[8];
 
