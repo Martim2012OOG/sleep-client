@@ -1363,21 +1363,28 @@ public class SolMenuScreen extends Screen {
 		eY = top;
 		eW = ix1 - ix0;
 		eH = iy1 - top;
-		Gfx.rrectBorder(c, eX - 2, eY - 2, eW + 4, eH + 4, 8, 0xFF0C0D10, Theme.CARD_BORDER);
-		int gw = Math.max(200, Math.round(eW * u)), gh = Math.max(120, Math.round(eH * u));
+		// another mod's settings: drawn at the game's GUI scale in its own dark box; a Sleep add-on: drawn in the menu's
+		// own units (same size as everything around it), straight on the panel
+		float es = embScale();
+		if (!embeddedAddon) {
+			Gfx.rrectBorder(c, eX - 2, eY - 2, eW + 4, eH + 4, 8, 0xFF0C0D10, Theme.CARD_BORDER);
+		}
+		int gw = Math.max(200, Math.round(eW * es)), gh = Math.max(120, Math.round(eH * es));
 		var mc = MinecraftClient.getInstance();
 		if (eInitW != gw || eInitH != gh) {
 			eInitW = gw;
 			eInitH = gh;
 			embedded.init(gw, gh);
 		}
-		float gmx = (mx - eX) * u, gmy = (my - eY) * u;
+		float gmx = (mx - eX) * es, gmy = (my - eY) * es;
 		float oldOverride = Gfx.scaleOverride;
-		Gfx.scaleOverride = 0F;
+		if (!embeddedAddon) {
+			Gfx.scaleOverride = 0F;
+		}
 		c.enableScissor(eX, eY, eX + eW, eY + eH);
 		c.getMatrices().pushMatrix();
 		c.getMatrices().translate(eX, eY);
-		c.getMatrices().scale(f, f);
+		c.getMatrices().scale(1F / es, 1F / es);
 		dev.solclient.gui.EmbedFlag.rendering = true;
 		try {
 			embedded.render(c, Math.round(gmx), Math.round(gmy), 0F);
@@ -1395,12 +1402,17 @@ public class SolMenuScreen extends Screen {
 		return embedOn() && vx >= eX && vx < eX + eW && vy >= eY && vy < eY + eH;
 	}
 
+	/** Embedded-screen units per menu unit: GUI units for other mods' settings, menu units for Sleep add-ons. */
+	private float embScale() {
+		return embeddedAddon ? 1F : u;
+	}
+
 	private double embX(double vx) {
-		return (vx - eX) * u;
+		return (vx - eX) * embScale();
 	}
 
 	private double embY(double vy) {
-		return (vy - eY) * u;
+		return (vy - eY) * embScale();
 	}
 
 	@Override
@@ -7400,7 +7412,7 @@ public class SolMenuScreen extends Screen {
 	@Override
 	public boolean mouseDragged(Click click, double dx, double dy) {
 		if (embedded != null && embeddedFocus) {
-			embedded.mouseDragged(new Click(embX(click.x() * f), embY(click.y() * f), click.buttonInfo()), dx * f * u, dy * f * u);
+			embedded.mouseDragged(new Click(embX(click.x() * f), embY(click.y() * f), click.buttonInfo()), dx * f * embScale(), dy * f * embScale());
 			return true;
 		}
 		if (draggingBox != null) {
