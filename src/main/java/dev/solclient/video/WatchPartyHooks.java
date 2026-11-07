@@ -15,17 +15,22 @@ public final class WatchPartyHooks {
 	public static void register() {
 		try {
 			WorldRenderEvents.BEFORE_ENTITIES.register(ctx -> {
+			long kuboPerfT0 = System.nanoTime();
+			try {
 				try {
 					VideoScreens.render(ctx.matrices(), ctx.commandQueue(), ctx.worldState().cameraRenderState.pos);
 				} catch (RuntimeException ignored) {
 				}
-			});
+						} finally {
+				dev.solclient.Perf.add("Watch party", System.nanoTime() - kuboPerfT0);
+			}
+		});
 		} catch (Throwable t) {
 			System.err.println("[Sleep] Watch Party rendering unavailable: " + t);
 		}
 		try {
 			ClientCommandRegistrationCallback.EVENT.register((dispatcher, access) -> dispatcher.register(
-					ClientCommandManager.literal("kubo").then(ClientCommandManager.literal("video")
+					ClientCommandManager.literal("sleep").then(ClientCommandManager.literal("video")
 							.then(ClientCommandManager.literal("pause").executes(c -> {
 								VideoScreens.pause(true);
 								return 1;

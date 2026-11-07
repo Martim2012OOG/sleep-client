@@ -329,6 +329,15 @@ public final class KuboApi {
 	}
 
 	public static void drawHud(DrawContext c, boolean last) {
+		long kuboPerfT0 = System.nanoTime();
+		try {
+			drawHud0(c, last);
+		} finally {
+			dev.solclient.Perf.add(last ? "Extensions HUD (top)" : "Extensions HUD", System.nanoTime() - kuboPerfT0);
+		}
+	}
+
+	private static void drawHud0(DrawContext c, boolean last) {
 		for (Consumer<DrawContext> d : last ? HUD_LAST : HUD) {
 			try {
 				d.accept(c);

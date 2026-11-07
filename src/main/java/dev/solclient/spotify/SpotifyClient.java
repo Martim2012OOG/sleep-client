@@ -390,6 +390,7 @@ public final class SpotifyClient {
 
 	private static void poll() {
 		String[] out = new String[1];
+		long askedAt = System.currentTimeMillis();
 		int code = call("GET", "/me/player?additional_types=track,episode", null, out);
 		if (code == 204 || code == 202) {
 			hasTrack = false;
@@ -405,7 +406,8 @@ public final class SpotifyClient {
 		JsonObject o = JsonParser.parseString(out[0]).getAsJsonObject();
 		playing = o.has("is_playing") && o.get("is_playing").getAsBoolean();
 		progressMs = o.has("progress_ms") && !o.get("progress_ms").isJsonNull() ? o.get("progress_ms").getAsLong() : 0;
-		fetchedAt = System.currentTimeMillis();
+		// the position is from the moment Spotify answered, about halfway through the request: not when the answer got here
+		fetchedAt = (askedAt + System.currentTimeMillis()) / 2;
 		if (o.has("device") && o.get("device").isJsonObject() && o.getAsJsonObject("device").has("name")) {
 			device = o.getAsJsonObject("device").get("name").getAsString();
 		}

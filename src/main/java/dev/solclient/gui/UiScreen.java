@@ -308,9 +308,9 @@ public abstract class UiScreen extends Screen {
 		Gfx.tex(c, Gfx.id("icon.png"), cx - size / 2, cy - size / 2, size, size, 256, 256, 0xFFFFFFFF);
 	}
 
-	/** Logo + "KUBO" (bottom-right corner in the pause menu, top in the title). */
+	/** Logo + "SLEEP" (bottom-right corner in the pause menu, top in the title). */
 	protected void brand(DrawContext c, int x, int y) {
 		Gfx.tex(c, Theme.icon2("sol_client"), x, y, 16, 16, 64, 64, 0xFFFFFFFF);
-		Gfx.text(c, "KUBO", x + 21, y + 4, Theme.TEXT);
+		Gfx.text(c, "SLEEP", x + 21, y + 4, Theme.TEXT);
 	}
 }

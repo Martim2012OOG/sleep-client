@@ -77,7 +77,7 @@ public final class PauseClassic {
 			addDrawable.accept((DrawContext c, int mx, int my, float delta) -> {
 				Gfx.rrectBorder(c, cardX, cardY, cardW, cardH, 8, panel, Theme.PANEL_BORDER);
 				Gfx.tex(c, Theme.icon2("sol_client"), cardX + 9, cardY + 6, 12, 12, 64, 64, 0xFFFFFFFF);
-				Gfx.text(c, "KUBO", cardX + 25, cardY + 9, Theme.TEXT);
+				Gfx.text(c, "SLEEP", cardX + 25, cardY + 9, Theme.TEXT);
 				c.fill(cardX + 8, cardY + 22, cardX + cardW - 8, cardY + 23, 0x1CFFFFFF);
 			});
 			for (int i = 0; i < items.size(); i++) {
@@ -108,8 +108,8 @@ public final class PauseClassic {
 				}
 			}
 			// logo + name, bottom-right
-			Gfx.tex(c, Theme.icon2("sol_client"), width - Gfx.tw("KUBO") - 30, height - 24, 16, 16, 64, 64, 0xFFFFFFFF);
-			Gfx.text(c, "KUBO", width - Gfx.tw("KUBO") - 30 + 21, height - 20, Theme.TEXT);
+			Gfx.tex(c, Theme.icon2("sol_client"), width - Gfx.tw("SLEEP") - 30, height - 24, 16, 16, 64, 64, 0xFFFFFFFF);
+			Gfx.text(c, "SLEEP", width - Gfx.tw("SLEEP") - 30 + 21, height - 20, Theme.TEXT);
 		});
 
 		// your player on the left, in a card, with the Locker button inside it

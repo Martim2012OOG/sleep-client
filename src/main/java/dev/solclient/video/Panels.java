@@ -45,6 +45,8 @@ public final class Panels {
 	public static void register() {
 		try {
 			WorldRenderEvents.BEFORE_ENTITIES.register(ctx -> {
+			long kuboPerfT0 = System.nanoTime();
+			try {
 				long t0 = System.nanoTime();
 				try {
 					frame(ctx.matrices(), ctx.commandQueue(), ctx.worldState().cameraRenderState.pos);
@@ -58,7 +60,10 @@ public final class Panels {
 						e.printStackTrace();
 					}
 				}
-			});
+						} finally {
+				dev.solclient.Perf.add("Video screens", System.nanoTime() - kuboPerfT0);
+			}
+		});
 		} catch (Throwable t) {
 			System.err.println("[Sleep] floating panels rendering unavailable: " + t);
 		}

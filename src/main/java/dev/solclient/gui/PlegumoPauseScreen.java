@@ -69,7 +69,7 @@ public class PlegumoPauseScreen extends UiScreen {
 		Gfx.textC(c, fit(where, bw), cx, iy + is + 12, Theme.DIM);
 
 		// bottom-right: client logo and name
-		brand(c, width - Gfx.tw("KUBO") - 30, height - 24);
+		brand(c, width - Gfx.tw("SLEEP") - 30, height - 24);
 	}
 
 	private void leave() {

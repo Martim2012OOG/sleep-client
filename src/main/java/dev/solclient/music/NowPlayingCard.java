@@ -62,6 +62,8 @@ public final class NowPlayingCard {
 		hooked = true;
 		try {
 			WorldRenderEvents.BEFORE_ENTITIES.register(ctx -> {
+			long kuboPerfT0 = System.nanoTime();
+			try {
 				Cfg c = cfg;
 				if (c == null || !c.enabled || !c.sky || System.currentTimeMillis() - lastSet > 5000L || !visible(System.currentTimeMillis())) {
 					return;
@@ -75,7 +77,10 @@ public final class NowPlayingCard {
 					}
 					error = String.valueOf(e);
 				}
-			});
+						} finally {
+				dev.solclient.Perf.add("Music card (world)", System.nanoTime() - kuboPerfT0);
+			}
+		});
 		} catch (Throwable t) {
 			System.err.println("[Sleep] now playing card unavailable: " + t);
 		}

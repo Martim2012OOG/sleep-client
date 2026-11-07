@@ -139,7 +139,7 @@ public final class LyricsView {
 			return;
 		}
 		long now = System.currentTimeMillis();
-		long pos = MusicHub.progressMs + (MusicHub.playing ? now - MusicHub.fetchedAt : 0) + Math.round(cfg.offsetMs);
+		long pos = MusicHub.progressMs + (MusicHub.playing ? now - MusicHub.fetchedAt + MusicHub.LYRICS_LEAD_MS : 0) + Math.round(cfg.offsetMs);
 		updateSway(mc, cfg, now, mc.getWindow().getScaledWidth());
 		int idx = Lyrics.indexAt(lines, pos);
 		if (idx < 0) {

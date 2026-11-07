@@ -637,7 +637,7 @@ public final class VoiceTrigger {
 					status = "Downloading the voice engine for Mac...";
 					Path zip = nat.resolve("vosk-osx.zip.part");
 					HttpClient http = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.ALWAYS).connectTimeout(Duration.ofSeconds(20)).build();
-					HttpResponse<Path> r = http.send(HttpRequest.newBuilder(URI.create(OSX_LIB)).header("User-Agent", "KuboClient").timeout(Duration.ofMinutes(5)).build(),
+					HttpResponse<Path> r = http.send(HttpRequest.newBuilder(URI.create(OSX_LIB)).header("User-Agent", "SleepClient").timeout(Duration.ofMinutes(5)).build(),
 							HttpResponse.BodyHandlers.ofFile(zip));
 					if (r.statusCode() != 200) {
 						throw new java.io.IOException("HTTP " + r.statusCode());
@@ -850,7 +850,7 @@ public final class VoiceTrigger {
 	private static void fetch(String url, Path to) throws Exception {
 		status = "Downloading voice model...";
 		HttpClient http = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.ALWAYS).connectTimeout(Duration.ofSeconds(20)).build();
-		HttpResponse<InputStream> r = http.send(HttpRequest.newBuilder(URI.create(url)).header("User-Agent", "KuboClient").timeout(Duration.ofMinutes(15)).build(),
+		HttpResponse<InputStream> r = http.send(HttpRequest.newBuilder(URI.create(url)).header("User-Agent", "SleepClient").timeout(Duration.ofMinutes(15)).build(),
 				HttpResponse.BodyHandlers.ofInputStream());
 		if (r.statusCode() != 200) {
 			r.body().close();

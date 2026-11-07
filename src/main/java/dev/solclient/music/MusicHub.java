@@ -17,6 +17,8 @@ public final class MusicHub {
 	public static volatile long durationMs, progressMs, fetchedAt;
 	/** One line for the settings: where the song comes from, or what to do when nothing is found. */
 	public static volatile String status = "Open a song in any player";
+	/** Lyrics show this much before their time: the words fade / pop in, so they are fully there when they are sung. */
+	public static final long LYRICS_LEAD_MS = 250;
 	/** Why the player gave no cover for the song on screen ("" when it did); see {@link CoverFinder}. */
 	public static volatile String playerArtError = "";
 
@@ -126,6 +128,8 @@ public final class MusicHub {
 					}));
 		}
 		String hint = "";
+		long t0 = System.currentTimeMillis();
+		int webCount = all.size();
 		if (OS.contains("mac")) {
 			all.addAll(MAC.poll(extraSites));
 			hint = MAC.hint();
@@ -138,6 +142,21 @@ public final class MusicHub {
 		}
 		if (!running) {
 			return;
+		}
+		// the players on this computer were asked during the poll: their positions are from about its middle
+		long localAt = (t0 + System.currentTimeMillis()) / 2;
+		// the Spotify app on this computer knows the exact position; the Spotify account (internet) is always a bit late:
+		// when both play the same song, use the app
+		if (webCount > 0) {
+			Track web = all.get(0);
+			for (int i = webCount; i < all.size(); i++) {
+				Track t = all.get(i);
+				if (t.playing() && t.title().equalsIgnoreCase(web.title())) {
+					all.remove(0);
+					webCount = 0;
+					break;
+				}
+			}
 		}
 
 		// what to show: a song that is playing (the same one as before if it still plays), else the one that was shown, else any
@@ -178,11 +197,13 @@ public final class MusicHub {
 		durationMs = Math.max(0, pick.durationMs());
 		// keep our own clock running smoothly: only jump to the player's position when it really differs (seek, pause,
 		// another song); small differences are the player's report being late / rounded, and made the words stutter
-		long predicted = progressMs + (playing ? now - fetchedAt : 0);
+		long sampleAt = pick.id().startsWith("sp:") ? now : localAt;
+		long predicted = progressMs + (playing ? sampleAt - fetchedAt : 0);
 		long reported = Math.max(0, pick.positionMs());
 		boolean sameSong = pick.id().equals(lastIdBefore) && playing == pick.playing();
-		progressMs = sameSong && pick.playing() && Math.abs(reported - predicted) < 450 ? predicted + (reported - predicted) / 8 : reported;
-		fetchedAt = now;
+		// small differences are smoothed (no stutter), but quickly (half each round), so the clock never stays behind
+		progressMs = sameSong && pick.playing() && Math.abs(reported - predicted) < 300 ? predicted + (reported - predicted) / 2 : reported;
+		fetchedAt = sampleAt;
 		playing = pick.playing();
 		source = pick.source();
 		hasTrack = true;

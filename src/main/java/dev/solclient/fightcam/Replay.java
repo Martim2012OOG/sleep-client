@@ -571,6 +571,8 @@ public final class Replay {
 		hooked = true;
 		try {
 			WorldRenderEvents.BEFORE_ENTITIES.register(ctx -> {
+			long kuboPerfT0 = System.nanoTime();
+			try {
 				if (!active || play == null) {
 					return;
 				}
@@ -583,7 +585,10 @@ public final class Replay {
 					}
 					renderError = String.valueOf(e);
 				}
-			});
+						} finally {
+				dev.solclient.Perf.add("Replay", System.nanoTime() - kuboPerfT0);
+			}
+		});
 		} catch (Throwable e) {
 			System.err.println("[Sleep] Replay rendering unavailable: " + e);
 		}

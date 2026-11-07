@@ -116,7 +116,7 @@ final class MacMusic {
 		if (f.length < 6 || f[1].isEmpty()) {
 			return;
 		}
-		out.add(new Track("Spotify", f[1] + "\u0001" + f[2], f[1], f[2], f[5], Sh.num(f[3]), Sh.num(f[4]) * 1000L, f[0].equals("1"),
+		out.add(new Track("Spotify", f[1] + "\u0001" + f[2], f[1], f[2], f[5], Sh.num(f[3]), Sh.ms(f[4]), f[0].equals("1"),
 				appCtl("Spotify")));
 	}
 
@@ -130,7 +130,7 @@ final class MacMusic {
 			return;
 		}
 		out.add(new Track("Apple Music", f[1] + "\u0001" + f[2], f[1], f[2], art(f[1], f[2]), Sh.num(f[3]) * 1000L,
-				Sh.num(f[4]) * 1000L, f[0].equals("1"), appCtl("Music")));
+				Sh.ms(f[4]), f[0].equals("1"), appCtl("Music")));
 	}
 
 	private static Track.Ctl appCtl(String app) {

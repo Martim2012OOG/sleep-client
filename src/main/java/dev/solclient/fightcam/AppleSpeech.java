@@ -35,7 +35,7 @@ final class AppleSpeech {
 			for (byte b : MessageDigest.getInstance("SHA-1").digest(bin)) {
 				hash.append(String.format("%02x", b));
 			}
-			Path dir = Path.of(System.getProperty("user.home"), "Library", "Application Support", "Kubo", "helper");
+			Path dir = Path.of(System.getProperty("user.home"), "Library", "Application Support", "Sleep", "helper");
 			Files.createDirectories(dir);
 			Path exe = dir.resolve("speech-" + hash.substring(0, 10));
 			if (!Files.isRegularFile(exe) || Files.size(exe) != bin.length) {

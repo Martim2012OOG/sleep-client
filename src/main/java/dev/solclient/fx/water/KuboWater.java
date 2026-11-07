@@ -94,6 +94,8 @@ public final class KuboWater {
 		}
 		hooked = true;
 		WorldRenderEvents.AFTER_ENTITIES.register(ctx -> {
+			long kuboPerfT0 = System.nanoTime();
+			try {
 			try {
 				render(ctx.consumers());
 			} catch (Throwable t) {
@@ -101,6 +103,9 @@ public final class KuboWater {
 				SETTINGS.on = false; // never break the game: switch ourselves off
 				System.err.println("[Sleep] own liquid renderer stopped: " + t);
 				t.printStackTrace();
+			}
+					} finally {
+				dev.solclient.Perf.add("Water renderer", System.nanoTime() - kuboPerfT0);
 			}
 		});
 	}

@@ -93,6 +93,15 @@ final class Sh {
 		}
 	}
 
+	/** Seconds as the player says them ("12.734" / "12,734") to milliseconds, keeping the fraction. */
+	static long ms(String s) {
+		try {
+			return Math.round(Double.parseDouble(s.trim().replace(',', '.')) * 1000.0);
+		} catch (Exception e) {
+			return 0;
+		}
+	}
+
 	static long num(String s) {
 		try {
 			return Math.round(Double.parseDouble(s.trim().replace(',', '.')));

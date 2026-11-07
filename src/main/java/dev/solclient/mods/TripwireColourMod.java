@@ -60,6 +60,8 @@ public class TripwireColourMod extends Mod {
 		hooked = true;
 		try {
 			WorldRenderEvents.BEFORE_ENTITIES.register(ctx -> {
+			long kuboPerfT0 = System.nanoTime();
+			try {
 				if (instance != null && instance.enabled && instance.segCount > 0) {
 					long t0 = System.nanoTime();
 					try {
@@ -68,7 +70,10 @@ public class TripwireColourMod extends Mod {
 					}
 					instance.addCost(System.nanoTime() - t0);
 				}
-			});
+						} finally {
+				dev.solclient.Perf.add("Tripwire colour", System.nanoTime() - kuboPerfT0);
+			}
+		});
 		} catch (Throwable t) {
 			System.err.println("[Sleep] Tripwire Colour unavailable: " + t);
 		}

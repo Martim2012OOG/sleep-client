@@ -129,7 +129,7 @@ public class TierTaggerMod extends Mod {
 			try {
 				String u = id.toString().replace("-", "");
 				HttpResponse<String> r = HTTP.send(HttpRequest.newBuilder(URI.create("https://mctiers.com/api/profile/" + u)).timeout(Duration.ofSeconds(8))
-						.header("User-Agent", "KuboClient").build(), HttpResponse.BodyHandlers.ofString());
+						.header("User-Agent", "SleepClient").build(), HttpResponse.BodyHandlers.ofString());
 				if (r.statusCode() == 200) {
 					RANKS.put(id, JsonParser.parseString(r.body()).getAsJsonObject());
 				} else {

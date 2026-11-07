@@ -5370,7 +5370,7 @@ public class SolMenuScreen extends Screen {
 					sug.add(new FRow(R_SUGGEST, null, null, null, n));
 				}
 			}
-			out.add(new FRow(R_TITLE, null, null, "KUBO PLAYERS NEAR YOU", null));
+			out.add(new FRow(R_TITLE, null, null, "SLEEP PLAYERS NEAR YOU", null));
 			if (sug.isEmpty()) {
 				out.add(new FRow(R_EMPTY, null, null, mc.world == null ? "Join a server to see them" : "Nobody around right now", null));
 			}
@@ -6080,6 +6080,8 @@ public class SolMenuScreen extends Screen {
 	private String gifAsked;
 	private long gifTyped;
 	private boolean membersOpen;
+	/** The chat's bubble style picker (button in the chat header). */
+	private boolean bubblePicker;
 
 	private static final int BUBBLE_OTHER = 0xFF262833;
 
@@ -6138,6 +6140,43 @@ public class SolMenuScreen extends Screen {
 		return out;
 	}
 
+	/** Grid of bubble styles with a preview each (like phone chat apps): click one to use it for the messages you send next. */
+	private void drawBubblePicker(DrawContext c, int mx, int my, int ix, int iw, int y0, int y1, boolean settled, int accent) {
+		Gfx.text(c, dev.solclient.Lang.tr("Bubble style", "Estilo de balão"), ix + 2, y0, 0xFFFFFFFF);
+		Gfx.text(c, fit(dev.solclient.Lang.tr("For every chat. Only the messages you send after choosing.", "Para todas as conversas. Só as mensagens que enviares depois."), iw - 4),
+				ix + 2, y0 + 11, Theme.DIM);
+		String mine = dev.solclient.chat.Bubbles.mine();
+		int cols = 3, gap = 6, cw = (iw - gap * (cols - 1)) / cols, ch = 46;
+		int top = y0 + 30;
+		var all = dev.solclient.chat.Bubbles.ALL;
+		for (int i = 0; i < all.size(); i++) {
+			var st = all.get(i);
+			int cx0 = ix + (i % cols) * (cw + gap), cy0 = top + (i / cols) * (ch + gap);
+			if (cy0 + ch > y1) {
+				break;
+			}
+			boolean sel = st.id().equals(mine);
+			boolean hov = in(mx, my, cx0, cy0, cw, ch);
+			Gfx.rrect(c, cx0, cy0, cw, ch, 6, sel ? Gfx.withAlpha(accent & 0xFFFFFF, 0x40) : hov ? 0x22FFFFFF : 0x10FFFFFF);
+			if (sel) {
+				Gfx.rrectBorder(c, cx0, cy0, cw, ch, 6, 0, accent);
+			}
+			// preview bubble
+			int pbw = cw - 16, pbh = 14, pbx = cx0 + 8, pby = cy0 + 12;
+			dev.solclient.chat.Bubbles.draw(c, st, pbx, pby, pbw, pbh, accent, true);
+			boolean styled = st.deco() != dev.solclient.chat.Bubbles.Deco.NONE;
+			Gfx.text(c, fit("Hey!", pbw - 8), pbx + 5, pby + 3, styled ? st.text() : 0xFFFFFFFF);
+			Gfx.textFit(c, st.name(), cx0 + cw / 2, cw - 6, cy0 + ch - 11, sel ? 0xFFFFFFFF : Theme.DIM);
+			if (settled) {
+				final String id = st.id();
+				region(cx0, cy0, cw, ch, () -> {
+					dev.solclient.chat.Bubbles.setMine(id);
+					bubblePicker = false;
+				});
+			}
+		}
+	}
+
 	private void drawChat(DrawContext c, int mx, int my, int x, int right, int y, int h, int accent) {
 		Gfx.rrectBorder(c, x, y, Math.max(2, right - x), h, 12, SUB, Theme.PANEL_BORDER);
 		cbx = x;
@@ -6180,7 +6219,26 @@ public class SolMenuScreen extends Screen {
 		}
 		int cxb = px + CW - 26, cyb = y + 8;
 		boolean canInvite = g == null && (MinecraftClient.getInstance().getCurrentServerEntry() != null || dev.solclient.social.HostWorld.hosting());
-		int nameW = iw - 80 - (canInvite || g != null ? 24 : 0);
+		int nameW = iw - 80 - (canInvite || g != null ? 24 : 0) - 24;
+		{
+			int bbx = cxb - 24 - (canInvite || g != null ? 24 : 0);
+			boolean hbb = in(mx, my, bbx, cyb, 20, 20);
+			Gfx.button(c, bbx, cyb, 20, 20, hbb, bubblePicker);
+			// a tiny bubble in your style as the icon
+			dev.solclient.chat.Bubbles.Style ms = dev.solclient.chat.Bubbles.of(dev.solclient.chat.Bubbles.mine());
+			int ib = ms.deco() == dev.solclient.chat.Bubbles.Deco.NONE ? accent : ms.bg();
+			Gfx.rrect(c, bbx + 4, cyb + 6, 12, 8, 3, ib);
+			c.fill(bbx + 5, cyb + 13, bbx + 8, cyb + 15, ib);
+			if (hbb) {
+				tooltipText = dev.solclient.Lang.tr("Bubble style", "Estilo de balão");
+			}
+			if (settled) {
+				region(bbx, cyb, 20, 20, () -> {
+					bubblePicker = !bubblePicker;
+					membersOpen = false;
+				});
+			}
+		}
 		Gfx.textRaw(c, fitRaw(name, nameW), ix + 50, y + 9, 0xFFFFFFFF);
 		if (g != null) {
 			Gfx.text(c, g.members.size() + " members", ix + 50, y + 20, Theme.DIM);
@@ -6228,6 +6286,11 @@ public class SolMenuScreen extends Screen {
 
 		if (g != null && membersOpen) {
 			drawGroupMembers(c, mx, my, g, ix, iw, y + 44, y + h - 8, settled, accent);
+			c.disableScissor();
+			return;
+		}
+		if (bubblePicker) {
+			drawBubblePicker(c, mx, my, ix, iw, y + 44, y + h - 8, settled, accent);
 			c.disableScissor();
 			return;
 		}
@@ -6355,9 +6418,13 @@ public class SolMenuScreen extends Screen {
 				int bx = m.mine ? ix + iw - avatar - 6 - bw : ix + avatar + 6;
 				if (visible) {
 					int bg = m.failed ? 0xFF4A1C1F : m.mine ? (m.pending ? Gfx.blend(accent, SUB, 0.45F) : accent) : BUBBLE_OTHER;
-					int textCol = m.mine ? 0xFFFFFFFF : 0xFFE6E8EE;
-					int subCol = m.mine ? 0xCCFFFFFF : 0xFF7D8190;
-					if (!big) {
+					dev.solclient.chat.Bubbles.Style bst = dev.solclient.chat.Bubbles.of(m.failed ? "" : m.bubble);
+					boolean styled = bst.deco() != dev.solclient.chat.Bubbles.Deco.NONE;
+					int textCol = styled ? bst.text() : m.mine ? 0xFFFFFFFF : 0xFFE6E8EE;
+					int subCol = styled ? bst.sub() : m.mine ? 0xCCFFFFFF : 0xFF7D8190;
+					if (!big && styled) {
+						dev.solclient.chat.Bubbles.draw(c, bst, bx, by, bw, bhh, bg, m.mine);
+					} else if (!big) {
 						Gfx.rrect(c, bx, by, bw, bhh, 6, bg);
 						// soft top highlight + a square "tail" corner on the side of the head (first bubble of a group)
 						c.fill(bx + 5, by, bx + bw - 5, by + 1, m.mine ? 0x33FFFFFF : 0x14FFFFFF);

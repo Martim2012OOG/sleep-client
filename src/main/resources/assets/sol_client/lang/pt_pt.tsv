@@ -484,7 +484,7 @@ Esc / Click Skips The Intro	Esc / clique salta a intro
 Esc to cancel	Esc para cancelar
 Events	Eventos
 Events that arrived (diagnose)	Eventos que chegaram (diagnóstico)
-Every Kubo Player	Todos os jogadores Kubo
+Every Sleep Player	Todos os jogadores Sleep
 Every clip also saved in vertical 9:16 for TikTok, Reels and Shorts.	Cada clip também guardado em vertical 9:16 para TikTok, Reels e Shorts.
 Every key on a keyboard: change, combos, reset	Todas as teclas num teclado: mudar, combinações, repor
 Everyone	Todos
@@ -568,7 +568,7 @@ Friend requests	Pedidos de amizade
 Friends	Amigos
 Friends & Chat	Amigos e Chat
 Friends Can See And Join My Server	Os amigos podem ver e entrar no meu servidor
-Friends From Anywhere (Kubo Relay)	Amigos De Qualquer Lado (Relay Kubo)
+Friends From Anywhere (Sleep Relay)	Amigos De Qualquer Lado (Relay Sleep)
 Friends Online	Amigos online
 Friends Only	Só amigos
 Front	Frente
@@ -613,7 +613,7 @@ HUD Options	Opções do HUD
 Hand	Mão
 Handle Colour	Cor da pega
 Hard	Difícil
-Have 5 Kubo friends	Tem 5 amigos no Kubo
+Have 5 Sleep friends	Tem 5 amigos no Sleep
 Hay Bale	Fardo de palha
 Haze colour	Cor da neblina
 Haze strength	Força da neblina
@@ -650,7 +650,7 @@ Hide GL	Esconder GL
 Hide HUD	Esconder HUD
 Hide IP, coordinates and messages	Esconde IP, coordenadas e mensagens
 Hide In First Person	Esconder em primeira pessoa
-Hide Kubo HUD While Loading	Esconder o HUD Kubo ao carregar
+Hide Sleep HUD While Loading	Esconder o HUD Sleep ao carregar
 Hide Message Previews	Esconder pré-visualização das mensagens
 Hide Others' Names	Esconder nomes dos outros
 Hide Others' Skins	Esconder skins dos outros
@@ -764,17 +764,17 @@ Kills	Kills
 Kills, deaths, K/D, time, blocks and distance this session, with a summary card.	Kills, mortes, K/D, tempo, blocos e distância nesta sessão, com um cartão de resumo.
 Kit Editor	Editor de kits
 Kit name	Nome do kit
-Kubo Builder	Kubo Builder
-Kubo Dark	Kubo Escuro
-Kubo Home Screen	Menu inicial Kubo
-Kubo Label	Etiqueta Kubo
-Kubo Logo On Loading Screen	Logo Kubo no ecrã de carregamento
-Kubo Pause Menu	Menu de pausa Kubo
-Kubo Settings	Definições do Kubo
-Kubo Style For Minecraft Menus	Estilo Kubo nos menus do Minecraft
-Kubo capture	Captura Kubo
-Kubo custom sky	Céu Kubo
-Kubo medals for kills, streaks, distance, clips and minigame records.	Medalhas do Kubo por kills, dias seguidos, distância, clips e recordes nos minijogos.
+Sleep Builder	Sleep Builder
+Sleep Dark	Sleep Escuro
+Sleep Home Screen	Menu inicial Sleep
+Sleep Label	Etiqueta Sleep
+Sleep Logo On Loading Screen	Logo Sleep no ecrã de carregamento
+Sleep Pause Menu	Menu de pausa Sleep
+Sleep Settings	Definições do Sleep
+Sleep Style For Minecraft Menus	Estilo Sleep nos menus do Minecraft
+Sleep capture	Captura Sleep
+Sleep custom sky	Céu Sleep
+Sleep medals for kills, streaks, distance, clips and minigame records.	Medalhas do Sleep por kills, dias seguidos, distância, clips e recordes nos minijogos.
 LEVEL	NÍVEL
 LINES	LINHAS
 LOD Brightness	Brilho do LOD
@@ -808,7 +808,7 @@ Length	Comprimento
 Level Head	Level Head
 Light	Luz
 Light Level	Nível de luz
-Lighter. Faster. Kubo.	Mais leve. Mais rápido. Kubo.
+Lighter. Faster. Sleep.	Mais leve. Mais rápido. Sleep.
 Lightning	Relâmpago
 Like (add to favourites)	Like (pôr nos favoritos)
 Line Clearer	Limpa-linhas
@@ -832,8 +832,8 @@ Loading your skin...	A carregar a tua skin...
 Loading...	A carregar...
 Lock / Unlock Key	Tecla bloquear / desbloquear
 Lock a hotbar slot (L) so Q can't drop it.	Bloqueia um slot da hotbar (L) para o Q não o largar.
-Log in to Kubo (Right Shift > Friends) to invite friends	Entra no Kubo (Right Shift > Amigos) para convidar amigos
-Log in to Kubo first	Entra primeiro na tua conta Kubo
+Log in to Sleep (Right Shift > Friends) to invite friends	Entra no Sleep (Right Shift > Amigos) para convidar amigos
+Log in to Sleep first	Entra primeiro na tua conta Sleep
 Log in with Microsoft	Entrar com a Microsoft
 Logo On Nametags	Logo nas name tags
 Look	Visual
@@ -965,7 +965,7 @@ Night top	Topo da noite
 No Bobbing	Sem balançar
 No Fluid Overlay	Sem overlay de líquidos
 No Hurt Cam	Sem tremer ao levar dano
-No Kubo friends yet - share the address instead	Ainda não tens amigos no Kubo - partilha o endereço
+No Sleep friends yet - share the address instead	Ainda não tens amigos no Sleep - partilha o endereço
 No Life	Sem vida
 No Render	Não renderizar
 No blue water overlay on your screen.	Sem a camada azul da água no ecrã.
@@ -1060,7 +1060,7 @@ Particles Around You (in-game)	Partículas à tua volta (no jogo)
 Particles circling around your player.	Partículas a girar à volta do teu jogador.
 Party	Festa
 Party HUD	HUD do grupo
-Pass 20 pipes in Kubo Bird	Passa 20 canos no Kubo Bird
+Pass 20 pipes in Sleep Bird	Passa 20 canos no Sleep Bird
 Paste	Colar
 Paste Code	Colar código
 Paste sky code	Colar código do céu
@@ -1104,8 +1104,8 @@ Placing & Breaking	Pôr e partir blocos
 Play	Jogar
 Play %d minutes	Joga %d minutos
 Play / Pause	Tocar / Pausa
-Play 10 hours with Kubo	Joga 10 horas com o Kubo
-Play 100 hours with Kubo	Joga 100 horas com o Kubo
+Play 10 hours with Sleep	Joga 10 horas com o Sleep
+Play 100 hours with Sleep	Joga 100 horas com o Sleep
 Play 30 days in a row	Joga 30 dias seguidos
 Play 7 days in a row	Joga 7 dias seguidos
 Play Sounds	Tocar sons
@@ -1145,7 +1145,7 @@ Pro recordings (hardware encoder, no lag), fight replays with a spectator camera
 Profiles	Perfis
 Progress Bar	Barra de progresso
 Progress Track Colour	Cor do fundo da barra
-Proximity voice chat with other Kubo players on the same server.	Chat de voz por proximidade com outros jogadores Kubo no mesmo servidor.
+Proximity voice chat with other Sleep players on the same server.	Chat de voz por proximidade com outros jogadores Sleep no mesmo servidor.
 Public	Público
 Pulse	Pulsar
 Pulse Glow	Brilho a pulsar
@@ -1311,7 +1311,7 @@ Set up	Configurar
 Set up the recorder (Clip Events > Recorder)	Configura o gravador (Eventos de clip > Gravador)
 Set up the recorder in FightCam > Recording	Configura o gravador em FightCam > Gravação
 Settings	Definições
-Settings for Kubo.	Definições do Kubo.
+Settings for Sleep.	Definições do Sleep.
 Settings loaded from the cloud	Definições carregadas da nuvem
 Shadow	Sombra
 Shape	Forma
@@ -1377,7 +1377,7 @@ Show Screens From	Mostrar ecrãs de
 Show Seconds	Mostrar segundos
 Show Server Address	Mostrar endereço do servidor
 Show Server Separator	Mostrar separador de servidor
-Show Solar Capes & Skins	Mostrar capas e skins Kubo
+Show Solar Capes & Skins	Mostrar capas e skins Sleep
 Show Space Bar	Mostrar barra de espaço
 Show Stuck Arrows	Mostrar flechas espetadas
 Show Through Walls	Mostrar através das paredes
@@ -1385,7 +1385,7 @@ Show When Standing	Mostrar quando parado
 Show Wrong Blocks	Mostrar blocos errados
 Show an effect when something you hit dies.	Mostra um efeito quando algo em que acertaste morre.
 Show in chat	Mostrar no chat
-Shows "Playing Kubo Client" with the logo on your Discord profile.	Mostra "A jogar Kubo Client" com o logo no teu perfil do Discord.
+Shows "Playing Sleep Client" with the logo on your Discord profile.	Mostra "A jogar Sleep Client" com o logo no teu perfil do Discord.
 Shows how charged your next hit is.	Mostra quão carregado está o teu próximo golpe.
 Shows how many in-game days have passed in this world.	Mostra quantos dias passaram neste mundo.
 Shows how much RAM the game is using.	Mostra quanta RAM o jogo está a usar.
@@ -1438,7 +1438,7 @@ Smooth Progress	Progresso suave
 Smooth, cinematic mouse movement all the time.	Movimento do rato suave e cinematográfico o tempo todo.
 Smoothness	Suavidade
 Snake Charmer	Encantador de serpentes
-Snake, 2048, Kubo Bird, Breakout, Stack and Tetris	Snake, 2048, Kubo Bird, Breakout, Stack e Tetris
+Snake, 2048, Sleep Bird, Breakout, Stack and Tetris	Snake, 2048, Sleep Bird, Breakout, Stack e Tetris
 Snow	Neve
 Snowdrop	Gota de neve
 Snowflakes	Flocos de neve
@@ -1627,7 +1627,7 @@ Use a HUD code	Usar um código de HUD
 Use layout	Usar layout
 Use this set	Usar este conjunto
 Used / Max	Usado / Máximo
-Uses Kubo	Usa Kubo
+Uses Sleep	Usa Sleep
 Utility	Utilidade
 VICTORY	VITÓRIA
 Vanilla Blending	Mistura vanilla
@@ -1720,8 +1720,8 @@ You Can Use This	Podes usar isto
 You have	Tens
 You have 	Tens 
 Your Deaths	As tuas mortes
-Your Kubo medals	As tuas medalhas do Kubo
-Your Kubo settings saved on your account, the same on every computer.	As tuas definições do Kubo guardadas na conta, iguais em qualquer computador.
+Your Sleep medals	As tuas medalhas do Sleep
+Your Sleep settings saved on your account, the same on every computer.	As tuas definições do Sleep guardadas na conta, iguais em qualquer computador.
 What is playing on your computer, from any player: Spotify, YouTube Music, Apple Music, SoundCloud... in an app or in the browser. Keys to pause / skip.	O que está a tocar no teu computador, de qualquer player: Spotify, YouTube Music, Apple Music, SoundCloud... numa app ou no browser. Teclas para pausar / saltar.
 Your TikTok live chat in the game, gift alerts, your own donation sounds and big screen effects.	O chat do teu live do TikTok no jogo, alertas de presentes, os teus sons de doação e grandes efeitos no ecrã.
 Your best: 	O teu melhor: 
@@ -1784,7 +1784,7 @@ Smooth Fishing Line	Linha de pesca suave
 Draws the fishing line as a smooth curve.	Desenha a linha de pesca como uma curva suave.
  segments	 segmentos
 A coloured ghost where a player popped a totem.	Um fantasma colorido onde um jogador usou um totem.
-Also Kubo Friends	Também amigos do Kubo
+Also Sleep Friends	Também amigos do Sleep
 Armor HUD	Armor HUD
 Box Height	Altura da caixa
 Box Width	Largura da caixa
@@ -1843,7 +1843,7 @@ Loading the store...	A carregar a loja...
 No connection to the store	Sem ligação à loja
 The store is empty for now	A loja ainda está vazia
 The download was damaged - try again	O download veio estragado - tenta outra vez
-That file is not a Kubo extension	Esse ficheiro não é uma extensão do Kubo
+That file is not a Sleep extension	Esse ficheiro não é uma extensão do Sleep
 Hypixel	Hypixel
 Stats & Missions	Estatísticas e Missões
 Extra Particles	Partículas Extra
@@ -1857,7 +1857,7 @@ Aura, Trails, Jump Circles, Fireflies, Cave Dust, Falling Leaves, Kill Effect an
 Streamer Mode (hide IP, coordinates, messages) and TikTok Live (chat, gifts, sounds).	Modo Streamer (esconde IP, coordenadas, mensagens) e TikTok Live (chat, presentes, sons).
 Baby Mode, Dynamic Island and Skin Totem.	Modo Bebé, Dynamic Island e Skin Totem.
 See terrain far beyond your render distance (like Distant Horizons). Uses more memory.	Vê terreno muito para lá da render distance (tipo Distant Horizons). Usa mais memória.
-Kubo Builder (schematics), Litematica Helper and Ruler.	Kubo Builder (schematics), Litematica Helper e Régua.
+Sleep Builder (schematics), Litematica Helper and Ruler.	Sleep Builder (schematics), Litematica Helper e Régua.
 Party HUD, Pings (mark places for friends) and Sonar.	Party HUD, Pings (marcar sítios para os amigos) e Sonar.
 Pop Chams (ghost on totem pop), TierTagger (MCTiers tiers on names) and Cobweb Tweaks.	Pop Chams (fantasma quando usam totem), TierTagger (tiers do MCTiers nos nomes) e Teias de Aranha.
 Info HUD	Info HUD
@@ -1902,7 +1902,7 @@ Setup	Configuração
 Performance Preset	Predefinição de desempenho
 HUD Preset	Predefinição do HUD
 Balanced	Equilibrado
-Kubo (Original)	Kubo (Original)
+Sleep (Original)	Sleep (Original)
 Open Extensions	Abrir Extensões
 PvP Practice, the Kit Editor and Bridge Practice are in the Practice extension.	O Treino de PvP, o Editor de Kits e o Treino de Bridge estão na extensão Treino.
 Minecraft in this language too	Minecraft também nesta língua
@@ -1938,7 +1938,7 @@ Join a server or make a group to talk	Entra num servidor ou cria um grupo para f
 Join a server or a group to talk	Entra num servidor ou num grupo para falar
 Your microphone sends no sound (Mac: System Settings > Privacy > Microphone)	O microfone não envia som (Mac: Definições do Sistema > Privacidade > Microfone)
 this server	este servidor
-Talk with Kubo players near you on the same server, or with friends in a voice group.	Fala com jogadores do Kubo perto de ti no mesmo servidor, ou com amigos num grupo de voz.
+Talk with Sleep players near you on the same server, or with friends in a voice group.	Fala com jogadores do Sleep perto de ti no mesmo servidor, ou com amigos num grupo de voz.
 Show all	Mostrar tudo
 Click again to reset everything	Clica outra vez para repor tudo
 Nothing on this key	Nada nesta tecla
@@ -2003,8 +2003,8 @@ Extra sites	Sites extra
 browser sites to watch, e.g. radio.example.com	sites do browser a vigiar, ex.: radio.exemplo.com
 Spotify account (optional)	Conta do Spotify (opcional)
 Pause Menu Style	Estilo do menu de pausa
-Kubo (simple)	Kubo (simples)
-Classic + Kubo	Clássico + Kubo
+Sleep (simple)	Sleep (simples)
+Classic + Sleep	Clássico + Sleep
 Your Player In The Pause Menu	O teu jogador no menu de pausa
 Mods Screen	Ecrã de mods
 Mod Menu (original)	Mod Menu (original)
@@ -2152,31 +2152,31 @@ Put a .ttf file in the folder, then click Apply	Mete um ficheiro .ttf na pasta e
 Back to the normal fonts	De volta às letras normais
 Custom font on	Letra personalizada ativa
 The game did not find the font pack	O jogo não encontrou o pack da letra
-The language of Kubo's menus.	O idioma dos menus do Kubo.
-The font of all Kubo menus and HUD text.	A letra de todos os menus e textos do HUD do Kubo.
+The language of Sleep's menus.	O idioma dos menus do Sleep.
+The font of all Sleep menus and HUD text.	A letra de todos os menus e textos do HUD do Sleep.
 A ready-made look. You can still change every colour in Custom Colours.	Um estilo pronto. Podes mudar cada cor em Cores personalizadas.
 The main colour: selected items, sliders, highlights.	A cor principal: itens selecionados, sliders, destaques.
 Makes every menu see-through.	Deixa todos os menus transparentes.
-How solid the Kubo window is (lower = see the game behind it).	Quão sólida é a janela do Kubo (menos = vês o jogo por trás).
+How solid the Sleep window is (lower = see the game behind it).	Quão sólida é a janela do Sleep (menos = vês o jogo por trás).
 Behind everything in the menu.	Por trás de tudo no menu.
 The boxes that hold each mod.	As caixas onde está cada mod.
 Search box and other places where you type.	Caixa de pesquisa e outros sítios onde escreves.
 Descriptions and small grey text.	Descrições e texto pequeno cinzento.
 Delete / reset buttons and warnings.	Botões de apagar / repor e avisos.
 Makes this whole menu bigger or smaller.	Faz este menu todo maior ou mais pequeno.
-Replaces Minecraft's title screen with Kubo's.	Troca o ecrã inicial do Minecraft pelo do Kubo.
-Replaces the pause menu (Esc) with Kubo's.	Troca o menu de pausa (Esc) pelo do Kubo.
-Classic keeps Minecraft's own pause menu and adds Kubo's buttons.	Clássico mantém o menu de pausa do Minecraft e junta os botões do Kubo.
+Replaces Minecraft's title screen with Sleep's.	Troca o ecrã inicial do Minecraft pelo do Sleep.
+Replaces the pause menu (Esc) with Sleep's.	Troca o menu de pausa (Esc) pelo do Sleep.
+Classic keeps Minecraft's own pause menu and adds Sleep's buttons.	Clássico mantém o menu de pausa do Minecraft e junta os botões do Sleep.
 Halloween / Christmas decorations on the home screen.	Decorações de Halloween / Natal no ecrã inicial.
-Gives Minecraft's own menus (options, worlds, servers) Kubo's look.	Dá aos menus do Minecraft (opções, mundos, servidores) o visual do Kubo.
+Gives Minecraft's own menus (options, worlds, servers) Sleep's look.	Dá aos menus do Minecraft (opções, mundos, servidores) o visual do Sleep.
 Smooth hover animations on buttons (a little heavier).	Animações suaves nos botões (um pouco mais pesadas).
-How round the corners of Kubo's menus are.	Quão redondos são os cantos dos menus do Kubo.
+How round the corners of Sleep's menus are.	Quão redondos são os cantos dos menus do Sleep.
 Keep your HUD on screen while the F3 debug screen is open.	Mantém o HUD no ecrã enquanto o F3 está aberto.
-See the emotes other Kubo players do.	Vê os emotes que outros jogadores do Kubo fazem.
-Your Kubo friends see which server you are on and can join you.	Os teus amigos do Kubo veem em que servidor estás e podem entrar.
-Other Kubo players see the emotes you do.	Outros jogadores do Kubo veem os emotes que fazes.
-See the capes and skins that other Kubo players picked.	Vê as capas e skins que outros jogadores do Kubo escolheram.
-A small Kubo logo next to the name of Kubo players.	Um pequeno logótipo do Kubo ao lado do nome dos jogadores do Kubo.
+See the emotes other Sleep players do.	Vê os emotes que outros jogadores do Sleep fazem.
+Your Sleep friends see which server you are on and can join you.	Os teus amigos do Sleep veem em que servidor estás e podem entrar.
+Other Sleep players see the emotes you do.	Outros jogadores do Sleep veem os emotes que fazes.
+See the capes and skins that other Sleep players picked.	Vê as capas e skins que outros jogadores do Sleep escolheram.
+A small Sleep logo next to the name of Sleep players.	Um pequeno logótipo do Sleep ao lado do nome dos jogadores do Sleep.
 3D accessories (hats, wings...) on players.	Acessórios 3D (chapéus, asas...) nos jogadores.
 Opens this menu in game.	Abre este menu no jogo.
 Lets you drag the HUD elements to a new place.	Deixa-te arrastar os elementos do HUD para outro sítio.
@@ -2347,7 +2347,7 @@ Keep Flat Particles Too	Manter partículas planas
 Also keep the normal flat vanilla break particles.	Mantém também as partículas planas normais ao partir.
 Fewer pieces automatically when your FPS drops. No lag.	Menos pedaços automaticamente quando os FPS descem. Sem lag.
 3D Screens	Ecrãs 3D
-Inventory, crafting table, furnace and the other workstations lean towards your cursor like a 3D slab. Never the Kubo menu, the pause menu or chests.	O inventário, a mesa de criação, a fornalha e as outras bancadas inclinam-se para o cursor como uma placa 3D. Nunca o menu do Kubo, o menu de pausa ou baús.
+Inventory, crafting table, furnace and the other workstations lean towards your cursor like a 3D slab. Never the Sleep menu, the pause menu or chests.	O inventário, a mesa de criação, a fornalha e as outras bancadas inclinam-se para o cursor como uma placa 3D. Nunca o menu do Sleep, o menu de pausa ou baús.
 Crafting Table	Mesa de criação
 Furnaces	Fornalhas
 Anvil, Enchanting, Brewing, Smithing...	Bigorna, Encantamentos, Poções, Ferraria...
@@ -2362,7 +2362,7 @@ Rename	Renomear
 Player Number	Nº do jogador
 A star button next to Join in the Multiplayer list: favourite a server and keep it at the top.	Um botão de estrela ao lado de Entrar na lista Multijogador: favorita um servidor e mantém-no no topo.
 Black Loading Screen While Intro Plays	Ecrã de carregamento preto durante a intro
-Paints the game loading screen black before the intro. Off by default: the normal loading screen (with the Kubo logo) shows instead.	Pinta o ecrã de carregamento de preto antes da intro. Desligado por defeito: aparece o ecrã de carregamento normal (com o logo do Kubo).
+Paints the game loading screen black before the intro. Off by default: the normal loading screen (with the Sleep logo) shows instead.	Pinta o ecrã de carregamento de preto antes da intro. Desligado por defeito: aparece o ecrã de carregamento normal (com o logo do Sleep).
 Install more mods (Hypixel, stats, particles...)	Instalar mais mods (Hypixel, estatísticas, partículas...)
 Better Search	Better Search
 Smarter, better search in the creative tab, recipe book and chat commands (typos, other languages, tooltips).	Pesquisa mais inteligente no separador criativo, livro de receitas e comandos do chat (erros de escrita, outras línguas, tooltips).
@@ -2403,7 +2403,7 @@ Common	Comum
 Rare	Raro
 Epic	Épico
 Legendary	Lendário
-Log in to Kubo to open crates	Inicia sessão no Kubo para abrir caixas
+Log in to Sleep to open crates	Inicia sessão no Sleep para abrir caixas
 HALLOWEEN	HALLOWEEN
 CHRISTMAS	NATAL
 Store	Loja
@@ -2438,16 +2438,16 @@ Forget After	Esquecer depois de
 Tiny Tools	Ferramentas pequeninas
 Tool Size	Tamanho das ferramentas
 Your own cape is for VIPs: get capes in the shop instead	A tua própria capa é para VIPs: arranja capas na loja
-Owner and Team badge only: your name as a colour, gradient, animated gradient or rainbow. Every Kubo player sees it.	Só para a badge de Dono e de Equipa: o teu nome numa cor, degradé, degradé animado ou arco-íris. Todos os jogadores com Kubo veem.
+Owner and Team badge only: your name as a colour, gradient, animated gradient or rainbow. Every Sleep player sees it.	Só para a badge de Dono e de Equipa: o teu nome numa cor, degradé, degradé animado ou arco-íris. Todos os jogadores com Sleep veem.
 Animated Gradient	Degradé animado
-Show To Other Kubo Players	Mostrar aos outros jogadores com Kubo
+Show To Other Sleep Players	Mostrar aos outros jogadores com Sleep
 Custom Gradient (Owner)	Degradé personalizado (Dono)
 Custom Colours	Cores do degradé
 Custom Colour 3	Cor 3
 Custom Colour 4	Cor 4
 Custom Colour 5	Cor 5
 Player Card	Cartão de jogador
-Look at a player who uses Kubo and hold the key: his badge, cape and name style in a small card.	Olha para um jogador que usa Kubo e carrega na tecla: a badge, a capa e o estilo do nome dele num cartão pequeno.
+Look at a player who uses Sleep and hold the key: his badge, cape and name style in a small card.	Olha para um jogador que usa Sleep e carrega na tecla: a badge, a capa e o estilo do nome dele num cartão pequeno.
 Card Key	Tecla do cartão
 Show Whenever I Look At Him	Mostrar sempre que olho para ele
 Private Connection	Ligação Privada

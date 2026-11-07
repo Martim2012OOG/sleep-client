@@ -370,6 +370,7 @@ public class SolClient implements ClientModInitializer {
 			CinematicIntroMod.clientTick(client);
 			return;
 		}
+		long kuboPerfT0 = System.nanoTime();
 		pollKeys();
 		dev.solclient.fx.killfx.KillFxTrigger.tick();
 		dev.solclient.emote.EmoteManager.tick();
@@ -387,6 +388,8 @@ public class SolClient implements ClientModInitializer {
 		dev.solclient.social.ProfileBadges.tick(client);
 		dev.solclient.social.HostWorld.tick(client);
 		recorderTick(client);
+		Perf.add("Client background (social, menus, capes...)", System.nanoTime() - kuboPerfT0);
+		Perf.tick(client, MODS);
 		if (settings != null && settings.font != null) {
 			Gfx.setFont(settings.font.idx()); // Settings > Font (cheap: only does work when it changed)
 			if (settings.gameFont != null) GameFont.sync(settings.gameFont.idx()); // Settings > Whole Game Font
@@ -546,6 +549,7 @@ public class SolClient implements ClientModInitializer {
 			System.out.println("[Sleep] HUD status #" + n + " (player " + (mc.player != null) + ", screen " + (mc.currentScreen == null ? "none" : mc.currentScreen.getClass().getName())
 					+ ", overlay " + (mc.getOverlay() != null) + "): " + hudDiag());
 		}
+		Perf.frame();
 		try {
 			frame();
 		} catch (Throwable t) {

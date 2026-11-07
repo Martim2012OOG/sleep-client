@@ -350,7 +350,7 @@ public class HostWorldScreen extends UiScreen {
 			Gfx.textRaw(c, fitRaw(ip, w - 4), x + 2, y + 13, 0xFF5E6272);
 		}
 		int ly = y + 28, lh = h - 28;
-		Gfx.textRaw(c, Lang.tr("KUBO FRIENDS", "AMIGOS DO KUBO"), x + 2, ly - 2, 0xFF6B7080);
+		Gfx.textRaw(c, Lang.tr("SLEEP FRIENDS", "AMIGOS DO SLEEP"), x + 2, ly - 2, 0xFF6B7080);
 		ly += 12;
 		lh -= 12;
 		List<Social.User> list = new ArrayList<>(Social.friends);

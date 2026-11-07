@@ -131,6 +131,8 @@ public final class Social {
 		public String senderId, kind, body, createdAt, editedAt;
 		public List<Reaction> reactions = List.of();
 		public String serverName, address; // invites
+		/** Chat bubble style of the sender ("" = default), see dev.solclient.chat.Bubbles. */
+		public String bubble = "";
 		public boolean mine, pending, failed;
 	}
 
@@ -973,6 +975,9 @@ public final class Social {
 	}
 
 	/** partnerId = the friend of this conversation (null if unknown). */
+	/** The bubble of messages you sent this session (until the site sends it back with every message). */
+	private static final Map<Long, String> MY_BUBBLES = new java.util.concurrent.ConcurrentHashMap<>();
+
 	private static Msg parseMsg(JsonObject o, String partnerId) {
 		Msg m = new Msg();
 		m.id = Json.num(o, "id", 0);
@@ -983,6 +988,8 @@ public final class Social {
 		m.createdAt = Json.str(o, "createdAt", "created_at");
 		m.editedAt = Json.str(o, "editedAt", "edited_at");
 		m.reactions = parseReactions(o.get("reactions"));
+		String bub = Json.str(o, "bubble", "bubbleStyle", "bubble_style");
+		m.bubble = bub == null || bub.isEmpty() ? MY_BUBBLES.getOrDefault(m.id, "") : bub;
 		User meNow = me;
 		Boolean flag = bool(o, "mine", "isMine", "fromMe", "outgoing", "sentByMe");
 		if (flag != null) {
@@ -1137,6 +1144,7 @@ public final class Social {
 		p.mine = true;
 		p.kind = "text";
 		p.body = preview;
+		p.bubble = dev.solclient.chat.Bubbles.mine();
 		synchronized (MESSAGES) {
 			List<Msg> l = new ArrayList<>(messages(userId));
 			l.add(p);
@@ -1145,6 +1153,7 @@ public final class Social {
 		action(() -> {
 			JsonObject b = new JsonObject();
 			b.addProperty("body", body);
+			b.addProperty("bubble", p.bubble); // your bubble style: your friends see it too
 			SolarApi.Res r;
 			if (isGroup(userId)) {
 				MY_GROUP_SEND.put(groupId(userId), System.currentTimeMillis());
@@ -1172,6 +1181,10 @@ public final class Social {
 				if (mo != null) {
 					Msg real = parseMsg(mo, isGroup(userId) ? null : userId);
 					real.mine = true;
+					if (real.bubble.isEmpty()) {
+						real.bubble = p.bubble; // the site does not store bubbles yet: keep yours on what you sent
+					}
+					MY_BUBBLES.put(real.id, p.bubble);
 					if (real.senderId != null && !real.senderId.equals(userId)) {
 						MY_SENDER_IDS.add(real.senderId);
 					}

@@ -118,6 +118,8 @@ public final class SkyLyrics {
 		hooked = true;
 		try {
 			WorldRenderEvents.BEFORE_ENTITIES.register(ctx -> {
+			long kuboPerfT0 = System.nanoTime();
+			try {
 				if (!active || cfg == null || System.currentTimeMillis() - lastSet > 5000L) {
 					return;
 				}
@@ -130,7 +132,10 @@ public final class SkyLyrics {
 					}
 					error = String.valueOf(e);
 				}
-			});
+						} finally {
+				dev.solclient.Perf.add("Sky lyrics", System.nanoTime() - kuboPerfT0);
+			}
+		});
 		} catch (Throwable t) {
 			System.err.println("[Sleep] sky lyrics unavailable: " + t);
 		}
@@ -149,7 +154,7 @@ public final class SkyLyrics {
 			return;
 		}
 		long now = System.currentTimeMillis();
-		long pos = MusicHub.progressMs + (MusicHub.playing ? now - MusicHub.fetchedAt : 0) + Math.round(c.offsetMs);
+		long pos = MusicHub.progressMs + (MusicHub.playing ? now - MusicHub.fetchedAt + MusicHub.LYRICS_LEAD_MS : 0) + Math.round(c.offsetMs);
 		int idx = Lyrics.indexAt(lines, pos);
 		net.minecraft.util.math.Vec3d cam = mc.player.getCameraPosVec(mc.getRenderTickCounter().getTickProgress(true));
 		camX = cam.x;

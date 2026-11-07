@@ -273,7 +273,7 @@ public final class Lyrics {
 
 	private static String get(String url) throws Exception {
 		HttpRequest r = HttpRequest.newBuilder(URI.create(url)).timeout(Duration.ofSeconds(8))
-				.header("User-Agent", "KuboClient (https://github.com/kubo-client)").GET().build();
+				.header("User-Agent", "SleepClient").GET().build();
 		HttpResponse<String> res = HTTP.send(r, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
 		return res.statusCode() == 200 ? res.body() : "";
 	}

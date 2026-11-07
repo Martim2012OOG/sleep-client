@@ -58,6 +58,11 @@ public final class LagDoctor {
 			return Lang.tr("The video recorder is running: turn off Clip Events > Record clips (it reads the screen all the time).",
 					"O gravador de vídeo está ligado: desliga Clip Events > Record clips (lê o ecrã o tempo todo).");
 		}
+		var top = Perf.top();
+		if (!top.isEmpty() && top.get(0).getValue() >= 0.7F) {
+			return String.format(java.util.Locale.ROOT, Lang.tr("%s uses %.1f ms per frame: turn it off or lower its settings.", "%s gasta %.1f ms por frame: desliga-o ou baixa as definições."),
+					top.get(0).getKey(), top.get(0).getValue());
+		}
 		return Lang.tr("Nothing in Sleep is heavy: lower the render distance or the video settings.", "Nada do Sleep está pesado: baixa a distância de visão ou os gráficos.");
 	}
 }

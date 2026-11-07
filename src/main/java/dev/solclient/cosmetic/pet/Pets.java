@@ -57,6 +57,8 @@ public final class Pets {
 		hooked = true;
 		ClientTickEvents.END_CLIENT_TICK.register(Pets::tick);
 		WorldRenderEvents.BEFORE_ENTITIES.register(ctx -> {
+			long kuboPerfT0 = System.nanoTime();
+			try {
 			try {
 				render(ctx.matrices(), ctx.commandQueue(), ctx.worldState().cameraRenderState.pos);
 			} catch (Throwable t) {
@@ -65,6 +67,9 @@ public final class Pets {
 					t.printStackTrace();
 				}
 				lastError = String.valueOf(t);
+			}
+					} finally {
+				dev.solclient.Perf.add("Pets", System.nanoTime() - kuboPerfT0);
 			}
 		});
 	}

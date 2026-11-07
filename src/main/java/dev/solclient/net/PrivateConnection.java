@@ -584,7 +584,7 @@ public final class PrivateConnection {
 		Exception last = new IOException("no source");
 		for (String u : urls) {
 			try {
-				var r = HTTP.send(java.net.http.HttpRequest.newBuilder(java.net.URI.create(u)).header("User-Agent", "Mozilla/5.0 KuboClient")
+				var r = HTTP.send(java.net.http.HttpRequest.newBuilder(java.net.URI.create(u)).header("User-Agent", "Mozilla/5.0 SleepClient")
 						.timeout(java.time.Duration.ofSeconds(timeoutS)).build(), java.net.http.HttpResponse.BodyHandlers.ofString());
 				if (r.statusCode() == 200) {
 					return r.body();

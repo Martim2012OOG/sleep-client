@@ -75,6 +75,8 @@ public final class KillFx {
 		}
 		hooked = true;
 		WorldRenderEvents.BEFORE_ENTITIES.register(ctx -> {
+			long kuboPerfT0 = System.nanoTime();
+			try {
 			if (ACTIVE.isEmpty()) {
 				return;
 			}
@@ -87,6 +89,9 @@ public final class KillFx {
 				}
 				lastError = String.valueOf(t);
 				ACTIVE.clear();
+			}
+					} finally {
+				dev.solclient.Perf.add("Kill effects", System.nanoTime() - kuboPerfT0);
 			}
 		});
 	}

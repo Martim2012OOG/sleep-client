@@ -400,6 +400,8 @@ public class CustomSkyMod extends Mod {
 		hooked = true;
 		try {
 			WorldRenderEvents.BEFORE_ENTITIES.register(ctx -> {
+			long kuboPerfT0 = System.nanoTime();
+			try {
 				CustomSkyMod m = instance;
 				if (m == null || !m.enabled) {
 					return;
@@ -416,7 +418,10 @@ public class CustomSkyMod extends Mod {
 					}
 					renderError = String.valueOf(e);
 				}
-			});
+						} finally {
+				dev.solclient.Perf.add("Custom sky", System.nanoTime() - kuboPerfT0);
+			}
+		});
 		} catch (Throwable t) {
 			System.err.println("[Sleep] Custom Sky: world particles unavailable: " + t);
 		}
@@ -1308,7 +1313,9 @@ public class CustomSkyMod extends Mod {
 	}
 
 	// ------------------------------------------------------- share codes
-	private static final String CODE_PREFIX = "KUBOSKY1:";
+	private static final String CODE_PREFIX = "SLEEPSKY1:";
+	/** Sky codes made before the rename. */
+	private static final String OLD_PREFIX = "KUBOSKY1:";
 
 	/** Copies all the sky settings (not the photo) as one line of text to the clipboard. */
 	private void copyCode() {
@@ -1338,6 +1345,9 @@ public class CustomSkyMod extends Mod {
 		try {
 			String code = mc.keyboard.getClipboard();
 			code = code == null ? "" : code.trim();
+			if (code.startsWith(OLD_PREFIX)) {
+				code = CODE_PREFIX + code.substring(OLD_PREFIX.length());
+			}
 			if (!code.startsWith(CODE_PREFIX)) {
 				shareStatus = "The clipboard has no sky code";
 				return;

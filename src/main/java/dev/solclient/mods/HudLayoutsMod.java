@@ -90,18 +90,18 @@ public class HudLayoutsMod extends Mod {
 			try (GZIPOutputStream gz = new GZIPOutputStream(bo)) {
 				gz.write(snapshot().toString().getBytes(StandardCharsets.UTF_8));
 			}
-			return "KUBOHUD1:" + Base64.getEncoder().encodeToString(bo.toByteArray());
+			return "SLEEPHUD1:" + Base64.getEncoder().encodeToString(bo.toByteArray());
 		} catch (Exception e) {
 			return "";
 		}
 	}
 
 	public static boolean apply(String code) {
-		if (code == null || !code.trim().startsWith("KUBOHUD1:")) {
-			return false;
+		if (code == null || !(code.trim().startsWith("SLEEPHUD1:") || code.trim().startsWith("KUBOHUD1:"))) {
+			return false; // KUBOHUD1: = codes made before the rename
 		}
 		try {
-			byte[] raw = Base64.getDecoder().decode(code.trim().substring(9));
+			byte[] raw = Base64.getDecoder().decode(code.trim().substring(code.trim().indexOf(':') + 1));
 			try (GZIPInputStream gz = new GZIPInputStream(new ByteArrayInputStream(raw))) {
 				restore(JsonParser.parseString(new String(gz.readAllBytes(), StandardCharsets.UTF_8)).getAsJsonObject());
 			}

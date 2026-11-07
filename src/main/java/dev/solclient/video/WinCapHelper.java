@@ -39,7 +39,7 @@ final class WinCapHelper {
 				src = in.readAllBytes();
 			}
 			String hash = hex(MessageDigest.getInstance("SHA-1").digest(src)).substring(0, 10);
-			Path dir = Path.of(System.getProperty("user.home"), "Library", "Application Support", "Kubo", "helper");
+			Path dir = Path.of(System.getProperty("user.home"), "Library", "Application Support", "Sleep", "helper");
 			Files.createDirectories(dir);
 			Path bin = dir.resolve("wincap-" + hash);
 			if (Files.isExecutable(bin) && Files.size(bin) > 0) {

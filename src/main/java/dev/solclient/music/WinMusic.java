@@ -105,6 +105,8 @@ final class WinMusic {
 	private Process proc;
 	private Path dir;
 	private volatile List<Track> latest = List.of();
+	/** When the list in {@link #latest} was printed: its positions are from that moment. */
+	private volatile long latestAt;
 	private volatile String hint = "";
 	private volatile long lastLine;
 
@@ -119,7 +121,21 @@ final class WinMusic {
 			}
 			begin();
 		}
-		return latest;
+		// the list can be up to a second old: move the positions of what plays to now (else the lyrics run late)
+		long age = Math.max(0, Math.min(3000, System.currentTimeMillis() - latestAt));
+		List<Track> l = latest;
+		if (age < 20 || l.isEmpty()) {
+			return l;
+		}
+		List<Track> out = new java.util.ArrayList<>(l.size());
+		for (Track t : l) {
+			long pos = t.playing() ? t.positionMs() + age : t.positionMs();
+			if (t.durationMs() > 0) {
+				pos = Math.min(pos, t.durationMs());
+			}
+			out.add(new Track(t.source(), t.id(), t.title(), t.artist(), t.artUrl(), t.durationMs(), pos, t.playing(), t.ctl(), t.artError()));
+		}
+		return out;
 	}
 
 	private void begin() {
@@ -159,6 +175,7 @@ final class WinMusic {
 				line = line.replace("\uFEFF", ""); // PowerShell may start its output with a byte-order mark
 				if (line.equals("E")) {
 					latest = building;
+					latestAt = System.currentTimeMillis();
 					building = new ArrayList<>();
 				} else if (line.startsWith("S\t")) {
 					String[] f = line.split("\t", -1);

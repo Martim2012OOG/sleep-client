@@ -58,6 +58,8 @@ public class WavesMod extends Mod {
 			}
 		});
 		WorldRenderEvents.BEFORE_ENTITIES.register(ctx -> {
+			long kuboPerfT0 = System.nanoTime();
+			try {
 			WavesMod m = instance;
 			if (m == null || !m.enabled || m.handler == null) {
 				return;
@@ -68,6 +70,9 @@ public class WavesMod extends Mod {
 				System.err.println("[Sleep] waves render: " + t);
 				m.enabled = false; // never spam errors every frame
 				m.handler = null;
+			}
+					} finally {
+				dev.solclient.Perf.add("Waves", System.nanoTime() - kuboPerfT0);
 			}
 		});
 	}
