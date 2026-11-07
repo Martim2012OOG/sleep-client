@@ -39,6 +39,12 @@ public final class HostWorld {
 	private HostWorld() {
 	}
 
+	/**
+	 * A ranked match / duel is being played in this world: only these Minecraft names (lower case) may be in it, the
+	 * privacy setting is ignored, cheats stay off and the host cannot kick or ban anyone. null = a normal hosted world.
+	 */
+	public static volatile java.util.Set<String> matchPlayers;
+
 	public static boolean hosting() {
 		return hosting;
 	}
@@ -132,7 +138,7 @@ public final class HostWorld {
 			ok = true; // already open to LAN (vanilla button): just take over
 			p = server.getServerPort();
 		} else {
-			ok = server.openToLan(gm, o.cheats.on(), p);
+			ok = server.openToLan(gm, matchPlayers == null && o.cheats.on(), p); // never cheats in a match
 		}
 		if (!ok) {
 			status = Lang.tr("Could not open the world on port ", "Não deu para abrir o mundo na porta ") + p;
@@ -359,6 +365,10 @@ public final class HostWorld {
 	}
 
 	public static void kick(String name, String why) {
+		if (matchPlayers != null) {
+			Social.say(dev.solclient.Lang.tr("You can't kick or ban anyone during a match.", "Não podes expulsar nem banir ninguém durante uma partida."), true);
+			return;
+		}
 		IntegratedServer s = MinecraftClient.getInstance().getServer();
 		if (s == null) {
 			return;
@@ -372,6 +382,10 @@ public final class HostWorld {
 	}
 
 	public static void ban(String name) {
+		if (matchPlayers != null) {
+			Social.say(dev.solclient.Lang.tr("You can't kick or ban anyone during a match.", "Não podes expulsar nem banir ninguém durante uma partida."), true);
+			return;
+		}
 		addTo(HostWorldMod.instance.banned, name);
 		removeFrom(HostWorldMod.instance.whitelist, name);
 		invited.remove(name.toLowerCase(Locale.ROOT));
@@ -465,7 +479,8 @@ public final class HostWorld {
 				}
 				String n = sp.getName().getString().toLowerCase(Locale.ROOT);
 				boolean listed = invited.contains(n) || white.contains(n);
-				boolean allowed = !shut && !bans.contains(n) && (pr == 2 || listed || pr == 1 && friends.contains(n));
+				java.util.Set<String> mp = matchPlayers;
+				boolean allowed = mp != null ? !shut && mp.contains(n) : !shut && !bans.contains(n) && (pr == 2 || listed || pr == 1 && friends.contains(n));
 				if (!allowed) {
 					sp.networkHandler.disconnect(Text.literal(shut ? "The host stopped hosting this world."
 							: bans.contains(n) ? "You are banned from this world."

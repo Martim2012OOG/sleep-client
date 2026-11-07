@@ -38,6 +38,50 @@ public final class PracticeKit {
 		return l;
 	}
 
+	/**
+	 * Builds a bot-practice kit from a kit function (lines like "item replace entity @s hotbar.0 with ..."), not added
+	 * to {@link #ALL}. You get the whole kit; the bot gets the armor / offhand and fights with the kit's melee weapons
+	 * (the bot does not use crystals, carts, pots or bows).
+	 */
+	public static PracticeKit fromFunction(String name, List<String> lines) {
+		List<String> player = new ArrayList<>(), bot = new ArrayList<>();
+		String sword = null, axe = null, mace = null, spear = null;
+		for (String l : lines) {
+			if (!l.startsWith("item replace entity @s ")) {
+				continue;
+			}
+			player.add(l.replace("@s", "@P"));
+			String[] parts = l.split(" with ", 2);
+			if (parts.length < 2) {
+				continue;
+			}
+			String slot = parts[0].substring("item replace entity @s ".length()).trim();
+			String spec = parts[1].trim().replaceAll(" \\d+$", "");
+			String id = spec.contains("[") ? spec.substring(0, spec.indexOf('[')) : spec;
+			if (slot.startsWith("armor.") || slot.equals("weapon.offhand")) {
+				if (slot.startsWith("armor.") ? !id.equals("minecraft:air") : id.equals("minecraft:shield")) {
+					bot.add("item replace entity @B " + slot + " with " + spec);
+				}
+			} else if (id.endsWith("_sword") && sword == null) {
+				sword = spec;
+			} else if (id.endsWith("_axe") && axe == null) {
+				axe = spec;
+			} else if (id.equals("minecraft:mace") && mace == null) {
+				mace = spec;
+			} else if (id.endsWith("_spear") && spear == null) {
+				spear = spec;
+			}
+		}
+		Style st = spear != null && mace != null ? Style.SPEAR_MACE : mace != null ? Style.MACE
+				: axe != null && (sword == null || name.equalsIgnoreCase("Axe")) ? Style.AXE : Style.SWORD;
+		if (sword == null) {
+			sword = axe != null ? axe : mace != null ? mace : spear != null ? spear : "minecraft:diamond_sword";
+		}
+		PracticeKit k = new PracticeKit(name, "PvP HQ kit", st, player.toArray(new String[0]), bot.toArray(new String[0]), 7F)
+				.w(sword, axe, mace, spear, 3);
+		return k;
+	}
+
 	/** Builds a kit made in the kit editor (not added to {@link #ALL}). */
 	static PracticeKit custom(String name, String desc, Style style, float botDamage, String[] player, String[] bot,
 			String sword, String axe, String mace, String spear, int density) {

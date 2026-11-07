@@ -6246,7 +6246,7 @@ public class SolMenuScreen extends Screen {
 		Gfx.text(c, fit(dev.solclient.Lang.tr("For every chat. Only the messages you send after choosing.", "Para todas as conversas. Só as mensagens que enviares depois."), iw - 4),
 				ix + 2, y0 + 11, Theme.DIM);
 		String mine = dev.solclient.chat.Bubbles.mine();
-		int cols = 3, gap = 6, cw = (iw - gap * (cols - 1)) / cols, ch = 46;
+		int cols = 3, gap = 6, cw = (iw - gap * (cols - 1)) / cols, ch = 50;
 		int top = y0 + 30;
 		var all = dev.solclient.chat.Bubbles.ALL;
 		for (int i = 0; i < all.size(); i++) {
@@ -6267,9 +6267,9 @@ public class SolMenuScreen extends Screen {
 				Gfx.rrectBorder(c, cx0, cy0, cw, ch, 6, 0, accent);
 			}
 			// preview bubble
-			int pbw = cw - 16, pbh = 14, pbx = cx0 + 8, pby = cy0 + 12;
-			dev.solclient.chat.Bubbles.draw(c, st, pbx, pby, pbw, pbh, accent, true);
-			boolean styled = st.deco() != dev.solclient.chat.Bubbles.Deco.NONE;
+			int pbw = cw - 22, pbh = 15, pbx = cx0 + 8, pby = cy0 + 15;
+			dev.solclient.chat.Bubbles.draw(c, st, pbx, pby, pbw, pbh, accent, false);
+			boolean styled = !st.plain();
 			Gfx.text(c, fit("Hey!", pbw - 8), pbx + 5, pby + 3, styled ? st.text() : 0xFFFFFFFF);
 			Gfx.textFit(c, st.name(), cx0 + cw / 2, cw - 6, cy0 + ch - 11, sel ? 0xFFFFFFFF : Theme.DIM);
 			if (settled) {
@@ -6348,7 +6348,7 @@ public class SolMenuScreen extends Screen {
 			Gfx.button(c, bbx, cyb, 20, 20, hbb, bubblePicker);
 			// a tiny bubble in your style as the icon
 			dev.solclient.chat.Bubbles.Style ms = dev.solclient.chat.Bubbles.of(dev.solclient.chat.Bubbles.mine());
-			int ib = ms.deco() == dev.solclient.chat.Bubbles.Deco.NONE ? accent : ms.bg();
+			int ib = ms.plain() ? accent : ms.bg();
 			Gfx.rrect(c, bbx + 4, cyb + 6, 12, 8, 3, ib);
 			c.fill(bbx + 5, cyb + 13, bbx + 8, cyb + 15, ib);
 			if (hbb) {
@@ -6561,7 +6561,7 @@ public class SolMenuScreen extends Screen {
 					try {
 					int bg = m.failed ? 0xFF4A1C1F : m.mine ? (m.pending ? Gfx.blend(accent, SUB, 0.45F) : accent) : BUBBLE_OTHER;
 					dev.solclient.chat.Bubbles.Style bst = dev.solclient.chat.Bubbles.of(m.failed ? "" : m.bubble);
-					boolean styled = bst.deco() != dev.solclient.chat.Bubbles.Deco.NONE;
+					boolean styled = !bst.plain();
 					int textCol = styled ? bst.text() : m.mine ? 0xFFFFFFFF : 0xFFE6E8EE;
 					int subCol = styled ? bst.sub() : m.mine ? 0xCCFFFFFF : 0xFF7D8190;
 					if (!big && styled) {
@@ -6715,7 +6715,8 @@ public class SolMenuScreen extends Screen {
 						}
 					}
 				}
-				by -= headerH + (groupStart ? 8 : 2);
+				boolean mascotRoom = !big && !m.failed && !dev.solclient.chat.Bubbles.of(m.bubble).plain();
+				by -= headerH + (groupStart ? 8 : 2) + (mascotRoom && !groupStart ? 12 : mascotRoom ? 4 : 0);
 				// day separator above the first message of a day
 				if (t != null && (tp == null || !tp.toLocalDate().equals(t.toLocalDate()))) {
 					by -= 18;

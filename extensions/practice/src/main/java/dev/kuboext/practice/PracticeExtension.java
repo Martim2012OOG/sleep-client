@@ -31,10 +31,51 @@ public class PracticeExtension implements KuboExtension {
 		on = true;
 		Addons.register(new PvpPracticeAddon());
 		Addons.register(new BridgePracticeAddon());
+		Addons.register(new dev.solclient.addons.ranked.RankedAddon());
 		if (hooked) {
 			return; // reinstalled in the same session: the hooks below are still there
 		}
 		hooked = true;
+		// Ranked PvP: the match on the host's server, eliminations instead of deaths, no griefing the arenas
+		ServerTickEvents.END_SERVER_TICK.register(s -> {
+			if (on) {
+				dev.solclient.addons.ranked.RankedServer.tick(s);
+			}
+		});
+		net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents.ALLOW_DEATH.register((e, src, amt) -> !on || dev.solclient.addons.ranked.RankedServer.allowDeath(e, src, amt));
+		net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents.ALLOW_DAMAGE.register((e, src, amt) -> !on || dev.solclient.addons.ranked.RankedServer.allowDamage(e, src, amt));
+		net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents.DISCONNECT.register((h, srv) -> {
+			if (on) {
+				dev.solclient.addons.ranked.RankedServer.onLeave(h.player);
+			}
+		});
+		net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents.BEFORE.register((world, player, pos, state, be) -> !on || player.isCreative()
+				|| world.getServer() == null || dev.solclient.addons.ranked.RankedServer.canBreak(world.getServer()));
+		ClientTickEvents.END_CLIENT_TICK.register(mc -> {
+			if (on) {
+				dev.solclient.addons.ranked.Ranked.tick(mc);
+				dev.solclient.addons.ranked.RankedFx.tick(mc);
+			}
+		});
+		// no commands during a match (the host can't /kick, /ban, /op, /gamemode...); chat commands still work
+		net.fabricmc.fabric.api.client.message.v1.ClientSendMessageEvents.ALLOW_COMMAND.register(cmd -> {
+			if (!on || !dev.solclient.addons.ranked.Ranked.inMatch()) {
+				return true;
+			}
+			String c0 = cmd.split(" ")[0].toLowerCase(java.util.Locale.ROOT);
+			if (java.util.Set.of("msg", "tell", "w", "r", "me", "teammsg", "tm", "ranked").contains(c0)) {
+				return true;
+			}
+			dev.solclient.social.Social.say(dev.solclient.Lang.tr("Commands are off during a match.", "Os comandos estão desligados durante uma partida."), true);
+			return false;
+		});
+		// /ranked opens the menu
+		net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback.EVENT.register((d, reg) -> d.register(
+				net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal("ranked").executes(ctx -> {
+					var mc = net.minecraft.client.MinecraftClient.getInstance();
+					mc.send(() -> mc.setScreen(new dev.solclient.gui.RankedScreen(mc.currentScreen)));
+					return 1;
+				})));
 		ServerTickEvents.END_SERVER_TICK.register(s -> {
 			if (on) {
 				PracticeSession.tick(s);
@@ -49,6 +90,11 @@ public class PracticeExtension implements KuboExtension {
 			if (on) {
 				PracticeWorld.tick(mc);
 				BridgeHud.tick(mc);
+			}
+		});
+		api.onHudLast(c -> {
+			if (on) {
+				dev.solclient.addons.ranked.RankedFx.render(c);
 			}
 		});
 		api.onHud(c -> {
@@ -72,5 +118,6 @@ public class PracticeExtension implements KuboExtension {
 		BridgeSession.stop();
 		Addons.unregister("pvp_practice");
 		Addons.unregister("bridge_practice");
+		Addons.unregister("ranked_pvp");
 	}
 }

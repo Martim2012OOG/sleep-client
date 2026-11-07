@@ -57,11 +57,11 @@ public final class SolarApi {
 
 	/** Result of one request. {@code status} 0 = network error. */
 	public record Res(int status, JsonElement body, String error) {
-		boolean ok() {
+		public boolean ok() {
 			return status >= 200 && status < 300;
 		}
 
-		JsonObject obj() {
+		public JsonObject obj() {
 			return Json.obj(body);
 		}
 	}
@@ -115,11 +115,16 @@ public final class SolarApi {
 		}
 	}
 
-	static String enc(String s) {
+	public static String enc(String s) {
 		return URLEncoder.encode(s, StandardCharsets.UTF_8);
 	}
 
 	// ---------------------------------------------------------------- requests
+	/** For extensions (Ranked PvP...): a signed-in call to the Sleep site API. method = GET / POST / PUT / PATCH / DELETE. */
+	public static Res call(String method, String path, JsonObject body) {
+		return send(method, path, body, true, 15);
+	}
+
 	static Res get(String path) {
 		return send("GET", path, null, true, 10);
 	}
