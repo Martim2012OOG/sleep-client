@@ -136,8 +136,8 @@ public final class ParkourLive {
 		if (m == null || !inMap || e.type() != TikEvent.Type.GIFT) {
 			return;
 		}
-		Act a = actOf(m, e.gift());
-		if (a == null) {
+		Act a = actOf(m, e.gift()), fa = friendAct(m, e.gift());
+		if (a == null && fa == null) {
 			return;
 		}
 		String key = e.streakKey();
@@ -149,14 +149,233 @@ public final class ParkourLive {
 			STREAK.remove(key);
 		}
 		if (n > 0) {
-			apply(a, n, e.who());
+			if (a != null) {
+				apply(a, n, e.who());
+			}
+			if (fa != null) {
+				applyFriend(fa, n, e.who());
+			}
 		}
 	}
 
 	/** Which action this gift does (null = none), from the gift names in the settings. */
 	public static Act actFor(String gift) {
 		TikTokLiveMod m = TikTokLiveMod.instance;
-		return m == null ? null : actOf(m, gift);
+		if (m == null) {
+			return null;
+		}
+		Act a = actOf(m, gift);
+		return a != null ? a : friendAct(m, gift);
+	}
+
+	private static Act friendAct(TikTokLiveMod m, String gift) {
+		String k = TikGifts.key(gift);
+		if (k.isEmpty()) {
+			return null;
+		}
+		for (Act a : Act.values()) {
+			for (String name : m.pkFriendGifts(a).split("[,;]")) {
+				if (k.equals(TikGifts.key(name))) {
+					return a;
+				}
+			}
+		}
+		return null;
+	}
+
+	// ================================================================ gifts for your friend
+	private static long friendResetEnd, friendJailEnd;
+	private static int friendPunches, friendPunchCooldown, friendBarSec = -1;
+	private static final java.util.Set<net.minecraft.util.math.BlockPos> FRIEND_CAGE = new java.util.HashSet<>();
+
+	/** The friends the "friend" gifts hit (server thread): the name(s) you set, or everyone except you. */
+	private static java.util.List<ServerPlayerEntity> friends(MinecraftServer server, UUID me) {
+		TikTokLiveMod m = mod();
+		String names = m == null ? "" : m.pkFriendName.get().trim();
+		java.util.List<ServerPlayerEntity> out = new java.util.ArrayList<>();
+		for (ServerPlayerEntity p : server.getPlayerManager().getPlayerList()) {
+			if (p.getUuid().equals(me)) {
+				continue;
+			}
+			if (names.isEmpty()) {
+				out.add(p);
+				continue;
+			}
+			for (String n : names.split("[,; ]+")) {
+				if (n.equalsIgnoreCase(p.getName().getString())) {
+					out.add(p);
+				}
+			}
+		}
+		return out;
+	}
+
+	private static void applyFriend(Act a, int n, String who) {
+		MinecraftClient mc = MinecraftClient.getInstance();
+		MinecraftServer server = mc.getServer();
+		TikTokLiveMod m = mod();
+		if (server == null || mc.player == null || m == null) {
+			sweep("HOST ONLY", "Friend gifts need your Host World", 0xFFFF6B6B);
+			return;
+		}
+		UUID me = mc.player.getUuid();
+		long now = System.currentTimeMillis();
+		switch (a) {
+			case UP1, DOWN1, UP10, DOWN10 -> {
+				if (friendResetEnd > 0 || friendJailEnd > 0) {
+					sweep("BLOCKED", "Your friend is in RESET or JAIL", 0xFFFF5555);
+					return;
+				}
+				int step = a == Act.UP1 ? 1 : a == Act.DOWN1 ? -1 : a == Act.UP10 ? 10 : -10;
+				int delta = step * n;
+				sweep("FRIEND " + (delta > 0 ? "+" : "") + delta + " LVL", who, delta > 0 ? 0xFF55FF7F : 0xFFFF6B6B);
+				server.execute(() -> setFriendLevel(server, me, null, delta));
+			}
+			case RESET -> {
+				if (friendResetEnd > 0) {
+					return;
+				}
+				friendResetEnd = now + m.pkResetSeconds.i() * 1000L;
+				friendBarSec = -1;
+				sweep("FRIEND RESET", who, 0xFFFF4040);
+			}
+			case SAVE -> {
+				if (friendResetEnd == 0) {
+					return;
+				}
+				friendResetEnd = 0;
+				sweep("FRIEND SAVED!", who, 0xFF55FF7F);
+				server.execute(() -> actionbar(server, friends(server, me), "SAVED!", "green"));
+			}
+			case PUNCH -> {
+				friendPunches = Math.min(friendPunches + n, 20);
+				sweep("FRIEND PUNCH!", who, 0xFFFFD34D);
+			}
+			case JAIL -> {
+				long secs = m.pkJailSeconds.i() * (long) n;
+				sweep("FRIEND JAIL!", who, 0xFFB0B8C8);
+				if (friendJailEnd > 0) {
+					friendJailEnd = Math.min(friendJailEnd + secs * 1000L, now + 120_000L);
+				} else {
+					friendJailEnd = now + secs * 1000L;
+					server.execute(() -> {
+						var who2 = friends(server, me);
+						for (ServerPlayerEntity p : who2) {
+							cage(server, p, FRIEND_CAGE);
+						}
+						actionbar(server, who2, "JAIL!", "gray");
+					});
+				}
+			}
+		}
+	}
+
+	/** Server thread. */
+	private static void setFriendLevel(MinecraftServer server, UUID me, Integer to, int delta) {
+		ScoreboardObjective obj = server.getScoreboard().getNullableObjective("pk_level");
+		if (obj == null) {
+			return;
+		}
+		var who = friends(server, me);
+		for (ServerPlayerEntity p : who) {
+			var sc = server.getScoreboard().getScore(p, obj);
+			int now = Math.max(0, sc == null ? 0 : sc.getScore());
+			int target = Math.max(1, Math.min(MAX, to != null ? to : now + delta));
+			if (to == null && target == now) {
+				continue;
+			}
+			String u = p.getUuidAsString();
+			command(server, "scoreboard players set " + u + " pk_level " + target);
+			command(server, "execute as " + u + " at @s run function pk:to_checkpoint");
+		}
+		if (to != null) {
+			actionbar(server, who, "RESET! Back to checkpoint 1", "red");
+		} else {
+			actionbar(server, who, (delta > 0 ? "+" : "") + delta + " LVL", delta > 0 ? "green" : "red");
+		}
+	}
+
+	private static void releaseFriendCage(MinecraftServer server) {
+		if (FRIEND_CAGE.isEmpty() || cageWorld == null) {
+			FRIEND_CAGE.clear();
+			return;
+		}
+		var world = server.getWorld(cageWorld);
+		for (var pos : FRIEND_CAGE) {
+			if (world != null) {
+				var st = world.getBlockState(pos);
+				if (st.isOf(net.minecraft.block.Blocks.IRON_BARS) || st.isOf(net.minecraft.block.Blocks.POLISHED_DEEPSLATE)) {
+					world.setBlockState(pos, net.minecraft.block.Blocks.AIR.getDefaultState());
+				}
+			}
+		}
+		FRIEND_CAGE.clear();
+	}
+
+	private static void friendTick(MinecraftClient mc, MinecraftServer server) {
+		if (mc.player == null) {
+			return;
+		}
+		UUID me = mc.player.getUuid();
+		long now = System.currentTimeMillis();
+		if (friendResetEnd > 0) {
+			int sec = (int) Math.ceil((friendResetEnd - now) / 1000.0);
+			if (sec <= 0) {
+				friendResetEnd = 0;
+				server.execute(() -> setFriendLevel(server, me, 1, 0));
+			} else if (sec != friendBarSec) {
+				friendBarSec = sec;
+				String save = giftOfFriend(Act.SAVE);
+				server.execute(() -> actionbar(server, friends(server, me), "RESET " + sec + "s" + (save.isEmpty() ? "" : " - SAVE: " + save), "red"));
+			}
+		}
+		if (friendJailEnd > 0 && now >= friendJailEnd) {
+			friendJailEnd = 0;
+			server.execute(() -> releaseFriendCage(server));
+		}
+		if (friendPunchCooldown > 0) {
+			friendPunchCooldown--;
+		} else if (friendPunches > 0) {
+			friendPunches--;
+			friendPunchCooldown = 12;
+			TikTokLiveMod m = mod();
+			double ks = (m == null ? 100 : m.pkPunchStrength.i()) / 100.0;
+			server.execute(() -> {
+				for (ServerPlayerEntity t : friends(server, me)) {
+					launch(server, t, ks);
+				}
+			});
+		}
+	}
+
+	private static String giftOfFriend(Act a) {
+		TikTokLiveMod m = TikTokLiveMod.instance;
+		return m == null ? "" : m.pkFriendGifts(a).split("[,;]")[0].trim();
+	}
+
+	private static void launch(MinecraftServer server, ServerPlayerEntity t, double ks) {
+		Vec3d lk = t.getRotationVec(1F);
+		double x = -lk.x, z = -lk.z, l = Math.sqrt(x * x + z * z);
+		if (l < 1e-4) {
+			x = 1;
+			z = 0;
+			l = 1;
+		}
+		t.setVelocity(x / l * 1.5 * ks, 0.55 * Math.min(1.5, ks), z / l * 1.5 * ks);
+		t.networkHandler.sendPacket(new net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket(t));
+		String u = t.getUuidAsString();
+		command(server, "execute at " + u + " run playsound minecraft:block.note_block.bell master " + u + " ~ ~ ~ 1 1.2");
+		command(server, "execute at " + u + " run playsound minecraft:entity.arrow.hit_player master " + u + " ~ ~ ~ 1 0.6");
+		command(server, "execute at " + u + " run particle minecraft:crit ~ ~1 ~ 0.4 0.4 0.4 0.3 14");
+	}
+
+	/** The test button for the friend gifts. */
+	public static void testFriend(Act a) {
+		if (!inMap) {
+			sweep("NOT IN THE MAP", "Open Parkour Paradise 3 in Add-ons", 0xFFFF6B6B);
+			return;
+		}
+		applyFriend(a, 1, "Test");
 	}
 
 	private static Act actOf(TikTokLiveMod m, String gift) {
@@ -342,13 +561,13 @@ public final class ParkourLive {
 			release(server);
 			var who = targets(server, me);
 			for (ServerPlayerEntity p : who) {
-				cage(server, p);
+				cage(server, p, CAGE);
 			}
 			actionbar(server, who, "JAIL!", "gray");
 		});
 	}
 
-	private static void cage(MinecraftServer server, ServerPlayerEntity p) {
+	private static void cage(MinecraftServer server, ServerPlayerEntity p, java.util.Collection<net.minecraft.util.math.BlockPos> blocks) {
 		{
 			var world = p.getEntityWorld();
 			var c = p.getBlockPos();
@@ -371,7 +590,7 @@ public final class ParkourLive {
 						String block = wall ? "minecraft:iron_bars" : "minecraft:polished_deepslate";
 						command(server, "setblock " + pos.getX() + " " + pos.getY() + " " + pos.getZ() + " " + block);
 						if (!world.getBlockState(pos).isAir()) {
-							CAGE.add(pos.toImmutable());
+							blocks.add(pos.toImmutable());
 						}
 					}
 				}
@@ -653,6 +872,7 @@ public final class ParkourLive {
 			sweep("FREE!", "", 0xFF55FF7F);
 			mc.getSoundManager().play(PositionedSoundInstance.ui(SoundEvents.BLOCK_IRON_DOOR_OPEN, 1F, 0.8F));
 		}
+		friendTick(mc, server);
 		// golden punches: one after the other
 		if (punchCooldown > 0) {
 			punchCooldown--;

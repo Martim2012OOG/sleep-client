@@ -30,7 +30,106 @@ import net.minecraft.util.Identifier;
  */
 public final class TikGifts {
 
-	private record Info(String url, int cost) {
+	private record Info(String url, int cost, String name, boolean custom) {
+	}
+
+	/** One gift for the picker. */
+	public record Gift(String name, int cost, boolean custom) {
+	}
+
+	/** Only names confirmed to exist: the real list comes from TikTok when a live connects (see {@link #loadFromLive}). */
+	private static final String[] SEED = {"Rose", "TikTok", "Heart Me", "White Dove", "Mamma Mia", "Boxing Gloves", "Galaxy", "Lion"};
+
+	/** Asks TikTok for the gift list of someone who is live right now (the same connection as the Automatic source), then leaves. */
+	public static void loadFromLive(String user, java.util.function.Consumer<String> status) {
+		Thread t = new Thread(() -> {
+			try {
+				status.accept("@" + user + "...");
+				io.github.jwdeveloper.tiktok.client.TikTokLive.newClient(user).configure(c -> {
+					c.setClientLanguage("en");
+					c.setLogLevel(java.util.logging.Level.OFF);
+					c.setPrintToConsole(false);
+				}).onConnected((lc, e) -> {
+					int n = 0;
+					try {
+						for (var g : lc.getGiftManager().toList()) {
+							learn(g.getName(), g.getPicture() == null ? null : g.getPicture().getLink(), g.getDiamondCost());
+							n++;
+						}
+					} catch (Throwable ignored) {
+						// status below says 0
+					}
+					saveSoon();
+					status.accept(n + " gifts");
+					lc.disconnect();
+				}).onError((lc, e) -> status.accept("@" + user + ": not live?")).build().connect();
+			} catch (Throwable e) {
+				status.accept("@" + user + ": not live?");
+			}
+		}, "kubo-gift-list");
+		t.setDaemon(true);
+		t.start();
+	}
+
+	/** Your own gift: a name (exactly as TikTok sends it), its coins and, if you want, a picture from your computer. */
+	public static void addCustom(String name, int cost, Path picture) {
+		load();
+		String k = key(name);
+		if (k.isEmpty()) {
+			return;
+		}
+		String url = "";
+		try {
+			if (picture != null) {
+				Path dir = FabricLoader.getInstance().getConfigDir().resolve("kubo-tiktok-gift-images");
+				Files.createDirectories(dir);
+				Path to = dir.resolve(k.replaceAll("[^a-z0-9_]", "_") + ".png");
+				Files.copy(picture, to, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+				url = to.toUri().toString();
+			}
+		} catch (Exception e) {
+			url = "";
+		}
+		Info old = INFO.get(k);
+		INFO.put(k, new Info(url.isEmpty() && old != null ? old.url : url, cost > 0 ? cost : old == null ? 0 : old.cost, name.trim(), true));
+		TEX.remove(k);
+		FAILED.remove(k);
+		dirty = true;
+		savedAt = 0;
+		saveSoon();
+	}
+
+	public static void removeCustom(String name) {
+		String k = key(name);
+		Info i = INFO.get(k);
+		if (i != null && i.custom) {
+			INFO.remove(k);
+			TEX.remove(k);
+			dirty = true;
+			savedAt = 0;
+			saveSoon();
+		}
+	}
+
+	/** Every gift known so far, cheapest first (from the live's full list, the gifts seen, and the well-known ones). */
+	public static java.util.List<Gift> all() {
+		load();
+		Map<String, Gift> out = new java.util.LinkedHashMap<>();
+		for (String s : SEED) {
+			out.put(key(s), new Gift(s, cost(s), false));
+		}
+		for (var e : INFO.entrySet()) {
+			Gift old = out.get(e.getKey());
+			String name = e.getValue().name != null && !e.getValue().name.isEmpty() ? e.getValue().name : old != null ? old.name() : pretty(e.getKey());
+			out.put(e.getKey(), new Gift(name, e.getValue().cost, e.getValue().custom));
+		}
+		java.util.List<Gift> list = new java.util.ArrayList<>(out.values());
+		list.sort(java.util.Comparator.comparingInt(Gift::cost).thenComparing(Gift::name, String.CASE_INSENSITIVE_ORDER));
+		return list;
+	}
+
+	private static String pretty(String k) {
+		return k.isEmpty() ? k : Character.toUpperCase(k.charAt(0)) + k.substring(1);
 	}
 
 	private static final Map<String, Info> INFO = new ConcurrentHashMap<>();
@@ -56,10 +155,11 @@ public final class TikGifts {
 		}
 		load();
 		Info old = INFO.get(k);
-		String u = url != null && url.startsWith("http") ? url : old == null ? "" : old.url;
+		String u = url != null && url.startsWith("http") && (old == null || !old.custom) ? url : old == null ? "" : old.url;
 		int c = cost > 0 ? cost : old == null ? 0 : old.cost;
-		if (old == null || !old.url.equals(u) || old.cost != c) {
-			INFO.put(k, new Info(u, c));
+		String shown = name.trim();
+		if (old == null || !old.url.equals(u) || old.cost != c || !shown.equals(old.name)) {
+			INFO.put(k, new Info(u, c, shown, old != null && old.custom));
 			dirty = true;
 			if (old != null && !old.url.equals(u)) {
 				FAILED.remove(k);
@@ -121,6 +221,8 @@ public final class TikGifts {
 			JsonObject g = new JsonObject();
 			g.addProperty("url", e.getValue().url);
 			g.addProperty("cost", e.getValue().cost);
+			g.addProperty("name", e.getValue().name == null ? "" : e.getValue().name);
+			g.addProperty("custom", e.getValue().custom);
 			o.add(e.getKey(), g);
 		}
 		String json = o.toString();
@@ -158,7 +260,7 @@ public final class TikGifts {
 					JsonObject g = e.getValue().getAsJsonObject();
 					String u = g.has("url") ? g.get("url").getAsString() : "";
 					int c = g.has("cost") ? g.get("cost").getAsInt() : 0;
-					INFO.putIfAbsent(e.getKey(), new Info(u, c));
+					INFO.putIfAbsent(e.getKey(), new Info(u, c, g.has("name") ? g.get("name").getAsString() : "", g.has("custom") && g.get("custom").getAsBoolean()));
 				}
 			}
 		} catch (Exception ignored) {
@@ -171,9 +273,12 @@ public final class TikGifts {
 	private static void download(String k, String url) {
 		try {
 			byte[] png = null;
+			if (url.startsWith("file:")) {
+				png = toPng(Files.readAllBytes(Path.of(URI.create(url))));
+			}
 			// TikTok sends .webp pictures, which Minecraft cannot read: its image server also gives the same picture as PNG
 			String asPng = url.replace("~tplv-obj.webp", "~tplv-obj.png").replace(".webp", ".png");
-			for (String u : asPng.equals(url) ? new String[] {url} : new String[] {asPng, url}) {
+			for (String u : png != null ? new String[0] : asPng.equals(url) ? new String[] {url} : new String[] {asPng, url}) {
 				byte[] b = get(u);
 				if (b != null) {
 					png = toPng(b);

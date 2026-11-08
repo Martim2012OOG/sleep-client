@@ -78,25 +78,72 @@ public class TikTokLiveMod extends HudMod {
 	private final Option.Action btnTestViewers = action("Viewers / likes counter", "Send", this::testViewers, () -> "");
 
 	private final Option.Header hParkour = header("Parkour Live (Parkour Paradise 3)");
+	/** A row with a "Choose" button that opens the gift picker for one list. */
+	private Option.Action giftPicker(String label, Option.Text list, Option.Bool only) {
+		Option.Action act = action(label, dev.solclient.Lang.tr("Choose", "Escolher"), () -> {
+			var mc = net.minecraft.client.MinecraftClient.getInstance();
+			mc.setScreen(new dev.solclient.gui.GiftPickerScreen(mc.currentScreen, label, list));
+		}, () -> {
+			String v = list.get().trim();
+			return v.isEmpty() ? dev.solclient.Lang.tr("None", "Nenhum") : v.length() > 42 ? v.substring(0, 40) + ".." : v;
+		});
+		if (only != null) {
+			act.showIf(only::on);
+		}
+		return act;
+	}
+
 	public final Option.Bool pkOn = bool("Parkour Live", true)
 			.tip("In the Parkour Paradise 3 map (Add-ons): LEVEL X / 100 on screen instead of the boss bar, and gifts move you up or down, start a RESET timer, save you or punch you.");
-	private final Option.Text pkUp1 = text("UP 1 LVL gifts", "Paper Crane, Heart Me", 200, "gift names, separated by commas");
-	private final Option.Text pkDown1 = text("DOWN 1 LVL gifts", "Hat and Mustache, Cowboy Hat", 200, "gift names, separated by commas");
-	private final Option.Text pkUp10 = text("UP 10 LVL gifts", "Panda", 200, "gift names, separated by commas");
-	private final Option.Text pkDown10 = text("DOWN 10 LVL gifts", "Gift Box", 200, "gift names, separated by commas");
-	private final Option.Text pkReset = text("RESET gifts", "Galaxy", 200, "gift names, separated by commas");
-	private final Option.Text pkSave = text("SAVE gifts", "Watermelon Sugar, Watermelon", 200, "gift names, separated by commas");
-	private final Option.Text pkPunch = text("PUNCH gifts", "Boxing Gloves", 200, "gift names, separated by commas");
-	private final Option.Text pkJail = text("JAIL gifts", "Sunglasses", 200, "gift names, separated by commas");
+	private final Option.Text pkUp1 = text("UP 1 LVL gifts", "Paper Crane, Heart Me", 200, "gift names, separated by commas").showIf(() -> false);
+	private final Option.Action pkUp1Pick = giftPicker("UP 1 LVL", pkUp1, null);
+	private final Option.Text pkDown1 = text("DOWN 1 LVL gifts", "Hat and Mustache, Cowboy Hat", 200, "gift names, separated by commas").showIf(() -> false);
+	private final Option.Action pkDown1Pick = giftPicker("DOWN 1 LVL", pkDown1, null);
+	private final Option.Text pkUp10 = text("UP 10 LVL gifts", "", 200, "gift names, separated by commas").showIf(() -> false);
+	private final Option.Action pkUp10Pick = giftPicker("UP 10 LVL", pkUp10, null);
+	private final Option.Text pkDown10 = text("DOWN 10 LVL gifts", "Gift Box", 200, "gift names, separated by commas").showIf(() -> false);
+	private final Option.Action pkDown10Pick = giftPicker("DOWN 10 LVL", pkDown10, null);
+	private final Option.Text pkReset = text("RESET gifts", "Galaxy", 200, "gift names, separated by commas").showIf(() -> false);
+	private final Option.Action pkResetPick = giftPicker("RESET", pkReset, null);
+	private final Option.Text pkSave = text("SAVE gifts", "Watermelon Sugar, Watermelon", 200, "gift names, separated by commas").showIf(() -> false);
+	private final Option.Action pkSavePick = giftPicker("SAVE", pkSave, null);
+	private final Option.Text pkPunch = text("PUNCH gifts", "Boxing Gloves", 200, "gift names, separated by commas").showIf(() -> false);
+	private final Option.Action pkPunchPick = giftPicker("PUNCH", pkPunch, null);
+	private final Option.Text pkJail = text("JAIL gifts", "Sunglasses", 200, "gift names, separated by commas").showIf(() -> false);
+	private final Option.Action pkJailPick = giftPicker("JAIL", pkJail, null);
 	public final Option.Num pkJailSeconds = num("Jail Time", 20, 5, 60, 1, "s");
 	public final Option.Choice pkTargets = choice("Gifts Affect", 0, "Only Me", "Everyone", "My Friends Only")
 			.tip("Who the parkour gifts move, reset, punch and jail when friends play your hosted map with you.");
 	public final Option.Num pkResetSeconds = num("Reset Timer", 60, 10, 300, 5, "s");
+
+	private final Option.Header hFriend = header("Gifts for your friend");
+	public final Option.Bool pkFriendOn = bool("Friend Gifts", false)
+			.tip("Separate gifts that only hit your friend when they play your hosted parkour map. The gifts above keep hitting you. A gift listed in both hits both of you.");
+	public final Option.Text pkFriendName = text("Friend's Name", "", 120, "empty = everyone except you").showIf(pkFriendOn::on);
+	private final Option.Text pkFUp1 = text("Friend: UP 1 LVL gifts", "", 200, "gift names, separated by commas").showIf(() -> false);
+	private final Option.Action pkFUp1Pick = giftPicker("Friend: UP 1 LVL", pkFUp1, pkFriendOn);
+	private final Option.Text pkFDown1 = text("Friend: DOWN 1 LVL gifts", "", 200, "gift names, separated by commas").showIf(() -> false);
+	private final Option.Action pkFDown1Pick = giftPicker("Friend: DOWN 1 LVL", pkFDown1, pkFriendOn);
+	private final Option.Text pkFUp10 = text("Friend: UP 10 LVL gifts", "", 200, "gift names, separated by commas").showIf(() -> false);
+	private final Option.Action pkFUp10Pick = giftPicker("Friend: UP 10 LVL", pkFUp10, pkFriendOn);
+	private final Option.Text pkFDown10 = text("Friend: DOWN 10 LVL gifts", "", 200, "gift names, separated by commas").showIf(() -> false);
+	private final Option.Action pkFDown10Pick = giftPicker("Friend: DOWN 10 LVL", pkFDown10, pkFriendOn);
+	private final Option.Text pkFReset = text("Friend: RESET gifts", "", 200, "gift names, separated by commas").showIf(() -> false);
+	private final Option.Action pkFResetPick = giftPicker("Friend: RESET", pkFReset, pkFriendOn);
+	private final Option.Text pkFSave = text("Friend: SAVE gifts", "", 200, "gift names, separated by commas").showIf(() -> false);
+	private final Option.Action pkFSavePick = giftPicker("Friend: SAVE", pkFSave, pkFriendOn);
+	private final Option.Text pkFPunch = text("Friend: PUNCH gifts", "", 200, "gift names, separated by commas").showIf(() -> false);
+	private final Option.Action pkFPunchPick = giftPicker("Friend: PUNCH", pkFPunch, pkFriendOn);
+	private final Option.Text pkFJail = text("Friend: JAIL gifts", "", 200, "gift names, separated by commas").showIf(() -> false);
+	private final Option.Action pkFJailPick = giftPicker("Friend: JAIL", pkFJail, pkFriendOn);
 	public final Option.Num pkPunchStrength = num("Punch Strength", 100, 30, 300, 10, "%");
 	private final Option.Choice pkTestPick = choice("Test Parkour Gift", 0, "UP 1 LVL", "DOWN 1 LVL", "UP 10 LVL", "DOWN 10 LVL", "RESET", "SAVE", "PUNCH", "JAIL");
 	private final Option.Action pkTestBtn = action("Send the parkour test", "Send",
 			() -> dev.solclient.parkour.ParkourLive.test(dev.solclient.parkour.ParkourLive.Act.values()[pkTestPick.idx()]),
 			() -> dev.solclient.parkour.ParkourLive.giftOf(dev.solclient.parkour.ParkourLive.Act.values()[pkTestPick.idx()]));
+
+	private final Option.Action pkTestFriendBtn = action("Send the test to your friend", "Send",
+			() -> dev.solclient.parkour.ParkourLive.testFriend(dev.solclient.parkour.ParkourLive.Act.values()[pkTestPick.idx()]), () -> "").showIf(pkFriendOn::on);
 
 	private final Option.Action pkSndUp1 = action("Sound: UP 1 LVL", "Choose file", () -> pickSlot("pk_up1"), () -> pkSound(0));
 	private final Option.Action pkSndDown1 = action("Sound: DOWN 1 LVL", "Choose file", () -> pickSlot("pk_down1"), () -> pkSound(1));
@@ -198,6 +245,23 @@ public class TikTokLiveMod extends HudMod {
 	}
 
 	/** The gift names (comma separated) that do this in Parkour Live. */
+	/** The gifts that do this to your friend ("" = none, or Friend Gifts is off). */
+	public String pkFriendGifts(dev.solclient.parkour.ParkourLive.Act a) {
+		if (!pkFriendOn.on()) {
+			return "";
+		}
+		return switch (a) {
+			case UP1 -> pkFUp1.get();
+			case DOWN1 -> pkFDown1.get();
+			case UP10 -> pkFUp10.get();
+			case DOWN10 -> pkFDown10.get();
+			case RESET -> pkFReset.get();
+			case SAVE -> pkFSave.get();
+			case PUNCH -> pkFPunch.get();
+			case JAIL -> pkFJail.get();
+		};
+	}
+
 	public String pkGifts(dev.solclient.parkour.ParkourLive.Act a) {
 		return switch (a) {
 			case UP1 -> pkUp1.get();

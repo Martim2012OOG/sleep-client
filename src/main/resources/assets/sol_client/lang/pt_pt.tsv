@@ -3185,3 +3185,32 @@ Night Danger Colour	Cor de perigo à noite
 Writes the light level on the blocks around you, in red where monsters can spawn.	Escreve o nível de luz nos blocos à tua volta, a vermelho onde podem aparecer monstros.
 Monsters spawn at block light 0 in the Overworld.	Os monstros aparecem com luz de bloco 0 no mundo normal.
 Clock, biome, memory, TPS, rotation and other one-line HUDs.	Relógio, bioma, memória, TPS, rotação e outros HUDs de uma linha.
+Gifts for your friend	Presentes para o teu amigo
+Friend Gifts	Presentes para o amigo
+Friend's Name	Nome do amigo
+Send the test to your friend	Enviar o teste ao amigo
+Friend: UP 1 LVL gifts	Amigo: presentes SOBE 1 NÍVEL
+Friend: DOWN 1 LVL gifts	Amigo: presentes DESCE 1 NÍVEL
+Friend: UP 10 LVL gifts	Amigo: presentes SOBE 10 NÍVEIS
+Friend: DOWN 10 LVL gifts	Amigo: presentes DESCE 10 NÍVEIS
+Friend: RESET gifts	Amigo: presentes RESET
+Friend: SAVE gifts	Amigo: presentes SALVAR
+Friend: PUNCH gifts	Amigo: presentes MURRO
+Friend: JAIL gifts	Amigo: presentes PRISÃO
+Separate gifts that only hit your friend when they play your hosted parkour map. The gifts above keep hitting you. A gift listed in both hits both of you.	Presentes à parte que só afetam o teu amigo quando ele joga o teu mapa de parkour. Os de cima continuam a afetar-te a ti. Um presente nas duas listas afeta os dois.
+UP 1 LVL	SOBE 1 NÍVEL
+DOWN 1 LVL	DESCE 1 NÍVEL
+UP 10 LVL	SOBE 10 NÍVEIS
+DOWN 10 LVL	DESCE 10 NÍVEIS
+RESET	RESET
+SAVE	SALVAR
+PUNCH	MURRO
+JAIL	PRISÃO
+Friend: UP 1 LVL	Amigo: SOBE 1 NÍVEL
+Friend: DOWN 1 LVL	Amigo: DESCE 1 NÍVEL
+Friend: UP 10 LVL	Amigo: SOBE 10 NÍVEIS
+Friend: DOWN 10 LVL	Amigo: DESCE 10 NÍVEIS
+Friend: RESET	Amigo: RESET
+Friend: SAVE	Amigo: SALVAR
+Friend: PUNCH	Amigo: MURRO
+Friend: JAIL	Amigo: PRISÃO
