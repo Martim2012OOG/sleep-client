@@ -76,6 +76,7 @@ public final class RankedServer {
 		SIDEBAR.clear();
 		fightTicks = 0;
 		curArenaId = match.arena();
+		RankedAntiCheat.reset(match.kit());
 	}
 
 	/** This player's game finished loading the arena. */
@@ -120,7 +121,10 @@ public final class RankedServer {
 		Ranked.Match mm = m;
 		if (mm != null) {
 			for (var p : "A".equals(t) ? mm.teamA() : mm.teamB()) {
-				out.add(p.mcUsername());
+				// names go into server commands: only a valid Minecraft name is ever used
+				if (p.mcUsername() != null && p.mcUsername().matches("[A-Za-z0-9_]{1,16}")) {
+					out.add(p.mcUsername());
+				}
 			}
 		}
 		return out;
@@ -163,6 +167,16 @@ public final class RankedServer {
 			}
 			case FIGHT -> {
 				fightTicks++;
+				RankedAntiCheat.tick(s, allPlayers(s));
+				String caught = RankedAntiCheat.proven();
+				if (caught != null && mm.ranked()) {
+					// overwhelming evidence only: the cheater's team forfeits a ranked match
+					String t = mm.team(caught);
+					if (t != null) {
+						finish(s, "A".equals(t) ? "B" : "A", "anticheat");
+						return;
+					}
+				}
 				// out of the arena: into the void, above the height limit, or somehow past the walls = eliminated at once
 				for (String n : allNames()) {
 					ServerPlayerEntity p = player(s, n);
@@ -189,6 +203,17 @@ public final class RankedServer {
 			default -> {
 			}
 		}
+	}
+
+	private static List<ServerPlayerEntity> allPlayers(MinecraftServer s) {
+		List<ServerPlayerEntity> out = new ArrayList<>();
+		for (String n : allNames()) {
+			ServerPlayerEntity p = player(s, n);
+			if (p != null && !DEAD.contains(n.toLowerCase(Locale.ROOT))) {
+				out.add(p);
+			}
+		}
+		return out;
 	}
 
 	private static List<String> allNames() {
@@ -405,6 +430,9 @@ public final class RankedServer {
 
 	/** Counts a landed hit for the sidebar (hits, damage, best combo: a combo ends when you get hit). */
 	public static void afterDamage(LivingEntity e, DamageSource src, float taken) {
+		if (e instanceof ServerPlayerEntity hurt) {
+			RankedAntiCheat.onDamaged(hurt);
+		}
 		if (phase != Phase.FIGHT || m == null || taken <= 0 || !(e instanceof ServerPlayerEntity v) || !(src.getAttacker() instanceof ServerPlayerEntity a) || a == v
 				|| !isArenaWorld(v.getEntityWorld().getServer())) {
 			return;
@@ -413,6 +441,7 @@ public final class RankedServer {
 		if (ta == null || tv == null || ta.equals(tv)) {
 			return;
 		}
+		RankedAntiCheat.onHit(a, v, src, taken);
 		String ka = a.getName().getString().toLowerCase(Locale.ROOT), kv = v.getName().getString().toLowerCase(Locale.ROOT);
 		HITS.merge(ka, 1, Integer::sum);
 		DAMAGE.merge(ka, (double) taken / 2D, Double::sum); // in hearts
@@ -585,6 +614,7 @@ public final class RankedServer {
 		}
 		sidebar(s, mm);
 		String id = mm.id(), score = scoreA + "-" + scoreB;
-		net.minecraft.client.MinecraftClient.getInstance().execute(() -> Ranked.reportResult(id, winner, reason, score));
+		com.google.gson.JsonArray flags = RankedAntiCheat.report();
+		net.minecraft.client.MinecraftClient.getInstance().execute(() -> Ranked.reportResult(id, winner, reason, score, flags));
 	}
 }

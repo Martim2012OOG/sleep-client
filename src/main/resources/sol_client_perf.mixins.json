@@ -6,7 +6,6 @@
   "client": [
     "TextDisplayCacheMixin",
     "ClientWorldWaveMixin",
-    "BiomeWaterColorMixin",
     "FrameSyncMixin",
     "ArmorStandPoseMixin",
     "KillFxHideMixin",

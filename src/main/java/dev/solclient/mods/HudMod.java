@@ -7,6 +7,13 @@ import net.minecraft.client.gui.DrawContext;
 public abstract class HudMod extends Mod {
 
 	public final Option.Num scale = num("Scale", 100, 20, 400, 1, "%");
+	// a panel behind any HUD (the one-line HUDs have their own, fuller box options)
+	private final Option.Bool panel = bool("Panel Behind", false).showIf(() -> !(this instanceof SimpleHudMod));
+	private final Option.Col panelColour = colour("Panel Colour", 0x64000000).showIf(() -> panel.on() && !(this instanceof SimpleHudMod));
+	private final Option.Num panelRadius = num("Panel Corner Radius", 4, 0, 16, 0.5F, "").showIf(() -> panel.on() && !(this instanceof SimpleHudMod));
+	private final Option.Num panelMargin = num("Panel Margin", 3, 0, 16, 0.5F, "").showIf(() -> panel.on() && !(this instanceof SimpleHudMod));
+	private final Option.Bool panelBorder = bool("Panel Border", false).showIf(() -> panel.on() && !(this instanceof SimpleHudMod));
+	private final Option.Col panelBorderColour = colour("Panel Border Colour", 0xFF4F86E8).showIf(() -> panel.on() && panelBorder.on() && !(this instanceof SimpleHudMod));
 	/** Position as a fraction of the scaled window size. */
 	public float hx, hy;
 	/** Default position (Reset in the HUD editor). */
@@ -99,6 +106,13 @@ public abstract class HudMod extends Mod {
 		c.getMatrices().translate(absX(), absY());
 		c.getMatrices().scale(s, s);
 		try {
+			if (panel.on() && !(this instanceof SimpleHudMod)) {
+				float m = panelMargin.get(), r = panelRadius.get(), x0 = -m, y0 = dy() - m, w = width() + 2 * m, h = height() + 2 * m;
+				if (panelBorder.on()) {
+					dev.solclient.Gfx.rrectFree(c, x0 - 1, y0 - 1, w + 2, h + 2, r + 1, panelBorderColour.c());
+				}
+				dev.solclient.Gfx.rrectFree(c, x0, y0, w, h, r, panelColour.c());
+			}
 			renderHud(c, edit);
 		} finally {
 			c.getMatrices().popMatrix(); // stays balanced even if the widget throws

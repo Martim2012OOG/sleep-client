@@ -2631,23 +2631,6 @@ public final class Social {
 		return m.values();
 	}
 
-	/** TEST ONLY: asks the site for 1000 coins (needs the /dev/coins endpoint, see LOVABLE-PROMPT.md). */
-	public static void devAddCoins() {
-		action(() -> {
-			JsonObject b = new JsonObject();
-			b.addProperty("amount", 1000);
-			SolarApi.Res r = SolarApi.post("/dev/coins", b);
-			if (r.status() == 404) {
-				say("The site doesn't have /dev/coins yet (see LOVABLE-PROMPT.md)", true);
-				return;
-			}
-			if (check(r, true)) {
-				coins = Json.num(r.obj(), "coins", coins + 1000);
-				say("+1000 coins (test)", false);
-			}
-		});
-	}
-
 	// ================================================================== in-game lookup
 	private static void loadCatalogue() {
 		SolarApi.Res r = SolarApi.get("/cosmetics");

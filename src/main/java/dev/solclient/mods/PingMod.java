@@ -9,6 +9,11 @@ public class PingMod extends CounterHudMod {
 	}
 
 	@Override
+	protected boolean higherIsBetter() {
+		return false;
+	}
+
+	@Override
 	public int getIntValue() {
 		ClientPlayNetworkHandler handler = mc.getNetworkHandler();
 		if (handler == null || mc.player == null) {

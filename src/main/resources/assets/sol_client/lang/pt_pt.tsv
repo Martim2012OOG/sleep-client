@@ -2554,8 +2554,6 @@ Old Phone	Telefone Antigo
 Little Kid	Miúdo
 Grandpa	Avô
 Cave Echo	Eco da Caverna
-Realistic Liquids	Líquidos Realistas
-Clearer water, sun glints, foam on rivers, lava embers and underwater life. Four levels from light to heavy.	Água mais clara, brilhos do sol, espuma nos rios, brasas de lava e vida debaixo de água. Quatro níveis, de leve a pesado.
 Realism	Realismo
 Realistic	Realista
 Very Realistic	Muito realista
@@ -2707,7 +2705,6 @@ Never more waves than this at once, so it cannot lag.	Nunca há mais ondas do qu
 Pauses new waves while the game is below 30 fps.	Pára de criar ondas novas enquanto o jogo está abaixo de 30 fps.
 Water Colour Status	Estado da Cor da Água
 Refresh	Atualizar
-3D Realistic Water (shader)	Água Realista 3D (shader)
 Install	Instalar
 Fast Sleep Menu Background	Fundo Rápido do Menu Sleep
 The Sleep menu uses a flat dark backdrop instead of blurring the whole game every frame. No fps drop when it is open.	O menu Sleep usa um fundo escuro simples em vez de desfocar o jogo todo a cada frame. Sem quebra de fps quando está aberto.
@@ -3150,3 +3147,41 @@ Title Colour	Cor do título
 Leader Colour	Cor do líder
 My Colour	A minha cor
 Others Colour	Cor dos outros
+Capital Letters	Letras maiúsculas
+Rainbow Text	Texto arco-íris
+Brackets	Parênteses
+Text Before	Texto antes
+Text After	Texto depois
+Box	Caixa
+Side Stripe	Risca lateral
+Stripe Colour	Cor da risca
+Side Margin	Margem lateral
+Top / Bottom Margin	Margem cima / baixo
+Minimum Width	Largura mínima
+Label	Etiqueta
+Label Position	Posição da etiqueta
+After	Depois
+Before	Antes
+Smooth Number	Número suave
+Colour By Value	Cor pelo valor
+Good Colour	Cor boa
+Medium Colour	Cor média
+Bad Colour	Cor má
+Good At	Bom a partir de
+Bad At	Mau a partir de
+Panel Behind	Painel atrás
+Panel Colour	Cor do painel
+Panel Corner Radius	Cantos do painel
+Panel Margin	Margem do painel
+Panel Border	Borda do painel
+Panel Border Colour	Cor da borda do painel
+Height Range	Alcance em altura
+Number Size	Tamanho dos números
+All Blocks	Todos os blocos
+Only Danger	Só perigo
+Danger At Or Below	Perigo até
+Safe Colour	Cor segura
+Night Danger Colour	Cor de perigo à noite
+Writes the light level on the blocks around you, in red where monsters can spawn.	Escreve o nível de luz nos blocos à tua volta, a vermelho onde podem aparecer monstros.
+Monsters spawn at block light 0 in the Overworld.	Os monstros aparecem com luz de bloco 0 no mundo normal.
+Clock, biome, memory, TPS, rotation and other one-line HUDs.	Relógio, bioma, memória, TPS, rotação e outros HUDs de uma linha.

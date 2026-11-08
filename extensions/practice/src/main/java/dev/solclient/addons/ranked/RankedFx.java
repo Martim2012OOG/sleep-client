@@ -125,7 +125,9 @@ public final class RankedFx {
 			var luck = player.getStatusEffect(StatusEffects.LUCK);
 			if (luck != null && luck.getAmplifier() >= RankedServer.WIN_MARK_A && luck.getAmplifier() <= RankedServer.WIN_MARK_NONE) {
 				int a = luck.getAmplifier();
-				startEnd(m, a == RankedServer.WIN_MARK_A ? "A" : a == RankedServer.WIN_MARK_B ? "B" : "none");
+				String who = a == RankedServer.WIN_MARK_A ? "A" : a == RankedServer.WIN_MARK_B ? "B" : "none";
+				Ranked.confirmResult(m.id(), who);
+				startEnd(m, who);
 			}
 		}
 		if (endFor != null) {

@@ -39,7 +39,7 @@ public class PerformanceMod extends Mod {
 	// (new name and file: the old "fast" choice drew everything, text included, at half resolution = pixelated text; everyone starts sharp again)
 	/** Auto = on a Retina Mac the world is drawn at half size (old fast-mode FPS) while menus and text stay sharp. */
 	public final Option.Choice worldRes = choice("World Resolution", 0, "Auto", "100%", "75%", "50%")
-			.tip("Draws the 3D world smaller and stretches it, while menus and text stay sharp. Auto = half on a Retina Mac (same FPS as before, sharp text), full elsewhere.");
+			.tip("Draws the 3D world smaller and stretches it, while menus and text stay sharp. Auto = half on a Retina Mac, and full sharpness while you look at signs, holograms or maps; full elsewhere.");
 	@SuppressWarnings("unused")
 	private final Option.Action worldResStatus = action("World Resolution Now", "Refresh", () -> {
 	}, () -> dev.solclient.render.WorldScale.status);
@@ -54,8 +54,64 @@ public class PerformanceMod extends Mod {
 			case 1 -> 1F;
 			case 2 -> 0.75F;
 			case 3 -> 0.5F;
-			default -> mc.getWindow().getFramebufferWidth() >= mc.getWindow().getWidth() * 1.5F ? 0.5F : 1F; // Retina: half
+			default -> mc.getWindow().getFramebufferWidth() >= mc.getWindow().getWidth() * 1.5F && !reading(mc) ? 0.5F : 1F; // Retina: half, full when reading
 		};
+	}
+
+	private static long readCheckAt, readingUntil;
+
+	/** True while you're looking at something with words on it nearby: signs, holograms, maps. Auto then draws the world at full sharpness. */
+	private static boolean reading(net.minecraft.client.MinecraftClient mc) {
+		long now = System.currentTimeMillis();
+		if (now >= readCheckAt) {
+			readCheckAt = now + 200L;
+			try {
+				if (lookingAtText(mc)) {
+					readingUntil = now + 1500L; // stays sharp a moment, so it doesn't flicker
+				}
+			} catch (RuntimeException ignored) {
+				// only a sharpness hint
+			}
+		}
+		return now < readingUntil;
+	}
+
+	private static final double READ_RANGE = 40, READ_CONE = 0.88; // about 28 degrees around where you look
+
+	private static boolean inView(net.minecraft.util.math.Vec3d eye, net.minecraft.util.math.Vec3d look, double x, double y, double z) {
+		net.minecraft.util.math.Vec3d d = new net.minecraft.util.math.Vec3d(x - eye.x, y - eye.y, z - eye.z);
+		double len = d.length();
+		return len < READ_RANGE && len > 0.01 && d.dotProduct(look) / len > READ_CONE;
+	}
+
+	private static boolean lookingAtText(net.minecraft.client.MinecraftClient mc) {
+		if (mc.world == null || mc.player == null) {
+			return false;
+		}
+		net.minecraft.util.math.Vec3d eye = mc.player.getEyePos(), look = mc.player.getRotationVector();
+		int cx = mc.player.getBlockX() >> 4, cz = mc.player.getBlockZ() >> 4, r = 3;
+		for (int x = cx - r; x <= cx + r; x++) {
+			for (int z = cz - r; z <= cz + r; z++) {
+				if (!mc.world.getChunkManager().isChunkLoaded(x, z)) {
+					continue;
+				}
+				for (var be : mc.world.getChunk(x, z).getBlockEntities().values()) {
+					if (be instanceof net.minecraft.block.entity.SignBlockEntity || be instanceof net.minecraft.block.entity.LecternBlockEntity) {
+						var p = be.getPos();
+						if (inView(eye, look, p.getX() + .5, p.getY() + .5, p.getZ() + .5)) {
+							return true;
+						}
+					}
+				}
+			}
+		}
+		for (var e : mc.world.getEntities()) {
+			if ((e instanceof net.minecraft.entity.decoration.DisplayEntity.TextDisplayEntity || e instanceof net.minecraft.entity.decoration.ItemFrameEntity)
+					&& inView(eye, look, e.getX(), e.getY(), e.getZ())) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public final Option.Bool sharpRetina = bool("Mac: Sharp Text and Menus (Retina)", true)

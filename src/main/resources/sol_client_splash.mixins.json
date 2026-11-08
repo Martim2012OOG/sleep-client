@@ -4,7 +4,10 @@
   "package": "dev.solclient.mixin.splash",
   "compatibilityLevel": "JAVA_21",
   "client": [
-    "SplashOverlayMixin"
+    "SplashOverlayMixin",
+    "ReloadMouseMixin",
+    "ReloadKeyboardMixin",
+    "ReloadInputMixin"
   ],
   "injectors": { "defaultRequire": 0 }
 }

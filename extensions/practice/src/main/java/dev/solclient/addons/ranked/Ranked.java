@@ -360,8 +360,9 @@ public final class Ranked {
 	}
 
 	/** The host's game reports how the match ended (rounds, or a player who left). */
-	public static void reportResult(String matchId, String winner, String reason, String score) {
+	public static void reportResult(String matchId, String winner, String reason, String score, com.google.gson.JsonArray flags) {
 		JsonObject b = new JsonObject();
+		b.add("anticheat", flags == null ? new com.google.gson.JsonArray() : flags);
 		b.addProperty("winner", winner);
 		b.addProperty("reason", reason);
 		b.addProperty("score", score);
@@ -369,6 +370,13 @@ public final class Ranked {
 			SolarApi.call("POST", "/pvp/matches/" + SolarApi.enc(matchId) + "/result", b);
 			poll(true);
 		});
+	}
+
+	/** Everyone also tells the site who won, so a host can't simply report a win they didn't get. */
+	public static void confirmResult(String matchId, String winner) {
+		JsonObject b = new JsonObject();
+		b.addProperty("winner", winner);
+		async(() -> SolarApi.call("POST", "/pvp/matches/" + SolarApi.enc(matchId) + "/confirm", b));
 	}
 
 	/**

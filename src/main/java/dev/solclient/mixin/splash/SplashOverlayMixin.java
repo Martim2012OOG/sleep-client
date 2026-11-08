@@ -34,6 +34,19 @@ public abstract class SplashOverlayMixin {
 		return reloading && dev.solclient.SolClient.settings != null && dev.solclient.SolClient.settings.hideReloadScreen.on();
 	}
 
+	@Inject(method = "<init>", at = @At("TAIL"), require = 0)
+	private void sleep$passive(CallbackInfo ci) {
+		dev.solclient.FastReload.overlay = fast(reloading) ? this : null;
+	}
+
+	/** Instant reload: the game keeps running behind it (no pause in singleplayer). */
+	@Inject(method = "pausesGame", at = @At("HEAD"), cancellable = true, require = 0)
+	private void sleep$noPause(CallbackInfoReturnable<Boolean> cir) {
+		if (fast(reloading)) {
+			cir.setReturnValue(false);
+		}
+	}
+
 	/**
 	 * Instant pack reload (idea from Resource Pack Optimizer by ravineclaw, MIT): when packs are added / removed the
 	 * red Mojang screen, its 0.5 s fade-in, the 1 s minimum and the 1 s fade-out are skipped. You keep seeing the
@@ -70,8 +83,14 @@ public abstract class SplashOverlayMixin {
 		progress = MathHelper.clamp(Math.max(progress, progress * 0.8F + reload.getProgress() * 0.2F), 0.0F, 1.0F);
 		int w = context.getScaledWindowWidth();
 		context.createNewRootLayer();
+		int acc = dev.solclient.gui.Theme.accent() & 0xFFFFFF, end = MathHelper.ceil(w * progress);
 		context.fill(0, 0, w, 2, 0x60000000);
-		context.fill(0, 0, MathHelper.ceil(w * progress), 2, 0xDCFFFFFF);
+		context.fill(0, 0, end, 2, 0xDCFFFFFF);
+		context.fillGradient(0, 2, end, 6, 0x60000000 | acc, acc); // a soft glow under the line
+		// a light that runs along the bar, and a bright tip
+		int run = (int) ((now % 1100L) / 1100F * (end + 80)) - 40;
+		context.fill(Math.max(0, run), 0, Math.min(end, run + 40), 2, 0xFF000000 | acc);
+		context.fill(Math.max(0, end - 6), 0, end, 2, 0xFFFFFFFF);
 	}
 
 	@Inject(method = "render", at = @At("TAIL"), require = 0)

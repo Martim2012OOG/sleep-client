@@ -2220,18 +2220,8 @@ public class SolMenuScreen extends Screen {
 	/** Draws these options one under the other; returns the new y. */
 	private int drawOptions(DrawContext c, int mx, int my, List<Option<?>> opts, int cx0, int y, int rw) {
 		String sq = search.text().toLowerCase(Locale.ROOT).trim();
-		boolean anyHit = false;
-		for (Option<?> o : opts) {
-			if (matchesSearch(o, sq)) {
-				anyHit = true;
-				break;
-			}
-		}
 		for (int i = 0; i < opts.size(); i++) {
 			Option<?> o = opts.get(i);
-			if (matchesSearch(o, sq)) {
-				Gfx.rrect(c, cx0 - 3, y - 2, rw + 6, 26, 9, Gfx.withAlpha(Theme.accent() & 0xFFFFFF, 0x30)); // the option you searched for
-			}
 			// two on/off options next to each other (like Lunar)
 			if (o instanceof Option.Bool b1 && i + 1 < opts.size() && opts.get(i + 1) instanceof Option.Bool b2
 					&& (b1.tip == null || b1.tip.isEmpty()) && (b2.tip == null || b2.tip.isEmpty())) {
@@ -2240,24 +2230,29 @@ public class SolMenuScreen extends Screen {
 				tipFor(b2, mx, my, cx0 + half + 6, y, half, CHECK_ROW);
 				toggleRow(c, mx, my, b1.name, b1.on(), cx0, y, half, () -> b1.set(!b1.on()));
 				toggleRow(c, mx, my, b2.name, b2.on(), cx0 + half + 6, y, half, () -> b2.set(!b2.on()));
+				if (matchesSearch(b1, sq)) {
+					searchMark(c, cx0, y, half, CHECK_ROW);
+				}
+				if (matchesSearch(b2, sq)) {
+					searchMark(c, cx0 + half + 6, y, half, CHECK_ROW);
+				}
 				y += CHECK_ROW + 4;
 				i++;
 				continue;
 			}
 			int oh = drawOption(c, mx, my, o, cx0, y, rw);
-			if (anyHit && !matchesSearch(o, sq) && !(o instanceof Option.Header)) {
-				dimBlock(c, cx0 - 2, y - 2, rw + 4, oh + 4);
+			if (matchesSearch(o, sq)) {
+				searchMark(c, cx0, y, rw, oh);
 			}
 			y += oh + 4;
 		}
 		return y;
 	}
 
-	/** While searching, everything that is not the thing you searched for fades out and can't be clicked. */
-	private void dimBlock(DrawContext c, int x, int y, int w, int h) {
-		c.fill(x, y, x + w, y + h, (Theme.PANEL & 0xFFFFFF) | 0xB4000000);
-		region(x, y, w, h, () -> {
-		});
+	/** Marks the option you searched for: a thin outline exactly around its row. Everything stays clickable. */
+	private void searchMark(DrawContext c, int x, int y, int w, int h) {
+		int acc = Theme.accent() & 0xFFFFFF;
+		Gfx.rrectBorder(c, x - 1, y - 1, w + 2, h + 2, 8, Gfx.withAlpha(acc, 0x1E), Gfx.withAlpha(acc, 0xC0));
 	}
 
 	/** Height of an on / off row (checkbox + label). */

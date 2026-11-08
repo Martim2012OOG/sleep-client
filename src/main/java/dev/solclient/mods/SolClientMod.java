@@ -325,10 +325,6 @@ public class SolClientMod extends Mod {
 			}
 		}, () -> asking(askAll) ? "Click again to confirm" : "");
 
-		// ------------------------------------------------------------------ Testing
-		header("Testing");
-		action("Test coins (temporary)", "+1000 Coins", dev.solclient.social.Social::devAddCoins,
-				() -> dev.solclient.social.Social.coins < 0 ? "" : dev.solclient.social.Social.coins + " coins");
 	}
 
 	/** A font file dragged onto the window while the Sleep settings are open: becomes the "Custom" font. */

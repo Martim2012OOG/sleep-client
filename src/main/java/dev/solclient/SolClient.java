@@ -114,7 +114,6 @@ public class SolClient implements ClientModInitializer {
 		MODS.add(new dev.solclient.voice.VoiceChatMod());
 		MODS.add(new dev.solclient.mods.PersonasMod());
 		MODS.add(new dev.solclient.mods.TrustRadarMod());
-		MODS.add(new dev.solclient.mods.RealisticLiquidsMod());
 		MODS.add(new dev.solclient.mods.WavesMod());
 		MODS.add(new dev.solclient.mods.BetterVisualMod());
 		MODS.add(new dev.solclient.mods.InputOptimizerMod());
@@ -184,9 +183,9 @@ public class SolClient implements ClientModInitializer {
 		// extensions downloaded from the Sleep store (Mods > Extensions): their mods join the list here
 		dev.solclient.ext.Extensions.loadInstalled();
 		// small mods live inside one card each (fewer cards in the menu; every mod keeps its settings)
-		group(new ModGroup("Info HUD", "info_hud", "Clock, biome, light level, memory, TPS, rotation and other one-line HUDs.", Mod.Category.HUD),
+		group(new ModGroup("Info HUD", "info_hud", "Clock, biome, memory, TPS, rotation and other one-line HUDs.", Mod.Category.HUD),
 				ClockMod.class, GameTimeMod.class, SessionTimeMod.class, DayCounterMod.class, MemoryMod.class, ServerAddressMod.class,
-				PlayerCountMod.class, BiomeMod.class, LightLevelMod.class, EntityCountMod.class, ChunkPosMod.class, RotationMod.class,
+				PlayerCountMod.class, BiomeMod.class, EntityCountMod.class, ChunkPosMod.class, RotationMod.class,
 				DirectionMod.class, HealthMod.class, HungerMod.class, XpLevelMod.class, ArmourPointsMod.class, TpsDisplayMod.class,
 				PackDisplayMod.class, FriendsHudMod.class, WailaMod.class);
 		group(new ModGroup("Screen Tweaks", "screen_tweaks", "No hurt cam, no bobbing, low fire / shield, titles, boss bar and more.", Mod.Category.VISUAL),

@@ -335,12 +335,26 @@ final class DuelHud {
 		c.fillGradient(Math.round(sx), Math.round(by + bh * .3F), Math.round(sx + shownW), Math.round(by + bh), 0, alpha(0x80000000, fade));
 		double cq = seg(t, t0 + .18, t0 + .52);
 		if (cq > 0) {
-			int hs = Math.round(bw * .62F);
-			float hy = by + bh - hs - bh * .08F + (float) ((1 - outBack(cq)) * hs * .8F);
-			int ha = (int) Math.round(255 * fade * Math.min(1, cq * 3));
-			c.enableScissor(Math.round(sx), Math.round(by), Math.round(sx + shownW + lean), Math.round(by + bh));
-			dev.solclient.gui.Faces.draw(c, p.mcUsername(), Math.round(bx + bw / 2 - hs / 2F), Math.round(hy), hs, ha);
-			c.disableScissor();
+			var entity = playerEntity(p.mcUsername());
+			if (entity != null && !entity.isInvisible() && !dev.solclient.mods.HideInventoryModelMod.hides()) {
+				// the player's real 3D model from the chest up, rising into the block and turned towards the middle of the screen
+				if (fade > .5) {
+					int rx0 = Math.round(sx + lean * .5F), rx1 = Math.round(sx + shownW - lean * .5F), ry0 = Math.round(by), ry1 = Math.round(by + bh);
+					if (rx1 - rx0 > 4) {
+						float mid = (rx0 + rx1) / 2F, turn = 26F * (side == 'L' ? 1 : -1);
+						float rise = (float) ((1 - outBack(cq)) * .85);
+						net.minecraft.client.gui.screen.ingame.InventoryScreen.drawEntity(c, rx0, ry0, rx1, ry1, Math.round(bh / 1.25F), .5F + rise, mid + turn, (ry0 + ry1) / 2F,
+								entity);
+					}
+				}
+			} else {
+				int hs = Math.round(bw * .62F);
+				float hy = by + bh - hs - bh * .08F + (float) ((1 - outBack(cq)) * hs * .8F);
+				int ha = (int) Math.round(255 * fade * Math.min(1, cq * 3));
+				c.enableScissor(Math.round(sx), Math.round(by), Math.round(sx + shownW + lean), Math.round(by + bh));
+				dev.solclient.gui.Faces.draw(c, p.mcUsername(), Math.round(bx + bw / 2 - hs / 2F), Math.round(hy), hs, ha);
+				c.disableScissor();
+			}
 		}
 		// info column
 		float gapX = cl(14, vw(1.6F), 26);
@@ -388,7 +402,7 @@ final class DuelHud {
 			para(c, rx, yTier, sw, rowH, -px(11), alpha(0xDB080811, fade));
 			if (mq > .7) {
 				c.getMatrices().pushMatrix();
-				c.getMatrices().translate(rx + px(14), yTier + rowH / 2 - 8 * (mo / 9F) * 1.4F / 2);
+				c.getMatrices().translate(rx + px(14), yTier + rowH / 2 - 8 * (mo / 9F) * 1.4F);
 				c.getMatrices().scale(mo / 9F * 1.4F, mo / 9F * 1.4F);
 				c.drawItem(icon(Ranked.kit(in.kit).icon()), 0, 0);
 				c.getMatrices().popMatrix();
@@ -413,6 +427,19 @@ final class DuelHud {
 			text(c, tt, BIG, 0, -tier / 2 + px(1), tier, alpha(INK, fade), 1, 0, 0, false);
 			m.popMatrix();
 		}
+	}
+
+	/** The player in the loaded world, or null. */
+	private static net.minecraft.entity.player.PlayerEntity playerEntity(String name) {
+		var world = MinecraftClient.getInstance().world;
+		if (world != null) {
+			for (var e : world.getPlayers()) {
+				if (e.getName().getString().equalsIgnoreCase(name)) {
+					return e;
+				}
+			}
+		}
+		return null;
 	}
 
 	private static final Map<String, ItemStack> ICONS = new HashMap<>();
