@@ -100,6 +100,7 @@ public final class RankedFx {
 				startIntro(mc, m, pos);
 			}
 		}
+		reportLoaded(mc, m);
 		if (testDummyUntil > 0 && System.currentTimeMillis() > testDummyUntil) {
 			testDummyUntil = 0;
 			removeDummy(mc);
@@ -137,6 +138,39 @@ public final class RankedFx {
 				leave(mc);
 			}
 		}
+	}
+
+	private static long waitSeenAt;
+	private static int readyCooldown;
+
+	/** While the server parks you at your spawn: tells it once the arena has really loaded on your screen. */
+	private static void reportLoaded(MinecraftClient mc, Ranked.Match m) {
+		var eff = mc.player == null ? null : mc.player.getStatusEffect(StatusEffects.SLOWNESS);
+		if (m == null || eff == null || eff.getAmplifier() != RankedServer.WAIT_MARK || mc.world == null) {
+			waitSeenAt = 0;
+			return;
+		}
+		long now = System.currentTimeMillis();
+		if (waitSeenAt == 0) {
+			waitSeenAt = now;
+		}
+		if (--readyCooldown > 0 || mc.currentScreen instanceof net.minecraft.client.gui.screen.world.LevelLoadingScreen) {
+			return;
+		}
+		RankedWorld.Arena a = RankedWorld.arena(m.arena());
+		boolean chunks = a == null || loaded(mc, a.a()) && loaded(mc, a.b());
+		boolean drawn = mc.worldRenderer.isTerrainRenderComplete();
+		// very slow machines never get "complete" while chunks keep arriving: 10 s at the spawn is enough
+		if (chunks && drawn && now - waitSeenAt > 500L || now - waitSeenAt > 10_000L) {
+			readyCooldown = 20;
+			if (net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.canSend(RankedReady.ID)) {
+				net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.send(new RankedReady());
+			}
+		}
+	}
+
+	private static boolean loaded(MinecraftClient mc, RankedWorld.Spot s) {
+		return mc.world.getChunkManager().isChunkLoaded((int) Math.floor(s.x()) >> 4, (int) Math.floor(s.z()) >> 4);
 	}
 
 	private static double introT() {

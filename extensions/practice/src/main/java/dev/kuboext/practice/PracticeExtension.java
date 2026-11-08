@@ -36,6 +36,14 @@ public class PracticeExtension implements KuboExtension {
 			return; // reinstalled in the same session: the hooks below are still there
 		}
 		hooked = true;
+		net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry.playC2S().register(dev.solclient.addons.ranked.RankedReady.ID, dev.solclient.addons.ranked.RankedReady.CODEC);
+		net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.registerGlobalReceiver(dev.solclient.addons.ranked.RankedReady.ID,
+				(payload, ctx) -> dev.solclient.addons.ranked.RankedServer.markReady(ctx.player()));
+		net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents.AFTER_DAMAGE.register((e, src, base, taken, blocked) -> {
+			if (on) {
+				dev.solclient.addons.ranked.RankedServer.afterDamage(e, src, taken);
+			}
+		});
 		// Ranked PvP: the match on the host's server, eliminations instead of deaths, no griefing the arenas
 		ServerTickEvents.END_SERVER_TICK.register(s -> {
 			if (on) {

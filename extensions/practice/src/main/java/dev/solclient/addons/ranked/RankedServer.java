@@ -28,6 +28,10 @@ public final class RankedServer {
 	static final int INTRO_TICKS = 300, ROUND_TICKS = 100;
 	/** Slowness level used as the freeze: the client knows from it that the intro (254) or a round countdown (253) runs. */
 	static final int INTRO_MARK = 254, ROUND_MARK = 253;
+	/** Slowness level while waiting at your spawn for everyone to load: your game answers with {@link RankedReady} once loaded. */
+	static final int WAIT_MARK = 252;
+	/** Everyone is connected but someone never says "loaded" (very slow PC): start anyway after this long. */
+	private static final int LOAD_MAX = 25 * 20;
 	/** Luck level given to everyone when the match ends: who won. */
 	static final int WIN_MARK_A = 200, WIN_MARK_B = 201, WIN_MARK_NONE = 202;
 	private static final int WAIT_MAX = 90 * 20, ROUND_END_TICKS = 60, DONE_TICKS = 200;
@@ -41,6 +45,14 @@ public final class RankedServer {
 	private static volatile Phase phase = Phase.IDLE;
 	private static int ticks, countdown, round, scoreA, scoreB;
 	private static final Set<String> DEAD = new HashSet<>();
+	private static final Set<String> READY = java.util.concurrent.ConcurrentHashMap.newKeySet(), PARKED = new HashSet<>();
+	private static int allOnlineAt = -1, allReadyAt = -1;
+	// battle stats of the sidebar, by lower-case player name
+	private static final java.util.Map<String, Integer> HITS = new java.util.HashMap<>(), COMBO = new java.util.HashMap<>(), BEST = new java.util.HashMap<>();
+	private static final java.util.Map<String, Double> DAMAGE = new java.util.HashMap<>();
+	private static final java.util.Map<Integer, String> SIDEBAR = new java.util.HashMap<>();
+	private static int fightTicks;
+	private static int curArenaId;
 
 	private RankedServer() {
 	}
@@ -53,6 +65,22 @@ public final class RankedServer {
 		scoreA = 0;
 		scoreB = 0;
 		DEAD.clear();
+		READY.clear();
+		PARKED.clear();
+		allOnlineAt = -1;
+		allReadyAt = -1;
+		HITS.clear();
+		COMBO.clear();
+		BEST.clear();
+		DAMAGE.clear();
+		SIDEBAR.clear();
+		fightTicks = 0;
+		curArenaId = match.arena();
+	}
+
+	/** This player's game finished loading the arena. */
+	public static void markReady(ServerPlayerEntity p) {
+		READY.add(p.getName().getString().toLowerCase(Locale.ROOT));
 	}
 
 	/** The fight started (everyone was there): the site can call the match live. */
@@ -109,6 +137,9 @@ public final class RankedServer {
 			return;
 		}
 		ticks++;
+		if (phase != Phase.WAITING && ticks % 20 == 0 && phase != Phase.DONE) {
+			sidebar(s, mm);
+		}
 		switch (phase) {
 			case WAITING -> waiting(s, mm);
 			case COUNTDOWN -> {
@@ -131,6 +162,7 @@ public final class RankedServer {
 				}
 			}
 			case FIGHT -> {
+				fightTicks++;
 				// out of the arena: into the void, above the height limit, or somehow past the walls = eliminated at once
 				for (String n : allNames()) {
 					ServerPlayerEntity p = player(s, n);
@@ -168,17 +200,25 @@ public final class RankedServer {
 	private static void waiting(MinecraftServer s, Ranked.Match mm) {
 		if (ticks == 1) {
 			// a calm, fair arena: always day, no weather, no mobs, nothing dropped
-			run(s, "gamerule doDaylightCycle false");
-			run(s, "gamerule doWeatherCycle false");
-			run(s, "gamerule doMobSpawning false");
-			run(s, "gamerule keepInventory true");
-			run(s, "gamerule announceAdvancements false");
-			run(s, "gamerule showDeathMessages false");
+			run(s, "gamerule advance_time false");
+			run(s, "gamerule advance_weather false");
+			run(s, "gamerule spawn_mobs false");
+			run(s, "gamerule keep_inventory true");
+			run(s, "gamerule show_advancement_messages false");
+			run(s, "gamerule show_death_messages false");
 			run(s, "time set day");
 			run(s, "weather clear");
 			run(s, "difficulty normal");
 			run(s, "scoreboard objectives add sleep_ranked dummy");
+			run(s, "scoreboard objectives modify sleep_ranked displayname {text:\"SLEEP DUELS\",color:\"aqua\",bold:true}");
+			run(s, "scoreboard objectives modify sleep_ranked numberformat blank");
+			run(s, "scoreboard objectives setdisplay sidebar sleep_ranked");
+			RankedWorld.Arena a0 = RankedWorld.arena(mm.arena());
+			if (a0 != null) {
+				run(s, "forceload add " + (a0.x1() - 2) + " " + (a0.z1() - 2) + " " + (a0.x2() + 2) + " " + (a0.z2() + 2));
+			}
 		}
+		park(s, mm);
 		boolean allIn = true;
 		boolean anyA = false, anyB = false;
 		for (String n : team("A")) {
@@ -191,13 +231,29 @@ public final class RankedServer {
 			allIn &= in;
 			anyB |= in;
 		}
-		if (ticks % 20 == 0) {
-			run(s, "title @a actionbar {text:\"Waiting for players... " + Math.max(0, (WAIT_MAX - ticks) / 20) + "s\",color:\"gray\"}");
-			run(s, "gamemode adventure @a");
+		// the intro only starts when every game has really loaded the arena (and one second more, so nothing pops in)
+		List<String> loading = new ArrayList<>();
+		for (String n : allNames()) {
+			if (!READY.contains(n.toLowerCase(Locale.ROOT))) {
+				loading.add(n);
+			}
 		}
-		if (allIn) {
+		if (allIn && allOnlineAt < 0) {
+			allOnlineAt = ticks;
+		}
+		boolean allReady = allIn && loading.isEmpty();
+		if (allReady && allReadyAt < 0) {
+			allReadyAt = ticks;
+		} else if (!allReady) {
+			allReadyAt = -1;
+		}
+		if (ticks % 20 == 0) {
+			String what = loading.isEmpty() ? "Everyone is here!" : "Waiting for " + String.join(" & ", loading) + " to load...";
+			run(s, "title @a actionbar {text:\"" + what + "  " + Math.max(0, (allIn ? LOAD_MAX - (ticks - allOnlineAt) : WAIT_MAX - ticks) / 20) + "s\",color:\"gray\"}");
+		}
+		if (allReadyAt >= 0 && ticks - allReadyAt >= 20 || allIn && ticks - allOnlineAt > LOAD_MAX) {
 			startRound(s, true);
-		} else if (ticks > WAIT_MAX) {
+		} else if (!allIn && ticks > WAIT_MAX) {
 			// someone never came: their team loses (nobody gets points if both teams are missing someone)
 			finish(s, anyA && !anyB ? "A" : anyB && !anyA ? "B" : "none", "absent");
 		}
@@ -213,6 +269,7 @@ public final class RankedServer {
 		int id = ((Math.max(1, mm.arena()) - 1 + round - 1) % n) + 1;
 		RankedWorld.Arena arena = RankedWorld.arena(id);
 		cur = arena;
+		curArenaId = id;
 		wallsBuilt = false;
 		if (arena != null) {
 			// load the arena's chunks now; the walls are built a few ticks later (see COUNTDOWN)
@@ -232,6 +289,136 @@ public final class RankedServer {
 		}
 		phase = Phase.COUNTDOWN;
 		ticks = 0;
+		sidebar(s, mm);
+	}
+
+	/** Everyone who arrives waits at their own spawn, frozen and safe, so the arena loads around them before the intro. */
+	private static void park(MinecraftServer s, Ranked.Match mm) {
+		RankedWorld.Arena a = RankedWorld.arena(mm.arena());
+		for (String t : new String[] {"A", "B"}) {
+			List<String> names = team(t);
+			for (int i = 0; i < names.size(); i++) {
+				ServerPlayerEntity p = player(s, names.get(i));
+				if (p == null) {
+					continue;
+				}
+				String key = names.get(i).toLowerCase(Locale.ROOT), u = p.getUuidAsString();
+				if (PARKED.add(key)) {
+					RankedWorld.Spot sp = a == null ? null : "A".equals(t) ? (i == 0 ? a.a() : a.a2()) : (i == 0 ? a.b() : a.b2());
+					if (sp != null) {
+						run(s, "tp " + u + " " + sp.x() + " " + sp.y() + " " + sp.z() + " " + sp.yaw() + " 0");
+					}
+					run(s, "gamemode adventure " + u);
+					run(s, "clear " + u);
+					run(s, "attribute " + u + " minecraft:jump_strength base set 0");
+				}
+				if (ticks % 20 == 1 || p.age < 5) {
+					run(s, "effect give " + u + " minecraft:slowness 3 " + WAIT_MARK + " true");
+				}
+			}
+		}
+	}
+
+	// ---------------------------------------------------------------- the sidebar: live stats of the battle, like the PvP servers
+	private static int sum(java.util.Map<String, Integer> m, List<String> names) {
+		int v = 0;
+		for (String n : names) {
+			v += m.getOrDefault(n.toLowerCase(Locale.ROOT), 0);
+		}
+		return v;
+	}
+
+	private static int max(java.util.Map<String, Integer> m, List<String> names) {
+		int v = 0;
+		for (String n : names) {
+			v = Math.max(v, m.getOrDefault(n.toLowerCase(Locale.ROOT), 0));
+		}
+		return v;
+	}
+
+	private static String stat(String label, String a, String b) {
+		return "[{text:\"" + label + " \",color:\"gray\"},{text:\"" + a + "\",color:\"#5CA6FF\",bold:true},{text:\" - \",color:\"dark_gray\"},{text:\"" + b
+				+ "\",color:\"#FF5C6C\",bold:true}]";
+	}
+
+	private static String info(String label, String value) {
+		return "[{text:\"" + label + " \",color:\"gray\"},{text:\"" + value + "\",color:\"white\"}]";
+	}
+
+	private static int ping(MinecraftServer s, List<String> names) {
+		int total = 0, n = 0;
+		for (String name : names) {
+			ServerPlayerEntity p = player(s, name);
+			if (p != null) {
+				total += p.networkHandler.getLatency();
+				n++;
+			}
+		}
+		return n == 0 ? 0 : total / n;
+	}
+
+	private static String side(String colour, String label, int score) {
+		return "[{text:\"\u25A0 \",color:\"" + colour + "\"},{text:\"" + label + " \",color:\"white\"},{text:\"" + score + "\",color:\"" + colour + "\",bold:true}]";
+	}
+
+	private static void sidebar(MinecraftServer s, Ranked.Match mm) {
+		List<String> a = team("A"), b = team("B");
+		double da = 0, db = 0;
+		for (String n : a) {
+			da += DAMAGE.getOrDefault(n.toLowerCase(Locale.ROOT), 0D);
+		}
+		for (String n : b) {
+			db += DAMAGE.getOrDefault(n.toLowerCase(Locale.ROOT), 0D);
+		}
+		boolean two = "2v2".equals(mm.mode());
+		int secs = fightTicks / 20;
+		String blank = "{text:\" \"}";
+		List<String> lines = List.of(
+				info(mm.ranked() ? "Ranked" : "Friendly", mm.mode()),
+				info("Kit:", Ranked.kit(mm.kit()).name()),
+				info("Arena:", String.valueOf(curArenaId)),
+				info("Round:", Math.max(1, round) + " (first to " + mm.firstTo() + ")"),
+				info("Time:", String.format("%02d:%02d", secs / 60, secs % 60)),
+				blank,
+				side("#5CA6FF", two ? "Blue Team" : a.get(0), scoreA),
+				side("#FF5C6C", two ? "Red Team" : b.get(0), scoreB),
+				blank,
+				stat("Hits", String.valueOf(sum(HITS, a)), String.valueOf(sum(HITS, b))),
+				stat("Damage", String.format(Locale.ROOT, "%.1f", da), String.format(Locale.ROOT, "%.1f", db)),
+				stat("Combo", String.valueOf(max(BEST, a)), String.valueOf(max(BEST, b))),
+				stat("Ping", String.valueOf(ping(s, a)), String.valueOf(ping(s, b))),
+				blank,
+				"{text:\"sleep client\",color:\"aqua\"}");
+		for (int i = 0; i < lines.size(); i++) {
+			String l = lines.get(i);
+			if (l.equals(SIDEBAR.get(i))) {
+				continue;
+			}
+			String holder = "sl" + i;
+			if (!SIDEBAR.containsKey(i)) {
+				run(s, "scoreboard players set " + holder + " sleep_ranked " + (lines.size() - i));
+			}
+			SIDEBAR.put(i, l);
+			run(s, "scoreboard players display name " + holder + " sleep_ranked " + l);
+		}
+	}
+
+	/** Counts a landed hit for the sidebar (hits, damage, best combo: a combo ends when you get hit). */
+	public static void afterDamage(LivingEntity e, DamageSource src, float taken) {
+		if (phase != Phase.FIGHT || m == null || taken <= 0 || !(e instanceof ServerPlayerEntity v) || !(src.getAttacker() instanceof ServerPlayerEntity a) || a == v
+				|| !isArenaWorld(v.getEntityWorld().getServer())) {
+			return;
+		}
+		String ta = m.team(a.getName().getString()), tv = m.team(v.getName().getString());
+		if (ta == null || tv == null || ta.equals(tv)) {
+			return;
+		}
+		String ka = a.getName().getString().toLowerCase(Locale.ROOT), kv = v.getName().getString().toLowerCase(Locale.ROOT);
+		HITS.merge(ka, 1, Integer::sum);
+		DAMAGE.merge(ka, (double) taken / 2D, Double::sum); // in hearts
+		int c = COMBO.merge(ka, 1, Integer::sum);
+		BEST.merge(ka, c, Math::max);
+		COMBO.put(kv, 0);
 	}
 
 	/**
@@ -396,6 +583,7 @@ public final class RankedServer {
 			run(s, "title @a actionbar {text:\"" + String.join(" & ", team(winner)) + " wins  " + scoreA + " - " + scoreB
 					+ (reason.equals("quit") ? " (opponent left)" : reason.equals("absent") ? " (opponent never came)" : "") + "\",color:\"gold\"}");
 		}
+		sidebar(s, mm);
 		String id = mm.id(), score = scoreA + "-" + scoreB;
 		net.minecraft.client.MinecraftClient.getInstance().execute(() -> Ranked.reportResult(id, winner, reason, score));
 	}

@@ -14,6 +14,9 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      actions: write # para apagar os artifacts antigos
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -30,13 +33,6 @@ jobs:
           for j in extensions/*/build/libs/*.jar; do
             case "$j" in *sources*|*dev*) ;; *) [ -f "$j" ] && cp "$j" download/ ;; esac
           done
-      # Fica na página da run, em "Artifacts" (lá em baixo): clica em "sleep-client-mod" para baixar só o mod.
-      - name: Mod para descarregar
-        uses: actions/upload-artifact@v4
-        with:
-          name: sleep-client-mod
-          path: download/*.jar
-          retention-days: 30
       - name: Publicar no launcher
         env:
           GH_TOKEN: ${{ secrets.LAUNCHER_REPO_TOKEN }}
@@ -52,3 +48,24 @@ jobs:
           gh release view mods-src --repo "$REPO" >/dev/null 2>&1 || gh release create mods-src --repo "$REPO" --prerelease --title "Mod sources" --notes "Jars do client, publicados pelo CI do mod."
           gh release upload mods-src out/*.jar --repo "$REPO" --clobber
           gh workflow run mods.yml --repo "$SRC"
+      # Só fica o jar da última run: apaga os "sleep-client-mod" anteriores para não gastar o espaço de artifacts.
+      - name: Apagar artifacts antigos
+        if: always()
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO_SELF: ${{ github.repository }}
+        run: |
+          gh api --paginate "repos/$REPO_SELF/actions/artifacts?name=sleep-client-mod&per_page=100" --jq '.artifacts[].id' | while read -r id; do
+            gh api -X DELETE "repos/$REPO_SELF/actions/artifacts/$id" || true
+          done
+      # Fica na página da run, em "Artifacts" (lá em baixo): clica em "sleep-client-mod" para baixar só o mod.
+      # Vem depois de publicar e não pode falhar a run: sem espaço de artifacts no GitHub, o launcher recebe o client na mesma.
+      - name: Mod para descarregar
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: sleep-client-mod
+          path: download/*.jar
+          retention-days: 3
