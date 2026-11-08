@@ -2378,8 +2378,7 @@ public class SolMenuScreen extends Screen {
 
 	// ------------------------------------------------------------- crosshair editor
 	/**
-	 * Preview of the crosshair over two little Minecraft-style scenes: open sky and "on a player" (so the dynamic colour
-	 * can be judged). Sky, clouds, hills and the ground use the real grass and dirt textures.
+	 * Preview of the crosshair over the game's own panorama: open view and "on a player" (so the dynamic colour can be judged).
 	 */
 	private int crosshairPreview(DrawContext c, dev.solclient.mods.CrosshairMod ch, int x, int y, int rw) {
 		int h = 120, gap = 8;
@@ -2399,56 +2398,19 @@ public class SolMenuScreen extends Screen {
 		return 14 + h;
 	}
 
-	private static final Identifier PV_GRASS = Identifier.of("minecraft", "textures/block/grass_block_top.png");
-	private static final Identifier PV_DIRT = Identifier.of("minecraft", "textures/block/dirt.png");
-
-	/** One sample scene: sky gradient, clouds, two layers of hills, a row of grass and dirt, and optionally a player. */
+	/** One sample picture: the game's own title-screen panorama (whatever the current resources have), optionally with your real skin in 3D. */
 	private void previewScene(DrawContext c, int x, int y, int w, int h, boolean player) {
 		Gfx.rrectBorder(c, x - 1, y - 1, w + 2, h + 2, 4, Theme.CARD_BORDER, Theme.CARD_BORDER);
 		c.enableScissor(x, y, x + w, y + h);
-		int ground = y + h - 36;
-		c.fillGradient(x, y, x + w, ground, 0xFF5F95F0, 0xFFB5D3FA);
-		// pixel clouds
-		int[][] clouds = {{12, 14, 34}, {w / 2 + 10, 28, 40}, {w - 52, 10, 30}};
-		for (int[] cl : clouds) {
-			int cx0 = x + cl[0], cy0 = y + cl[1], cw = cl[2];
-			c.fill(cx0 + 4, cy0, cx0 + cw - 4, cy0 + 4, 0xE6FFFFFF);
-			c.fill(cx0, cy0 + 4, cx0 + cw, cy0 + 9, 0xE6FFFFFF);
-			c.fill(cx0 + 8, cy0 - 3, cx0 + cw - 12, cy0, 0xE6FFFFFF);
-		}
-		// far hills (bluish) and near hills (green), stepped like blocks
-		for (int i = 0; i < w; i += 4) {
-			int hf = 16 + (int) (Math.sin(i * 0.045 + 1.2) * 7 + Math.sin(i * 0.11) * 3);
-			c.fill(x + i, ground - hf, x + Math.min(w, i + 4), ground, 0xFF7FA672);
-		}
-		for (int i = 0; i < w; i += 4) {
-			int hn = 8 + (int) (Math.sin(i * 0.07 + 3.0) * 5 + Math.sin(i * 0.19) * 2);
-			c.fill(x + i, ground - hn, x + Math.min(w, i + 4), ground, 0xFF5E9A3E);
-		}
-		// the ground: a row of grass blocks over dirt
-		for (int i = 0; i < w; i += 18) {
-			Gfx.tex(c, PV_GRASS, x + i, ground, 18, 18, 16, 16, 0xFF79C05A);
-			Gfx.tex(c, PV_DIRT, x + i, ground + 18, 18, 18, 16, 16, 0xFFB09070);
-		}
-		c.fill(x, ground, x + w, ground + 1, 0x30000000);
+		// the middle band of one panorama face (1024 x 1024), cut to the shape of the box
+		int rh = Math.max(1, Math.round(1024F * h / w));
+		Identifier face = Identifier.of("minecraft", "textures/gui/title/background/panorama_" + (player ? 1 : 0) + ".png");
+		Gfx.texUv(c, face, x, y, w, h, 0, Math.max(0, 512 - rh / 2), 1024, rh, 1024, 1024, 0xFFFFFFFF);
 		if (player) {
-			// a little Steve, 2 pixels per texel
-			int px = x + w / 2 - 8, top = ground - 64;
-			c.fill(px, top, px + 16, top + 16, 0xFFC28E6A); // head
-			c.fill(px, top, px + 16, top + 5, 0xFF3B2A1A); // hair
-			c.fill(px + 2, top + 8, px + 6, top + 10, 0xFFFFFFFF); // eyes
-			c.fill(px + 10, top + 8, px + 14, top + 10, 0xFFFFFFFF);
-			c.fill(px + 4, top + 8, px + 6, top + 10, 0xFF5B49A8);
-			c.fill(px + 10, top + 8, px + 12, top + 10, 0xFF5B49A8);
-			c.fill(px + 5, top + 12, px + 11, top + 13, 0xFF8A5A40); // mouth
-			c.fill(px, top + 16, px + 16, top + 40, 0xFF2AA8B0); // shirt
-			c.fill(px - 8, top + 16, px, top + 40, 0xFFC28E6A); // arms
-			c.fill(px + 16, top + 16, px + 24, top + 40, 0xFFC28E6A);
-			c.fill(px - 8, top + 16, px, top + 22, 0xFF2AA8B0);
-			c.fill(px + 16, top + 16, px + 24, top + 22, 0xFF2AA8B0);
-			c.fill(px, top + 40, px + 8, top + 64, 0xFF3B3E8F); // legs
-			c.fill(px + 8, top + 40, px + 16, top + 64, 0xFF34377F);
-			c.fill(px, top + 60, px + 16, top + 64, 0xFF6B6B6B); // shoes
+			RemoteTextures.Tex skin = dev.solclient.skin.SkinChanger.myPreview();
+			if (skin != null) {
+				SkinModel3D.draw(c, skin, x + w / 2F, y + 16, 3F, 0, 0, 6, true, java.util.List.of());
+			}
 		}
 		c.disableScissor(); // the scissor of the settings list stays (scissors stack)
 	}
