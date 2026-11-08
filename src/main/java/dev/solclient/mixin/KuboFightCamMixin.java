@@ -21,6 +21,12 @@ public abstract class KuboFightCamMixin {
 
 	@Inject(method = "update", at = @At("RETURN"), require = 0)
 	private void kubo$fightCam(CallbackInfo ci) {
+		double[] cut = dev.solclient.ext.KuboApi.camera();
+		if (cut != null) {
+			this.setPos(new Vec3d(cut[0], cut[1], cut[2]));
+			this.setRotation((float) cut[3], (float) cut[4]);
+			return;
+		}
 		if (dev.solclient.gui.PhotoModeScreen.active()) {
 			double[] p = dev.solclient.gui.PhotoModeScreen.pose();
 			this.setPos(new Vec3d(p[0], p[1], p[2]));

@@ -347,7 +347,7 @@ public final class Ranked {
 		String addr = m.address;
 		mc.execute(() -> {
 			if (mc.world != null) {
-				mc.disconnectWithProgressScreen(); // leave the world / server you were in
+				quit(mc, false); // leave the world / server you were in
 			}
 			var info = new net.minecraft.client.network.ServerInfo("Sleep " + (m.ranked ? "Ranked" : "Duel"), addr, net.minecraft.client.network.ServerInfo.ServerType.OTHER);
 			net.minecraft.client.gui.screen.multiplayer.ConnectScreen.connect(new net.minecraft.client.gui.screen.TitleScreen(), mc,
@@ -369,6 +369,32 @@ public final class Ranked {
 			SolarApi.call("POST", "/pvp/matches/" + SolarApi.enc(matchId) + "/result", b);
 			poll(true);
 		});
+	}
+
+	/**
+	 * Leaves the world / server like the pause menu does (stops hosting, saves, and always ends on a real screen; the
+	 * old way left the game stuck on "Saving world"). {@code toTitle}: open the title screen afterwards.
+	 */
+	public static void quit(MinecraftClient mc, boolean toTitle) {
+		try {
+			if (dev.solclient.social.HostWorld.hosting()) {
+				dev.solclient.social.HostWorld.stop();
+			}
+		} catch (Throwable ignored) {
+			// still leave
+		}
+		boolean sp = mc.isInSingleplayer();
+		if (mc.world != null) {
+			mc.world.disconnect(net.minecraft.client.world.ClientWorld.QUITTING_MULTIPLAYER_TEXT);
+		}
+		if (sp) {
+			mc.disconnectWithSavingScreen();
+		} else {
+			mc.disconnectWithProgressScreen();
+		}
+		if (toTitle) {
+			mc.setScreen(new net.minecraft.client.gui.screen.TitleScreen());
+		}
 	}
 
 	/** The match is over for this game: stop the match rules, leave the arena after the end screen. */

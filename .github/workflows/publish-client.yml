@@ -23,6 +23,20 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
       - name: Compilar
         run: ./gradlew build -x test --no-daemon
+      - name: Juntar os jars para descarregar
+        run: |
+          mkdir -p download
+          cp $(ls build/libs/*.jar | grep -v -e sources -e dev) download/
+          for j in extensions/*/build/libs/*.jar; do
+            case "$j" in *sources*|*dev*) ;; *) [ -f "$j" ] && cp "$j" download/ ;; esac
+          done
+      # Fica na página da run, em "Artifacts" (lá em baixo): clica em "sleep-client-mod" para baixar só o mod.
+      - name: Mod para descarregar
+        uses: actions/upload-artifact@v4
+        with:
+          name: sleep-client-mod
+          path: download/*.jar
+          retention-days: 30
       - name: Publicar no launcher
         env:
           GH_TOKEN: ${{ secrets.LAUNCHER_REPO_TOKEN }}

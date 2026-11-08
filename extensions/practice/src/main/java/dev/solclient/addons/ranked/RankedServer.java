@@ -24,10 +24,12 @@ public final class RankedServer {
 		IDLE, WAITING, COUNTDOWN, FIGHT, ROUND_END, DONE
 	}
 
-	/** Intro length (ticks) = the intro page's "GO" moment; the clients see the freeze effect and play the intro with it. */
-	static final int INTRO_TICKS = 333, ROUND_TICKS = 100;
+	/** Intro length (ticks) = the intro's "FIGHT!" moment (15 s); the clients see the freeze effect and play the intro with it. */
+	static final int INTRO_TICKS = 300, ROUND_TICKS = 100;
 	/** Slowness level used as the freeze: the client knows from it that the intro (254) or a round countdown (253) runs. */
 	static final int INTRO_MARK = 254, ROUND_MARK = 253;
+	/** Luck level given to everyone when the match ends: who won. */
+	static final int WIN_MARK_A = 200, WIN_MARK_B = 201, WIN_MARK_NONE = 202;
 	private static final int WAIT_MAX = 90 * 20, ROUND_END_TICKS = 60, DONE_TICKS = 200;
 	/** World height limit: walls go up to it, and anyone above it is out at once. */
 	static final int BOTTOM_Y = -64, TOP_Y = 319;
@@ -117,9 +119,12 @@ public final class RankedServer {
 					phase = Phase.FIGHT;
 					run(s, "effect clear @a minecraft:slowness");
 					run(s, "attribute @a minecraft:jump_strength base reset");
-					run(s, "title @a times 0 20 10");
-					run(s, "title @a title {text:\"FIGHT!\",color:\"red\",bold:true}");
-					run(s, "execute as @a at @s run playsound minecraft:entity.ender_dragon.growl master @s ~ ~ ~ 0.6 1.4");
+					if (round > 1) {
+						// round 1: the intro on every client shows FIGHT! with its own sound
+						run(s, "title @a times 0 20 10");
+						run(s, "title @a title {text:\"FIGHT!\",color:\"red\",bold:true}");
+						run(s, "execute as @a at @s run playsound minecraft:entity.ender_dragon.growl master @s ~ ~ ~ 0.6 1.4");
+					}
 				} else if (round > 1 && countdown % 20 == 0 && countdown <= 60) {
 					run(s, "title @a title {text:\"" + countdown / 20 + "\",color:\"gold\",bold:true}");
 					run(s, "execute as @a at @s run playsound minecraft:block.note_block.hat master @s ~ ~ ~ 1 1.2");
@@ -382,12 +387,14 @@ public final class RankedServer {
 		ticks = 0;
 		run(s, "effect clear @a");
 		run(s, "attribute @a minecraft:jump_strength base reset");
+		// tells every client who won, at once (no need to wait for the site): an invisible Luck effect whose level is the result
+		int mark = "A".equals(winner) ? WIN_MARK_A : "B".equals(winner) ? WIN_MARK_B : WIN_MARK_NONE;
+		run(s, "effect give @a minecraft:luck 15 " + mark + " true");
 		run(s, "gamemode adventure @a");
 		if (!"none".equals(winner)) {
-			run(s, "title @a times 10 80 20");
-			run(s, "title @a subtitle {text:\"" + scoreA + " - " + scoreB + (reason.equals("quit") ? " (opponent left)" : reason.equals("absent") ? " (opponent never came)" : "") + "\",color:\"white\"}");
-			run(s, "title @a title {text:\"" + String.join(" & ", team(winner)) + " WINS!\",color:\"gold\",bold:true}");
-			run(s, "execute as @a at @s run playsound minecraft:ui.toast.challenge_complete master @s ~ ~ ~ 1 1");
+			// the clients show the big VICTORY / DEFEAT screen; this line is only a fallback
+			run(s, "title @a actionbar {text:\"" + String.join(" & ", team(winner)) + " wins  " + scoreA + " - " + scoreB
+					+ (reason.equals("quit") ? " (opponent left)" : reason.equals("absent") ? " (opponent never came)" : "") + "\",color:\"gold\"}");
 		}
 		String id = mm.id(), score = scoreA + "-" + scoreB;
 		net.minecraft.client.MinecraftClient.getInstance().execute(() -> Ranked.reportResult(id, winner, reason, score));

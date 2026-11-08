@@ -79,7 +79,7 @@ public final class RankedWorld {
 		// leave first (the old copy may be the world you are in), then replace it off the render thread
 		mc.execute(() -> {
 			if (mc.world != null) {
-				mc.disconnectWithProgressScreen();
+				Ranked.quit(mc, false);
 			}
 			Thread t = new Thread(() -> install(saves, start), "sleep-arena-install");
 			t.setDaemon(true);

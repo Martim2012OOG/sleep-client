@@ -2,38 +2,54 @@ package dev.solclient.addons.ranked;
 
 import dev.solclient.Gfx;
 import dev.solclient.Lang;
-import dev.solclient.video.HtmlOverlay;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import dev.solclient.ext.KuboApi;
 import java.util.List;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.input.KeyInput;
+import net.minecraft.client.option.Perspective;
 import net.minecraft.client.sound.PositionedSoundInstance;
+import net.minecraft.client.sound.SoundInstance;
 import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.math.Vec3d;
 
 /**
- * What the players see: "match found", the searching pill, the duel intro (your intro page through MCEF, in sync with
- * the server's freeze; a simple drawn VS screen without MCEF) and the victory / defeat screen with the ELO change.
+ * What the players see: "match found", the searching pill, the duel intro and the victory screen. The intro works like
+ * the intro page (duelo-intro-best.html) but in Minecraft: the real arena and players filmed by {@link RankedCinema},
+ * the page's graphics drawn by {@link DuelHud}, and its music + 3-2-1 (one track mixed on the page's beats). It starts
+ * when the server freezes everyone for the intro and ends on FIGHT!, exactly when the server lets you move.
+ * The victory screen starts the moment the server says who won.
  */
 public final class RankedFx {
-
-	private static HtmlOverlay page;
-	private static String pageFor;
-	private static boolean injected;
-	private static long injectAt;
-	private static long endShownAt, leaveAt;
-	private static Ranked.Match endMatch;
-	private static long foundAt;
 
 	private RankedFx() {
 	}
 
+	// ------------------------------------------------------------------ state
+	private static String introFor;
+	private static long introStartMs;
+	private static RankedCinema cinema;
+	private static DuelHud.Info info;
+	private static boolean introOn, camOn, soundStarted;
+	private static Perspective prevPerspective;
+	private static boolean prevHudHidden, savedView;
+
+	private static String endFor;
+	private static String endWinner;
+	private static boolean endWon, endNone;
+	private static long endShownAt, leaveAt;
+	private static boolean endSoundPlayed;
+	private static Ranked.Match endMatch;
+	private static float[] leaveBox;
+
 	static void found(Ranked.Match m) {
-		foundAt = System.currentTimeMillis();
 		MinecraftClient mc = MinecraftClient.getInstance();
 		mc.getSoundManager().play(PositionedSoundInstance.ui(SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, 1.4F, 0.9F));
 		dev.solclient.social.Social.say(Lang.tr("Match found! ", "Partida encontrada! ") + names(m.teamA()) + " vs " + names(m.teamB())
@@ -41,13 +57,13 @@ public final class RankedFx {
 						: Lang.tr(" - joining the host...", " - a entrar no host...")), false);
 	}
 
+	/** The site's result arrived (ELO change); opens the victory screen if the server's signal was missed. */
 	static void showEnd(Ranked.Match m) {
 		endMatch = m;
-		endShownAt = System.currentTimeMillis();
-		leaveAt = endShownAt + 12_000L;
-		if (page != null && injected && m.winner() != null && !"none".equals(m.winner())) {
-			page.js("try{window.DuelIntro.config.pointsWin=" + Math.abs(m.myChange()) + ";window.DuelIntro.victory('" + m.winner() + "')}catch(e){}");
+		if (m.id().equals(endFor) || m.id().equals(lastEnded) || m.winner() == null) {
+			return;
 		}
+		startEnd(m, m.winner());
 	}
 
 	private static String names(List<Ranked.Player> t) {
@@ -61,18 +77,304 @@ public final class RankedFx {
 		return sb.toString();
 	}
 
-	/** Client tick: leave the arena a while after the end screen. */
+	static String kitName(String id) {
+		return Ranked.kit(id).name();
+	}
+
+	private static DuelHud.Info infoOf(Ranked.Match m, String local) {
+		String other = "A".equals(local) ? "B" : "A";
+		return new DuelHud.Info(m.ranked() ? "Ranked match" : "Friendly duel", "Arena " + m.arena(), m.mode(), m.kit(), local, other,
+				"A".equals(local) ? m.teamA() : m.teamB(), "A".equals(local) ? m.teamB() : m.teamA(), m.ranked() ? 2 : m.firstTo());
+	}
+
+	// ------------------------------------------------------------------ client tick
 	public static void tick(MinecraftClient mc) {
-		if (leaveAt > 0 && System.currentTimeMillis() > leaveAt) {
-			leaveAt = 0;
-			Ranked.afterMatch();
-			closePage();
-			if (mc.world != null && (mc.getServer() != null && Ranked.WORLD.equals(worldName(mc)) || mc.getServer() == null && mc.getCurrentServerEntry() != null
-					&& dev.solclient.social.KuboRelay.isRelayAddress(mc.getCurrentServerEntry().address))) {
-				mc.disconnectWithProgressScreen();
+		Ranked.Match m = Ranked.match;
+		var player = mc.player;
+		// the intro starts when the server's intro freeze is on you
+		if (m != null && player != null && !m.id().equals(introFor) && m.has(Ranked.me())) {
+			var eff = player.getStatusEffect(StatusEffects.SLOWNESS);
+			if (eff != null && eff.getAmplifier() == RankedServer.INTRO_MARK) {
+				int total = (RankedServer.INTRO_TICKS / 20 + 1) * 20;
+				float pos = Math.max(0F, (total - eff.getDuration()) / 20F);
+				startIntro(mc, m, pos);
+			}
+		}
+		if (testDummyUntil > 0 && System.currentTimeMillis() > testDummyUntil) {
+			testDummyUntil = 0;
+			removeDummy(mc);
+		}
+		if (introOn) {
+			double t = introT();
+			if (t >= RankedCinema.POV && camOn) {
+				// your own eyes now: give the camera back, looking at your opponent
+				stopCamera(mc, true);
+			}
+			if (t >= RankedCinema.GO && mc.currentScreen instanceof Stage) {
+				mc.setScreen(null); // FIGHT!: you can move
+				restoreView(mc);
+			}
+			if (t >= RankedCinema.END) {
+				introOn = false;
+				restoreView(mc);
+			}
+		}
+		// the end: the server's Luck level says who won
+		if (m != null && player != null && !m.id().equals(endFor) && !m.id().equals(lastEnded) && m.has(Ranked.me())) {
+			var luck = player.getStatusEffect(StatusEffects.LUCK);
+			if (luck != null && luck.getAmplifier() >= RankedServer.WIN_MARK_A && luck.getAmplifier() <= RankedServer.WIN_MARK_NONE) {
+				int a = luck.getAmplifier();
+				startEnd(m, a == RankedServer.WIN_MARK_A ? "A" : a == RankedServer.WIN_MARK_B ? "B" : "none");
+			}
+		}
+		if (endFor != null) {
+			double vt = (System.currentTimeMillis() - endShownAt) / 1000.0;
+			if (!endSoundPlayed && !endNone && vt >= (endWon ? .74 - .062 : .74 - .284)) {
+				endSoundPlayed = true;
+				play(mc, endWon ? "duel.win" : "duel.lose");
+			}
+			if (leaveAt > 0 && System.currentTimeMillis() > leaveAt) {
+				leave(mc);
 			}
 		}
 	}
+
+	private static double introT() {
+		return (System.currentTimeMillis() - introStartMs) / 1000.0;
+	}
+
+	// ------------------------------------------------------------------ test (/ranked intro, /ranked victory)
+	private static net.minecraft.client.network.OtherClientPlayerEntity dummy;
+
+	private static Ranked.Match testMatch(MinecraftClient mc, String kit) {
+		String me = Ranked.me();
+		Ranked.Player a = new Ranked.Player("", me, me, "", 1312, "LT4");
+		Ranked.Player b = new Ranked.Player("", "Steve", "Steve", "", 1405, "HT4");
+		return new Ranked.Match("test-" + System.currentTimeMillis(), true, "1v1", kit, 7, "", me, null, "live", List.of(a), List.of(b), null, 0, 2);
+	}
+
+	/** A dummy opponent (only on your screen) 12 blocks in front of you, looking at you. */
+	private static Vec3d spawnDummy(MinecraftClient mc) {
+		removeDummy(mc);
+		var p = mc.player;
+		double yaw = Math.toRadians(p.getYaw());
+		Vec3d at = new Vec3d(p.getX() - Math.sin(yaw) * 12, p.getY(), p.getZ() + Math.cos(yaw) * 12);
+		try {
+			dummy = new net.minecraft.client.network.OtherClientPlayerEntity(mc.world, new com.mojang.authlib.GameProfile(java.util.UUID.randomUUID(), "Steve"));
+			dummy.refreshPositionAndAngles(at.x, at.y, at.z, p.getYaw() + 180F, 0F);
+			dummy.setHeadYaw(p.getYaw() + 180F);
+			dummy.setBodyYaw(p.getYaw() + 180F);
+			mc.world.addEntity(dummy);
+		} catch (Throwable t) {
+			dummy = null;
+		}
+		return at;
+	}
+
+	private static void removeDummy(MinecraftClient mc) {
+		if (dummy != null && mc.world != null) {
+			mc.world.removeEntity(dummy.getId(), net.minecraft.entity.Entity.RemovalReason.DISCARDED);
+		}
+		dummy = null;
+	}
+
+	/** Plays the intro here, against a dummy (nothing is sent anywhere). */
+	public static void testIntro(MinecraftClient mc, String kit) {
+		if (mc.player == null || mc.world == null) {
+			return;
+		}
+		Ranked.Match m = testMatch(mc, kit);
+		Vec3d op = spawnDummy(mc);
+		java.util.Map<String, Vec3d> pos = new java.util.HashMap<>();
+		pos.put(Ranked.me().toLowerCase(java.util.Locale.ROOT), new Vec3d(mc.player.getX(), mc.player.getY(), mc.player.getZ()));
+		pos.put("steve", op);
+		introFor = m.id();
+		introStartMs = System.currentTimeMillis();
+		info = infoOf(m, "A");
+		cinema = RankedCinema.of(m, "A", pos);
+		introOn = true;
+		saveView(mc);
+		mc.options.hudHidden = true;
+		if (cinema != null) {
+			camOn = true;
+			KuboApi.INSTANCE.cameraOverride(RankedFx::cameraPose);
+		}
+		mc.setScreen(new Stage(false));
+		play(mc, "duel.intro");
+		testDummyUntil = System.currentTimeMillis() + 17_000L;
+	}
+
+	/** Shows the victory (won) or defeat screen here. */
+	public static void testEnd(MinecraftClient mc, boolean won) {
+		if (mc.player == null) {
+			return;
+		}
+		Ranked.Match m = testMatch(mc, "sword");
+		startEnd(m, won ? "A" : "B");
+	}
+
+	private static long testDummyUntil;
+
+	private static void startIntro(MinecraftClient mc, Ranked.Match m, float pos) {
+		introFor = m.id();
+		String local = m.team(Ranked.me());
+		if (local == null || pos >= RankedCinema.GO) {
+			return;
+		}
+		introStartMs = System.currentTimeMillis() - Math.round(pos * 1000);
+		info = infoOf(m, local);
+		cinema = RankedCinema.of(m, local);
+		introOn = true;
+		soundStarted = false;
+		saveView(mc);
+		mc.options.hudHidden = true;
+		if (cinema != null && pos < RankedCinema.POV) {
+			camOn = true;
+			KuboApi.INSTANCE.cameraOverride(RankedFx::cameraPose);
+		}
+		mc.setScreen(new Stage(false));
+		if (pos < 0.6F) {
+			soundStarted = true;
+			play(mc, "duel.intro");
+		}
+	}
+
+	private static void saveView(MinecraftClient mc) {
+		if (!savedView) {
+			savedView = true;
+			prevPerspective = mc.options.getPerspective();
+			prevHudHidden = mc.options.hudHidden;
+		}
+	}
+
+	private static void restoreView(MinecraftClient mc) {
+		if (camOn) {
+			stopCamera(mc, false);
+		}
+		if (savedView) {
+			savedView = false;
+			mc.options.setPerspective(prevPerspective == null ? Perspective.FIRST_PERSON : prevPerspective);
+			mc.options.hudHidden = prevHudHidden;
+		}
+	}
+
+	private static void stopCamera(MinecraftClient mc, boolean lookAtOpponent) {
+		camOn = false;
+		KuboApi.INSTANCE.cameraOverride(null);
+		mc.options.setPerspective(Perspective.FIRST_PERSON);
+		if (lookAtOpponent && cinema != null && mc.player != null) {
+			Vec3d o = cinema.opponentHead();
+			if (o != null) {
+				Vec3d d = o.subtract(mc.player.getEyePos());
+				mc.player.setYaw((float) Math.toDegrees(Math.atan2(-d.x, d.z)));
+				mc.player.setPitch((float) -Math.toDegrees(Math.atan2(d.y, Math.sqrt(d.x * d.x + d.z * d.z))));
+			}
+		}
+	}
+
+	/** Called every frame by the game's camera while the intro / victory camera is on. */
+	private static double[] cameraPose() {
+		MinecraftClient mc = MinecraftClient.getInstance();
+		if (endFor != null && endCam != null) {
+			double vt = (System.currentTimeMillis() - endShownAt) / 1000.0;
+			RankedCinema.Shot s = RankedCinema.victory(endCam, endCamYaw, vt);
+			double shake = .12 * Math.exp(-vt * 5);
+			return RankedCinema.pose(s, shake, vt);
+		}
+		if (!introOn || cinema == null) {
+			return null;
+		}
+		double t = introT();
+		RankedCinema.Shot s = cinema.at(t);
+		if (s == null) {
+			return null;
+		}
+		// third person to see yourself, first person when the camera is about to enter your head
+		boolean near = mc.player != null && s.p().distanceTo(mc.player.getEyePos()) < 2.2;
+		Perspective want = near ? Perspective.FIRST_PERSON : Perspective.THIRD_PERSON_BACK;
+		if (mc.options.getPerspective() != want) {
+			mc.options.setPerspective(want);
+		}
+		return RankedCinema.pose(s, RankedCinema.fx(t)[2], t);
+	}
+
+	private static void play(MinecraftClient mc, String id) {
+		try {
+			SoundEvent ev = SoundEvent.of(Identifier.of("kubo_ext_practice", id));
+			mc.getSoundManager().play(new PositionedSoundInstance(ev.id(), net.minecraft.sound.SoundCategory.MASTER, 1F, 1F,
+					SoundInstance.createRandom(), false, 0, SoundInstance.AttenuationType.NONE, 0, 0, 0, true));
+		} catch (Throwable t) {
+			System.err.println("[Sleep] duel sound " + id + ": " + t);
+		}
+	}
+
+	// ------------------------------------------------------------------ the end
+	private static Vec3d endCam;
+	private static float endCamYaw;
+
+	private static void startEnd(Ranked.Match m, String winner) {
+		MinecraftClient mc = MinecraftClient.getInstance();
+		endFor = m.id();
+		endMatch = m;
+		endWinner = winner;
+		String local = m.team(Ranked.me());
+		endNone = "none".equals(winner) || local == null;
+		endWon = !endNone && winner.equals(local);
+		endShownAt = System.currentTimeMillis();
+		leaveAt = endShownAt + 14_000L;
+		endSoundPlayed = false;
+		if (introOn) {
+			introOn = false;
+			restoreView(mc);
+		}
+		if (local != null) {
+			info = infoOf(m, local);
+		}
+		// the camera goes in front of the winner (when they're still in the world)
+		endCam = null;
+		if (!endNone && mc.world != null) {
+			List<Ranked.Player> ws = "A".equals(winner) ? m.teamA() : m.teamB();
+			for (PlayerEntity e : mc.world.getPlayers()) {
+				if (!ws.isEmpty() && e.getName().getString().equalsIgnoreCase(ws.get(0).mcUsername())) {
+					endCam = new Vec3d(e.getX(), e.getY(), e.getZ());
+					endCamYaw = e.getBodyYaw();
+				}
+			}
+		}
+		saveView(mc);
+		mc.options.hudHidden = true;
+		if (endCam != null) {
+			camOn = true;
+			mc.options.setPerspective(Perspective.THIRD_PERSON_BACK);
+			KuboApi.INSTANCE.cameraOverride(RankedFx::cameraPose);
+		}
+		if (info != null) {
+			mc.setScreen(new Stage(true));
+		}
+	}
+
+	/** LEAVE / ESC / after 14 s: back to the title screen (saving the world properly). */
+	static void leave(MinecraftClient mc) {
+		leaveAt = 0;
+		Ranked.afterMatch();
+		boolean inArena = mc.world != null && (mc.getServer() != null && Ranked.WORLD.equals(worldName(mc)) || mc.getServer() == null
+				&& mc.getCurrentServerEntry() != null && dev.solclient.social.KuboRelay.isRelayAddress(mc.getCurrentServerEntry().address));
+		if (endFor != null) {
+			lastEnded = endFor; // never shown twice
+		}
+		endFor = null;
+		endCam = null;
+		restoreView(mc);
+		if (mc.currentScreen instanceof Stage) {
+			mc.setScreen(null);
+		}
+		if (inArena) {
+			Ranked.quit(mc, true);
+		}
+	}
+
+	/** The last match whose victory screen was shown (never shown twice). */
+	private static String lastEnded;
 
 	private static String worldName(MinecraftClient mc) {
 		try {
@@ -82,12 +384,12 @@ public final class RankedFx {
 		}
 	}
 
-	// ---------------------------------------------------------------- drawing (last on the HUD)
+	// ------------------------------------------------------------------ drawing
+	/** HUD (when no screen of ours is open): the searching pill, and FIGHT! after the intro screen closed. */
 	public static void render(DrawContext c) {
 		MinecraftClient mc = MinecraftClient.getInstance();
 		int w = mc.getWindow().getScaledWidth(), h = mc.getWindow().getScaledHeight();
 		Ranked.Match m = Ranked.match;
-		// searching pill
 		if (!"idle".equals(Ranked.queueState) && m == null) {
 			long s = (System.currentTimeMillis() - Ranked.queuedAt) / 1000;
 			String t = ("waiting_teammate".equals(Ranked.queueState) ? Lang.tr("Waiting for your teammate", "À espera do teu colega")
@@ -98,154 +400,80 @@ public final class RankedFx {
 			Gfx.circle(c, x + 9, 14, 2.5F + (float) Math.sin(ph * Math.PI * 2) * 0.8F, 0xFFFF5A5A);
 			Gfx.text(c, t, x + 16, 10, 0xFFFFFFFF);
 		}
-		if (m == null) {
-			return;
+		if (introOn && !(mc.currentScreen instanceof Stage) && info != null) {
+			DuelHud.frame(w, h);
+			DuelHud.intro(c, info, introT());
 		}
-		// the intro, while the server's intro freeze runs
-		var player = mc.player;
-		var eff = player == null ? null : player.getStatusEffect(StatusEffects.SLOWNESS);
-		boolean intro = eff != null && eff.getAmplifier() == RankedServer.INTRO_MARK && m.has(Ranked.me());
-		if (intro) {
-			float pos = Math.max(0F, (RankedServer.INTRO_TICKS - eff.getDuration()) / 20F);
-			if (!m.id().equals(pageFor)) {
-				closePage();
-				pageFor = m.id();
-				page = HtmlOverlay.open(introUrl(m));
-				injected = false;
-				injectAt = System.currentTimeMillis() + 600;
-			}
-			if (page != null) {
-				if (!injected && page.ready() && System.currentTimeMillis() > injectAt) {
-					injected = true;
-					page.js(introJs(m, pos));
+	}
+
+	/** Our full-screen stage (intro until FIGHT!, then the victory screen): no background, the game keeps running. */
+	static final class Stage extends Screen {
+		private final boolean end;
+
+		Stage(boolean end) {
+			super(Text.literal(end ? "Victory" : "Duel"));
+			this.end = end;
+		}
+
+		@Override
+		public boolean shouldPause() {
+			return false;
+		}
+
+		@Override
+		public boolean shouldCloseOnEsc() {
+			return false;
+		}
+
+		@Override
+		public void renderBackground(DrawContext c, int mx, int my, float delta) {
+			// the world stays visible
+		}
+
+		@Override
+		public void render(DrawContext c, int mx, int my, float delta) {
+			DuelHud.frame(width, height);
+			if (end) {
+				if (info == null) {
+					return;
 				}
-				page.draw(c);
-			} else {
-				drawVs(c, m, w, h, pos);
+				double vt = (System.currentTimeMillis() - endShownAt) / 1000.0;
+				int delta2 = endMatch != null && endMatch.myChange() != 0 && endMatch.ranked() ? endMatch.myChange() : 0;
+				Ranked.Match live = Ranked.match;
+				if (live != null && live.id().equals(endMatch == null ? "" : endMatch.id()) && live.myChange() != 0 && live.ranked()) {
+					delta2 = live.myChange();
+				}
+				DuelHud.bars(c, (float) (RankedCinema.out3(RankedCinema.seg(vt, 0, .6)) * 6));
+				leaveBox = DuelHud.victory(c, info, endWinner == null ? "none" : endWinner, endWon, endNone, delta2, vt, mx, my);
+				double flash = Math.min(.95, .9 * Math.exp(-vt * 4.5));
+				DuelHud.flashFade(c, flash * .6, 0);
+				return;
 			}
-			return;
-		}
-		// end screen
-		Ranked.Match e = endMatch;
-		if (e != null && System.currentTimeMillis() - endShownAt < 10_000L) {
-			if (page != null && injected) {
-				page.draw(c);
+			if (info == null) {
+				return;
 			}
-			drawEnd(c, e, w, h);
-		} else if (page != null && endMatch != null) {
-			closePage();
+			double t = introT();
+			DuelHud.intro(c, info, t);
+			double[] fx = RankedCinema.fx(t);
+			DuelHud.flashFade(c, fx[0], fx[1]);
 		}
-	}
 
-	private static void closePage() {
-		if (page != null) {
-			page.close();
-			page = null;
-		}
-		pageFor = null;
-		injected = false;
-	}
-
-	static String kitName(String id) {
-		for (Ranked.Kit k : Ranked.KITS) {
-			if (k.id().equals(id)) {
-				return k.name();
+		@Override
+		public boolean mouseClicked(Click click, boolean doubled) {
+			if (end && leaveBox != null && click.x() >= leaveBox[0] && click.x() < leaveBox[0] + leaveBox[2] && click.y() >= leaveBox[1]
+					&& click.y() < leaveBox[1] + leaveBox[3]) {
+				leave(MinecraftClient.getInstance());
+				return true;
 			}
+			return true;
 		}
-		return id;
-	}
 
-	private static String introUrl(Ranked.Match m) {
-		try {
-			Path f = FabricLoader.getInstance().getConfigDir().resolve("kubo").resolve("duel_intro.html");
-			Files.createDirectories(f.getParent());
-			try (InputStream in = RankedFx.class.getResourceAsStream("/kubo_practice/duel_intro.html")) {
-				Files.write(f, in.readAllBytes());
+		@Override
+		public boolean keyPressed(KeyInput input) {
+			if (end && input.key() == 256) {
+				leave(MinecraftClient.getInstance());
 			}
-			return f.toUri() + "?mode=" + m.mode() + "&local=" + (m.team(Ranked.me()) == null ? "A" : m.team(Ranked.me()));
-		} catch (Exception e) {
-			return "about:blank";
-		}
-	}
-
-	private static String js(String s) {
-		return "'" + (s == null ? "" : s.replace("\\", "\\\\").replace("'", "\\'")) + "'";
-	}
-
-	/** Puts the real players, tiers, arena and kit in the intro page, then plays it from the server's moment. */
-	private static String introJs(Ranked.Match m, float pos) {
-		StringBuilder sb = new StringBuilder("(function(){try{var D=window.DuelIntro,C=D.config;C.testUI=false;['#ui','#bmenu','#start'].forEach(function(q){var e=document.querySelector(q);if(e){e.hidden=true;e.style.display='none';}});");
-		sb.append("C.mode=").append(js(m.mode())).append(";C.queue=").append(js(m.ranked() ? "Ranked match" : "Friendly duel")).append(";C.arena=").append(js("Arena " + m.arena()))
-				.append(";C.round='ROUND 1';C.gamemode=").append(js(m.kit())).append(";");
-		sb.append("function mk(t,p){var o=Object.assign({},t);o.name=p.n;o.title=p.t+' "+ kitName(m.kit()).replace("'", "") + "';o.rank=p.t;o.elo=p.e;o.tiers=Object.assign({},t.tiers);o.tiers[C.gamemode]=p.t;o.skin=null;o.position=0;o.region='';o.rankTitle=p.t+' · '+p.e+' ELO';o.points=p.e;return o;}");
-		for (String t : new String[] {"A", "B"}) {
-			List<Ranked.Player> ps = "A".equals(t) ? m.teamA() : m.teamB();
-			sb.append("var T").append(t).append("=C.teams.").append(t).append(".players;C.teams.").append(t).append(".players=[");
-			for (int i = 0; i < ps.size(); i++) {
-				Ranked.Player p = ps.get(i);
-				sb.append(i > 0 ? "," : "").append("mk(T").append(t).append("[").append(Math.min(i, 1)).append("],{n:").append(js(p.mcUsername())).append(",t:").append(js(p.tier()))
-						.append(",e:").append(p.elo()).append("})");
-			}
-			sb.append("];");
-		}
-		sb.append("D.play(").append(String.format(java.util.Locale.ROOT, "%.2f", pos)).append(");}catch(e){console.log(e)}})()");
-		return sb.toString();
-	}
-
-	/** Without MCEF: a drawn VS screen with the names, tiers and the countdown. */
-	private static void drawVs(DrawContext c, Ranked.Match m, int w, int h, float pos) {
-		float k = Math.min(1F, pos / 0.6F);
-		Gfx.fill(c, 0, 0, w, h, Gfx.withAlpha(0x05060C, (int) (200 * k)));
-		Gfx.gradientH(c, 0, h / 2 - 40, w / 2, 80, 0x003B8CFF, 0xAA3B8CFF);
-		Gfx.gradientH(c, w / 2, h / 2 - 40, w / 2, 80, 0xAAFF3B4E, 0x00FF3B4E);
-		var tr = MinecraftClient.getInstance().textRenderer;
-		int slide = (int) ((1F - k) * 60);
-		team(c, m.teamA(), w / 4 - slide, h / 2 - 18);
-		team(c, m.teamB(), w * 3 / 4 + slide, h / 2 - 18);
-		big(c, "VS", w / 2, h / 2 - 12, 3F, 0xFFFFFFFF);
-		String top = (m.ranked() ? "RANKED " : "DUEL ") + m.mode().toUpperCase() + " · " + kitName(m.kit()).toUpperCase() + " · ARENA " + m.arena();
-		big(c, top, w / 2, h / 2 - 70, 1.4F, 0xFFFFCF4A);
-		int left = (int) Math.ceil(RankedServer.INTRO_TICKS / 20F - pos);
-		if (left <= 3 && left > 0) {
-			big(c, String.valueOf(left), w / 2, h / 2 + 50, 4F, 0xFFFFFFFF);
-		}
-	}
-
-	private static void team(DrawContext c, List<Ranked.Player> ps, int cx, int y) {
-		for (int i = 0; i < ps.size(); i++) {
-			var p = ps.get(i);
-			big(c, p.mcUsername(), cx, y + i * 30, 2F, 0xFFFFFFFF);
-			big(c, p.tier() + "  ·  " + p.elo() + " ELO", cx, y + i * 30 + 18, 1F, Ranked.tierColour(p.tier()));
-		}
-	}
-
-	private static void big(DrawContext c, String s, int cx, int y, float sc, int col) {
-		var tr = MinecraftClient.getInstance().textRenderer;
-		Text t = Text.literal(s).styled(st -> st.withBold(true));
-		c.getMatrices().pushMatrix();
-		c.getMatrices().translate(cx, y);
-		c.getMatrices().scale(sc, sc);
-		c.drawText(tr, t, -tr.getWidth(t) / 2, 0, col, true);
-		c.getMatrices().popMatrix();
-	}
-
-	private static void drawEnd(DrawContext c, Ranked.Match m, int w, int h) {
-		String mine = m.team(Ranked.me());
-		if (m.winner() == null || mine == null) {
-			return;
-		}
-		boolean won = mine.equals(m.winner());
-		boolean none = "none".equals(m.winner()) || "cancelled".equals(m.status());
-		float k = Math.min(1F, (System.currentTimeMillis() - endShownAt) / 400F);
-		int y = h / 2 - 60;
-		Gfx.fill(c, 0, y - 8, w, y + 70, Gfx.withAlpha(0x05060C, (int) (170 * k)));
-		big(c, none ? Lang.tr("NO CONTEST", "SEM RESULTADO") : won ? Lang.tr("VICTORY", "VITÓRIA") : Lang.tr("DEFEAT", "DERROTA"), w / 2, y, 3.5F * (0.8F + 0.2F * k),
-				none ? 0xFFB0B4C0 : won ? 0xFFFFCF4A : 0xFFFF4E5E);
-		if (m.ranked() && !none) {
-			String ch = (m.myChange() >= 0 ? "+" : "") + m.myChange() + " ELO";
-			var r = Ranked.rating(m.kit(), m.mode());
-			big(c, ch + (r != null ? "  ·  " + r.tier() + " " + kitName(m.kit()) + " (" + r.elo() + ")" : ""), w / 2, y + 42, 1.3F,
-					m.myChange() >= 0 ? 0xFF55FF7F : 0xFFFF6B6B);
+			return true;
 		}
 	}
 }

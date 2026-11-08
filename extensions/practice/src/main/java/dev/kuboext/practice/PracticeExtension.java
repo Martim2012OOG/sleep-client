@@ -75,7 +75,23 @@ public class PracticeExtension implements KuboExtension {
 					var mc = net.minecraft.client.MinecraftClient.getInstance();
 					mc.send(() -> mc.setScreen(new dev.solclient.gui.RankedScreen(mc.currentScreen)));
 					return 1;
-				})));
+				})
+						// tests, only on your screen: the duel intro against a dummy, and the end screens
+						.then(net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal("intro").executes(ctx -> {
+							var mc = net.minecraft.client.MinecraftClient.getInstance();
+							mc.send(() -> dev.solclient.addons.ranked.RankedFx.testIntro(mc, "sword"));
+							return 1;
+						}))
+						.then(net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal("victory").executes(ctx -> {
+							var mc = net.minecraft.client.MinecraftClient.getInstance();
+							mc.send(() -> dev.solclient.addons.ranked.RankedFx.testEnd(mc, true));
+							return 1;
+						}))
+						.then(net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal("defeat").executes(ctx -> {
+							var mc = net.minecraft.client.MinecraftClient.getInstance();
+							mc.send(() -> dev.solclient.addons.ranked.RankedFx.testEnd(mc, false));
+							return 1;
+						}))));
 		ServerTickEvents.END_SERVER_TICK.register(s -> {
 			if (on) {
 				PracticeSession.tick(s);

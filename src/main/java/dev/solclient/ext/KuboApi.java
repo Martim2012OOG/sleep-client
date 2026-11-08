@@ -237,6 +237,29 @@ public final class KuboApi {
 	}
 
 	/** Drawn on the HUD every frame, on top of everything. */
+	private static volatile java.util.function.Supplier<double[]> CAMERA;
+
+	/**
+	 * Takes over the camera (cut-scenes): the supplier returns {x, y, z, yaw, pitch, fov} every frame (fov &lt;= 0 keeps
+	 * the game's), or null to let the game place the camera. One extension at a time; null clears it.
+	 */
+	public void cameraOverride(java.util.function.Supplier<double[]> s) {
+		CAMERA = s;
+	}
+
+	/** The cut-scene camera of this frame, or null. */
+	public static double[] camera() {
+		var s = CAMERA;
+		if (s == null) {
+			return null;
+		}
+		try {
+			return s.get();
+		} catch (Throwable t) {
+			return null;
+		}
+	}
+
 	public void onHudLast(Consumer<DrawContext> c) {
 		HUD_LAST.add(c);
 	}

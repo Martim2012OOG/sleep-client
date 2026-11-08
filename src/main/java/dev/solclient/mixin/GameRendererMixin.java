@@ -12,6 +12,11 @@ public class GameRendererMixin {
 
 	@Inject(method = "getFov", at = @At("RETURN"), cancellable = true, require = 0)
 	private void sol$zoom(net.minecraft.client.render.Camera camera, float tickDelta, boolean changingFov, CallbackInfoReturnable<Float> cir) {
+		double[] cut = dev.solclient.ext.KuboApi.camera();
+		if (cut != null && cut.length > 5 && cut[5] > 0) {
+			cir.setReturnValue((float) cut[5]); // a cut-scene sets its own lens
+			return;
+		}
 		float m = ZoomMod.fovMultiplier() * dev.solclient.mods.FovChangerMod.multiplier() * dev.solclient.mods.CinematicAfkMod.fovMultiplier();
 		float v = cir.getReturnValueF() * m;
 		if (changingFov) {

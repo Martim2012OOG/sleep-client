@@ -1,0 +1,1 @@
+{ "providers": [ { "type": "ttf", "file": "sol_client:f_silkscreen.ttf", "size": 8.0, "oversample": 6.0, "shift": [0.0, 0.0], "skip": "" }, { "type": "reference", "id": "minecraft:default" } ] }
