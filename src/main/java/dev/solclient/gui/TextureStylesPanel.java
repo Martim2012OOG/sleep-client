@@ -55,7 +55,9 @@ public final class TextureStylesPanel {
 	private volatile String error = "";
 	private int loadId, offset;
 	private volatile String note = "";
-	private final ExecutorService pool = Executors.newFixedThreadPool(6, r -> {
+	/** Pack id -> its file, looked up for the whole page with one request (so a picture needs no lookup of its own). */
+	private final Map<String, TextureStyles.Choice> known = new ConcurrentHashMap<>();
+	private final ExecutorService pool = Executors.newFixedThreadPool(12, r -> {
 		Thread t = new Thread(r, "kubo-styles-preview");
 		t.setDaemon(true);
 		return t;
@@ -78,6 +80,7 @@ public final class TextureStylesPanel {
 		Thread t = new Thread(() -> {
 			try {
 				List<Hit> r = TextureStyles.search(c, "", off, false);
+				known.putAll(TextureStyles.resolveAll(r));
 				MinecraftClient.getInstance().execute(() -> {
 					if (id == loadId) {
 						hits.addAll(r);
@@ -124,7 +127,7 @@ public final class TextureStylesPanel {
 		pool.submit(() -> {
 			try {
 				// 3D picture; only the few bytes it needs are downloaded, and it is kept on disk for next time
-				TextureStyles.Preview pv = TextureStyles.preview(h, c, PIC);
+				TextureStyles.Preview pv = TextureStyles.preview(h, c, PIC, known.get(h.id()));
 				if (pv.pic() == null) {
 					t.state = 3;
 					return;
@@ -172,7 +175,7 @@ public final class TextureStylesPanel {
 		TextureStyles.CHOICES.put(c.id(), t.choice);
 		TextureStyles.save();
 		TextureStylesMod.apply();
-		note = Lang.tr("Applied.", "Aplicado.");
+		note = "";
 	}
 
 	private void vanilla() {
@@ -180,7 +183,7 @@ public final class TextureStylesPanel {
 		if (TextureStyles.CHOICES.remove(c.id()) != null) {
 			TextureStyles.save();
 			TextureStylesMod.apply();
-			note = Lang.tr("Back to vanilla.", "Voltou ao vanilla.");
+			note = "";
 		}
 	}
 
@@ -195,6 +198,7 @@ public final class TextureStylesPanel {
 			TextureStyles.load();
 			startCat();
 		}
+		TextureStylesMod.flushIfNoWorld();
 		int top = y;
 		// item chips (wrapping)
 		int cx = x, cy = y;
@@ -257,8 +261,8 @@ public final class TextureStylesPanel {
 			}
 			int tx = x + (n % cols) * (TILE + GAP), ty = gy + (n / cols) * (TILE + GAP);
 			boolean visible = ty < vh && ty + TILE > 0;
-			if (t.state == 0 && visible) {
-				prepare(h, k, t);
+			if (t.state == 0) {
+				prepare(h, k, t); // the whole page at once (12 at a time), not only what is on screen
 			}
 			if (t.state == 2) {
 				upload(h, t);
@@ -288,7 +292,7 @@ public final class TextureStylesPanel {
 		} else if (loading && hits.isEmpty()) {
 			st = Lang.tr("Loading styles...", "A carregar estilos...");
 		} else {
-			st = note;
+			st = note.isEmpty() ? TextureStylesMod.statusText() : note;
 		}
 		if (!st.isEmpty()) {
 			Gfx.textClip(c, st, x, by + 2, w, error.isEmpty() ? Theme.DIM : Theme.RED);

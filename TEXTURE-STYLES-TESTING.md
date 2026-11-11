@@ -20,3 +20,9 @@ New mod **Texture Styles** (Visual). Pick ready-made community styles PER ITEM; 
 - Pick an item chip, then pick a picture of that item's texture. No pack names / pack icons are shown; the author is only credited under the grid for the active style.
 - The first time a picture is on screen the style is downloaded in the background (cached) and only the item's texture is read from it. Packs with no texture for that item disappear from the grid.
 - Click a picture = used at once (the generated pack is rebuilt). First tile = vanilla.
+
+## Speed fix (final v6)
+- Cause of the slow pictures: Modrinth's file server answers HTTP 501 to "last N bytes" range requests (`bytes=-66000`), so `RemoteZip` always failed and every picture downloaded its whole pack. It now asks for one byte to learn the size and then uses explicit positions. Checked against live packs: table of contents in ~0.3 s, one texture in ~25 ms.
+- The files of a whole page of packs are looked up with one request (`/v2/versions?ids=[...]`, from the search's `latest_version`) instead of one request per pack; the plain list of a category is cached on disk for 6 hours.
+- The generated pack is built from ranged reads too (only the chosen item's files), and unchanged items are not fetched again.
+- In a world, with the Sleep menu open, the game no longer reloads on every click: the pack is built in the background and turned on once, when the menu closes. NOT tested in game.

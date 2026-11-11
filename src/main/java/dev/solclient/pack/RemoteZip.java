@@ -88,7 +88,13 @@ final class RemoteZip implements TextureStyles.Src {
 	}
 
 	private void readDirectory() throws IOException, InterruptedException {
-		Part tail = range("-66000", 70_000);
+		// Modrinth's file server refuses "the last N bytes" (bytes=-N, HTTP 501), which made every picture download its whole pack.
+		// Ask for one byte first to learn the size, then for the end of the file with explicit positions.
+		long fileSize = range("0-0", 4096).total();
+		if (fileSize <= 0) {
+			throw new IOException("unknown size");
+		}
+		Part tail = range(Math.max(0, fileSize - 66_000) + "-" + (fileSize - 1), 70_000);
 		byte[] t = tail.data();
 		if (tail.total() < 0) {
 			throw new IOException("unknown size");

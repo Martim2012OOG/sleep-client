@@ -39,41 +39,99 @@ public class TextureStylesMod extends Mod {
 	@Override
 	protected void onDisable() {
 		if (!starting) {
+			pending = false;
+			GEN.incrementAndGet();
 			TextureStyles.activate(null);
 			TextureStyles.removeGenerated("");
 			status = "";
 		}
 	}
 
-	/** Builds the generated pack from the choices (in a thread) and turns it on. Safe to call any time. */
+	/** Only the newest click counts when several are made quickly. */
+	private static final java.util.concurrent.atomic.AtomicInteger GEN = new java.util.concurrent.atomic.AtomicInteger();
+	/** A pack that is built and waits for the menu to close (one reload for all your changes, not one per click). */
+	private static volatile boolean pending;
+	private static volatile String pendingFile;
+
+	private static boolean menuOpen(net.minecraft.client.MinecraftClient mc) {
+		return mc.currentScreen instanceof dev.solclient.gui.SolMenuScreen;
+	}
+
+	/** Shown under the pictures. */
+	public static String statusText() {
+		if ("Building...".equals(status)) {
+			return dev.solclient.Lang.tr("Getting the textures...", "A buscar as texturas...");
+		}
+		if (pending) {
+			return dev.solclient.Lang.tr("Ready. It shows when you close this menu.", "Pronto. Aparece quando fechares este menu.");
+		}
+		return status.startsWith("Error") ? status : "";
+	}
+
+	private static void activateNow(String file) {
+		pending = false;
+		pendingFile = null;
+		try {
+			net.minecraft.client.MinecraftClient mc = net.minecraft.client.MinecraftClient.getInstance();
+			java.util.List<String> on = new java.util.ArrayList<>(mc.getResourcePackManager().getEnabledIds());
+			String want = file == null ? null : "file/" + file;
+			boolean same = want == null ? on.stream().noneMatch(i -> i.startsWith("file/kubo-styles-")) : on.contains(want);
+			if (!same) { // already the pack in use: no reload at all
+				TextureStyles.activate(file);
+			}
+			TextureStyles.removeGenerated(file == null ? "" : file);
+		} catch (Throwable e) {
+			status = "Error: " + e.getMessage();
+		}
+	}
+
+	/** In the title screen there is no tick: a waiting pack is turned on from the panel. */
+	public static void flushIfNoWorld() {
+		net.minecraft.client.MinecraftClient mc = net.minecraft.client.MinecraftClient.getInstance();
+		if (pending && mc.player == null) {
+			activateNow(pendingFile);
+		}
+	}
+
+	@Override
+	public void tick() {
+		if (pending && !menuOpen(mc)) {
+			activateNow(pendingFile);
+		}
+	}
+
+	/**
+	 * Builds the generated pack from the choices (in a thread: only the chosen items' files are fetched) and turns it on. While the
+	 * Sleep menu is open in a world the game is not reloaded on every click: the pack waits and is turned on once, when the menu closes.
+	 */
 	public static void apply() {
 		TextureStyles.load();
 		TextureStylesMod m = instance;
 		if (m == null || !m.enabled) {
 			return;
 		}
+		final int gen = GEN.incrementAndGet();
 		status = "Building...";
 		Thread t = new Thread(() -> {
 			try {
 				TextureStyles.Built b = TextureStyles.buildPack();
 				net.minecraft.client.MinecraftClient mc = net.minecraft.client.MinecraftClient.getInstance();
 				mc.execute(() -> {
-					try {
-						TextureStyles.activate(b == null ? null : b.packFile());
-						TextureStyles.removeGenerated(b == null ? "" : b.packFile());
-						int n = 0;
-						if (b != null) {
-							for (int v : b.files().values()) {
-								n += v;
-							}
-						}
-						status = b == null ? "" : TextureStyles.CHOICES.size() + " styles, " + n + " files";
-					} catch (Throwable e) {
-						status = "Error: " + e.getMessage();
+					if (gen != GEN.get()) {
+						return; // a newer click is on its way
+					}
+					status = b == null ? "" : TextureStyles.CHOICES.size() + " styles";
+					if (mc.player != null && menuOpen(mc)) {
+						pendingFile = b == null ? null : b.packFile();
+						pending = true;
+					} else {
+						activateNow(b == null ? null : b.packFile());
 					}
 				});
 			} catch (Throwable e) {
-				status = "Error: " + e.getMessage();
+				if (gen == GEN.get()) {
+					status = "Error: " + e.getMessage();
+				}
 			}
 		}, "kubo-texture-styles");
 		t.setDaemon(true);

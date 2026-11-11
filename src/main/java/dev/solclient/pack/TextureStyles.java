@@ -58,7 +58,7 @@ public final class TextureStyles {
 	}
 
 	/** One search result. */
-	public record Hit(String id, String title, String author, String desc, long downloads, String icon) {
+	public record Hit(String id, String title, String author, String desc, long downloads, String icon, String latest) {
 	}
 
 	/** What the player chose for a category. */
@@ -152,18 +152,109 @@ public final class TextureStyles {
 		return e == null || e.isJsonNull() ? "" : e.getAsString();
 	}
 
-	/** Searches Modrinth resource packs for this category (blocking: call it from a thread). */
+	private static Path searchFile(Cat cat, int offset) {
+		return cacheDir().resolve("search").resolve(cat.id() + "_" + offset + ".json");
+	}
+
+	/**
+	 * Searches Modrinth resource packs for this category (blocking: call it from a thread). The plain list of a category (no search
+	 * words, most downloaded first) is kept on disk for 6 hours, so opening a category again shows it at once.
+	 */
 	public static List<Hit> search(Cat cat, String text, int offset, boolean newest) throws IOException, InterruptedException {
-		String q = (cat.query() + " " + (text == null ? "" : text)).trim();
-		String facets = "[[\"project_type:resourcepack\"],[\"versions:" + gameVersion() + "\"]]";
-		String url = API + "/search?query=" + URLEncoder.encode(q, StandardCharsets.UTF_8) + "&facets="
-				+ URLEncoder.encode(facets, StandardCharsets.UTF_8) + "&index=" + (newest ? "newest" : "downloads") + "&limit=40&offset=" + offset;
-		JsonObject o = JsonParser.parseString(get(url)).getAsJsonObject();
+		boolean plain = (text == null || text.isBlank()) && !newest;
+		String body = null;
+		Path cf = searchFile(cat, offset);
+		if (plain) {
+			try {
+				if (Files.isRegularFile(cf) && System.currentTimeMillis() - Files.getLastModifiedTime(cf).toMillis() < 6L * 3600 * 1000) {
+					body = Files.readString(cf, StandardCharsets.UTF_8);
+				}
+			} catch (Exception ignored) {
+				body = null;
+			}
+		}
+		boolean fresh = body == null;
+		if (fresh) {
+			String q = (cat.query() + " " + (text == null ? "" : text)).trim();
+			String facets = "[[\"project_type:resourcepack\"],[\"versions:" + gameVersion() + "\"]]";
+			body = get(API + "/search?query=" + URLEncoder.encode(q, StandardCharsets.UTF_8) + "&facets="
+					+ URLEncoder.encode(facets, StandardCharsets.UTF_8) + "&index=" + (newest ? "newest" : "downloads") + "&limit=40&offset=" + offset);
+		}
 		List<Hit> out = new ArrayList<>();
-		for (JsonElement e : o.getAsJsonArray("hits")) {
-			JsonObject h = e.getAsJsonObject();
-			long dl = h.has("downloads") ? h.get("downloads").getAsLong() : 0L;
-			out.add(new Hit(str(h, "project_id"), str(h, "title"), str(h, "author"), str(h, "description"), dl, str(h, "icon_url")));
+		try {
+			JsonObject o = JsonParser.parseString(body).getAsJsonObject();
+			for (JsonElement e : o.getAsJsonArray("hits")) {
+				JsonObject h = e.getAsJsonObject();
+				long dl = h.has("downloads") ? h.get("downloads").getAsLong() : 0L;
+				out.add(new Hit(str(h, "project_id"), str(h, "title"), str(h, "author"), str(h, "description"), dl, str(h, "icon_url"),
+						str(h, "latest_version")));
+			}
+		} catch (RuntimeException broken) {
+			if (!fresh) { // a broken cache file: ask Modrinth
+				try {
+					Files.deleteIfExists(cf);
+				} catch (IOException ignored) {
+					// asked again anyway
+				}
+				return search(cat, text, offset, newest);
+			}
+			throw new IOException(broken);
+		}
+		if (fresh && plain) {
+			try {
+				Files.createDirectories(cf.getParent());
+				Files.writeString(cf, body, StandardCharsets.UTF_8);
+			} catch (IOException ignored) {
+				// no cache this time
+			}
+		}
+		return out;
+	}
+
+	private static Choice choiceOf(Hit h, JsonObject version) {
+		JsonArray files = version.getAsJsonArray("files");
+		if (files == null || files.isEmpty()) {
+			return null;
+		}
+		JsonObject pick = files.get(0).getAsJsonObject();
+		for (JsonElement f : files) {
+			if (f.getAsJsonObject().has("primary") && f.getAsJsonObject().get("primary").getAsBoolean()) {
+				pick = f.getAsJsonObject();
+			}
+		}
+		String sha = pick.has("hashes") && pick.getAsJsonObject("hashes").has("sha1") ? str(pick.getAsJsonObject("hashes"), "sha1") : "";
+		return new Choice(h.id(), h.title(), h.author(), str(pick, "url"), sha, str(pick, "filename"));
+	}
+
+	/**
+	 * The download file of MANY packs with ONE request (their newest version), instead of one request per pack. Blocking.
+	 * Packs it could not find are simply missing from the result (the caller then asks for those one by one).
+	 */
+	public static Map<String, Choice> resolveAll(List<Hit> hits) {
+		Map<String, Choice> out = new java.util.HashMap<>();
+		Map<String, Hit> byVersion = new java.util.HashMap<>();
+		StringBuilder ids = new StringBuilder("[");
+		for (Hit h : hits) {
+			if (h.latest() != null && !h.latest().isBlank() && byVersion.putIfAbsent(h.latest(), h) == null) {
+				ids.append(ids.length() > 1 ? "," : "").append('"').append(h.latest()).append('"');
+			}
+		}
+		if (byVersion.isEmpty()) {
+			return out;
+		}
+		try {
+			JsonArray arr = JsonParser.parseString(get(API + "/versions?ids=" + URLEncoder.encode(ids.append("]").toString(), StandardCharsets.UTF_8)))
+					.getAsJsonArray();
+			for (JsonElement e : arr) {
+				JsonObject v = e.getAsJsonObject();
+				Hit h = byVersion.get(str(v, "id"));
+				Choice c = h == null ? null : choiceOf(h, v);
+				if (c != null && !c.url().isBlank()) {
+					out.put(h.id(), c);
+				}
+			}
+		} catch (Exception e) {
+			// one by one, as before
 		}
 		return out;
 	}
@@ -324,61 +415,140 @@ public final class TextureStyles {
 		}
 	}
 
-	/** Copies what one category needs from one pack into the output. */
-	private static int copyCategory(ZipFile z, Cat cat, Map<String, byte[]> out) throws IOException {
-		String pre = prefixOf(z) + "assets/minecraft/";
-		Pattern rx = Pattern.compile(cat.rx());
-		int count = 0;
-		List<String> queue = new ArrayList<>();
-		Set<String> seen = new HashSet<>();
-		var en = z.entries();
-		while (en.hasMoreElements()) {
-			ZipEntry e = en.nextElement();
-			String n = e.getName();
-			if (e.isDirectory() || !n.startsWith(pre)) {
-				continue;
+	private static final java.util.concurrent.ExecutorService FETCH = java.util.concurrent.Executors.newFixedThreadPool(10, r -> {
+		Thread t = new Thread(r, "kubo-styles-fetch");
+		t.setDaemon(true);
+		return t;
+	});
+
+	/** Reads several files of a pack at the same time (a pack on the web answers one small request per file). */
+	private static Map<String, byte[]> readAll(Src src, List<String> names) {
+		Map<String, byte[]> got = new java.util.concurrent.ConcurrentHashMap<>();
+		List<java.util.concurrent.Future<?>> jobs = new ArrayList<>();
+		for (String n : names) {
+			jobs.add(FETCH.submit(() -> {
+				try {
+					byte[] b = src.read(n);
+					if (b != null) {
+						got.put(n, b);
+					}
+				} catch (Exception ignored) {
+					// that file is left out
+				}
+			}));
+		}
+		for (var j : jobs) {
+			try {
+				j.get();
+			} catch (Exception ignored) {
+				// same
 			}
-			String rel = n.substring(pre.length());
-			if (rx.matcher(rel).matches()) {
-				out.put("assets/minecraft/" + rel, read(z, e));
-				seen.add(rel);
-				count++;
-				if (rel.endsWith(".json")) {
-					queue.add(rel);
+		}
+		return got;
+	}
+
+	/** Copies what one category needs from one pack (on disk or on the web) into the output. */
+	private static int copyCategory(Src src, Cat cat, Map<String, byte[]> out) throws IOException {
+		Set<String> all = new HashSet<>();
+		String pre = null;
+		for (String n : src.names()) {
+			all.add(n);
+			if (pre == null) {
+				int i = n.indexOf("assets/minecraft/");
+				if (i >= 0) {
+					pre = n.substring(0, i) + "assets/minecraft/";
 				}
 			}
 		}
-		// models point to other models and textures: bring those too (only if the pack has them)
-		for (int i = 0; i < queue.size() && i < 400; i++) {
-			String rel = queue.get(i);
-			ZipEntry e = z.getEntry(pre + rel);
-			if (e == null) {
-				continue;
+		if (pre == null) {
+			return 0;
+		}
+		Pattern rx = Pattern.compile(cat.rx());
+		Set<String> seen = new HashSet<>();
+		List<String> wave = new ArrayList<>();
+		for (String n : all) {
+			if (n.startsWith(pre) && rx.matcher(n.substring(pre.length())).matches() && seen.add(n.substring(pre.length()))) {
+				wave.add(n);
 			}
-			Set<String> refs = new HashSet<>();
-			try {
-				collectRefs(JsonParser.parseString(new String(read(z, e), StandardCharsets.UTF_8)), refs);
-			} catch (Exception ex) {
-				continue;
-			}
-			for (String r : refs) {
-				for (String cand : new String[] {"models/" + r + ".json", "textures/" + r + ".png", "textures/" + r + ".png.mcmeta"}) {
-					if (seen.contains(cand)) {
-						continue;
-					}
-					ZipEntry f = z.getEntry(pre + cand);
-					if (f != null) {
-						out.put("assets/minecraft/" + cand, read(z, f));
-						seen.add(cand);
-						count++;
-						if (cand.endsWith(".json")) {
-							queue.add(cand);
+		}
+		int count = 0;
+		// models point to other models and textures: bring those too (only if the pack has them), a few rounds deep
+		for (int round = 0; round < 6 && !wave.isEmpty() && count < 600; round++) {
+			Map<String, byte[]> got = readAll(src, wave);
+			List<String> next = new ArrayList<>();
+			for (var e : got.entrySet()) {
+				String rel = e.getKey().substring(pre.length());
+				out.put("assets/minecraft/" + rel, e.getValue());
+				count++;
+				if (!rel.endsWith(".json")) {
+					continue;
+				}
+				Set<String> refs = new HashSet<>();
+				try {
+					collectRefs(JsonParser.parseString(new String(e.getValue(), StandardCharsets.UTF_8)), refs);
+				} catch (Exception ex) {
+					continue;
+				}
+				for (String r : refs) {
+					for (String cand : new String[] {"models/" + r + ".json", "textures/" + r + ".png", "textures/" + r + ".png.mcmeta"}) {
+						if (all.contains(pre + cand) && seen.add(cand)) {
+							next.add(pre + cand);
 						}
 					}
 				}
 			}
+			wave = next;
 		}
 		return count;
+	}
+
+	/** Packs on the web that were already opened (their table of contents is kept, so the next read asks only for the file). */
+	private static final Map<String, RemoteZip> REMOTE = java.util.Collections.synchronizedMap(new LinkedHashMap<>(64, 0.75F, true) {
+		@Override
+		protected boolean removeEldestEntry(Map.Entry<String, RemoteZip> e) {
+			return size() > 96;
+		}
+	});
+
+	private static RemoteZip remote(String url) throws IOException, InterruptedException {
+		RemoteZip z = REMOTE.get(url);
+		if (z == null) {
+			z = RemoteZip.open(url, UA);
+			REMOTE.put(url, z);
+		}
+		return z;
+	}
+
+	/** The files a category takes from a pack, kept while the game runs: changing one item does not fetch the others again. */
+	private static final Map<String, Map<String, byte[]>> EXTRACTED = new java.util.concurrent.ConcurrentHashMap<>();
+
+	private static Map<String, byte[]> extract(Cat cat, Choice c) throws Exception {
+		String key = cat.id() + "|" + (c.sha1().isEmpty() ? c.url() : c.sha1());
+		Map<String, byte[]> m = EXTRACTED.get(key);
+		if (m != null) {
+			return m;
+		}
+		m = new LinkedHashMap<>();
+		Path local = cacheDir().resolve((c.sha1().isEmpty() ? Integer.toHexString(c.url().hashCode()) : c.sha1()) + ".zip");
+		boolean done = false;
+		if (!(Files.isRegularFile(local) && Files.size(local) > 0)) {
+			try {
+				copyCategory(remote(c.url()), cat, m); // only this item's files are downloaded, not the whole pack
+				done = !m.isEmpty();
+			} catch (IOException noRanges) {
+				m.clear();
+			}
+		}
+		if (!done) {
+			try (ZipFile z = new ZipFile(download(c).toFile())) {
+				copyCategory(new ZipSrc(z), cat, m);
+			}
+		}
+		if (EXTRACTED.size() > 80) {
+			EXTRACTED.clear();
+		}
+		EXTRACTED.put(key, m);
+		return m;
 	}
 
 	/** The picture of the category's main item inside a pack (e.g. the totem texture), or null when the pack has none. */
@@ -575,6 +745,11 @@ public final class TextureStyles {
 
 	/** The picture of a pack for a category: from the disk cache (instant), else read straight from Modrinth. Blocking. */
 	public static Preview preview(Hit h, Cat cat, int size) throws Exception {
+		return preview(h, cat, size, null);
+	}
+
+	/** Same; 'known' = the pack's file when it was already looked up (see {@link #resolveAll}), so no extra request is made. */
+	public static Preview preview(Hit h, Cat cat, int size, Choice known) throws Exception {
 		Path f = previewFile(h.id(), cat);
 		try {
 			if (Files.isRegularFile(f) && System.currentTimeMillis() - Files.getLastModifiedTime(f).toMillis() < 14L * 24 * 3600 * 1000) {
@@ -608,7 +783,7 @@ public final class TextureStyles {
 		} catch (Exception ignored) {
 			// broken cache file: make it again
 		}
-		Choice c = resolve(h);
+		Choice c = known != null ? known : resolve(h);
 		StylePreview3D.Pic pic;
 		Path local = cacheDir().resolve((c.sha1().isEmpty() ? Integer.toHexString(c.url().hashCode()) : c.sha1()) + ".zip");
 		if (Files.isRegularFile(local) && Files.size(local) > 0) {
@@ -618,7 +793,7 @@ public final class TextureStyles {
 		} else {
 			StylePreview3D.Pic p2;
 			try {
-				p2 = preview(RemoteZip.open(c.url(), UA), cat, size); // only the table of contents + one or two textures
+				p2 = preview(remote(c.url()), cat, size); // only the table of contents + one or two textures
 			} catch (IOException noRanges) {
 				try (ZipFile z = new ZipFile(download(c).toFile())) { // server without ranges: whole file, as before
 					p2 = preview(new ZipSrc(z), cat, size);
@@ -671,20 +846,8 @@ public final class TextureStyles {
 		if (CHOICES.isEmpty()) {
 			return null;
 		}
-		Map<String, byte[]> out = new LinkedHashMap<>();
-		Map<String, Integer> counts = new LinkedHashMap<>();
-		for (Map.Entry<String, Choice> e : new ArrayList<>(CHOICES.entrySet())) {
-			Cat cat = cat(e.getKey());
-			if (cat == null) {
-				continue;
-			}
-			Path p = download(e.getValue());
-			try (ZipFile z = new ZipFile(p.toFile())) {
-				counts.put(cat.id(), copyCategory(z, cat, out));
-			}
-		}
 		MessageDigest md = MessageDigest.getInstance("SHA-1");
-		for (var e : CHOICES.entrySet()) {
+		for (var e : new ArrayList<>(CHOICES.entrySet())) {
 			md.update((e.getKey() + e.getValue().sha1() + e.getValue().url()).getBytes(StandardCharsets.UTF_8));
 		}
 		StringBuilder h = new StringBuilder();
@@ -693,10 +856,23 @@ public final class TextureStyles {
 		}
 		String file = "kubo-styles-" + h.substring(0, 10) + ".zip";
 		Path dest = rp.resolve(file);
-		if (Files.isRegularFile(dest)) {
+		Map<String, Integer> counts = new LinkedHashMap<>();
+		if (Files.isRegularFile(dest) && Files.size(dest) > 0) {
 			return new Built(file, counts); // same choices as before: the pack is already there (and may be in use, so never rewritten)
 		}
-		try (OutputStream os = Files.newOutputStream(dest); ZipOutputStream zos = new ZipOutputStream(os)) {
+		Map<String, byte[]> out = new LinkedHashMap<>();
+		for (Map.Entry<String, Choice> e : new ArrayList<>(CHOICES.entrySet())) {
+			Cat cat = cat(e.getKey());
+			if (cat == null) {
+				continue;
+			}
+			Map<String, byte[]> files = extract(cat, e.getValue());
+			out.putAll(files);
+			counts.put(cat.id(), files.size());
+		}
+		Path tmp = rp.resolve(file + ".part");
+		try (OutputStream os = Files.newOutputStream(tmp); ZipOutputStream zos = new ZipOutputStream(os)) {
+			zos.setLevel(1); // fast to write; the game reads it from this computer
 			zos.putNextEntry(new ZipEntry("pack.mcmeta"));
 			zos.write(CustomFont.mcmeta("Texture Styles").replace("Sleep custom font: Texture Styles", "Sleep Texture Styles").getBytes(StandardCharsets.UTF_8));
 			zos.closeEntry();
@@ -706,6 +882,7 @@ public final class TextureStyles {
 				zos.closeEntry();
 			}
 		}
+		Files.move(tmp, dest, StandardCopyOption.REPLACE_EXISTING);
 		return new Built(file, counts);
 	}
 
