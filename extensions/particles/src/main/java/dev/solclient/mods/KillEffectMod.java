@@ -19,7 +19,9 @@ public class KillEffectMod extends Mod {
 	private final Option.Choice effect = choice("Effect", 0, "Lightning", "Blood", "Hearts", "Souls", "Firework", "Totem", "Pac-Man (3D)", "Shark (3D)",
 			"Mimic Chest (3D)", "Giant Frog (3D)", "Flytrap (3D)", "UFO (3D)", "Black Hole (3D)", "Firework Rocket (3D)", "Whale (3D)", "Dragon (3D)",
 			"Giant Worm (3D)", "Snake (3D)", "Crocodile (3D)", "T-Rex (3D)", "Toilet Flush (3D)", "Giant Hand (3D)", "Kraken (3D)", "Hungry Pig (3D)",
-			"Ghost (3D)", "Eagle (3D)", "Piano Drop (3D)", "Tornado (3D)", "Surprise Gift (3D)", "Cannon (3D)", "Random 3D");
+			"Ghost (3D)", "Eagle (3D)", "Piano Drop (3D)", "Tornado (3D)", "Surprise Gift (3D)", "Cannon (3D)", "Thunder Strike (3D)",
+			"Anvil Drop (3D)", "Rest in Peace (3D)", "Balloon Ride (3D)", "Ice Shatter (3D)", "Knockout (3D)", "Void Portal (3D)", "Sword Rain (3D)",
+			"Sweet Dreams (3D)", "Random 3D");
 	private final Option.Action test = action("Test Effect", "Test", this::test, () -> this.status.isEmpty() ? effect.label() : effect.label() + " - " + this.status);
 	private final Option.Bool sound = bool("Sound", true);
 	private final Option.Bool playersOnly = bool("Players Only", true);

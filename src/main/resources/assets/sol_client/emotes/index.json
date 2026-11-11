@@ -4,22 +4,24 @@
   "name": "Amogus",
   "icon": false,
   "author": "",
-  "loop": true
+  "loop": true,
+  "hidden": true
  },
  {
   "id": "ascend",
   "name": "Ascend",
   "icon": false,
-  "author": "Una Persona Normal",
-  "loop": false,
-  "bodyScale": 0.04549
+  "author": "",
+  "loop": true,
+  "hidden": true
  },
  {
   "id": "becomehelicopter",
   "name": "Become Helicopter",
   "icon": false,
-  "author": "TyBo",
-  "loop": true
+  "author": "",
+  "loop": true,
+  "hidden": true
  },
  {
   "id": "brakedance",
@@ -27,42 +29,47 @@
   "icon": false,
   "author": "",
   "loop": true,
-  "bodyScale": 0.0625
+  "hidden": true
  },
  {
   "id": "californiagirls",
   "name": "California Girls",
   "icon": false,
   "author": "",
-  "loop": true
+  "loop": true,
+  "hidden": true
  },
  {
   "id": "coolsit",
   "name": "Cool Sit",
   "icon": false,
-  "author": "Wah0o",
-  "loop": true
+  "author": "",
+  "loop": true,
+  "hidden": true
  },
  {
   "id": "frontflip",
   "name": "Front Flip",
   "icon": false,
-  "author": "DKinchik",
-  "loop": false
+  "author": "",
+  "loop": true,
+  "hidden": true
  },
  {
   "id": "getthegriddy",
   "name": "Get the Griddy",
   "icon": false,
-  "author": "SeroRonin",
-  "loop": true
+  "author": "",
+  "loop": true,
+  "hidden": true
  },
  {
   "id": "headpat",
   "name": "Headpat",
   "icon": false,
-  "author": "VMan_2002",
-  "loop": true
+  "author": "",
+  "loop": true,
+  "hidden": true
  },
  {
   "id": "helicopterhelicopter",
@@ -70,20 +77,232 @@
   "icon": false,
   "author": "",
   "loop": true,
-  "bodyScale": 0.0625
+  "hidden": true
  },
  {
   "id": "hug",
   "name": "Hug",
   "icon": false,
-  "author": "VMan_2002",
-  "loop": true
+  "author": "",
+  "loop": true,
+  "hidden": true
  },
  {
   "id": "lean",
   "name": "Lean",
   "icon": false,
-  "author": "Wah0o",
+  "author": "",
+  "loop": true,
+  "hidden": true
+ },
+ {
+  "id": "take_the_l",
+  "name": "Take the L",
+  "icon": false,
+  "author": "Sleep",
   "loop": true
+ },
+ {
+  "id": "griddy",
+  "name": "Griddy",
+  "icon": false,
+  "author": "Sleep",
+  "loop": true
+ },
+ {
+  "id": "floss",
+  "name": "Floss",
+  "icon": false,
+  "author": "Sleep",
+  "loop": true
+ },
+ {
+  "id": "dab",
+  "name": "Dab",
+  "icon": false,
+  "author": "Sleep",
+  "loop": false
+ },
+ {
+  "id": "wave",
+  "name": "Wave",
+  "icon": false,
+  "author": "Sleep",
+  "loop": true
+ },
+ {
+  "id": "clap",
+  "name": "Clap",
+  "icon": false,
+  "author": "Sleep",
+  "loop": true
+ },
+ {
+  "id": "salute",
+  "name": "Salute",
+  "icon": false,
+  "author": "Sleep",
+  "loop": false
+ },
+ {
+  "id": "facepalm",
+  "name": "Facepalm",
+  "icon": false,
+  "author": "Sleep",
+  "loop": false
+ },
+ {
+  "id": "tpose",
+  "name": "T-Pose",
+  "icon": false,
+  "author": "Sleep",
+  "loop": true
+ },
+ {
+  "id": "jumping_jacks",
+  "name": "Jumping Jacks",
+  "icon": false,
+  "author": "Sleep",
+  "loop": true
+ },
+ {
+  "id": "pushups",
+  "name": "Push-ups",
+  "icon": false,
+  "author": "Sleep",
+  "loop": true
+ },
+ {
+  "id": "backflip",
+  "name": "Backflip",
+  "icon": false,
+  "author": "Sleep",
+  "loop": false
+ },
+ {
+  "id": "spin",
+  "name": "Spin",
+  "icon": false,
+  "author": "Sleep",
+  "loop": true
+ },
+ {
+  "id": "sit",
+  "name": "Sit",
+  "icon": false,
+  "author": "Sleep",
+  "loop": true
+ },
+ {
+  "id": "laugh",
+  "name": "Laugh",
+  "icon": false,
+  "author": "Sleep",
+  "loop": true
+ },
+ {
+  "id": "cry",
+  "name": "Cry",
+  "icon": false,
+  "author": "Sleep",
+  "loop": true
+ },
+ {
+  "id": "point",
+  "name": "Point",
+  "icon": false,
+  "author": "Sleep",
+  "loop": false
+ },
+ {
+  "id": "victory",
+  "name": "Victory",
+  "icon": false,
+  "author": "Sleep",
+  "loop": true
+ },
+ {
+  "id": "zombie",
+  "name": "Zombie",
+  "icon": false,
+  "author": "Sleep",
+  "loop": true
+ },
+ {
+  "id": "robot",
+  "name": "Robot",
+  "icon": false,
+  "author": "Sleep",
+  "loop": true
+ },
+ {
+  "id": "headbang",
+  "name": "Headbang",
+  "icon": false,
+  "author": "Sleep",
+  "loop": true
+ },
+ {
+  "id": "nap",
+  "name": "Power Nap",
+  "icon": false,
+  "author": "Sleep",
+  "loop": true
+ },
+ {
+  "id": "bow",
+  "name": "Bow",
+  "icon": false,
+  "author": "Sleep",
+  "loop": false
+ },
+ {
+  "id": "hype",
+  "name": "Hype",
+  "icon": false,
+  "author": "Sleep",
+  "loop": true
+ },
+ {
+  "id": "shuffle",
+  "name": "Shuffle",
+  "icon": false,
+  "author": "Sleep",
+  "loop": true
+ },
+ {
+  "id": "disco",
+  "name": "Disco Fever",
+  "icon": false,
+  "author": "Sleep",
+  "loop": true
+ },
+ {
+  "id": "squat_kick",
+  "name": "Squat Kick",
+  "icon": false,
+  "author": "Sleep",
+  "loop": true
+ },
+ {
+  "id": "helicopter",
+  "name": "Helicopter",
+  "icon": false,
+  "author": "Sleep",
+  "loop": true
+ },
+ {
+  "id": "flex",
+  "name": "Flex",
+  "icon": false,
+  "author": "Sleep",
+  "loop": true
+ },
+ {
+  "id": "shrug",
+  "name": "Shrug",
+  "icon": false,
+  "author": "Sleep",
+  "loop": false
  }
 ]

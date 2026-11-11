@@ -1132,7 +1132,8 @@ if __name__ == "__main__":
     sys.path.insert(0, HERE)
     import effects2
     import effects3
-    EFFECTS = EFFECTS + effects2.EFFECTS + effects3.EFFECTS
+    import effects4
+    EFFECTS = EFFECTS + effects2.EFFECTS + effects3.EFFECTS + effects4.EFFECTS
     skin = default_skin()
     skin.save(os.path.join(HERE, "default_skin.png"))
     only = sys.argv[1:]

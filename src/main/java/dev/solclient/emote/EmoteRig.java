@@ -173,9 +173,11 @@ public final class EmoteRig {
 		}
 	}
 
+	private static final float[][] SAMPLE = new float[Animation.PARTS.length][Animation.PROPS.length];
+
 	public static void apply(Animation anim, float t, float w, ModelPart head, ModelPart body, ModelPart rightArm,
 			ModelPart leftArm, ModelPart rightLeg, ModelPart leftLeg) {
-		float[][] s = new float[Animation.PARTS.length][Animation.PROPS.length];
+		float[][] s = SAMPLE; // render thread only: no new arrays every frame for every model layer (player, armour...)
 		anim.sample(t, s);
 
 		// whole-body transform (the file's "torso" track)

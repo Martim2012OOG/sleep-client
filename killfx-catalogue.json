@@ -1,0 +1,78 @@
+{
+ "count": 9,
+ "note": "Kill effects added in this update. id = modelId. Picture: images/killfx/<id>.png",
+ "killEffects": [
+  {
+   "id": "thunder",
+   "name": "Thunder Strike",
+   "category": "Kill Effects",
+   "price": 600,
+   "rarity": "rare",
+   "image": "images/killfx/thunder.png"
+  },
+  {
+   "id": "anvil",
+   "name": "Anvil Drop",
+   "category": "Kill Effects",
+   "price": 600,
+   "rarity": "rare",
+   "image": "images/killfx/anvil.png"
+  },
+  {
+   "id": "grave",
+   "name": "Rest in Peace",
+   "category": "Kill Effects",
+   "price": 800,
+   "rarity": "epic",
+   "image": "images/killfx/grave.png"
+  },
+  {
+   "id": "balloons",
+   "name": "Balloon Ride",
+   "category": "Kill Effects",
+   "price": 800,
+   "rarity": "epic",
+   "image": "images/killfx/balloons.png"
+  },
+  {
+   "id": "ice",
+   "name": "Ice Shatter",
+   "category": "Kill Effects",
+   "price": 800,
+   "rarity": "epic",
+   "image": "images/killfx/ice.png"
+  },
+  {
+   "id": "glove",
+   "name": "Knockout",
+   "category": "Kill Effects",
+   "price": 1000,
+   "rarity": "epic",
+   "image": "images/killfx/glove.png"
+  },
+  {
+   "id": "portal",
+   "name": "Void Portal",
+   "category": "Kill Effects",
+   "price": 1000,
+   "rarity": "epic",
+   "image": "images/killfx/portal.png"
+  },
+  {
+   "id": "swords",
+   "name": "Sword Rain",
+   "category": "Kill Effects",
+   "price": 1200,
+   "rarity": "legendary",
+   "image": "images/killfx/swords.png"
+  },
+  {
+   "id": "bed",
+   "name": "Sweet Dreams",
+   "category": "Kill Effects",
+   "price": 1200,
+   "rarity": "legendary",
+   "image": "images/killfx/bed.png"
+  }
+ ]
+}

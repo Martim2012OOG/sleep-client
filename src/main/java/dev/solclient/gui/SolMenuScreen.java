@@ -4077,13 +4077,33 @@ public class SolMenuScreen extends Screen {
 		}
 		dev.solclient.skin.SkinChanger.Skin active = dev.solclient.skin.SkinChanger.active();
 		RemoteTextures.Tex t = sel != null ? sel.tex() : dev.solclient.skin.SkinChanger.myPreview();
-		float px = Math.max(2.5F, Math.min(6F, (h * 0.5F) / 20F));
+		// the whole player in real 3D (Minecraft's own player model, hat layer and slim arms included), drag to turn
+		float px = Math.max(1.6F, Math.min(5F, Math.min((h - 150) / 36F, (w - 16) / 20F)));
+		float feet = y + 10 + 34 * px;
 		if (t != null) {
-			double tt = System.currentTimeMillis() / 1000.0;
-			double yaw = 25 + Math.sin(tt * 0.6) * 35;
-			SkinModel3D.draw(c, t, x + w / 2F, y + 14, px, yaw, yaw + 8, 10);
+			stepPreview();
+			float uu = 1F / f;
+			boolean slimNow = sel != null ? sel.slim : dev.solclient.skin.SkinChanger.selfSlim();
+			c.enableScissor(x + 2, y + 2, x + w - 2, Math.round(feet) + 6);
+			if (!dev.solclient.cosmetic.SkinPreview.draw(c, t, slimNow, (x + w / 2F) * uu, feet * uu, px * uu, previewYaw, 6F, null)) {
+				SkinModel3D.draw(c, t, x + w / 2F, feet - 32 * px, px, previewYaw, previewYaw + 6, 10);
+			}
+			c.disableScissor();
+			region(x, y, w, Math.round(feet) + 6 - y, b -> previewDragX = null, (mx2, my2) -> {
+				long now = System.currentTimeMillis();
+				if (previewDragX != null) {
+					float d = (float) (mx2 - previewDragX) * 1.1F;
+					previewTarget += d;
+					float dt = Math.max(0.008F, (now - previewLastDrag) / 1000F);
+					previewVel = previewVel * 0.5F + (d / dt) * 0.5F;
+				}
+				previewLastDrag = now;
+				previewDragX = mx2;
+			});
+		} else {
+			Gfx.skeleton(c, x + w / 4, y + 14, w / 2, Math.round(30 * px), 8);
 		}
-		int ty = y + 14 + Math.round(px * 20) + 12;
+		int ty = Math.round(feet) + 10;
 		String msg = dev.solclient.skin.SkinChanger.message;
 		if (sel == null) {
 			Gfx.textFit(c, active != null ? "Wearing: " + fit(active.name, w - 70) : "Wearing your account's skin", x + w / 2, w - 6, ty, Theme.TEXT);

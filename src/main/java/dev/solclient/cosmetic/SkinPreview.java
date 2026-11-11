@@ -29,9 +29,13 @@ public final class SkinPreview {
 
 	static final class Model extends PlayerEntityModel {
 		List<CosmeticModels.Def> wear = List.of();
+		/** The skin this model is drawn with right now and its arm type (the minime copies them). */
+		net.minecraft.util.Identifier skin;
+		final boolean slimArms;
 
 		Model(ModelPart root, boolean slim) {
 			super(root, slim);
+			this.slimArms = slim;
 		}
 
 	}
@@ -182,7 +186,18 @@ public final class SkinPreview {
 					}
 					continue;
 				}
+				if (Minimes.is(d)) {
+					if (m.skin != null) {
+						VertexConsumer svc = p.getBuffer(RenderLayers.entityCutoutNoCull(m.skin));
+						Minimes.draw(d, m, m.slimArms, matrices, age, light, (ms, e) -> e.emit(ms.peek(), svc));
+					}
+					continue;
+				}
 				VertexConsumer vc = p.getBuffer(RenderLayers.entityCutoutNoCull(d.textureId()));
+				if (Auras.is(d)) {
+					Auras.emit(d, matrices.peek(), vc, light, age, false);
+					continue;
+				}
 				for (CosmeticModels.Part part : CosmeticModels.geometry(d)) {
 					matrices.push();
 					if (CosmeticFeatureRenderer.place(matrices, m, part.attach(), age, false)) {
@@ -221,6 +236,7 @@ public final class SkinPreview {
 		try {
 			Model m = model(isSlim);
 			m.wear = wear == null ? List.of() : wear;
+			m.skin = skin.id();
 			// the model is shared: start from the standing pose every frame
 			m.head.resetTransform();
 			m.body.resetTransform();

@@ -2388,5 +2388,213 @@
    512,
    256
   ]
+ },
+ {
+  "id": "aura_flame",
+  "name": "Inferno Aura",
+  "category": "Auras",
+  "geometry": "aura",
+  "texture": "aura_atlas",
+  "anim": "aura:flame",
+  "credit": "Sleep client (original)",
+  "textureSize": [
+   64,
+   128
+  ]
+ },
+ {
+  "id": "aura_frost",
+  "name": "Frost Aura",
+  "category": "Auras",
+  "geometry": "aura",
+  "texture": "aura_atlas",
+  "anim": "aura:frost",
+  "credit": "Sleep client (original)",
+  "textureSize": [
+   64,
+   128
+  ]
+ },
+ {
+  "id": "aura_heart",
+  "name": "Love Aura",
+  "category": "Auras",
+  "geometry": "aura",
+  "texture": "aura_atlas",
+  "anim": "aura:heart",
+  "credit": "Sleep client (original)",
+  "textureSize": [
+   64,
+   128
+  ]
+ },
+ {
+  "id": "aura_star",
+  "name": "Starlight Aura",
+  "category": "Auras",
+  "geometry": "aura",
+  "texture": "aura_atlas",
+  "anim": "aura:star",
+  "credit": "Sleep client (original)",
+  "textureSize": [
+   64,
+   128
+  ]
+ },
+ {
+  "id": "aura_note",
+  "name": "Melody Aura",
+  "category": "Auras",
+  "geometry": "aura",
+  "texture": "aura_atlas",
+  "anim": "aura:note",
+  "credit": "Sleep client (original)",
+  "textureSize": [
+   64,
+   128
+  ]
+ },
+ {
+  "id": "aura_cash",
+  "name": "Cash Aura",
+  "category": "Auras",
+  "geometry": "aura",
+  "texture": "aura_atlas",
+  "anim": "aura:cash",
+  "credit": "Sleep client (original)",
+  "textureSize": [
+   64,
+   128
+  ]
+ },
+ {
+  "id": "aura_bolt",
+  "name": "Storm Aura",
+  "category": "Auras",
+  "geometry": "aura",
+  "texture": "aura_atlas",
+  "anim": "aura:bolt",
+  "credit": "Sleep client (original)",
+  "textureSize": [
+   64,
+   128
+  ]
+ },
+ {
+  "id": "aura_leaf",
+  "name": "Autumn Aura",
+  "category": "Auras",
+  "geometry": "aura",
+  "texture": "aura_atlas",
+  "anim": "aura:leaf",
+  "credit": "Sleep client (original)",
+  "textureSize": [
+   64,
+   128
+  ]
+ },
+ {
+  "id": "aura_bubble",
+  "name": "Bubble Aura",
+  "category": "Auras",
+  "geometry": "aura",
+  "texture": "aura_atlas",
+  "anim": "aura:bubble",
+  "credit": "Sleep client (original)",
+  "textureSize": [
+   64,
+   128
+  ]
+ },
+ {
+  "id": "aura_rune",
+  "name": "Arcane Aura",
+  "category": "Auras",
+  "geometry": "aura",
+  "texture": "aura_atlas",
+  "anim": "aura:rune",
+  "credit": "Sleep client (original)",
+  "textureSize": [
+   64,
+   128
+  ]
+ },
+ {
+  "id": "aura_zzz",
+  "name": "Sleepy Aura",
+  "category": "Auras",
+  "geometry": "aura",
+  "texture": "aura_atlas",
+  "anim": "aura:zzz",
+  "credit": "Sleep client (original)",
+  "textureSize": [
+   64,
+   128
+  ]
+ },
+ {
+  "id": "aura_skull",
+  "name": "Soul Aura",
+  "category": "Auras",
+  "geometry": "aura",
+  "texture": "aura_atlas",
+  "anim": "aura:skull",
+  "credit": "Sleep client (original)",
+  "textureSize": [
+   64,
+   128
+  ]
+ },
+ {
+  "id": "minime_shoulder",
+  "name": "Shoulder Minime",
+  "category": "Minimes",
+  "geometry": "minime",
+  "texture": "aura_atlas",
+  "anim": "minime:shoulder",
+  "credit": "Sleep client (original)",
+  "textureSize": [
+   64,
+   64
+  ]
+ },
+ {
+  "id": "minime_head",
+  "name": "Head Minime",
+  "category": "Minimes",
+  "geometry": "minime",
+  "texture": "aura_atlas",
+  "anim": "minime:head",
+  "credit": "Sleep client (original)",
+  "textureSize": [
+   64,
+   64
+  ]
+ },
+ {
+  "id": "minime_buddy",
+  "name": "Buddy Minime",
+  "category": "Minimes",
+  "geometry": "minime",
+  "texture": "aura_atlas",
+  "anim": "minime:buddy",
+  "credit": "Sleep client (original)",
+  "textureSize": [
+   64,
+   64
+  ]
+ },
+ {
+  "id": "minime_backpack",
+  "name": "Backpack Minime",
+  "category": "Minimes",
+  "geometry": "minime",
+  "texture": "aura_atlas",
+  "anim": "minime:backpack",
+  "credit": "Sleep client (original)",
+  "textureSize": [
+   64,
+   64
+  ]
  }
 ]

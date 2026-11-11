@@ -20,7 +20,7 @@ public abstract class PlayerRendererCosmeticsMixin {
 	private void plegumo$cosmetics(EntityRendererFactory.Context ctx, boolean slim, CallbackInfo ci) {
 		try {
 			((LivingEntityRendererAccessor) this).plegumo$addFeature(
-					new CosmeticFeatureRenderer((FeatureRendererContext<PlayerEntityRenderState, PlayerEntityModel>) (Object) this));
+					new CosmeticFeatureRenderer((FeatureRendererContext<PlayerEntityRenderState, PlayerEntityModel>) (Object) this, slim));
 		} catch (Throwable t) {
 			System.err.println("[Sleep] cosmetics layer not added: " + t);
 		}

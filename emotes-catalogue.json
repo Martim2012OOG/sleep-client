@@ -1,32 +1,43 @@
 {
- "count": 12,
+ "count": 30,
  "emotes": [
   {
-   "id": "amogus",
-   "name": "Amogus",
+   "id": "take_the_l",
+   "name": "Take the L",
    "loop": true,
    "tags": [
-    "funny"
+    "dance"
    ],
-   "price": 150,
-   "rarity": "common",
-   "free": false
-  },
-  {
-   "id": "ascend",
-   "name": "Ascend",
-   "loop": false,
-   "tags": [
-    "funny"
-   ],
-   "price": 300,
+   "price": 400,
    "rarity": "epic",
    "free": false
   },
   {
-   "id": "becomehelicopter",
-   "name": "Become Helicopter",
+   "id": "griddy",
+   "name": "Griddy",
    "loop": true,
+   "tags": [
+    "dance"
+   ],
+   "price": 400,
+   "rarity": "epic",
+   "free": false
+  },
+  {
+   "id": "floss",
+   "name": "Floss",
+   "loop": true,
+   "tags": [
+    "dance"
+   ],
+   "price": 300,
+   "rarity": "rare",
+   "free": false
+  },
+  {
+   "id": "dab",
+   "name": "Dab",
+   "loop": false,
    "tags": [
     "funny"
    ],
@@ -35,42 +46,152 @@
    "free": false
   },
   {
-   "id": "brakedance",
-   "name": "Brakedance",
+   "id": "wave",
+   "name": "Wave",
    "loop": true,
    "tags": [
-    "dance"
-   ],
-   "price": 250,
-   "rarity": "rare",
-   "free": false
-  },
-  {
-   "id": "californiagirls",
-   "name": "California Girls",
-   "loop": true,
-   "tags": [
-    "dance"
-   ],
-   "price": 250,
-   "rarity": "rare",
-   "free": false
-  },
-  {
-   "id": "coolsit",
-   "name": "Cool Sit",
-   "loop": true,
-   "tags": [
-    "movement"
+    "greeting"
    ],
    "price": 0,
    "rarity": "common",
    "free": true
   },
   {
-   "id": "frontflip",
-   "name": "Front Flip",
+   "id": "clap",
+   "name": "Clap",
+   "loop": true,
+   "tags": [
+    "greeting"
+   ],
+   "price": 0,
+   "rarity": "common",
+   "free": true
+  },
+  {
+   "id": "salute",
+   "name": "Salute",
    "loop": false,
+   "tags": [
+    "greeting"
+   ],
+   "price": 0,
+   "rarity": "common",
+   "free": true
+  },
+  {
+   "id": "facepalm",
+   "name": "Facepalm",
+   "loop": false,
+   "tags": [
+    "funny"
+   ],
+   "price": 150,
+   "rarity": "common",
+   "free": false
+  },
+  {
+   "id": "tpose",
+   "name": "T-Pose",
+   "loop": true,
+   "tags": [
+    "funny"
+   ],
+   "price": 200,
+   "rarity": "rare",
+   "free": false
+  },
+  {
+   "id": "jumping_jacks",
+   "name": "Jumping Jacks",
+   "loop": true,
+   "tags": [
+    "sport"
+   ],
+   "price": 150,
+   "rarity": "common",
+   "free": false
+  },
+  {
+   "id": "pushups",
+   "name": "Push-ups",
+   "loop": true,
+   "tags": [
+    "sport"
+   ],
+   "price": 250,
+   "rarity": "rare",
+   "free": false
+  },
+  {
+   "id": "backflip",
+   "name": "Backflip",
+   "loop": false,
+   "tags": [
+    "sport"
+   ],
+   "price": 350,
+   "rarity": "epic",
+   "free": false
+  },
+  {
+   "id": "spin",
+   "name": "Spin",
+   "loop": true,
+   "tags": [
+    "dance"
+   ],
+   "price": 200,
+   "rarity": "rare",
+   "free": false
+  },
+  {
+   "id": "sit",
+   "name": "Sit",
+   "loop": true,
+   "tags": [
+    "chill"
+   ],
+   "price": 0,
+   "rarity": "common",
+   "free": true
+  },
+  {
+   "id": "laugh",
+   "name": "Laugh",
+   "loop": true,
+   "tags": [
+    "funny"
+   ],
+   "price": 150,
+   "rarity": "common",
+   "free": false
+  },
+  {
+   "id": "cry",
+   "name": "Cry",
+   "loop": true,
+   "tags": [
+    "funny"
+   ],
+   "price": 150,
+   "rarity": "common",
+   "free": false
+  },
+  {
+   "id": "point",
+   "name": "Point",
+   "loop": false,
+   "tags": [
+    "greeting"
+   ],
+   "price": 0,
+   "rarity": "common",
+   "free": true
+  },
+  {
+   "id": "victory",
+   "name": "Victory",
+   "loop": true,
    "tags": [
     "sport"
    ],
@@ -79,55 +200,132 @@
    "free": false
   },
   {
-   "id": "getthegriddy",
-   "name": "Get the Griddy",
+   "id": "zombie",
+   "name": "Zombie",
    "loop": true,
    "tags": [
-    "dance"
+    "funny"
    ],
    "price": 200,
    "rarity": "rare",
    "free": false
   },
   {
-   "id": "headpat",
-   "name": "Headpat",
+   "id": "robot",
+   "name": "Robot",
    "loop": true,
    "tags": [
-    "couple"
+    "dance"
    ],
-   "price": 0,
-   "rarity": "common",
-   "free": true
+   "price": 300,
+   "rarity": "rare",
+   "free": false
   },
   {
-   "id": "helicopterhelicopter",
-   "name": "Helicopter Helicopter",
+   "id": "headbang",
+   "name": "Headbang",
    "loop": true,
    "tags": [
-    "funny"
+    "dance"
+   ],
+   "price": 250,
+   "rarity": "rare",
+   "free": false
+  },
+  {
+   "id": "nap",
+   "name": "Power Nap",
+   "loop": true,
+   "tags": [
+    "chill"
+   ],
+   "price": 300,
+   "rarity": "rare",
+   "free": false
+  },
+  {
+   "id": "bow",
+   "name": "Bow",
+   "loop": false,
+   "tags": [
+    "greeting"
    ],
    "price": 150,
    "rarity": "common",
    "free": false
   },
   {
-   "id": "hug",
-   "name": "Hug",
+   "id": "hype",
+   "name": "Hype",
    "loop": true,
    "tags": [
-    "couple"
+    "dance"
    ],
-   "price": 0,
-   "rarity": "common",
-   "free": true
+   "price": 300,
+   "rarity": "rare",
+   "free": false
   },
   {
-   "id": "lean",
-   "name": "Lean",
+   "id": "shuffle",
+   "name": "Shuffle",
+   "loop": true,
+   "tags": [
+    "dance"
+   ],
+   "price": 300,
+   "rarity": "rare",
+   "free": false
+  },
+  {
+   "id": "disco",
+   "name": "Disco Fever",
+   "loop": true,
+   "tags": [
+    "dance"
+   ],
+   "price": 350,
+   "rarity": "epic",
+   "free": false
+  },
+  {
+   "id": "squat_kick",
+   "name": "Squat Kick",
+   "loop": true,
+   "tags": [
+    "dance"
+   ],
+   "price": 400,
+   "rarity": "epic",
+   "free": false
+  },
+  {
+   "id": "helicopter",
+   "name": "Helicopter",
    "loop": true,
    "tags": [
     "funny"
+   ],
+   "price": 500,
+   "rarity": "legendary",
+   "free": false
+  },
+  {
+   "id": "flex",
+   "name": "Flex",
+   "loop": true,
+   "tags": [
+    "sport"
+   ],
+   "price": 250,
+   "rarity": "rare",
+   "free": false
+  },
+  {
+   "id": "shrug",
+   "name": "Shrug",
+   "loop": false,
+   "tags": [
+    "greeting"
    ],
    "price": 150,
    "rarity": "common",

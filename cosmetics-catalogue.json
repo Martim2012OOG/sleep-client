@@ -1,5 +1,5 @@
 {
- "count": 129,
+ "count": 145,
  "note": "Items with 'variants' are ONE item with a colour picker; variants[0] is the default colour.",
  "cosmetics": [
   {
@@ -1461,6 +1461,150 @@
    "badge": "SPECIAL",
    "live_pet": true,
    "image": "images/cosmetics/verity.png"
+  },
+  {
+   "id": "aura_flame",
+   "name": "Inferno Aura",
+   "category": "Auras",
+   "price": 900,
+   "rarity": "epic",
+   "live_pet": false,
+   "image": "images/cosmetics/aura_flame.png"
+  },
+  {
+   "id": "aura_frost",
+   "name": "Frost Aura",
+   "category": "Auras",
+   "price": 900,
+   "rarity": "epic",
+   "live_pet": false,
+   "image": "images/cosmetics/aura_frost.png"
+  },
+  {
+   "id": "aura_heart",
+   "name": "Love Aura",
+   "category": "Auras",
+   "price": 700,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/aura_heart.png"
+  },
+  {
+   "id": "aura_star",
+   "name": "Starlight Aura",
+   "category": "Auras",
+   "price": 800,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/aura_star.png"
+  },
+  {
+   "id": "aura_note",
+   "name": "Melody Aura",
+   "category": "Auras",
+   "price": 700,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/aura_note.png"
+  },
+  {
+   "id": "aura_cash",
+   "name": "Cash Aura",
+   "category": "Auras",
+   "price": 1200,
+   "rarity": "legendary",
+   "live_pet": false,
+   "image": "images/cosmetics/aura_cash.png"
+  },
+  {
+   "id": "aura_bolt",
+   "name": "Storm Aura",
+   "category": "Auras",
+   "price": 1000,
+   "rarity": "epic",
+   "live_pet": false,
+   "image": "images/cosmetics/aura_bolt.png"
+  },
+  {
+   "id": "aura_leaf",
+   "name": "Autumn Aura",
+   "category": "Auras",
+   "price": 600,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/aura_leaf.png"
+  },
+  {
+   "id": "aura_bubble",
+   "name": "Bubble Aura",
+   "category": "Auras",
+   "price": 600,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/aura_bubble.png"
+  },
+  {
+   "id": "aura_rune",
+   "name": "Arcane Aura",
+   "category": "Auras",
+   "price": 1200,
+   "rarity": "legendary",
+   "live_pet": false,
+   "image": "images/cosmetics/aura_rune.png"
+  },
+  {
+   "id": "aura_zzz",
+   "name": "Sleepy Aura",
+   "category": "Auras",
+   "price": 500,
+   "rarity": "rare",
+   "live_pet": false,
+   "image": "images/cosmetics/aura_zzz.png"
+  },
+  {
+   "id": "aura_skull",
+   "name": "Soul Aura",
+   "category": "Auras",
+   "price": 1000,
+   "rarity": "epic",
+   "live_pet": false,
+   "image": "images/cosmetics/aura_skull.png"
+  },
+  {
+   "id": "minime_shoulder",
+   "name": "Shoulder Minime",
+   "category": "Minimes",
+   "price": 1000,
+   "rarity": "epic",
+   "live_pet": false,
+   "image": "images/cosmetics/minime_shoulder.png"
+  },
+  {
+   "id": "minime_head",
+   "name": "Head Minime",
+   "category": "Minimes",
+   "price": 1000,
+   "rarity": "epic",
+   "live_pet": false,
+   "image": "images/cosmetics/minime_head.png"
+  },
+  {
+   "id": "minime_buddy",
+   "name": "Buddy Minime",
+   "category": "Minimes",
+   "price": 1400,
+   "rarity": "legendary",
+   "live_pet": false,
+   "image": "images/cosmetics/minime_buddy.png"
+  },
+  {
+   "id": "minime_backpack",
+   "name": "Backpack Minime",
+   "category": "Minimes",
+   "price": 1200,
+   "rarity": "legendary",
+   "live_pet": false,
+   "image": "images/cosmetics/minime_backpack.png"
   }
  ]
 }

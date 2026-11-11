@@ -30,8 +30,16 @@ public class CosmeticFeatureRenderer extends FeatureRenderer<PlayerEntityRenderS
 	public static volatile long lastDrawn;
 	public static volatile String lastError;
 
+	/** Slim (3 pixel) arms: the minime copies it. */
+	private final boolean slim;
+
 	public CosmeticFeatureRenderer(FeatureRendererContext<PlayerEntityRenderState, PlayerEntityModel> context) {
+		this(context, false);
+	}
+
+	public CosmeticFeatureRenderer(FeatureRendererContext<PlayerEntityRenderState, PlayerEntityModel> context, boolean slim) {
 		super(context);
+		this.slim = slim;
 		layers++;
 	}
 
@@ -99,7 +107,25 @@ public class CosmeticFeatureRenderer extends FeatureRenderer<PlayerEntityRenderS
 					}
 					continue;
 				}
+				if (Minimes.is(d)) {
+					// a small copy of this player, with their skin and their pose
+					net.minecraft.util.Identifier skinId = state.skinTextures.body().texturePath();
+					RenderLayer skinLayer = RenderLayers.entityCutoutNoCull(skinId);
+					Minimes.draw(d, model, slim, matrices, state.age, light, (ms, e) -> queue.submitCustom(ms, skinLayer, e::emit));
+					lastDrawn = System.currentTimeMillis();
+					continue;
+				}
 				RenderLayer layer = RenderLayers.entityCutoutNoCull(d.textureId());
+				if (Auras.is(d)) {
+					// sprites around the whole player (not tied to a body part); half of them when the player is not close
+					final CosmeticModels.Def ad = d;
+					final int al = light;
+					final float age = state.age;
+					final boolean few = state.squaredDistanceToCamera > 24.0 * 24.0;
+					queue.submitCustom(matrices, layer, (entry, vc) -> Auras.emit(ad, entry, vc, al, age, few));
+					lastDrawn = System.currentTimeMillis();
+					continue;
+				}
 				for (CosmeticModels.Part part : CosmeticModels.geometry(d)) {
 					matrices.push();
 					boolean air = state.glidingTicks > 0 || state.isGliding;
@@ -146,6 +172,9 @@ public class CosmeticFeatureRenderer extends FeatureRenderer<PlayerEntityRenderS
 			}
 			for (CosmeticModels.Def d : Cosmetics.worn(id)) {
 				if (d.livePet()) {
+					continue;
+				}
+				if (Auras.is(d) || Minimes.is(d)) {
 					continue;
 				}
 				for (CosmeticModels.Part part : CosmeticModels.geometry(d)) {
