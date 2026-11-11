@@ -14,6 +14,7 @@ public final class Addons {
 
 	public static void init() {
 		// the built-in ones moved to extensions (PvP / Bridge Practice = the "practice" extension), which call register()
+		register(new DeathAnimationsAddon());
 	}
 
 	public static void register(Addon a) {

@@ -51,6 +51,7 @@
     "HideInventoryModelMixin",
     "SpeedFovMixin",
     "EntityStatusMixin",
+    "KillSignalsMixin",
     "ExplosionHookMixin",
     "BlockBreakHookMixin",
     "SoundHookMixin"

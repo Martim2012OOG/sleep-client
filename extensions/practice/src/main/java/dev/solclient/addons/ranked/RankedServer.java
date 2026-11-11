@@ -153,7 +153,7 @@ public final class RankedServer {
 				if (--countdown <= 0) {
 					phase = Phase.FIGHT;
 					run(s, "effect clear @a minecraft:slowness");
-					run(s, "attribute @a minecraft:jump_strength base reset");
+					jumpAll(s, "reset");
 					if (round > 1) {
 						// round 1: the intro on every client shows FIGHT! with its own sound
 						run(s, "title @a times 0 20 10");
@@ -202,6 +202,13 @@ public final class RankedServer {
 			}
 			default -> {
 			}
+		}
+	}
+
+	/** One player at a time: the attribute command refuses "@a" as soon as there are two players. */
+	private static void jumpAll(MinecraftServer s, String what) {
+		for (ServerPlayerEntity p : s.getPlayerManager().getPlayerList()) {
+			run(s, "attribute " + p.getUuidAsString() + " minecraft:jump_strength base " + what);
 		}
 	}
 
@@ -306,7 +313,7 @@ public final class RankedServer {
 		countdown = intro ? INTRO_TICKS : ROUND_TICKS;
 		int mark = intro ? INTRO_MARK : ROUND_MARK;
 		run(s, "effect give @a minecraft:slowness " + (countdown / 20 + 1) + " " + mark + " true");
-		run(s, "attribute @a minecraft:jump_strength base set 0");
+		jumpAll(s, "set 0");
 		if (!intro) {
 			run(s, "title @a times 0 30 10");
 			run(s, "title @a title {text:\"ROUND " + round + "\",color:\"white\",bold:true}");
@@ -602,7 +609,7 @@ public final class RankedServer {
 		phase = Phase.DONE;
 		ticks = 0;
 		run(s, "effect clear @a");
-		run(s, "attribute @a minecraft:jump_strength base reset");
+		jumpAll(s, "reset");
 		// tells every client who won, at once (no need to wait for the site): an invisible Luck effect whose level is the result
 		int mark = "A".equals(winner) ? WIN_MARK_A : "B".equals(winner) ? WIN_MARK_B : WIN_MARK_NONE;
 		run(s, "effect give @a minecraft:luck 15 " + mark + " true");

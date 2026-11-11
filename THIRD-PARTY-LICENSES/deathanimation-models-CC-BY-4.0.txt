@@ -1,0 +1,35 @@
+Third-party model attributions
+
+The following native voxel meshes are derived from user-supplied 3D models.
+Each source is licensed under Creative Commons Attribution 4.0 International.
+
+Chain Chomp
+This work is based on "Chain Chomp (Super Mario Bros)" (https://sketchfab.com/3d-models/chain-chomp-super-mario-bros-dd1c74820f694990a3715e137ec30c5d) by Anthony Yanez (https://sketchfab.com/paulyanez), licensed under CC-BY-4.0 (https://creativecommons.org/licenses/by/4.0/).
+
+Plants vs. Zombies Chomper
+This work is based on "chomper" (https://sketchfab.com/3d-models/chomper-eaeb4b5781fc4e9aadcb2ba5c347ba4d) by live (https://sketchfab.com/chperm), licensed under CC-BY-4.0 (https://creativecommons.org/licenses/by/4.0/).
+
+Plants vs. Zombies Wallnut
+This work is based on "Wallnut - PVZ: Garden Warfare" (https://sketchfab.com/3d-models/wallnut-pvz-garden-warfare-dc83aa65353f44ea9421426a64e24392) by Nazar Okruzhko (https://sketchfab.com/Deduska_1947), licensed under CC-BY-4.0 (https://creativecommons.org/licenses/by/4.0/).
+
+Plants vs. Zombies Gargantuar
+This work is based on "Gargantuar - PVZ: Garden Warfare" (https://sketchfab.com/3d-models/gargantuar-pvz-garden-warfare-158324cbf041447c9911268e7d742802) by Nazar Okruzhko (Назар Окружко) (https://sketchfab.com/Hot-Dog_1947), licensed under CC-BY-4.0 (https://creativecommons.org/licenses/by/4.0/).
+
+
+Kirby
+This work is based on "Kirby" (https://sketchfab.com/3d-models/kirby-5f01ca60ccc64a6489ade4ad0bd79e40) by Super Tabl? (https://sketchfab.com/metaknightable1001), licensed under CC-BY-4.0 (https://creativecommons.org/licenses/by/4.0/).
+
+
+Roblox Piggy
+This work is based on "Roblox Piggy" (https://sketchfab.com/3d-models/roblox-piggy-186664a59a0244b2aeaa5ead307d3667) by johne85 (https://sketchfab.com/johne85), licensed under CC-BY-4.0 (https://creativecommons.org/licenses/by/4.0/).
+
+Supplied Gaming weapon references
+The sniper rifle cuboids and texture were converted from the user-supplied
+"minecraft-sniper-rifle.zip" (Blockbench glTF export; no creator field included).
+The Leviathan Axe cuboids and texture were converted from the user-supplied
+"GoW_Leviathan128_1_21_1_v2.zip", whose pack description credits Szombie.
+Conversions preserve the source cuboid silhouettes and UVs as native item parts.
+The reference archives, foreign mod classes, datapack functions and shaders are
+not included in this release. Kunai, curved sword, energy sword, hook and
+Tung Tung figure geometry are authored locally from the supplied visual references.
+The native baseball bat uses the cuboid layout and shape from the user-supplied "Baseballbats.zip" resource pack (Blockbench credit; creator not identified in the archive). The Angry Birds slingshot geometry was converted from the user-supplied Angry Slingshot model; only native item JSON and vanilla wool/oak textures are used. The morning star geometry and texture were converted from the user-supplied "morning-star-updated.zip" Blockbench model (creator not identified in the archive). Source archives and executable mod code are not included in the release.

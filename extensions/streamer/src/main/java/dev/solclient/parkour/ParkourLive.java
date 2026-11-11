@@ -484,6 +484,13 @@ public final class ParkourLive {
 		}
 	}
 
+	/** One player at a time: the attribute command refuses "@a" as soon as there are two players. */
+	private static void jumpAll(MinecraftServer server, String what) {
+		for (ServerPlayerEntity p : server.getPlayerManager().getPlayerList()) {
+			command(server, "attribute " + p.getUuidAsString() + " minecraft:jump_strength base " + what);
+		}
+	}
+
 	/** Who the gifts hit (server thread): you, everyone in the map, or only your friends. */
 	private static java.util.List<ServerPlayerEntity> targets(MinecraftServer server, UUID me) {
 		TikTokLiveMod m = mod();
@@ -673,7 +680,7 @@ public final class ParkourLive {
 			command(server, "scoreboard players set @a pk_level 1");
 			command(server, "execute as @a at @s run function pk:to_checkpoint");
 			command(server, "effect give @a minecraft:slowness 5 255 true");
-			command(server, "attribute @a minecraft:jump_strength base set 0");
+			jumpAll(server, "set 0");
 			command(server, "title @a times 0 25 5");
 		});
 		raceOn = true;
@@ -686,7 +693,7 @@ public final class ParkourLive {
 		raceCount = -1;
 		if (server != null) {
 			server.execute(() -> {
-				command(server, "attribute @a minecraft:jump_strength base reset");
+				jumpAll(server, "reset");
 				command(server, "effect clear @a minecraft:slowness");
 				command(server, "title @a title {text:\"RACE STOPPED\",color:\"gray\",bold:true}");
 			});
@@ -706,7 +713,7 @@ public final class ParkourLive {
 						command(server, "title @a title " + t);
 						command(server, "execute as @a at @s run playsound minecraft:block.note_block.hat master @s ~ ~ ~ 1 1.2");
 					} else {
-						command(server, "attribute @a minecraft:jump_strength base reset");
+						jumpAll(server, "reset");
 						command(server, "effect clear @a minecraft:slowness");
 						command(server, "title @a title {text:\"GO!\",color:\"green\",bold:true}");
 						command(server, "execute as @a at @s run playsound minecraft:block.note_block.bell master @s ~ ~ ~ 1 1.6");
