@@ -3821,7 +3821,8 @@ public class SolMenuScreen extends Screen {
 			}
 		} else {
 			boolean killTab = !lockerShop && invCat.equals("Kill Effects");
-			if (!(killTab && !Social.sellsKillEffects()) && drawOffline(c, mx, my, (gx0 + ix1) / 2, (gy0 + iy1) / 2, gx1 - gx0 - 20)) {
+			// the free built-in cosmetics (auras, minimes) are there even without the site: only an empty list shows "offline"
+			if (!(killTab && !Social.sellsKillEffects()) && Social.shop.isEmpty() && drawOffline(c, mx, my, (gx0 + ix1) / 2, (gy0 + iy1) / 2, gx1 - gx0 - 20)) {
 				maxScroll = 0;
 				return;
 			}
@@ -4772,7 +4773,7 @@ public class SolMenuScreen extends Screen {
 
 	/** Shop sections from the site, always with an "Emotes" section (all the client's emotes, played in the preview). */
 	private static List<String> shopCats() {
-		List<String> base = Social.categories.isEmpty() ? List.of("Featured", "Sale", "All") : Social.categories;
+		List<String> base = Social.categories.isEmpty() ? List.of("Featured", "Sale", "All", "Auras", "Minimes") : Social.categories;
 		// "All Emotes" right under "All" (internally the "Emotes" section)
 		List<String> out = new ArrayList<>();
 		for (String c : base) {

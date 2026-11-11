@@ -650,6 +650,7 @@ public final class Social {
 	public static void accountChanged() {
 		me = null;
 		MY_EQUIP.clear();
+		builtinLoaded = false;
 		SHOP_CACHE.clear();
 		MY_UNEQUIP.clear();
 		status = "Connecting...";
@@ -1513,6 +1514,68 @@ public final class Social {
 	public static final boolean UNLOCK_ALL = "1".equals(System.getProperty("kubo.unlock")); // test mode only: everything is bought in the shop now
 	private static List<Item> localItems;
 
+	/**
+	 * Cosmetics the client draws by itself (no model file): free for everyone and always in the Locker, even when the site does not
+	 * sell them or cannot be reached. If the site does sell one, the site's item wins (price, owned, equipped).
+	 */
+	public static final List<String> BUILTIN_CATEGORIES = List.of("Auras", "Minimes");
+
+	public static boolean builtin(String category) {
+		if (category != null) {
+			for (String c : BUILTIN_CATEGORIES) {
+				if (c.equalsIgnoreCase(category)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	private static boolean builtinLoaded;
+
+	private static java.nio.file.Path builtinFile() {
+		return net.fabricmc.loader.api.FabricLoader.getInstance().getConfigDir().resolve("kubo").resolve("builtin-equip.txt");
+	}
+
+	/** The aura / minime you equipped stays on after a restart (the site does not know these, so it is kept on this computer). */
+	private static synchronized void loadBuiltinEquip() {
+		if (builtinLoaded) {
+			return;
+		}
+		builtinLoaded = true;
+		try {
+			java.nio.file.Path f = builtinFile();
+			if (java.nio.file.Files.exists(f)) {
+				for (String l : java.nio.file.Files.readAllLines(f)) {
+					int eq = l.indexOf('=');
+					if (eq > 0 && builtin(l.substring(0, eq)) && !MY_EQUIP.containsKey(l.substring(0, eq))
+							&& dev.solclient.cosmetic.CosmeticModels.find(l.substring(eq + 1).strip()) != null) {
+						MY_EQUIP.put(l.substring(0, eq), l.substring(eq + 1).strip());
+					}
+				}
+			}
+		} catch (Exception e) {
+			System.err.println("[Sleep] built-in cosmetics: " + e);
+		}
+	}
+
+	private static synchronized void saveBuiltinEquip() {
+		try {
+			List<String> lines = new ArrayList<>();
+			for (String c : BUILTIN_CATEGORIES) {
+				String id = MY_EQUIP.get(c);
+				if (id != null && dev.solclient.cosmetic.CosmeticModels.find(id) != null) {
+					lines.add(c + "=" + id);
+				}
+			}
+			java.nio.file.Path f = builtinFile();
+			java.nio.file.Files.createDirectories(f.getParent());
+			java.nio.file.Files.write(f, lines);
+		} catch (Exception e) {
+			System.err.println("[Sleep] built-in cosmetics: " + e);
+		}
+	}
+
 	private static synchronized List<Item> localItems() {
 		if (localItems == null) {
 			List<Item> l = new ArrayList<>();
@@ -1536,7 +1599,7 @@ public final class Social {
 				it.description = d.credit();
 				it.owned = true;
 				it.local = true;
-				it.badge = "Test";
+				it.badge = builtin(d.category()) ? "Free" : "Test";
 				l.add(it);
 			}
 			localItems = l;
@@ -1589,9 +1652,10 @@ public final class Social {
 
 	/** The site's list plus the bundled cosmetics that belong in this section (the site's own copy wins, but it is shown as owned). */
 	private static List<Item> withLocal(String category, List<Item> list) {
-		if ((!UNLOCK_ALL && gifts().isEmpty()) || category == null || category.equalsIgnoreCase("Emotes") || category.equalsIgnoreCase("Capes")) {
+		if (category == null || category.equalsIgnoreCase("Emotes") || category.equalsIgnoreCase("Capes")) {
 			return list;
 		}
+		loadBuiltinEquip();
 		List<Item> out = new ArrayList<>(list);
 		java.util.Set<String> have = new java.util.HashSet<>();
 		for (Item it : out) {
@@ -1603,13 +1667,11 @@ public final class Social {
 			}
 		}
 		for (Item it : localItems()) {
-			if (!UNLOCK_ALL && !gifts().contains(it.id)) {
-				continue; // only the presents you were given
+			if (!UNLOCK_ALL && !gifts().contains(it.id) && !builtin(it.category)) {
+				continue; // only the presents you were given (auras and minimes are free for everyone)
 			}
 			if (!have.contains(it.id) && (category.equals("All") || category.equalsIgnoreCase(it.category))) {
-				if (MY_EQUIP.get(it.category) != null && MY_EQUIP.get(it.category).equals(it.id)) {
-					it.equipped = true;
-				}
+				it.equipped = it.id.equals(MY_EQUIP.get(it.category));
 				CATALOGUE.put(it.id, it);
 				out.add(it);
 			}
@@ -1623,7 +1685,7 @@ public final class Social {
 		if (now == null) {
 			now = localFilter(category);
 		}
-		if ((UNLOCK_ALL || !gifts().isEmpty()) && (now == null || SHOP_CACHE.get(category) == null)) {
+		if (now == null || SHOP_CACHE.get(category) == null) {
 			now = withLocal(category, now == null ? List.of() : now);
 		}
 		if (now != null) {
@@ -1664,6 +1726,11 @@ public final class Social {
 		if (!cats.isEmpty()) {
 			if (!cats.contains("All")) {
 				cats.add(0, "All");
+			}
+			for (String b : BUILTIN_CATEGORIES) {
+				if (cats.stream().noneMatch(b::equalsIgnoreCase)) {
+					cats.add(b);
+				}
 			}
 			categories = Collections.unmodifiableList(cats);
 		}
@@ -1840,7 +1907,10 @@ public final class Social {
 			return;
 		}
 		if (it.local) {
-			return; // bundled test cosmetic: the site does not know it
+			if (builtin(it.category)) {
+				saveBuiltinEquip();
+			}
+			return; // bundled cosmetic: the site does not know it
 		}
 		action(() -> {
 			SolarApi.Res r;
@@ -2623,6 +2693,7 @@ public final class Social {
 		Map<String, String> m = new HashMap<>(p == null || !liveUser(player) ? Map.of() : p.cosmetics);
 		UUID me = MinecraftClient.getInstance().getSession().getUuidOrNull();
 		if (me != null && me.equals(player)) {
+			loadBuiltinEquip();
 			for (String c : MY_UNEQUIP) {
 				m.remove(c);
 			}

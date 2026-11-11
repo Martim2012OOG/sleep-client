@@ -118,7 +118,25 @@ public final class CosmeticModels {
 		if (d == null) {
 			d = m.get(slug(key));
 		}
+		if (d == null) {
+			// a site item that only carries the display name ("Inferno Aura"): match the model by its name
+			d = byName().get(slug(key));
+		}
 		return d;
+	}
+
+	private static Map<String, Def> byName;
+
+	private static synchronized Map<String, Def> byName() {
+		if (byName == null) {
+			Map<String, Def> n = new HashMap<>();
+			for (Def d : all().values()) {
+				n.putIfAbsent(slug(d.groupName() != null ? d.groupName() : d.name()), d);
+				n.putIfAbsent(slug(d.name()), d);
+			}
+			byName = n;
+		}
+		return byName;
 	}
 
 	public static String slug(String s) {
