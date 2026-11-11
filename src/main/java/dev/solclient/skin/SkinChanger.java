@@ -167,14 +167,75 @@ public final class SkinChanger {
 			return a.tex;
 		}
 		MinecraftClient mc = MinecraftClient.getInstance();
+		// FIX: primeiro a skin REAL da tua conta (a do jogo). Antes ia buscar ao site / espelhos pelo nick, que davam Steve ou nada
+		RemoteTextures.Tex real = ownGameSkin();
+		if (real != null) {
+			return real;
+		}
 		UUID id = mc.getSession().getUuidOrNull();
 		String url = id == null ? null : Social.skinUrl(id);
 		if (url != null) {
-			return RemoteTextures.get(url);
+			RemoteTextures.Tex site = RemoteTextures.get(url);
+			if (site != null) {
+				return site;
+			}
 		}
 		String nick = mc.getSession().getUsername();
 		return RemoteTextures.getFirst("name:" + nick.toLowerCase(java.util.Locale.ROOT), java.util.List.of(
 				"https://mc-heads.net/skin/" + nick, "https://minotar.net/skin/" + nick));
+	}
+
+
+	private static volatile RemoteTextures.Tex ownSkinTex;
+	private static volatile Identifier ownSkinFetched;
+	private static volatile long ownSkinTriedAt;
+
+	/**
+	 * A skin da tua conta tal como o jogo a tem: em jogo vem do jogador; no menu principal (sem mundo) pede-se ao Mojang uma vez
+	 * em segundo plano. Devolve null enquanto ainda nao se sabe.
+	 */
+	private static RemoteTextures.Tex ownGameSkin() {
+		MinecraftClient mc = MinecraftClient.getInstance();
+		try {
+			Identifier path = null;
+			if (mc.player != null) {
+				path = mc.player.getSkin().body().texturePath();
+			} else {
+				path = ownSkinFetched;
+				long now = System.currentTimeMillis();
+				UUID uuid = mc.getSession().getUuidOrNull();
+				if (path == null && uuid != null && now - ownSkinTriedAt > 20_000L) {
+					ownSkinTriedAt = now;
+					final String name = mc.getSession().getUsername();
+					Social.IO.execute(() -> {
+						try {
+							var res = mc.getApiServices().sessionService().fetchProfile(uuid, true);
+							com.mojang.authlib.GameProfile gp = res != null ? res.profile() : new com.mojang.authlib.GameProfile(uuid, name);
+							mc.getSkinProvider().fetchSkinTextures(gp).thenAccept(o -> {
+								if (o.isPresent()) {
+									ownSkinFetched = o.get().body().texturePath();
+								}
+							});
+						} catch (Throwable e) {
+							System.err.println("[Sleep] could not load your account skin: " + e);
+						}
+					});
+				}
+			}
+			if (path == null) {
+				return null;
+			}
+			RemoteTextures.Tex cur = ownSkinTex;
+			if (cur == null || !cur.id().equals(path)) {
+				String p = path.getPath();
+				Identifier asset = Identifier.of(path.getNamespace(), p.startsWith("textures/") ? p.substring(9).replaceAll("\\.png$", "") : p);
+				cur = new RemoteTextures.Tex(path, asset, 64, 64);
+				ownSkinTex = cur;
+			}
+			return cur;
+		} catch (Throwable t) {
+			return null; // qualquer falha: segue o caminho antigo (site / espelhos)
+		}
 	}
 
 	// ------------------------------------------------------------------ adding

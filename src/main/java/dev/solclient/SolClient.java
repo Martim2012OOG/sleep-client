@@ -579,13 +579,8 @@ public class SolClient implements ClientModInitializer {
 			return;
 		}
 		dev.solclient.ext.KuboApi.drawF3(context);
-		if (!settings.hudInF3.on() && f3Open(mc)) {
-			if (TabListMod.replacesVanilla() && mc.options.playerListKey.isPressed()) {
-				TabListMod.instance.draw(context); // the tab list still shows in F3, like vanilla
-			}
-			hudSkipF3++;
-			return; // like Lunar's "Show HUD in F3" off
-		}
+		// FIX: o HUD aparece SEMPRE. Antes escondia-se quando f3Open() dava true; em alguns PCs isso acontecia sem F3 aberto
+		// (o HUD só voltava ao ligar as hitboxes com F3+B). Já não depende do estado do F3 / hitboxes.
 		if (dev.solclient.mods.ItemFinderMod.instance != null && dev.solclient.mods.ItemFinderMod.instance.enabled) {
 			dev.solclient.mods.ItemFinderMod.instance.draw(context);
 		}
