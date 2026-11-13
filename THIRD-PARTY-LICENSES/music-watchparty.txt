@@ -1,0 +1,5 @@
+Watch Party ad music
+====================
+"honey jam" (lofi aesthetic music) by massobeats, published as non-copyright music.
+It plays while a YouTube ad is skipped in Watch Party, with the credit "massobeats - honey jam" shown on the screen.
+File: assets/sol_client/watchparty/honey_jam.mp3

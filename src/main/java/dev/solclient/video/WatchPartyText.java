@@ -43,6 +43,7 @@ public final class WatchPartyText {
 			Map.entry("Press K again: panel to change video, pause, skip, redraw or remove", "Carrega outra vez: painel para mudar o vídeo, pausar, avançar, redesenhar ou remover"),
 			Map.entry("Video engine missing", "Falta o motor de vídeo"),
 			Map.entry("Live", "Live"),
+			Map.entry("Wait a Second While We Skip The Ads", "Espera um segundo enquanto saltamos os anúncios"),
 			Map.entry("Opening the live on your screen... the first time it gets the tools it needs, this can take a minute.",
 					"A abrir a live no teu ecrã... à primeira vez vai buscar as ferramentas de que precisa, pode demorar um minuto."),
 			Map.entry("Getting ffmpeg (one time)...", "A obter o ffmpeg (só à primeira vez)..."),

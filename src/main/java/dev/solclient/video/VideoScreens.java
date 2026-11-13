@@ -52,6 +52,7 @@ public final class VideoScreens {
 		boolean liveErrTold;
 		FfVideo ff;
 		LiveStream.Audio audio;
+		AdMusic adMusic;
 
 		Screen(String owner) {
 			this.owner = owner;
@@ -752,12 +753,73 @@ public final class VideoScreens {
 				continue;
 			}
 			s.dur = readDuration(s);
+			adMusic(s, adPlaying(s), dist, range);
 			if (now >= s.nextSync) {
 				s.nextSync = now + 1000;
 				float vol = WatchPartyMod.instance.volume() * (float) Math.pow(Math.max(0, 1 - dist / range), 1.3);
+				s.browser.js(waitJs());
+				s.browser.js("window.__kMus=" + WatchPartyMod.instance.adMusicOn() + ";document.documentElement.classList.toggle('kubo-music'," + WatchPartyMod.instance.adMusicOn() + ");");
 				s.browser.js(String.format(Locale.ROOT, SYNC_JS, s.expected(), s.on ? "true" : "false", vol, bw >= 1900 ? "hd1080" : bw >= 1200 ? "hd720" : "large",
 						WatchPartyMod.instance.captions() ? "true" : "false", WatchPartyMod.instance.debug() ? "true" : "false"));
 			}
+		}
+	}
+
+	/** The waiting screen of the ads (animated), made once inside the page; its text follows the Watch Party language. */
+	private static String waitJs() {
+		return WAIT_JS.replace("@T@", jsStr(WatchPartyText.t("Wait a Second While We Skip The Ads")));
+	}
+
+	private static final String WAIT_JS = """
+			(function(){try{
+			var el=document.getElementById('kubo-wait');
+			if(!el){
+			var st=document.createElement('style');st.id='kubo-wait-css';st.textContent=`
+			#kubo-wait{position:fixed;inset:0;z-index:2147483647;display:none;overflow:hidden;align-items:center;justify-content:center;
+			background:#000;font-family:sans-serif}
+			html.kubo-wait #kubo-wait,html:has(.ad-showing) #kubo-wait{display:flex}
+			html.kubo-wait #kubo-pause,html:has(.ad-showing) #kubo-pause{display:none!important}
+			.kw-c{position:relative;display:flex;flex-direction:column;align-items:center;gap:3.2vh}
+			.kw-ring{position:relative;width:15vh;height:15vh;border-radius:50%;background:conic-gradient(from 0deg,rgba(255,255,255,0),rgba(255,255,255,.95));animation:kwspin 1.5s linear infinite;
+			-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 1.1vh),#000 calc(100% - 1.1vh));mask:radial-gradient(farthest-side,transparent calc(100% - 1.1vh),#000 calc(100% - 1.1vh))}
+			@keyframes kwspin{to{transform:rotate(360deg)}}
+			.kw-play{position:absolute;left:50%;top:50%;width:0;height:0;margin:-3.2vh 0 0 -1.8vh;border-left:6vh solid rgba(255,255,255,.92);border-top:3.2vh solid transparent;border-bottom:3.2vh solid transparent}
+			.kw-t{color:#fff;font-weight:700;font-size:3.4vh;letter-spacing:.02em;text-align:center;text-shadow:0 .4vh 2vh rgba(0,0,0,.5);padding:0 6vw}
+			.kw-cr{position:absolute;left:0;right:0;bottom:1.8vh;text-align:center;color:rgba(255,255,255,.30);font-size:2vh;letter-spacing:.05em;display:none}
+			html.kubo-music .kw-cr{display:block}`;
+			document.documentElement.appendChild(st);
+			el=document.createElement('div');el.id='kubo-wait';
+			el.innerHTML='<div class="kw-c"><div style="position:relative;width:15vh;height:15vh"><div class="kw-ring"></div><div class="kw-play"></div></div><div class="kw-t" id="kubo-wait-t"></div></div>'
+			+'<div class="kw-cr">\u266a  massobeats - honey jam</div>';
+			document.documentElement.appendChild(el);
+			}
+			var t=document.getElementById('kubo-wait-t');if(t&&t.textContent!==@T@){t.textContent=@T@;}
+			}catch(e){}})();
+			""";
+
+	/** The page writes #kad=1 into its address while an ad plays. */
+	private static boolean adPlaying(Screen s) {
+		try {
+			String u = s.browser == null ? null : s.browser.url();
+			return u != null && u.contains("#kad=1");
+		} catch (RuntimeException e) {
+			return false;
+		}
+	}
+
+	/** Plays the credited music while an ad is skipped (it fades out when the ad is over). */
+	private static void adMusic(Screen s, boolean ad, double dist, double range) {
+		boolean want = ad && s.on && WatchPartyMod.instance.adMusicOn();
+		if (want) {
+			if (s.adMusic == null) {
+				s.adMusic = new AdMusic();
+				s.adMusic.start();
+			}
+			float vol = WatchPartyMod.instance.volume() / 100F * (float) Math.pow(Math.max(0, 1 - dist / range), 1.3);
+			s.adMusic.volume = Math.max(0F, Math.min(1F, vol * 0.8F));
+		} else if (s.adMusic != null) {
+			s.adMusic.stop();
+			s.adMusic = null;
 		}
 	}
 
@@ -818,6 +880,10 @@ public final class VideoScreens {
 
 	private static void release(Screen s) {
 		releaseLive(s);
+		if (s.adMusic != null) {
+			s.adMusic.close();
+			s.adMusic = null;
+		}
 		if (s.browser != null) {
 			s.browser.close();
 			s.browser = null;
@@ -860,9 +926,6 @@ public final class VideoScreens {
 			+ ".ytp-ad-player-overlay,.ytp-ad-persistent-progress-bar-container{display:none!important;visibility:hidden!important;opacity:0!important}"
 			+ ".html5-video-container,.html5-video-player{filter:none!important;background:#000!important}"
 			// black screen with a message while an ad plays (and while the video loads right after it)
-			+ "html.kubo-wait::before,html:has(.ad-showing)::before{content:\"Wait a Second While We Skip The Ads\";position:fixed;left:0;top:0;right:0;bottom:0;"
-			+ "z-index:2147483647;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;text-align:center;"
-			+ "font:bold 3vw sans-serif}"
 			+ "html.kubo-wait #kubo-pause,html:has(.ad-showing) #kubo-pause{display:none!important}"
 			+ "video{position:fixed!important;left:0!important;top:0!important;width:100vw!important;height:100vh!important;"
 			+ "object-fit:contain!important;z-index:2147483646!important;background:#000!important}"
@@ -885,7 +948,7 @@ public final class VideoScreens {
 			+ "if(!v.__kH){v.__kH=1;var op=v.pause.bind(v);v.pause=function(){if(window.__kAllow){op();}};"
 			+ "v.addEventListener('pause',function(){if(window.__kOn&&!window.__kAllow&&!v.ended){var rr=v.play();"
 			+ "if(rr&&rr.catch)rr.catch(function(){K.m=1;v.muted=true;var r9=v.play();if(r9&&r9.catch)r9.catch(function(){});});}});}"
-			+ "v.volume=Math.max(0,Math.min(1,vol));v.muted=(vol<=0.001)||K.m===1;"
+			+ "v.volume=Math.max(0,Math.min(1,vol));v.muted=(vol<=0.001)||K.m===1||(!!window.__kMus&&!!document.querySelector('.ad-showing'));"
 			// small status text on the screen (helps to see what is happening when a video freezes)
 			+ "if(!window.__kF){window.__kF={c:0,f:0,t:performance.now()};(function lp(){window.__kF.c++;requestAnimationFrame(lp);})();}"
 			+ "var F=window.__kF,nw=performance.now();if(nw-F.t>=900){F.f=Math.round(F.c*1000/(nw-F.t));F.c=0;F.t=nw;}"
@@ -907,6 +970,7 @@ public final class VideoScreens {
 			+ "kpd.appendChild(kci);document.documentElement.appendChild(kpd);}"
 			+ "kpd.style.display=on?'none':'flex';"
 			+ "if(!ad){K.a=0;}"
+			+ "if(ad){window.__kDu=null;try{history.replaceState(history.state,'',location.pathname+location.search+'#kad=1');}catch(eg){}}"
 			+ "if(ad){if(sk){K.a=(K.a||0)+1;if(K.a>=2&&isFinite(v.duration)&&v.duration>0){v.currentTime=Math.max(0,v.duration-0.1);}}"
 			+ "if(on&&v.paused){if(pl&&pl.playVideo){try{pl.playVideo();}catch(e4){}}var ra=v.play();if(ra&&ra.catch)ra.catch(function(){});}return;}"
 			// tell the game how long the video is (written into the page #hash, which the game reads back)
@@ -979,7 +1043,12 @@ public final class VideoScreens {
 			queue.submitCustom(matrices, RenderLayers.entityCutoutNoCull(WHITE),
 					(e, vc) -> quad(vc, e, rx, rz, nx, nz, w + frame * 2, h + frame * 2, -frame, -0.02F, 0xFF0B0C10));
 			if (video) {
-				final Identifier tid = drawId;
+				// read the id only now: the browser's texture id is created a few lines above, the first time it has a picture
+				final Identifier tid = s.live ? (s.ff != null ? s.ff.id() : null) : s.texId;
+				if (tid == null) {
+					matrices.pop();
+					continue;
+				}
 				queue.submitCustom(matrices, RenderLayers.entityCutoutNoCull(tid),
 						(e, vc) -> quad(vc, e, rx, rz, nx, nz, w, h, 0, 0F, 0xFFFFFFFF));
 			}

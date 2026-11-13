@@ -22,6 +22,7 @@ public class WatchPartyMod extends Mod {
 	private final Option.Bool debug = bool("Debug Info (green text)", false);
 	private final Option.Choice from = choice("Show Screens From", 0, "Everyone", "Friends Only");
 	private final Option.Num size = num("Quick Screen Width", 6, 2, 32, 1, " blocks");
+	private final Option.Bool adMusic = bool("Music During Ads", true);
 	private final Option.Choice language = choice("Language", 0, "Auto", "English", "Português");
 	private boolean keyDown;
 	private boolean clickDown;
@@ -101,6 +102,11 @@ public class WatchPartyMod extends Mod {
 	/** 0 = follow the client language, 1 = English, 2 = Portuguese (the texts of Watch Party). */
 	public int languageIdx() {
 		return language.idx();
+	}
+
+	/** Play the credited ad music while an ad is skipped. */
+	public boolean adMusicOn() {
+		return adMusic.on();
 	}
 
 	public boolean friendsOnly() {
