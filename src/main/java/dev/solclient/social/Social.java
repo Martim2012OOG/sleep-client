@@ -145,6 +145,10 @@ public final class Social {
 
 	public static final class Item {
 		public String id, name, category, description, badge, imageUrl, modelId;
+		/** Emotes the site sends itself (admin zip upload): where the animation file is, its number on the wire, and its accessories. */
+		public String emoteUrl, emoteRight, emoteLeft;
+		public int emoteWire;
+		public boolean emoteLoop = true;
 		/** Cape pictures / video the site sent with the item (null when it only has its shop picture). */
 		public CapeMediaLogic.Desc capeMedia;
 		public long price, finalPrice, discountPct;
@@ -164,6 +168,11 @@ public final class Social {
 			i.badge = Json.str(o, "badge");
 			i.imageUrl = Json.str(o, "imageUrl");
 			i.modelId = Json.str(o, "modelId", "model");
+			i.emoteUrl = Json.str(o, "emoteUrl");
+			i.emoteRight = Json.str(o, "emoteRight");
+			i.emoteLeft = Json.str(o, "emoteLeft");
+			i.emoteWire = (int) Json.num(o, "emoteWire", 0);
+			i.emoteLoop = Json.bool(o, "emoteLoop", true);
 			i.price = Json.num(o, "price", 0);
 			i.finalPrice = Json.num(o, "finalPrice", i.price);
 			i.discountPct = Json.num(o, "discountPct", 0);
@@ -1810,6 +1819,9 @@ public final class Social {
 			} else {
 				rememberEquip(it, it.owned && it.equipped);
 			}
+		}
+		if (category.equalsIgnoreCase("All") || category.equalsIgnoreCase("Emotes")) {
+			dev.solclient.emote.EmoteLibrary.refreshRemote(items); // emotes the site added after this client was built
 		}
 		List<Item> list = withLocal(category, Collections.unmodifiableList(items));
 		SHOP_CACHE.put(category, list);

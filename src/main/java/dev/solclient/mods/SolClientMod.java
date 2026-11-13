@@ -60,6 +60,8 @@ public class SolClientMod extends Mod {
 	public final Option.Bool splashLogo;
 	public final Option.Bool splashOnReload;
 	public final Option.Bool hideReloadScreen;
+	/** Owner only: use the emotes that are in the client but not in the shop yet. */
+	public final Option.Bool unreleasedEmotes;
 	public final Option.Choice gameFont;
 	public final Option.Bool hideHudWhileLoading;
 	/** The first-start setup was finished (or skipped). */
@@ -304,6 +306,8 @@ public class SolClientMod extends Mod {
 		splashOnReload = bool("Also When Reloading Resource Packs", false);
 		hideReloadScreen = bool("Instant Pack Reload", true);
 		hideReloadScreen.tip("Adding or removing a resource pack no longer shows the red loading screen (no fade, no 1 s minimum): you keep seeing the game with a thin progress bar on top.");
+		unreleasedEmotes = bool("Use Emotes Not In Store Yet", false);
+		unreleasedEmotes.tip("Owner only: lets you use every emote built into the client, including the ones you have not added to the shop / site yet. Other players still see them.");
 		hideHudWhileLoading = bool("Hide Sleep HUD While Loading", true);
 
 		// ------------------------------------------------------------------ Setup & reset

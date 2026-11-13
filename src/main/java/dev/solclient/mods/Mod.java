@@ -160,10 +160,36 @@ public abstract class Mod {
 		setEnabled(!enabled);
 	}
 
+	private boolean enablePending;
+
 	/** Called after the config was loaded. */
 	public void init() {
 		if (enabled) {
+			try {
+				onEnable();
+			} catch (RuntimeException | LinkageError e) {
+				// At start the game is not fully built yet (no options, no window...): a mod that needs them must never take the whole
+				// game down with it. It is started again as soon as the game is up (see retryEnable).
+				enablePending = true;
+				System.err.println("[Sleep] " + name + " could not start yet, trying again once the game is up: " + e);
+			}
+		}
+	}
+
+	/** Every tick: a mod whose start failed because the game was not ready is started now. */
+	public final void retryEnable() {
+		if (!enablePending) {
+			return;
+		}
+		if (!enabled || mc.options == null) {
+			enablePending = !enabled ? false : enablePending;
+			return;
+		}
+		enablePending = false;
+		try {
 			onEnable();
+		} catch (RuntimeException | LinkageError e) {
+			System.err.println("[Sleep] " + name + " could not start: " + e);
 		}
 	}
 

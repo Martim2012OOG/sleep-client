@@ -11,12 +11,17 @@ public class StableFovMod extends Mod {
 
 	@Override
 	protected void onEnable() {
+		if (mc.options == null) {
+			throw new IllegalStateException("options not ready"); // Mod.init tries again once the game is up
+		}
 		saved = mc.options.getFovEffectScale().getValue();
 		mc.options.getFovEffectScale().setValue(0.0);
 	}
 
 	@Override
 	protected void onDisable() {
-		mc.options.getFovEffectScale().setValue(saved == null || saved == 0 ? 1.0 : saved);
+		if (mc.options != null) {
+			mc.options.getFovEffectScale().setValue(saved == null || saved == 0 ? 1.0 : saved);
+		}
 	}
 }

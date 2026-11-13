@@ -404,6 +404,9 @@ public class SolClient implements ClientModInitializer {
 			Gfx.setFont(settings.font.idx()); // Settings > Font (cheap: only does work when it changed)
 			if (settings.gameFont != null) GameFont.sync(settings.gameFont.idx()); // Settings > Whole Game Font
 		}
+		for (Mod m : MODS) {
+			m.retryEnable(); // a mod that could not start while the game was still loading
+		}
 		if (client.player == null) {
 			return;
 		}

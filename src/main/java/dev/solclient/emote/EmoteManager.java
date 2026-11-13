@@ -66,9 +66,17 @@ public final class EmoteManager {
 		return (float) ((System.nanoTime() - ns) / TICK_NS);
 	}
 
+	/** An emote the site sent that is still downloading: it starts as soon as the file is there (or is dropped after 12 s). */
+	private static EmoteLibrary.Info pendingInfo;
+	private static long pendingAt;
+
 	public static void play(EmoteLibrary.Info info) {
 		Animation a = EmoteLibrary.animation(info);
 		if (a == null) {
+			if (EmoteLibrary.isRemote(info)) {
+				pendingInfo = info;
+				pendingAt = System.currentTimeMillis();
+			}
 			return;
 		}
 		MinecraftClient mc = MinecraftClient.getInstance();
@@ -196,6 +204,16 @@ public final class EmoteManager {
 	/** Every client tick. */
 	public static void tick() {
 		tickRemote(MinecraftClient.getInstance());
+		if (pendingInfo != null) {
+			Animation pa = EmoteLibrary.animation(pendingInfo);
+			if (pa != null) {
+				EmoteLibrary.Info p = pendingInfo;
+				pendingInfo = null;
+				play(p);
+			} else if (System.currentTimeMillis() - pendingAt > 12_000L) {
+				pendingInfo = null;
+			}
+		}
 		if (anim == null) {
 			return;
 		}

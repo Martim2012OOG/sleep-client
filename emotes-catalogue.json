@@ -1,5 +1,5 @@
 {
- "count": 30,
+ "count": 36,
  "emotes": [
   {
    "id": "take_the_l",
@@ -10,29 +10,87 @@
    ],
    "price": 400,
    "rarity": "epic",
-   "free": false
+   "free": false,
+   "author": "Good Deeds Josh",
+   "license": "CC0-1.0"
   },
   {
-   "id": "griddy",
-   "name": "Griddy",
+   "id": "orange_justice",
+   "name": "Orange Justice",
+   "loop": false,
+   "tags": [
+    "dance"
+   ],
+   "price": 600,
+   "rarity": "legendary",
+   "free": false,
+   "author": "Good Deeds Josh",
+   "license": "CC0-1.0"
+  },
+  {
+   "id": "floss",
+   "name": "The Floss",
+   "loop": false,
+   "tags": [
+    "dance"
+   ],
+   "price": 400,
+   "rarity": "epic",
+   "free": false,
+   "author": "Good Deeds Josh",
+   "license": "CC0-1.0"
+  },
+  {
+   "id": "floss_dance",
+   "name": "Floss Dance",
+   "loop": true,
+   "tags": [
+    "dance"
+   ],
+   "price": 250,
+   "rarity": "rare",
+   "free": false,
+   "author": "iFeelHealU",
+   "license": "CC0-1.0"
+  },
+  {
+   "id": "club_penguin",
+   "name": "Club Penguin Dance",
    "loop": true,
    "tags": [
     "dance"
    ],
    "price": 400,
    "rarity": "epic",
-   "free": false
+   "free": false,
+   "author": "Wah0o",
+   "license": "CC0-1.0"
   },
   {
-   "id": "floss",
-   "name": "Floss",
+   "id": "naruto",
+   "name": "Naruto",
    "loop": true,
    "tags": [
     "dance"
    ],
-   "price": 300,
+   "price": 350,
+   "rarity": "epic",
+   "free": false,
+   "author": "iMaterix",
+   "license": "CC0-1.0"
+  },
+  {
+   "id": "grace",
+   "name": "Grace",
+   "loop": true,
+   "tags": [
+    "dance"
+   ],
+   "price": 250,
    "rarity": "rare",
-   "free": false
+   "free": false,
+   "author": "iMaterix",
+   "license": "CC0-1.0"
   },
   {
    "id": "dab",
@@ -43,51 +101,35 @@
    ],
    "price": 150,
    "rarity": "common",
-   "free": false
+   "free": false,
+   "author": "Kale Ko",
+   "license": "CC0-1.0"
   },
   {
-   "id": "wave",
-   "name": "Wave",
-   "loop": true,
-   "tags": [
-    "greeting"
-   ],
-   "price": 0,
-   "rarity": "common",
-   "free": true
-  },
-  {
-   "id": "clap",
-   "name": "Clap",
-   "loop": true,
-   "tags": [
-    "greeting"
-   ],
-   "price": 0,
-   "rarity": "common",
-   "free": true
-  },
-  {
-   "id": "salute",
-   "name": "Salute",
-   "loop": false,
-   "tags": [
-    "greeting"
-   ],
-   "price": 0,
-   "rarity": "common",
-   "free": true
-  },
-  {
-   "id": "facepalm",
-   "name": "Facepalm",
+   "id": "dab_hard",
+   "name": "Dab Hard",
    "loop": false,
    "tags": [
     "funny"
    ],
    "price": 150,
    "rarity": "common",
-   "free": false
+   "free": false,
+   "author": "Good Deeds Josh",
+   "license": "CC0-1.0"
+  },
+  {
+   "id": "jump",
+   "name": "Jump",
+   "loop": true,
+   "tags": [
+    "funny"
+   ],
+   "price": 0,
+   "rarity": "common",
+   "free": true,
+   "author": "Kale Ko",
+   "license": "CC0-1.0"
   },
   {
    "id": "tpose",
@@ -96,53 +138,141 @@
    "tags": [
     "funny"
    ],
-   "price": 200,
+   "price": 0,
+   "rarity": "common",
+   "free": true,
+   "author": "Helper",
+   "license": "CC0-1.0"
+  },
+  {
+   "id": "nervous",
+   "name": "Nervous",
+   "loop": true,
+   "tags": [
+    "funny"
+   ],
+   "price": 150,
+   "rarity": "common",
+   "free": false,
+   "author": "Helper",
+   "license": "CC0-1.0"
+  },
+  {
+   "id": "look_around",
+   "name": "Look Around",
+   "loop": false,
+   "tags": [
+    "funny"
+   ],
+   "price": 150,
+   "rarity": "common",
+   "free": false,
+   "author": "Kale Ko",
+   "license": "CC0-1.0"
+  },
+  {
+   "id": "penguin",
+   "name": "Penguin",
+   "loop": true,
+   "tags": [
+    "funny"
+   ],
+   "price": 150,
+   "rarity": "common",
+   "free": false,
+   "author": "iMaterix",
+   "license": "CC0-1.0"
+  },
+  {
+   "id": "head_shake",
+   "name": "Head Shake",
+   "loop": true,
+   "tags": [
+    "funny"
+   ],
+   "price": 150,
+   "rarity": "common",
+   "free": false,
+   "author": "iMaterix",
+   "license": "CC0-1.0"
+  },
+  {
+   "id": "selfie",
+   "name": "Selfie",
+   "loop": true,
+   "tags": [
+    "funny"
+   ],
+   "price": 250,
    "rarity": "rare",
-   "free": false
+   "free": false,
+   "author": "Kale Ko",
+   "license": "CC0-1.0"
+  },
+  {
+   "id": "inspect",
+   "name": "Inspect",
+   "loop": false,
+   "tags": [
+    "funny"
+   ],
+   "price": 250,
+   "rarity": "rare",
+   "free": false,
+   "author": "Overseer",
+   "license": "CC0-1.0"
+  },
+  {
+   "id": "item_look",
+   "name": "Item Look",
+   "loop": false,
+   "tags": [
+    "funny"
+   ],
+   "price": 150,
+   "rarity": "common",
+   "free": false,
+   "author": "iMaterix",
+   "license": "CC0-1.0"
   },
   {
    "id": "jumping_jacks",
    "name": "Jumping Jacks",
-   "loop": true,
+   "loop": false,
    "tags": [
     "sport"
    ],
-   "price": 150,
-   "rarity": "common",
-   "free": false
+   "price": 250,
+   "rarity": "rare",
+   "free": false,
+   "author": "Good Deeds Josh",
+   "license": "CC0-1.0"
   },
   {
-   "id": "pushups",
-   "name": "Push-ups",
+   "id": "squats",
+   "name": "Squats",
    "loop": true,
    "tags": [
     "sport"
    ],
    "price": 250,
    "rarity": "rare",
-   "free": false
+   "free": false,
+   "author": "JustARoy",
+   "license": "MIT"
   },
   {
-   "id": "backflip",
-   "name": "Backflip",
-   "loop": false,
+   "id": "kneel",
+   "name": "Kneel",
+   "loop": true,
    "tags": [
     "sport"
    ],
-   "price": 350,
-   "rarity": "epic",
-   "free": false
-  },
-  {
-   "id": "spin",
-   "name": "Spin",
-   "loop": true,
-   "tags": [
-    "dance"
-   ],
-   "price": 200,
-   "rarity": "rare",
-   "free": false
+   "price": 150,
+   "rarity": "common",
+   "free": false,
+   "author": "JustARoy",
+   "license": "MIT"
   },
   {
    "id": "sit",
@@ -153,95 +283,139 @@
    ],
    "price": 0,
    "rarity": "common",
-   "free": true
+   "free": true,
+   "author": "Kale Ko",
+   "license": "CC0-1.0"
   },
   {
-   "id": "laugh",
-   "name": "Laugh",
+   "id": "cool_sit",
+   "name": "Cool Sit",
    "loop": true,
    "tags": [
-    "funny"
+    "chill"
+   ],
+   "price": 0,
+   "rarity": "common",
+   "free": true,
+   "author": "Wah0o",
+   "license": "CC0-1.0"
+  },
+  {
+   "id": "ground_sit",
+   "name": "Ground Sit",
+   "loop": true,
+   "tags": [
+    "chill"
+   ],
+   "price": 250,
+   "rarity": "rare",
+   "free": false,
+   "author": "iFeelHealU",
+   "license": "CC0-1.0"
+  },
+  {
+   "id": "lay_down",
+   "name": "Lay Down",
+   "loop": true,
+   "tags": [
+    "chill"
+   ],
+   "price": 250,
+   "rarity": "rare",
+   "free": false,
+   "author": "iFeelHealU",
+   "license": "CC0-1.0"
+  },
+  {
+   "id": "lay_back",
+   "name": "Lay on Your Back",
+   "loop": true,
+   "tags": [
+    "chill"
+   ],
+   "price": 250,
+   "rarity": "rare",
+   "free": false,
+   "author": "Mid",
+   "license": "CC0-1.0"
+  },
+  {
+   "id": "meditation",
+   "name": "Meditation",
+   "loop": true,
+   "tags": [
+    "chill"
+   ],
+   "price": 250,
+   "rarity": "rare",
+   "free": false,
+   "author": "iFeelHealU",
+   "license": "CC0-1.0"
+  },
+  {
+   "id": "lean",
+   "name": "Lean",
+   "loop": true,
+   "tags": [
+    "chill"
    ],
    "price": 150,
    "rarity": "common",
-   "free": false
+   "free": false,
+   "author": "Wah0o",
+   "license": "CC0-1.0"
   },
   {
-   "id": "cry",
-   "name": "Cry",
+   "id": "hug",
+   "name": "Hug",
    "loop": true,
    "tags": [
-    "funny"
+    "greeting"
+   ],
+   "price": 0,
+   "rarity": "common",
+   "free": true,
+   "author": "KosmX",
+   "license": "CC0-1.0"
+  },
+  {
+   "id": "hand_on_heart",
+   "name": "Hand on Heart",
+   "loop": true,
+   "tags": [
+    "greeting"
    ],
    "price": 150,
    "rarity": "common",
-   "free": false
+   "free": false,
+   "author": "Milka",
+   "license": "CC0-1.0"
   },
   {
-   "id": "point",
-   "name": "Point",
+   "id": "heart_hands",
+   "name": "Heart Hands",
    "loop": false,
    "tags": [
     "greeting"
    ],
    "price": 0,
    "rarity": "common",
-   "free": true
+   "free": true,
+   "author": "iMaterix",
+   "license": "CC0-1.0"
   },
   {
-   "id": "victory",
-   "name": "Victory",
-   "loop": true,
+   "id": "pay_respects",
+   "name": "Pay Respects",
+   "loop": false,
    "tags": [
-    "sport"
+    "greeting"
    ],
-   "price": 200,
-   "rarity": "rare",
-   "free": false
-  },
-  {
-   "id": "zombie",
-   "name": "Zombie",
-   "loop": true,
-   "tags": [
-    "funny"
-   ],
-   "price": 200,
-   "rarity": "rare",
-   "free": false
-  },
-  {
-   "id": "robot",
-   "name": "Robot",
-   "loop": true,
-   "tags": [
-    "dance"
-   ],
-   "price": 300,
-   "rarity": "rare",
-   "free": false
-  },
-  {
-   "id": "headbang",
-   "name": "Headbang",
-   "loop": true,
-   "tags": [
-    "dance"
-   ],
-   "price": 250,
-   "rarity": "rare",
-   "free": false
-  },
-  {
-   "id": "nap",
-   "name": "Power Nap",
-   "loop": true,
-   "tags": [
-    "chill"
-   ],
-   "price": 300,
-   "rarity": "rare",
-   "free": false
+   "price": 0,
+   "rarity": "common",
+   "free": true,
+   "author": "Milka",
+   "license": "CC0-1.0"
   },
   {
    "id": "bow",
@@ -250,86 +424,50 @@
    "tags": [
     "greeting"
    ],
-   "price": 150,
+   "price": 0,
    "rarity": "common",
-   "free": false
+   "free": true,
+   "author": "Helper",
+   "license": "CC0-1.0"
   },
   {
-   "id": "hype",
-   "name": "Hype",
-   "loop": true,
-   "tags": [
-    "dance"
-   ],
-   "price": 300,
-   "rarity": "rare",
-   "free": false
-  },
-  {
-   "id": "shuffle",
-   "name": "Shuffle",
-   "loop": true,
-   "tags": [
-    "dance"
-   ],
-   "price": 300,
-   "rarity": "rare",
-   "free": false
-  },
-  {
-   "id": "disco",
-   "name": "Disco Fever",
-   "loop": true,
-   "tags": [
-    "dance"
-   ],
-   "price": 350,
-   "rarity": "epic",
-   "free": false
-  },
-  {
-   "id": "squat_kick",
-   "name": "Squat Kick",
-   "loop": true,
-   "tags": [
-    "dance"
-   ],
-   "price": 400,
-   "rarity": "epic",
-   "free": false
-  },
-  {
-   "id": "helicopter",
-   "name": "Helicopter",
-   "loop": true,
-   "tags": [
-    "funny"
-   ],
-   "price": 500,
-   "rarity": "legendary",
-   "free": false
-  },
-  {
-   "id": "flex",
-   "name": "Flex",
-   "loop": true,
-   "tags": [
-    "sport"
-   ],
-   "price": 250,
-   "rarity": "rare",
-   "free": false
-  },
-  {
-   "id": "shrug",
-   "name": "Shrug",
+   "id": "deep_bow",
+   "name": "Deep Bow",
    "loop": false,
    "tags": [
     "greeting"
    ],
    "price": 150,
    "rarity": "common",
-   "free": false
+   "free": false,
+   "author": "Helper",
+   "license": "CC0-1.0"
+  },
+  {
+   "id": "hello",
+   "name": "Hello",
+   "loop": false,
+   "tags": [
+    "greeting"
+   ],
+   "price": 0,
+   "rarity": "common",
+   "free": true,
+   "author": "iFeelHealU",
+   "license": "CC0-1.0"
+  },
+  {
+   "id": "gestures",
+   "name": "Gestures",
+   "loop": true,
+   "tags": [
+    "greeting"
+   ],
+   "price": 150,
+   "rarity": "common",
+   "free": false,
+   "author": "iMaterix",
+   "license": "CC0-1.0"
   }
  ]
 }

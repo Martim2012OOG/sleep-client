@@ -162,13 +162,15 @@ public final class EmoteRig {
 		float b = p[Animation.BEND] * w;
 		float x = lerp(part.originX, p[0], w), y = lerp(part.originY, p[1], w), z = lerp(part.originZ, p[2], w);
 		boolean real = split(part);
-		float pitch = lerp(part.pitch, anim.has(idx, 3) ? p[3] : def[3], w) + (real ? 0F : (LimbSplit.R6 ? 0F : b * 0.5F));
+		// no real elbows / knees (R6): the limb is aimed half way into the bend and made a little shorter, so a sit, a kneel or a
+		// waving forearm still reads right instead of staying straight (the bend of the file was thrown away before)
+		float pitch = lerp(part.pitch, anim.has(idx, 3) ? p[3] : def[3], w) + (real ? 0F : b * 0.5F);
 		float yaw = lerp(part.yaw, anim.has(idx, 4) ? p[4] : def[4], w);
 		float roll = lerp(part.roll, anim.has(idx, 5) ? p[5] : def[5], w);
 		place(part, g, x, y, z, pitch, yaw, roll);
 		if (real) {
 			bendLower(part, COVER[idx], idx == Animation.RIGHT_ARM || idx == Animation.LEFT_ARM, b);
-		} else if (!LimbSplit.R6) {
+		} else {
 			shorten(part, p[Animation.BEND], w);
 		}
 	}
