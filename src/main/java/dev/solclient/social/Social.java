@@ -22,6 +22,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.util.Identifier;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.session.Session;
 
@@ -523,6 +524,64 @@ public final class Social {
 		dev.solclient.gui.Notify.show(error ? dev.solclient.gui.Notify.Kind.ERROR : dev.solclient.gui.Notify.Kind.KUBO, text, "");
 		flash = text;
 		flashError = error;
+		flashAt = System.currentTimeMillis();
+	}
+
+	private static final Map<String, int[]> ICON_SIZE = new ConcurrentHashMap<>();
+
+	private static int[] sizeOf(Identifier id) {
+		return ICON_SIZE.computeIfAbsent(id.toString(), k -> {
+			try (java.io.InputStream in = MinecraftClient.getInstance().getResourceManager().getResource(id).get().getInputStream();
+					net.minecraft.client.texture.NativeImage img = net.minecraft.client.texture.NativeImage.read(in)) {
+				return new int[] {img.getWidth(), img.getHeight()};
+			} catch (Exception | Error e) {
+				return new int[] {0, 0};
+			}
+		});
+	}
+
+	/** The real picture of an item for the toasts: its bundled thumbnail (cosmetics, kill effects) or the one the site sent. Null = none yet. */
+	private static Object[] itemIcon(Item it) {
+		try {
+			var rm = MinecraftClient.getInstance().getResourceManager();
+			if (isKillEffect(it)) {
+				Identifier id = dev.solclient.Gfx.id("textures/killfx/thumb/" + killEffectKey(it) + ".png");
+				if (rm.getResource(id).isPresent()) {
+					int[] sz = sizeOf(id);
+					return sz[0] > 0 ? new Object[] {id, sz[0], sz[1]} : null;
+				}
+			}
+			dev.solclient.cosmetic.CosmeticModels.Def d = dev.solclient.cosmetic.Cosmetics.modelFor(it);
+			if (d != null) {
+				d = dev.solclient.cosmetic.Variants.resolve(d);
+				Identifier id = dev.solclient.Gfx.id("textures/cosmetics/thumb/" + d.id() + ".png");
+				if (rm.getResource(id).isPresent()) {
+					int[] sz = sizeOf(id);
+					return sz[0] > 0 ? new Object[] {id, sz[0], sz[1]} : null;
+				}
+			}
+			if (it.imageUrl != null && !it.imageUrl.isBlank()) {
+				RemoteTextures.Tex t = RemoteTextures.get(it.imageUrl);
+				if (t != null && t.width() > 0) {
+					return new Object[] {t.id(), t.width(), t.height()};
+				}
+			}
+		} catch (RuntimeException | Error ignored) {
+			// no picture: the normal toast
+		}
+		return null;
+	}
+
+	/** A toast about an item ("Bought X!", "Equipped X"): with the item's own picture as its icon when there is one. */
+	public static void sayItem(String text, Item it) {
+		Object[] ic = it == null ? null : itemIcon(it);
+		if (ic == null) {
+			say(text, false);
+			return;
+		}
+		dev.solclient.gui.Notify.item(dev.solclient.gui.Notify.Kind.KUBO, text, "", (Identifier) ic[0], (Integer) ic[1], (Integer) ic[2]);
+		flash = text;
+		flashError = false;
 		flashAt = System.currentTimeMillis();
 	}
 
@@ -1745,7 +1804,12 @@ public final class Social {
 			if (it.id != null) {
 				CATALOGUE.put(it.id, it);
 			}
-			rememberEquip(it, it.owned && it.equipped);
+			if (held(it.category)) {
+				// you clicked equip / unequip a moment ago and the site has not caught up: your click is what counts, not its old list
+				it.equipped = it.owned && it.id != null && it.id.equals(MY_EQUIP.get(it.category));
+			} else {
+				rememberEquip(it, it.owned && it.equipped);
+			}
 		}
 		List<Item> list = withLocal(category, Collections.unmodifiableList(items));
 		SHOP_CACHE.put(category, list);
@@ -1787,7 +1851,7 @@ public final class Social {
 			}
 			if (check(r, true)) {
 				coins = Json.num(r.obj(), "coins", coins);
-				say("Bought " + it.name + "!", false);
+				sayItem("Bought " + it.name + "!", it);
 				it.owned = true;
 				// every copy of the item (the "All" list, the category list...) is yours now, so equipping works at once
 				for (List<Item> l : SHOP_CACHE.values()) {
@@ -1894,14 +1958,30 @@ public final class Social {
 		}
 	}
 
+	/** category -> until when (ms) your own click wins over what the site's list still says. */
+	private static final Map<String, Long> EQUIP_HOLD = new ConcurrentHashMap<>();
+
+	private static void holdEquip(String category, long ms) {
+		if (category != null) {
+			EQUIP_HOLD.put(category, System.currentTimeMillis() + ms);
+		}
+	}
+
+	private static boolean held(String category) {
+		Long t = category == null ? null : EQUIP_HOLD.get(category);
+		return t != null && System.currentTimeMillis() < t;
+	}
+
 	/** Equips / unequips at once on screen, then tells the server in the background (and undoes it if the server says no). */
 	public static void equip(Item it, boolean on) {
 		final boolean was = it.equipped;
 		final List<Item> off = new ArrayList<>();
+		holdEquip(it.category, 20_000L);
 		setEquippedLocal(it, on, off);
 		rememberEquip(it, on);
+		dev.solclient.cosmetic.Cosmetics.invalidate();
 		shopChanged();
-		say(on ? "Equipped " + it.name : "Unequipped " + it.name, false);
+		sayItem(on ? "Equipped " + it.name : "Unequipped " + it.name, it);
 		if (it.local && isKillEffect(it)) {
 			setLocalKill(on ? killEffectKey(it) : null); // the site sells none: remembered on this computer
 			return;
@@ -1914,13 +1994,17 @@ public final class Social {
 		}
 		action(() -> {
 			SolarApi.Res r;
-			if (on) {
-				JsonObject b = new JsonObject();
-				b.addProperty("itemId", it.id);
-				r = SolarApi.put("/wardrobe/equip", b);
-			} else {
-				// capes are unequipped by category ("Capes"): a previously worn personal cape shows again
-				r = SolarApi.delete("/wardrobe/equip/" + SolarApi.enc("Capes".equalsIgnoreCase(it.category) ? "Capes" : it.id));
+			try {
+				if (on) {
+					JsonObject b = new JsonObject();
+					b.addProperty("itemId", it.id);
+					r = SolarApi.put("/wardrobe/equip", b);
+				} else {
+					// capes are unequipped by category ("Capes"): a previously worn personal cape shows again
+					r = SolarApi.delete("/wardrobe/equip/" + SolarApi.enc("Capes".equalsIgnoreCase(it.category) ? "Capes" : it.id));
+				}
+			} finally {
+				holdEquip(it.category, 3_000L); // the site answers a moment later: until then its old list must not undo your click
 			}
 			if (check(r, true)) {
 				forgetMyLookup();

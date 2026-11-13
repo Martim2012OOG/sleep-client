@@ -163,7 +163,7 @@ public final class ProfileBadges {
 
 	// ---- badges of the other Sleep players on your server (sent through the presence room)
 	/** How long the badge / name style of another player stays after his last message (he repeats it every 10-12 s). */
-	private static final long FRESH_MS = 90_000L;
+	private static final long FRESH_MS = 300_000L;
 	private static final Map<String, Badge> REMOTE = new java.util.concurrent.ConcurrentHashMap<>();
 	private static final Map<String, Long> REMOTE_AT = new java.util.concurrent.ConcurrentHashMap<>();
 
@@ -487,6 +487,23 @@ public final class ProfileBadges {
 		}
 	}
 
+	private static Text gapText;
+
+	/**
+	 * The small fixed space between a name and its badge / flag. It is NOT a normal space: a space is as wide as the font says, and
+	 * with a wide custom game font the badge ended up 2 or 3 spaces away from the name. This one is always 3 pixels.
+	 */
+	public static Text gap() {
+		if (gapText == null) {
+			JsonObject o = new JsonObject();
+			o.addProperty("text", "\ue001");
+			o.addProperty("font", "sol_client:badge_gap");
+			o.addProperty("color", "white");
+			gapText = TextCodecs.CODEC.parse(JsonOps.INSTANCE, o).result().orElse(Text.literal(" "));
+		}
+		return gapText;
+	}
+
 	public static Text text(Badge b) {
 		return TEXTS.computeIfAbsent(b, k -> {
 			JsonObject o = new JsonObject();
@@ -666,7 +683,7 @@ public final class ProfileBadges {
 		if (cc.isEmpty()) {
 			return out;
 		}
-		return Text.empty().append(out).append(Text.literal(" ")).append(flagText(cc));
+		return Text.empty().append(out).append(gap()).append(flagText(cc));
 	}
 
 	/** {@code name} followed (to the right) by your equipped badge, when this player is you. */
@@ -689,6 +706,6 @@ public final class ProfileBadges {
 		if (b.creator() && (me ? myColourOn() && !ownColour : !ownColour && !NO_COLOUR.contains(nick == null ? "" : nick.toLowerCase(Locale.ROOT)))) {
 			name = paint(name, nick, b);
 		}
-		return Text.empty().append(name).append(Text.literal(" ")).append(text(b));
+		return Text.empty().append(name).append(gap()).append(text(b));
 	}
 }

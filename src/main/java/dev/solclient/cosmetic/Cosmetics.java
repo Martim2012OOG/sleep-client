@@ -24,6 +24,11 @@ public final class Cosmetics {
 	public static volatile boolean inGui;
 	private static volatile long previewAt;
 
+	/** What you wear changed (equipped / unequipped): the next frame draws it, not 0.4 s later. */
+	public static void invalidate() {
+		CACHE.clear();
+	}
+
 	public static void preview(List<CosmeticModels.Def> wear) {
 		preview = wear;
 		previewAt = System.currentTimeMillis();

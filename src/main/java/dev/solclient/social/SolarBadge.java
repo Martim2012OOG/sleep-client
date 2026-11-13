@@ -109,7 +109,7 @@ public final class SolarBadge {
 		if (name == null || badge().getString().isEmpty()) {
 			return name;
 		}
-		return Text.empty().append(badge()).append(Text.literal(" ")).append(name);
+		return Text.empty().append(badge()).append(ProfileBadges.gap()).append(name);
 	}
 
 	/** The game nick of a GameProfile (name() in newer authlib, getName() in older ones). */

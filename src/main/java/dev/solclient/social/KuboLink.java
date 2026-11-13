@@ -105,7 +105,7 @@ public final class KuboLink {
 		lobbyTick(mc, now, sig, myBadge, myLook, myFlag, myCx);
 		boolean badgeDue = mc.player != null && (!sig.equals(lastBadge) ? now - lastBadgeAt > 1500L
 				: (!myBadge.isEmpty() || !myLook.isEmpty() || !myFlag.isEmpty() || myCx.size() > 0)
-						&& now - lastBadgeAt > 12_000L);
+						&& now - lastBadgeAt > 6_000L);
 		if (mc.player == null || mc.world == null || !(wantParty || wantPings && outgoing != null || badgeDue)) {
 			return;
 		}
@@ -163,7 +163,7 @@ public final class KuboLink {
 		}
 		boolean changed = !sig.equals(lastLobbySig);
 		boolean has = !badge.isEmpty() || !look.isEmpty() || !flag.isEmpty() || cx.size() > 0;
-		if (!(changed ? now - lastLobbyAt > 1500L : has && now - lastLobbyAt > 10_000L)) {
+		if (!(changed ? now - lastLobbyAt > 1500L : has && now - lastLobbyAt > 6_000L)) {
 			return;
 		}
 		JsonObject kx = new JsonObject();

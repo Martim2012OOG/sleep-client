@@ -67,6 +67,13 @@ public final class Notify {
 		put(new Card(Kind.PLAY, title, sub, true, null, name == null ? "?" : name, null, 0, 0, 0));
 	}
 
+	private static final String ICON_SCENE = "\u0000icon";
+
+	/** A toast whose icon is the real picture of an item (bought / equipped), instead of the blue Sleep square. */
+	public static void item(Kind kind, String title, String sub, Identifier tex, int w, int h) {
+		put(new Card(kind, title, sub, false, null, ICON_SCENE, tex, w, h, 0));
+	}
+
 	/** With a picture of the clip / recording (16:9). */
 	public static void picture(Kind kind, String title, String sub, Identifier tex, int w, int h) {
 		put(new Card(kind, title, sub, false, null, null, tex, w, h, 0));
@@ -261,16 +268,23 @@ public final class Notify {
 		// icon: blue square, dark edge, light line at the top, white glyph with a small shadow
 		int is = Math.round(9F * u), ix = Math.round(x + 3.6F * u), iy = y + (h - is) / 2;
 		boolean red = k.kind() == Kind.ERROR;
+		boolean itemIcon = ICON_SCENE.equals(k.scene()) && k.tex() != null;
 		Gfx.rrectFree(c, ix - 1, iy - 1, is + 2, is + 2, 2.6F, Gfx.withAlpha(edge, a));
-		gradient(c, ix, iy, is, is, red ? 0xFF6B6B : 0x4C88FF, red ? 0xD93636 : 0x2D62E2, a);
-		Gfx.rrectFree(c, ix + 1, iy, is - 2, 0.7F, 0.3F, Gfx.withAlpha(0xFFFFFF, a * 56 / 255));
-		int gs = Math.round(6.2F * u), gx = ix + (is - gs) / 2, gy = iy + (is - gs) / 2;
-		Identifier glyph = Gfx.id("textures/gui/notify/" + k.kind().icon + ".png");
-		Gfx.tex(c, glyph, gx, gy + 1, gs, gs, 64, 64, Gfx.withAlpha(0x000000, a / 5));
-		Gfx.tex(c, glyph, gx, gy, gs, gs, 64, 64, Gfx.withAlpha(0xFFFFFF, a));
+		if (itemIcon) {
+			// the real picture of the item (its own colours, kept in proportion)
+			Gfx.rrectFree(c, ix, iy, is, is, 2.4F, Gfx.withAlpha(0x10141F, a));
+			Gfx.tex(c, k.tex(), ix, iy, is, is, k.texW(), k.texH(), Gfx.withAlpha(0xFFFFFF, a));
+		} else {
+			gradient(c, ix, iy, is, is, red ? 0xFF6B6B : 0x4C88FF, red ? 0xD93636 : 0x2D62E2, a);
+			Gfx.rrectFree(c, ix + 1, iy, is - 2, 0.7F, 0.3F, Gfx.withAlpha(0xFFFFFF, a * 56 / 255));
+			int gs = Math.round(6.2F * u), gx = ix + (is - gs) / 2, gy = iy + (is - gs) / 2;
+			Identifier glyph = Gfx.id("textures/gui/notify/" + k.kind().icon + ".png");
+			Gfx.tex(c, glyph, gx, gy + 1, gs, gs, 64, 64, Gfx.withAlpha(0x000000, a / 5));
+			Gfx.tex(c, glyph, gx, gy, gs, gs, 64, 64, Gfx.withAlpha(0xFFFFFF, a));
+		}
 
 		// picture on the right
-		boolean wide = k.scene() != null || k.tex() != null;
+		boolean wide = !itemIcon && (k.scene() != null || k.tex() != null);
 		boolean square = !wide && k.face() != null;
 		int th = Math.round(12.4F * u), tw = wide ? Math.round(21.2F * u) : square ? th : 0;
 		int tx = x + w - Math.round(4.2F * u) - tw, ty = y + (h - th) / 2;
