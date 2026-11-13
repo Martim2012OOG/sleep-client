@@ -19,6 +19,36 @@ public class OwnNametagMod extends Mod {
 		return instance != null && instance.enabled;
 	}
 
+	/** True when the server floats its OWN plate over you (text display, armor stand with a name, or something riding you). Team-hidden names do not count. */
+	public static boolean customPlate(net.minecraft.entity.player.PlayerEntity p) {
+		long now = System.currentTimeMillis();
+		if (now - plateAt < 400L) {
+			return plateCached; // the entity search runs a few times a second, not every frame
+		}
+		plateAt = now;
+		plateCached = customPlateNow(p);
+		return plateCached;
+	}
+
+	private static long plateAt;
+	private static boolean plateCached;
+
+	private static boolean customPlateNow(net.minecraft.entity.player.PlayerEntity p) {
+		try {
+			if (p.hasPassengers()) {
+				return true;
+			}
+			var world = net.minecraft.client.MinecraftClient.getInstance().world;
+			if (world != null) {
+				net.minecraft.util.math.Box box = p.getBoundingBox().expand(0.6, 0.0, 0.6).stretch(0.0, 2.8, 0.0);
+				return !world.getOtherEntities(p, box, e -> e instanceof net.minecraft.entity.decoration.DisplayEntity.TextDisplayEntity
+						|| e instanceof net.minecraft.entity.decoration.ArmorStandEntity a && a.isCustomNameVisible()).isEmpty();
+			}
+		} catch (RuntimeException ignored) {
+		}
+		return false;
+	}
+
 	private static long checkedAt;
 	private static boolean cached;
 
