@@ -35,6 +35,9 @@ public class WaypointsMod extends Mod {
 	private final Option.Bool deathPoint = bool("Death Waypoint", true);
 	private final Option.Bool deathMessage = bool("Death Coordinates In Chat", true);
 	private final Option.Bool autoRemoveDeath = bool("Remove Death Point When Reached", true);
+	private final Option.Key editKey = key("Waypoint Editor Key", 74); // J
+	private final Option.Bool edgeArrows = bool("Arrows At The Screen Edge", true);
+	private final Option.Action editor = action("Waypoint Editor", "Open", () -> mc.setScreen(new dev.solclient.gui.WaypointEditorScreen(mc.currentScreen)), () -> here().size() + " here");
 	private final Option.Action clear = action("Waypoints Here", "Clear", this::clearHere, () -> here().size() + " saved");
 
 	public static final class Point {
@@ -43,12 +46,16 @@ public class WaypointsMod extends Mod {
 		public String dim;
 		public int color;
 		public boolean death;
+		/** Look of the marker (edited in the Waypoint Editor): 0 diamond, 1 triangle, 2 circle, 3 square, 4 pin. */
+		public int shape;
+		public int size = 100, opacity = 100;
+		public boolean outline = true, showName = true, showDist = true, visible = true, onlyFacing, hideNear;
 	}
 
 	private static final int[] PALETTE = {0xFF4F8CFF, 0xFF3DDC84, 0xFFFFC23D, 0xFFB46CFF, 0xFFFF7AB6, 0xFF39D0E0, 0xFFFF8A3D};
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 	private Map<String, List<Point>> data;
-	private boolean addDown, removeDown, wasDead;
+	private boolean addDown, removeDown, editDown, wasDead;
 
 	public WaypointsMod() {
 		super("Waypoints", "waypoints", "Mark places and see them on screen with their distance. Press N to add one.", Category.UTILITY);
@@ -120,6 +127,24 @@ public class WaypointsMod extends Mod {
 			}
 		}
 		return out;
+	}
+
+	public static final int[] COLOURS = PALETTE;
+
+	/** Adds a waypoint where you stand (the editor's + button). */
+	public Point addHere() {
+		if (mc.player == null) {
+			return null;
+		}
+		int n = here().size() + 1;
+		add("Waypoint " + n, new Vec3d(mc.player.getX(), mc.player.getY(), mc.player.getZ()), PALETTE[(n - 1) % PALETTE.length], false);
+		List<Point> h = here();
+		return h.isEmpty() ? null : h.get(h.size() - 1);
+	}
+
+	/** Saves after the editor changed a waypoint. */
+	public void saveNow() {
+		save();
 	}
 
 	/** Waypoints of the current world and dimension (used by the minimap and the full map). */
@@ -260,6 +285,12 @@ public class WaypointsMod extends Mod {
 		}
 		addDown = add;
 
+		boolean ed = mc.currentScreen == null && Keys.down(editKey.code());
+		if (ed && !editDown) {
+			mc.setScreen(new dev.solclient.gui.WaypointEditorScreen(null));
+		}
+		editDown = ed;
+
 		boolean rem = mc.currentScreen == null && Keys.down(removeKey.code());
 		if (rem && !removeDown) {
 			Point best = null;
@@ -309,65 +340,154 @@ public class WaypointsMod extends Mod {
 			return;
 		}
 		float td = mc.getRenderTickCounter().getTickProgress(true);
-		Vec3d cam = mc.player.getCameraPosVec(td);
 		var camera = mc.gameRenderer.getCamera();
+		Vec3d cam = camera.getCameraPos();
 		double yaw = Math.toRadians(camera.getYaw()), pitch = Math.toRadians(camera.getPitch());
-		// forward, right and up vectors of the camera
 		double fx = -Math.sin(yaw) * Math.cos(pitch), fy = -Math.sin(pitch), fz = Math.cos(yaw) * Math.cos(pitch);
 		double rx = -Math.cos(yaw), rz = -Math.sin(yaw);
 		double ux = -(rz * fy), uy = rz * fx - rx * fz, uz = rx * fy;
 		int sw = mc.getWindow().getScaledWidth(), sh = mc.getWindow().getScaledHeight();
 		double focal = (sh / 2.0) / Math.tan(Math.toRadians(Math.max(5F, worldFov)) / 2.0);
 		double max = maxDistance.f();
-		float ms = markerSize.f() / 100F;
-
+		float base = markerSize.f() / 100F;
 		for (Point p : pts) {
+			if (!p.visible) {
+				continue;
+			}
 			double dx = p.x - cam.x, dy = p.y + 1.0 - cam.y, dz = p.z - cam.z;
 			double dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
-			if (dist > max) {
+			if (dist > max || p.hideNear && dist < 8) {
 				continue;
 			}
 			double zc = dx * fx + dy * fy + dz * fz;
 			double xc = dx * rx + dz * rz;
 			double yc = dx * ux + dy * uy + dz * uz;
-			if (zc < 0.1) {
+			if (p.onlyFacing && (zc <= 0 || zc / Math.max(0.001, dist) < 0.985)) {
 				continue;
 			}
-			int sx = (int) Math.round(sw / 2.0 + xc / zc * focal);
-			int sy = (int) Math.round(sh / 2.0 - yc / zc * focal);
-			if (sx < -50 || sx > sw + 50 || sy < -50 || sy > sh + 50) {
-				continue;
+			float sc = base * p.size / 100F;
+			boolean on = zc > 0.1;
+			double px = on ? sw / 2.0 + xc / zc * focal : 0, py = on ? sh / 2.0 - yc / zc * focal : 0;
+			int m = 16;
+			if (on && px >= m && px <= sw - m && py >= m + 12 && py <= sh - m) {
+				drawMarker(c, p, (int) Math.round(px), (int) Math.round(py), dist, sc, true);
+			} else if (edgeArrows.on()) {
+				// off screen: a little arrow at the edge that points to it
+				double ax = on ? px - sw / 2.0 : -xc, ay = on ? py - sh / 2.0 : yc;
+				double len = Math.max(0.001, Math.hypot(ax, ay));
+				ax /= len;
+				ay /= len;
+				double hw = sw / 2.0 - 22, hh = sh / 2.0 - 28;
+				double t = Math.min(Math.abs(ax) < 1e-6 ? 1e9 : hw / Math.abs(ax), Math.abs(ay) < 1e-6 ? 1e9 : hh / Math.abs(ay));
+				drawEdge(c, p, (int) Math.round(sw / 2.0 + ax * t), (int) Math.round(sh / 2.0 + ay * t), Math.atan2(ay, ax), dist, sc);
 			}
-			drawMarker(c, p, sx, sy, dist, ms);
 		}
 	}
 
-	private void drawMarker(DrawContext c, Point p, int sx, int sy, double dist, float ms) {
+	private static int alpha(int col, int pct) {
+		return (Math.round(255 * Math.max(0, Math.min(100, pct)) / 100F) << 24) | (col & 0xFFFFFF);
+	}
+
+	/** One marker shape centred on (0,0), about 10 px. Used by the world and by the editor's preview. */
+	public static void shape(DrawContext c, int shape, int col, boolean outline, int pct) {
+		int fill = alpha(col, pct), edge = alpha(0x0A0B10, pct), hi = alpha(Gfx.blend(col | 0xFF000000, 0xFFFFFFFF, 0.45F), pct);
+		switch (shape) {
+			case 1 -> { // triangle pointing down
+				for (int i = 0; i < 10; i++) {
+					int hw = 5 - i / 2;
+					if (outline) {
+						c.fill(-hw - 1, -6 + i, hw + 2, -5 + i, edge);
+					}
+					c.fill(-hw, -6 + i, hw + 1, -5 + i, i < 3 ? hi : fill);
+				}
+			}
+			case 2 -> {
+				if (outline) {
+					Gfx.circle(c, 0, 0, 6, edge);
+				}
+				Gfx.circle(c, 0, 0, 5, fill);
+				Gfx.circle(c, 0, 0, 2, hi);
+			}
+			case 3 -> {
+				if (outline) {
+					c.fill(-6, -6, 6, 6, edge);
+				}
+				c.fill(-5, -5, 5, 5, fill);
+				c.fill(-2, -2, 2, 2, hi);
+			}
+			case 4 -> { // pin: a round head with a point below
+				for (int i = 0; i < 6; i++) {
+					int hw = 3 - i / 2;
+					if (outline) {
+						c.fill(-hw - 1, 1 + i, hw + 2, 2 + i, edge);
+					}
+					c.fill(-hw, 1 + i, hw + 1, 2 + i, fill);
+				}
+				if (outline) {
+					Gfx.circle(c, 0, -2, 6, edge);
+				}
+				Gfx.circle(c, 0, -2, 5, fill);
+				Gfx.circle(c, 0, -2, 2, hi);
+			}
+			default -> {
+				c.getMatrices().pushMatrix();
+				c.getMatrices().rotate((float) Math.toRadians(45));
+				if (outline) {
+					c.fill(-5, -5, 5, 5, edge);
+				}
+				c.fill(-4, -4, 4, 4, fill);
+				c.fill(-2, -2, 2, 2, hi);
+				c.getMatrices().popMatrix();
+			}
+		}
+	}
+
+	private static String distText(double dist) {
+		return dist >= 1000 ? String.format("%.1fkm", dist / 1000) : Math.round(dist) + "m";
+	}
+
+	/** Text under a marker: name and/or distance on a small dark pill with a line in the waypoint's colour. */
+	public static void label(DrawContext c, net.minecraft.client.font.TextRenderer tr, Point p, double dist, int y) {
+		String label = "";
+		if (p.showName) {
+			label = p.name;
+		}
+		if (p.showDist) {
+			String d = distText(dist);
+			label = label.isEmpty() ? d : label + " · " + d;
+		}
+		if (label.isEmpty()) {
+			return;
+		}
+		int w = tr.getWidth(label);
+		c.fill(-w / 2 - 4, y - 2, w / 2 + 4, y + 10, alpha(0x000000, Math.round(p.opacity * 0.63F)));
+		c.fill(-w / 2 - 4, y + 10, w / 2 + 4, y + 11, alpha(p.color, p.opacity));
+		c.drawText(tr, label, -w / 2, y, alpha(0xFFFFFF, p.opacity), true);
+	}
+
+	private void drawMarker(DrawContext c, Point p, int sx, int sy, double dist, float ms, boolean unused) {
 		c.getMatrices().pushMatrix();
 		c.getMatrices().translate(sx, sy);
 		c.getMatrices().scale(ms, ms);
-		// diamond
-		c.getMatrices().pushMatrix();
-		c.getMatrices().rotate((float) Math.toRadians(45));
-		c.fill(-5, -5, 5, 5, 0xFF0A0B10);
-		c.fill(-4, -4, 4, 4, p.color | 0xFF000000);
-		c.fill(-2, -2, 2, 2, Gfx.blend(p.color | 0xFF000000, 0xFFFFFFFF, 0.45F));
+		shape(c, p.shape, p.color, p.outline, p.opacity);
+		label(c, mc.textRenderer, p, dist, -19);
 		c.getMatrices().popMatrix();
-		String label = "";
-		if (showName.on()) {
-			label = p.name;
+	}
+
+	private void drawEdge(DrawContext c, Point p, int sx, int sy, double ang, double dist, float ms) {
+		c.getMatrices().pushMatrix();
+		c.getMatrices().translate(sx, sy);
+		c.getMatrices().scale(Math.min(1F, ms), Math.min(1F, ms));
+		c.getMatrices().pushMatrix();
+		c.getMatrices().rotate((float) ang);
+		int col = alpha(p.color, p.opacity);
+		for (int i = 0; i < 6; i++) { // arrow head pointing to +x
+			c.fill(6 - i - 1, -(5 - i), 6 - i + 1, (5 - i) + 1, col);
 		}
-		if (showDistance.on()) {
-			String d = dist >= 1000 ? String.format("%.1fkm", dist / 1000) : Math.round(dist) + "m";
-			label = label.isEmpty() ? d : label + " · " + d;
-		}
-		if (!label.isEmpty()) {
-			int w = mc.textRenderer.getWidth(label);
-			int y = -19;
-			c.fill(-w / 2 - 4, y - 2, w / 2 + 4, y + 10, 0xA0000000);
-			c.fill(-w / 2 - 4, y + 10, w / 2 + 4, y + 11, p.color | 0xFF000000);
-			c.drawText(mc.textRenderer, label, -w / 2, y, 0xFFFFFFFF, true);
-		}
+		c.getMatrices().popMatrix();
+		String d = distText(dist);
+		int w = mc.textRenderer.getWidth(d);
+		c.drawText(mc.textRenderer, d, -w / 2, sy > mc.getWindow().getScaledHeight() / 2 ? -18 : 9, alpha(0xFFFFFF, p.opacity), true);
 		c.getMatrices().popMatrix();
 	}
 }

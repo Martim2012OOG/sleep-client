@@ -655,7 +655,28 @@ public class SolMenuScreen extends Screen {
 			Gfx.textMid(c, rpText, rpX + 8 + 14 + 6, rpY, rpH, Theme.TEXT);
 			region(rpX, rpY, rpW, rpH, () -> showView(V_PACKS, -1));
 		}
-		int statusEnd = showRp ? rpX : ix;
+		// Ranked PvP: installed with the client, always one click away (left of Resource Packs)
+		dev.solclient.addons.Addon rk = null;
+		for (dev.solclient.addons.Addon a : dev.solclient.addons.Addons.list()) {
+			if ("ranked_pvp".equals(a.id())) {
+				rk = a;
+			}
+		}
+		String rkText = "Ranked PvP";
+		int rkW = 10 + 14 + 6 + Gfx.tw(rkText) + 10, rkX = rpX - bgp - rkW;
+		boolean showRk = rk != null && showRp && rkX > cx + 6;
+		if (showRk) {
+			final dev.solclient.addons.Addon fr = rk;
+			boolean rkOn = view == V_ADDONS && embedded != null && embeddedAddon;
+			pill(c, mx, my, rkX, rpY, rkW, rpH, 7, "barRk", rkOn, accent, SUB, TILE_HOVER);
+			Gfx.tex(c, Theme.icon2("ranked_pvp"), rkX + 8, rpY + 4, 14, 14, 64, 64, Theme.TEXT);
+			Gfx.textMid(c, rkText, rkX + 8 + 14 + 6, rpY, rpH, Theme.TEXT);
+			region(rkX, rpY, rkW, rpH, () -> {
+				showView(V_ADDONS, 9);
+				openAddon(fr);
+			});
+		}
+		int statusEnd = showRk ? rkX : showRp ? rpX : ix;
 		if (Gfx.tw(status) + 20 < statusEnd - cx) {
 			Gfx.textMid(c, status, cx + 12, y, ROW_H, Theme.DIM);
 		}
@@ -1178,10 +1199,11 @@ public class SolMenuScreen extends Screen {
 			}
 			case INSTALLED -> {
 				// installed: green; under the mouse it offers to uninstall
-				word = fhov ? dev.solclient.Lang.tr("Uninstall", "Desinstalar") : dev.solclient.Lang.tr("Installed", "Instalada");
-				bg = fhov ? 0xFF3A1E22 : Theme.GREEN_BG;
-				fg = fhov ? 0xFFE5767A : Theme.GREEN;
-				act = () -> dev.solclient.ext.Extensions.remove(it);
+				boolean locked = dev.solclient.ext.Extensions.isBuiltin(it);
+				word = locked ? dev.solclient.Lang.tr("Built in", "Incluída") : fhov ? dev.solclient.Lang.tr("Uninstall", "Desinstalar") : dev.solclient.Lang.tr("Installed", "Instalada");
+				bg = fhov && !locked ? 0xFF3A1E22 : Theme.GREEN_BG;
+				fg = fhov && !locked ? 0xFFE5767A : Theme.GREEN;
+				act = locked ? null : () -> dev.solclient.ext.Extensions.remove(it);
 			}
 			case UPDATE -> {
 				word = dev.solclient.Lang.tr("Update", "Atualizar");
@@ -3571,37 +3593,55 @@ public class SolMenuScreen extends Screen {
 			return;
 		}
 		List<dev.solclient.addons.Addon> list = dev.solclient.addons.Addons.list();
-		int rowH = 44, gap = 8, ry = iy0;
 		if (list.isEmpty()) {
-			// PvP Practice / Bridge Practice are the "Practice" extension now
 			Gfx.text(c, "PvP Practice, the Kit Editor and Bridge Practice are in the Practice extension.", ix0, iy0 + 4, Theme.DIM);
 			int bw = 150;
 			KuboButton.primary(c, ix0, iy0 + 20, bw, 22, "Open Extensions", in(mx, my, ix0, iy0 + 20, bw, 22));
 			region(ix0, iy0 + 20, bw, 22, () -> Gfx.mc().setScreen(openExtensions()));
 		}
-		for (dev.solclient.addons.Addon a : list) {
-			if (ry + rowH > iy1) {
+		// a grid of cards: a coloured banner with the add-on's icon, its name, a short text and one button
+		int rw = ix1 - ix0, gap = 10, cols = rw >= 760 ? 3 : 2;
+		int cw = (rw - (cols - 1) * gap) / cols, ch = 142;
+		for (int i = 0; i < list.size(); i++) {
+			dev.solclient.addons.Addon a2 = list.get(i);
+			int cx2 = ix0 + (i % cols) * (cw + gap), cy2 = iy0 + (i / cols) * (ch + gap);
+			if (cy2 + ch > iy1) {
 				break;
 			}
-			int rw = ix1 - ix0;
-			boolean hov = in(mx, my, ix0, ry, rw, rowH);
-			float an = anim("addon" + a.id(), hov);
-			Gfx.rrectBorder(c, ix0, ry, rw, rowH, 10, Gfx.blend(TILE, TILE_HOVER, an), hov ? accent : Theme.CARD_BORDER);
-			// black & white icon tile
-			int tx = ix0 + 8, ty = ry + 6, ts = 32;
-			Gfx.rrectBorder(c, tx, ty, ts, ts, 8, 0xFF000000, hov ? 0xFFFFFFFF : 0xFFB4B4B4);
-			if (!a.icon().isEmpty()) {
-				Gfx.tex(c, Theme.icon2(a.icon()), tx + 4, ty + 4, 24, 24, 64, 64, 0xFFFFFFFF);
+			boolean hov = in(mx, my, cx2, cy2, cw, ch);
+			float an = anim("addon" + a2.id(), hov);
+			Gfx.rrectBorder(c, cx2, cy2, cw, ch, 8, Gfx.blend(TILE, TILE_HOVER, an), hov ? accent : Theme.CARD_BORDER);
+			int tagCol = switch (a2.tag()) {
+				case "PvP" -> 0xFFD6525F;
+				case "Training" -> 0xFF4F8CFF;
+				case "TikTok" -> 0xFFEE5FA7;
+				default -> accent;
+			};
+			// banner
+			Gfx.rrect(c, cx2 + 6, cy2 + 6, cw - 12, 50, 6, Gfx.blend(0xFF15161B, tagCol, 0.28F + 0.10F * an));
+			Gfx.rrect(c, cx2 + 14, cy2 + 13, 36, 36, 8, Gfx.blend(0xFF0D0E12, tagCol, 0.35F));
+			if (!a2.icon().isEmpty()) {
+				Gfx.tex(c, Theme.icon2(a2.icon()), cx2 + 20, cy2 + 19, 24, 24, 64, 64, 0xFFFFFFFF);
 			}
-			int textX = tx + ts + 12;
-			Gfx.text(c, a.name(), textX, ry + 9, Theme.TEXT);
-			Gfx.text(c, a.tag(), textX + 8 + Gfx.tw(a.name()), ry + 9, accent);
-			Gfx.text(c, a.description(), textX, ry + 24, Theme.DIM);
-			int bw = 64, bx = ix0 + rw - bw - 12;
-			pill(c, mx, my, bx, ry + 11, bw, 22, 7, "addonopen" + a.id(), false, 0, accent, Theme.accentHover());
-			Gfx.textFit(c, "Open", bx + bw / 2, bw - 6, ry + 18, 0xFFFFFFFF);
-			region(ix0, ry, rw, rowH, () -> openAddon(a));
-			ry += rowH + gap;
+			Gfx.text(c, a2.name(), cx2 + 58, cy2 + 15, Theme.TEXT);
+			int tw = Gfx.tw(a2.tag()) + 10;
+			Gfx.rrect(c, cx2 + 58, cy2 + 30, tw, 14, 7, Gfx.blend(0xFF0D0E12, tagCol, 0.5F));
+			Gfx.text(c, a2.tag(), cx2 + 63, cy2 + 33, 0xFFFFFFFF);
+			if (a2.id().equals("ranked_pvp")) {
+				String bi = dev.solclient.Lang.tr("Built in", "Incluído");
+				int bw2 = Gfx.tw(bi) + 10;
+				Gfx.rrect(c, cx2 + cw - 6 - 8 - bw2, cy2 + 14, bw2, 14, 7, Theme.GREEN_BG);
+				Gfx.text(c, bi, cx2 + cw - 6 - 8 - bw2 + 5, cy2 + 17, Theme.GREEN);
+			}
+			int ty2 = cy2 + 64;
+			for (String l : wrap(a2.description(), cw - 24, 2)) {
+				Gfx.text(c, l, cx2 + 12, ty2, Theme.DIM);
+				ty2 += 11;
+			}
+			int by2 = cy2 + ch - 30;
+			pill(c, mx, my, cx2 + 10, by2, cw - 20, 22, 7, "addonopen" + a2.id(), false, 0, accent, Theme.accentHover());
+			Gfx.textFit(c, dev.solclient.Lang.tr("Open", "Abrir"), cx2 + cw / 2, cw - 30, by2 + 7, 0xFFFFFFFF);
+			region(cx2, cy2, cw, ch, () -> openAddon(a2));
 		}
 		maxScroll = 0;
 	}
@@ -3687,21 +3727,21 @@ public class SolMenuScreen extends Screen {
 		}
 		// what you are looking at: Cosmetics / Emotes / Skin, centred on top (like LabyMod)
 		if (!lockerStore) {
-			String[] kinds = {"Cosmetics", "Emotes", "Kill Effects", "Skin"};
+			String[] kinds = {"Cosmetics", "Emotes", "Kill Effects", "Death Animations", "Skin"};
 			boolean emotesNow = lockerShop ? "Emotes".equalsIgnoreCase(Social.shopCategory) : invCat.equals("Emotes");
 			boolean killNow = lockerShop ? "Kill Effects".equalsIgnoreCase(Social.shopCategory) : invCat.equals("Kill Effects");
 			boolean skinNow = !lockerShop && invCat.equals("Skins");
-			int cur = skinNow ? 3 : killNow ? 2 : emotesNow ? 1 : 0;
+			int cur = skinNow ? 4 : deathTab ? 3 : killNow ? 2 : emotesNow ? 1 : 0;
 			int segW = 0;
-			int[] ws = new int[4];
-			for (int i = 0; i < 4; i++) {
+			int[] ws = new int[5];
+			for (int i = 0; i < 5; i++) {
 				ws[i] = Math.max(64, Gfx.tw(kinds[i]) + 24);
 				segW += ws[i];
 			}
 			int sxx = Math.max(tx + 8, (ix0 + ix1) / 2 - (segW + 6) / 2), syy = y + 7; // never on top of Inventory / Shop
 			Gfx.rrectBorder(c, sxx, syy, segW + 6, 22, 4, Theme.FIELD, Theme.CARD_BORDER);
 			int kx = sxx + 3;
-			for (int i = 0; i < 4; i++) {
+			for (int i = 0; i < 5; i++) {
 				boolean sel = i == cur, hov = in(mx, my, kx, syy + 3, ws[i], 16);
 				if (sel) {
 					Gfx.rrect(c, kx, syy + 3, ws[i], 16, 3, SlideBg.colour());
@@ -3747,15 +3787,36 @@ public class SolMenuScreen extends Screen {
 			Gfx.textRaw(c, dev.solclient.Lang.t("Sections").toUpperCase(Locale.ROOT), sx + 10, iy0 + 9, 0xFF6B7080);
 		}
 		int cy = iy0 + 22;
+		int lastGroup = -1;
 		for (String cat : cats) {
+			// two groups with a small heading: browsing, then the cosmetic types (each with how many items it has)
+			int group = cat.equalsIgnoreCase("All") || cat.equalsIgnoreCase("Featured") || cat.equalsIgnoreCase("Sale") || cat.equalsIgnoreCase("Emotes") ? 0 : 1;
+			if (lockerShop && group != lastGroup) {
+				if (group == 1 && cy + 40 > iy1 - 34) {
+					break;
+				}
+				if (group == 1) {
+					cy += 4;
+					Gfx.textRaw(c, dev.solclient.Lang.t("Cosmetics").toUpperCase(Locale.ROOT), sx + 10, cy, 0xFF6B7080);
+					cy += 14;
+				}
+				lastGroup = group;
+			}
 			if (cy + 22 > iy1 - 34) {
 				break;
 			}
 			boolean sel = cat.equals(curCat);
 			int col = navItem(c, mx, my, sx + 5, cy, sideW - 10, 22, "lcat" + cat, sel);
 			String label = lockerShop && cat.equals("Emotes") ? "All Emotes" : cat;
-			Gfx.textMid(c, fit(label, sideW - 26), sx + 14, cy, 22, col);
+			int cnt = !lockerShop ? -1 : cat.equals("Emotes") ? EmoteLibrary.all().size() : cat.equalsIgnoreCase("Featured") || cat.equalsIgnoreCase("Sale") ? -1 : Social.countIn(cat);
+			String cs = cnt >= 0 ? String.valueOf(cnt) : "";
+			int cw2 = cs.isEmpty() ? 0 : Gfx.tw(cs) + 6;
+			Gfx.textMid(c, fit(label, sideW - 26 - cw2), sx + 14, cy, 22, col);
+			if (!cs.isEmpty()) {
+				Gfx.textMid(c, cs, sx + sideW - 14 - Gfx.tw(cs), cy, 22, Theme.DIM);
+			}
 			region(sx + 5, cy, sideW - 10, 22, () -> {
+				deathTab = false;
 				if (lockerShop) {
 					Social.loadShop(cat);
 				} else {
@@ -3789,8 +3850,14 @@ public class SolMenuScreen extends Screen {
 			drawSkins(c, mx, my, gx0, gx1, fy, iy1, px, iy0, prevW, accent);
 			return;
 		}
-		field(c, gx0, fy, gx1 - gx0 - sortW - 6, 22, lockerSearch, "Search " + (lockerShop ? "the shop" : invCat.toLowerCase(Locale.ROOT)) + "...", focus == F_LOCKER, accent, true);
-		region(gx0, fy, gx1 - gx0 - sortW - 6, 22, () -> focus = F_LOCKER);
+		if (deathTab) {
+			drawDeathAnims(c, mx, my, gx0, gx1, iy0, iy1, px, prevW, accent);
+			return;
+		}
+		dev.solclient.fx.DeathAnimBridge.hover(null);
+		int daW = 0;
+		field(c, gx0, fy, gx1 - gx0 - sortW - 6 - daW, 22, lockerSearch, "Search " + (lockerShop ? "the shop" : invCat.toLowerCase(Locale.ROOT)) + "...", focus == F_LOCKER, accent, true);
+		region(gx0, fy, gx1 - gx0 - sortW - 6 - daW, 22, () -> focus = F_LOCKER);
 		int nSorts = lockerShop ? 4 : 3;
 		lockerSort %= nSorts;
 		button(c, mx, my, gx1 - sortW, fy, sortW, 22, "Sort: " + SORTS[lockerSort], "lsort", TILE, TILE_HOVER, Theme.TEXT, () -> lockerSort = (lockerSort + 1) % nSorts);
@@ -4245,6 +4312,9 @@ public class SolMenuScreen extends Screen {
 		}
 		int by = y + h - 30, bx = x + 8, bw = w - 16;
 		final Social.Item fi = it;
+		if (Social.isKillEffect(it) && Gfx.mc().player != null) {
+			button(c, mx, my, bx, by - 28, bw, 22, "View in world", "lviewfx", TILE, TILE_HOVER, Theme.TEXT, () -> viewKillEffect(fi));
+		}
 		if (it.wearable() && !("verity".equalsIgnoreCase(it.id) || "verity".equalsIgnoreCase(it.modelId))) { // Verity is not an accessory
 			cosmeticEditor(c, mx, my, w, x, bx, bw, by, it);
 		}
@@ -4431,6 +4501,34 @@ public class SolMenuScreen extends Screen {
 	 * On the Emotes tab it is your emote wheel (slot, emote, x).
 	 */
 	private void lockerSideList(DrawContext c, int mx, int my, int x, int y, int w, int h) {
+		if (deathTab) {
+			// Death Animations: the ones that are switched on (click one to switch it off)
+			List<dev.solclient.fx.DeathAnimBridge.Entry> on = new ArrayList<>();
+			for (var e : dev.solclient.fx.DeathAnimBridge.all()) {
+				if (dev.solclient.fx.DeathAnimBridge.enabled(e)) {
+					on.add(e);
+				}
+			}
+			Gfx.textRaw(c, fitRaw(dev.solclient.Lang.t("Switched on").toUpperCase(Locale.ROOT), w - 30), x + 8, y + 9, 0xFF6B7080);
+			String cnt = String.valueOf(on.size());
+			Gfx.textRaw(c, cnt, x + w - 8 - Gfx.twRaw(cnt), y + 9, 0xFF6B7080);
+			int dy = y + 22;
+			for (var e : on) {
+				if (dy + 20 > y + h) {
+					break;
+				}
+				boolean hov = in(mx, my, x + 4, dy, w - 8, 20);
+				Gfx.rrectBorder(c, x + 4, dy, w - 8, 20, 3, hov ? TILE_HOVER : Theme.ROW, 0xFF2A2C33);
+				Gfx.rrect(c, x + 9, dy + 7, 6, 6, 3, e.accent);
+				Gfx.textClip(c, e.title, x + 20, dy + 6, w - 32, Theme.TEXT);
+				region(x + 4, dy, w - 8, 20, () -> dev.solclient.fx.DeathAnimBridge.setEnabled(e, false));
+				dy += 24;
+			}
+			if (on.isEmpty()) {
+				Gfx.textRaw(c, dev.solclient.Lang.t("None yet"), x + 10, y + 28, 0xFF5E6272);
+			}
+			return;
+		}
 		boolean emotesTab = invCat.equals("Emotes");
 		boolean killTab = invCat.equals("Kill Effects");
 		List<Social.Item> src = killTab ? Social.killEffectItems() : Social.shop;
@@ -4516,7 +4614,11 @@ public class SolMenuScreen extends Screen {
 		lockerChip = null;
 		scroll = 0;
 		scrollTarget = 0;
+		deathTab = k == 3;
+		dev.solclient.fx.DeathAnimBridge.hover(null);
 		if (k == 3) {
+			deathSel = null;
+		} else if (k == 4) {
 			lockerShop = false;
 			invCat = "Skins";
 		} else if (lockerShop) {
@@ -4528,6 +4630,9 @@ public class SolMenuScreen extends Screen {
 			}
 		}
 	}
+
+	private static boolean deathTab;
+	private static String deathSel;
 
 	private static String lockerChip;
 	private static boolean lockerOnlyOn;
@@ -4541,6 +4646,7 @@ public class SolMenuScreen extends Screen {
 	}
 
 	private void switchLocker(boolean shop) {
+		deathTab = false;
 		lockerStore = false;
 		lockerShop = shop;
 		lockerSel = null;
@@ -4663,6 +4769,13 @@ public class SolMenuScreen extends Screen {
 			}
 		});
 		region(x, y + h - 18, w - 28, 18, () -> lockerSel = it.id);
+		if (hov && Social.isKillEffect(it) && Gfx.mc().player != null) {
+			int vbw = Gfx.tw("View") + 16, vbx = x + (w - vbw) / 2, vby = y + 4 + (h - 24) - 20;
+			boolean vh2 = in(mx, my, vbx, vby, vbw, 16);
+			Gfx.rrect(c, vbx, vby, vbw, 16, 5, vh2 ? Theme.accentHover() : Theme.accent());
+			Gfx.textC(c, "View", vbx + vbw / 2, vby + 4, 0xFFFFFFFF);
+			region(vbx, vby, vbw, 16, () -> viewKillEffect(it));
+		}
 	}
 
 	private static final java.util.Map<String, Identifier> THUMBS = new java.util.HashMap<>();
@@ -4701,34 +4814,39 @@ public class SolMenuScreen extends Screen {
 		float u0 = atlas ? k : 0, v0 = atlas ? k : 0, uw = atlas ? 10 * k : t.width(), vh = atlas ? 16 * k : t.height();
 		float aspect = atlas ? 10F / 16F : Math.max(0.45F, Math.min(1.1F, t.width() / (float) t.height()));
 		int h = Math.round(ph * 0.78F), w = Math.round(h * aspect);
+		// a slow full turn (about 14 s): front, thin edge, the inside of the cape, edge, front...
 		double sec = System.currentTimeMillis() / 1000.0;
-		double yaw = Math.toRadians(30 + Math.sin(sec * 0.9) * 10);
+		double yaw = sec * 0.45 + (t.id().hashCode() & 7) * 0.8;
 		float cos = (float) Math.cos(yaw), sin = (float) Math.sin(yaw);
-		int ww = Math.max(2, Math.round(w * cos)), thick = Math.max(2, Math.round(Math.max(3, w * 0.10F) * sin * 2F));
-		float tilt = -0.10F;
+		boolean front = cos >= 0F;
+		float ac = Math.abs(cos), as = Math.abs(sin);
+		int ww = Math.max(2, Math.round(w * ac)), thick = Math.max(2, Math.round(Math.max(3, w * 0.10F) * as * 2F));
+		boolean sideRight = front == (sin > 0F);
+		float tilt = -0.05F;
 		int total = ww + thick;
 		int x0 = px + (pw - total) / 2, y0 = py + (ph - h) / 2 + 2;
 		var m = c.getMatrices();
-		// soft shadow under it
-		Gfx.circle(c, px + pw / 2F, py + ph - 6, Math.max(6, total / 2F), 0x33000000);
-		// the outside of the cape
+		Gfx.circle(c, px + pw / 2F, py + ph - 6, Math.max(6, total / 2F), 0x33000000); // soft shadow
+		int faceX = sideRight ? x0 : x0 + thick, sideX = sideRight ? x0 + ww : x0;
+		// the big face: the outside of the cape in front, the inside (a bit darker) when it has turned round
 		m.pushMatrix();
-		m.translate(x0, y0 - tilt * ww * 0.5F);
+		m.translate(faceX, y0 - tilt * ww * 0.5F);
 		m.mul(new org.joml.Matrix3x2f(1F, tilt, 0F, 1F, 0F, 0F));
-		Gfx.texUv(c, t.id(), 0, 0, ww, h, u0, v0, Math.round(uw), Math.round(vh), t.width(), t.height(), 0xFFFFFFFF);
+		float fu = atlas && !front ? 12 * k : u0;
+		Gfx.texUv(c, t.id(), 0, 0, ww, h, fu, v0, Math.round(uw), Math.round(vh), t.width(), t.height(), front ? 0xFFFFFFFF : 0xFFB4B4B4);
 		m.popMatrix();
-		// the thickness on the right side (darker)
+		// the thickness on the side that shows (darker)
 		m.pushMatrix();
-		m.translate(x0 + ww, y0 - tilt * ww * 0.5F + tilt * ww);
+		m.translate(sideX, y0 - tilt * ww * 0.5F + (sideRight ? tilt * ww : 0F));
 		m.mul(new org.joml.Matrix3x2f(1F, tilt * 0.4F, 0F, 1F, 0F, 0F));
 		if (atlas) {
-			Gfx.texUv(c, t.id(), 0, 0, thick, h, 11 * k, k, Math.max(1, Math.round(k)), Math.round(vh), t.width(), t.height(), 0xFFB8B8B8);
+			Gfx.texUv(c, t.id(), 0, 0, thick, h, (sideRight == front ? 11 : 0) * k, k, Math.max(1, Math.round(k)), Math.round(vh), t.width(), t.height(), 0xFFA8A8A8);
 		} else {
 			c.fill(0, 0, thick, h, 0xFF2A2C35);
 		}
 		m.popMatrix();
 		// top edge: a thin lighter strip
-		c.fill(x0, y0 - 1 + Math.round(tilt * 0), x0 + ww + thick, y0, 0x40FFFFFF);
+		c.fill(x0, y0 - 1, x0 + total, y0, 0x40FFFFFF);
 	}
 
 	private void itemImage(DrawContext c, Social.Item it, int px, int py, int pw, int ph) {
@@ -4965,7 +5083,7 @@ public class SolMenuScreen extends Screen {
 			Gfx.textFit(c, fit(it.category, w - 16), x + w / 2, w - 6, ty + 11, Theme.DIM);
 		}
 		int swatchRows = 0;
-		if (it.variantGroup != null) {
+		if (it.variantGroup != null && !"Pets".equalsIgnoreCase(it.category)) {
 			// colour picker: one dot per colour (click = wear that colour), like the colour choice in the Laby shop
 			var vs = dev.solclient.cosmetic.CosmeticModels.variantsOf(it.variantGroup);
 			var cur = dev.solclient.cosmetic.Variants.chosen(it.variantGroup);
@@ -5031,6 +5149,155 @@ public class SolMenuScreen extends Screen {
 		} else {
 			button(c, mx, my, bx, by, bw, 22, "Equip", "leq", accent, Theme.accentHover(), 0xFFFFFFFF, () -> Social.equip(fi, true));
 		}
+	}
+
+	/** The Death Animations section: our own cards and panel for the engine's 49 animations (hover = live preview, View = plays in front of you). */
+	private void drawDeathAnims(DrawContext c, int mx, int my, int gx0, int gx1, int iy0, int iy1, int px, int prevW, int accent) {
+		List<dev.solclient.fx.DeathAnimBridge.Entry> all = dev.solclient.fx.DeathAnimBridge.all();
+		if (all.isEmpty()) {
+			Gfx.textC(c, dev.solclient.Lang.tr("Death animations are not available in this build.", "As animações de morte não estão disponíveis nesta versão."), (gx0 + px) / 2, (iy0 + iy1) / 2, Theme.DIM);
+			maxScroll = 0;
+			return;
+		}
+		int fy = iy0, sortW = 74;
+		field(c, gx0, fy, gx1 - gx0 - sortW - 6, 22, lockerSearch, "Search death animations...", focus == F_LOCKER, accent, true);
+		region(gx0, fy, gx1 - gx0 - sortW - 6, 22, () -> focus = F_LOCKER);
+		button(c, mx, my, gx1 - sortW, fy, sortW, 22, lockerSort == 1 ? "Sort: A-Z" : lockerSort == 2 ? "Sort: Z-A" : "Sort: Default", "lsort", TILE, TILE_HOVER, Theme.TEXT, () -> lockerSort = (lockerSort + 1) % 3);
+		String q = lockerSearch.text().toLowerCase(Locale.ROOT).trim();
+		List<dev.solclient.fx.DeathAnimBridge.Entry> list = new ArrayList<>();
+		for (var e : all) {
+			if (q.isEmpty() || e.title.toLowerCase(Locale.ROOT).contains(q)) {
+				list.add(e);
+			}
+		}
+		if (lockerSort == 1) {
+			list.sort((a, b) -> a.title.compareToIgnoreCase(b.title));
+		} else if (lockerSort == 2) {
+			list.sort((a, b) -> b.title.compareToIgnoreCase(a.title));
+		}
+		// favourites first
+		list.sort((a, b) -> Boolean.compare(dev.solclient.fx.DeathAnimBridge.favourite(b), dev.solclient.fx.DeathAnimBridge.favourite(a)));
+		int gy0 = fy + 30, gap = 6, minW = 150;
+		int inner = gx1 - gx0, cols = Math.max(1, (inner + gap) / (minW + gap));
+		int cw = (inner - (cols - 1) * gap) / cols, ch = 118;
+		int rows = (list.size() + cols - 1) / cols;
+		int contentH = Math.max(0, rows * (ch + gap) - gap);
+		maxScroll = Math.max(0, contentH - (iy1 - gy0));
+		scrollTarget = Math.max(0, Math.min(maxScroll, scrollTarget));
+		scroll = Math.max(0, Math.min(maxScroll, scroll));
+		clipY0 = gy0;
+		clipY1 = iy1;
+		dev.solclient.fx.DeathAnimBridge.Entry hovered = null;
+		c.enableScissor(gx0 - 4, gy0, gx1 + 4, iy1);
+		for (int i = 0; i < list.size(); i++) {
+			var e = list.get(i);
+			int x = gx0 + (i % cols) * (cw + gap), y = gy0 + (i / cols) * (ch + gap) - Math.round(scroll);
+			if (y + ch < gy0 || y > iy1) {
+				continue;
+			}
+			boolean hov = in(mx, my, x, y, cw, ch) && my >= gy0 && my < iy1;
+			if (hov) {
+				hovered = e;
+			}
+			boolean sel = e.id.equals(deathSel), on = dev.solclient.fx.DeathAnimBridge.enabled(e), fav = dev.solclient.fx.DeathAnimBridge.favourite(e);
+			float an = anim("da" + e.id, hov);
+			Gfx.rrectBorder(c, x, y, cw, ch, 6, Gfx.blend(TILE, TILE_HOVER, an), sel ? 0xFFB6BAC8 : Gfx.blend(Theme.CARD_BORDER, Theme.CARD_BORDER_HOVER, an));
+			region(x, y, cw, ch, () -> deathSel = e.id); // first: later regions (the buttons) win
+			// stage: the animation plays right here while the mouse is on the card
+			int stx = x + 6, sty = y + 6, stw = cw - 12, sth = 70;
+			Gfx.rrect(c, stx, sty, stw, sth, 6, Gfx.blend(0xFF15161B, e.accent, 0.22F + 0.10F * an));
+			if (hov) {
+				dev.solclient.fx.DeathAnimBridge.hover(e);
+				float uu = 1F / f;
+				dev.solclient.fx.DeathAnimBridge.drawPreview(c, 0F, Math.round(stx * uu), Math.round(sty * uu), Math.round((stx + stw) * uu), Math.round((sty + sth) * uu));
+			} else if (e.icon != null) {
+				c.drawItem(new net.minecraft.item.ItemStack(e.icon), x + cw / 2 - 8, sty + sth / 2 - 8);
+			}
+			Gfx.textClip(c, e.title, x + 8, y + 82, cw - 16, Theme.TEXT);
+			int vbw = Gfx.tw("View") + 14;
+			boolean vhov = in(mx, my, x + 8, y + 97, vbw, 15) && my >= gy0 && my < iy1;
+			Gfx.rrect(c, x + 8, y + 97, vbw, 15, 4, vhov ? 0xFF3A3D49 : 0xFF2A2D36);
+			Gfx.textC(c, "View", x + 8 + vbw / 2, y + 101, Theme.TEXT);
+			region(x + 8, y + 97, vbw, 15, () -> viewDeath(e));
+			int sxx = x + cw - 28;
+			boolean sh = in(mx, my, sxx - 2, y + 95, 24, 18) && my >= gy0 && my < iy1;
+			miniSwitch(c, sxx, y + 100, on, sh);
+			region(sxx - 2, y + 95, 24, 18, () -> dev.solclient.fx.DeathAnimBridge.setEnabled(e, !on));
+			int fx = x + cw - 46;
+			boolean fh = in(mx, my, fx - 2, y + 96, 14, 16) && my >= gy0 && my < iy1;
+			Gfx.textRaw(c, fav ? "★" : "☆", fx, y + 100, fav ? 0xFFFFD27A : fh ? Theme.TEXT : Theme.DIM);
+			region(fx - 2, y + 96, 14, 16, () -> dev.solclient.fx.DeathAnimBridge.toggleFavourite(e));
+		}
+		c.disableScissor();
+		clipY0 = 0;
+		clipY1 = vh;
+		drawScrollbar(c, gx1 + 3, gy0, iy1, contentH);
+
+		// ---- right panel: live stage + details of the hovered (or picked) animation
+		dev.solclient.fx.DeathAnimBridge.Entry cur = hovered;
+		if (cur == null) {
+			for (var e : all) {
+				if (e.id.equals(deathSel)) {
+					cur = e;
+				}
+			}
+		}
+		dev.solclient.fx.DeathAnimBridge.hover(cur);
+		Gfx.rrectBorder(c, px, iy0, prevW, iy1 - iy0, 10, Gfx.blend(TILE, 0xFF000000, 0.25F), Theme.CARD_BORDER);
+		int stageH = Math.min(180, (iy1 - iy0) - 150);
+		if (stageH > 60) {
+			Gfx.rrect(c, px + 8, iy0 + 8, prevW - 16, stageH, 8, 0xFF15161B);
+			if (cur != null) {
+				float uu = 1F / f;
+				dev.solclient.fx.DeathAnimBridge.drawPreview(c, 0F, Math.round((px + 8) * uu), Math.round((iy0 + 8) * uu), Math.round((px + prevW - 8) * uu), Math.round((iy0 + 8 + stageH) * uu));
+			} else {
+				Gfx.textFit(c, dev.solclient.Lang.tr("Hover an animation to see it", "Passa o rato numa animação para a ver"), px + prevW / 2, prevW - 24, iy0 + 8 + stageH / 2 - 4, Theme.DIM);
+			}
+		}
+		int ty = iy0 + 8 + Math.max(0, stageH) + 10;
+		if (cur != null) {
+			Gfx.textFit(c, fit(cur.title, prevW - 16), px + prevW / 2, prevW - 6, ty, Theme.TEXT);
+			int dy = ty + 14;
+			for (String l : wrap(cur.description, prevW - 20, 3)) {
+				Gfx.textFit(c, l, px + prevW / 2, prevW - 6, dy, 0xFFB8BCC8);
+				dy += 11;
+			}
+		}
+		int bx = px + 8, bw = prevW - 16, by = iy1 - 30;
+		final var fc = cur;
+		if (cur != null) {
+			button(c, mx, my, bx, by, bw, 22, "View in world", "lviewda", accent, Theme.accentHover(), 0xFFFFFFFF, () -> viewDeath(fc));
+		}
+		boolean master = dev.solclient.fx.DeathAnimBridge.master(), rnd = dev.solclient.fx.DeathAnimBridge.random();
+		int ry = by - 26;
+		button(c, mx, my, bx, ry, bw, 20, "Random: " + (rnd ? "On" : "Off"), "ldarand", TILE, TILE_HOVER, Theme.TEXT, () -> dev.solclient.fx.DeathAnimBridge.setRandom(!rnd));
+		button(c, mx, my, bx, ry - 24, bw, 20, "Death animations: " + (master ? "On" : "Off"), "damaster", master ? Theme.GREEN_BG : TILE, master ? Theme.GREEN_BG_HOVER : TILE_HOVER, master ? Theme.GREEN : Theme.TEXT,
+				() -> dev.solclient.fx.DeathAnimBridge.setMaster(!master));
+	}
+
+	/** Plays an animation in front of you (the menu closes so you can watch). */
+	private void viewDeath(dev.solclient.fx.DeathAnimBridge.Entry e) {
+		if (e == null || Gfx.mc().player == null) {
+			return;
+		}
+		closeMenu();
+		dev.solclient.fx.DeathAnimBridge.play(e);
+	}
+
+	/** Plays a kill effect a few steps in front of you (the menu closes so you can watch it). */
+	private void viewKillEffect(Social.Item it) {
+		var p = Gfx.mc().player;
+		if (p == null) {
+			return;
+		}
+		closeMenu();
+		double yaw = Math.toRadians(p.getYaw());
+		Identifier skin = null;
+		try {
+			skin = p.getSkin().body().texturePath();
+		} catch (RuntimeException ignored) {
+		}
+		dev.solclient.fx.killfx.KillFx.play(Social.killEffectKey(it), p.getX() - Math.sin(yaw) * 4, p.getY(), p.getZ() + Math.cos(yaw) * 4, skin, -1);
 	}
 
 	private static int parseColour(String s, int def) {

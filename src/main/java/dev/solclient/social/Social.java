@@ -1519,6 +1519,24 @@ public final class Social {
 	}
 
 	/** Items per category (and "All"): switching section shows them at once, the site is asked in the background. */
+	/** How many items a shop section has (from the full list), or -1 when that is not known. */
+	public static int countIn(String cat) {
+		List<Item> all = SHOP_CACHE.get("All");
+		if (all == null) {
+			return -1;
+		}
+		if (cat.equalsIgnoreCase("All")) {
+			return all.size();
+		}
+		int n = 0;
+		for (Item it : all) {
+			if (it.category != null && it.category.equalsIgnoreCase(cat)) {
+				n++;
+			}
+		}
+		return n;
+	}
+
 	private static final Map<String, List<Item>> SHOP_CACHE = new ConcurrentHashMap<>();
 	private static volatile long walletAt, allAt;
 

@@ -113,6 +113,7 @@ public final class Extensions {
 		} catch (IOException e) {
 			System.err.println("[Sleep] extensions: " + e);
 		}
+		installed.add(PRACTICE); // Ranked PvP, PvP / Bridge practice: always installed
 		for (EntrypointContainer<KuboExtension> c : list) {
 			var md = c.getProvider().getMetadata();
 			Item it = new Item();
@@ -252,7 +253,17 @@ public final class Extensions {
 		status = it.name + " " + dev.solclient.Lang.tr("installed - find it as a folder in All Mods", "instalada - está numa pasta em Todos os mods");
 	}
 
+	/** The extension that carries Ranked PvP and the practice add-ons: it comes with the client and cannot be removed. */
+	public static final String PRACTICE = "kubo_ext_practice";
+
+	public static boolean isBuiltin(Item it) {
+		return PRACTICE.equals(it.modId);
+	}
+
 	public static void remove(Item it) {
+		if (isBuiltin(it)) {
+			return;
+		}
 		List<Mod> mods = modsOf.remove(it.modId);
 		List<KuboExtension> exts = instances.remove(it.modId);
 		if (exts != null) {

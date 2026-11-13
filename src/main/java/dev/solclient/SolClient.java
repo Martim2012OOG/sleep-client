@@ -105,6 +105,7 @@ public class SolClient implements ClientModInitializer {
 		MODS.add(new ChatTimestampsMod());
 		MODS.add(new ChatBubblesMod());
 		MODS.add(new WaypointsMod());
+		MODS.add(new InventoryTweaksMod());
 		MODS.add(new FullbrightMod());
 		MODS.add(new BossBarMod());
 		MODS.add(new PackDisplayMod());

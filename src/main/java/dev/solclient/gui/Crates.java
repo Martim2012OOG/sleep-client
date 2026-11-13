@@ -420,9 +420,16 @@ final class Crates {
 		boolean hov = in(mx, my, x, y, w, h) && my >= vy0 && my < vy1;
 		boolean xmas = d == PRESENT;
 		int stripe = xmas ? 0xFFD64557 : 0xFF9B6BFF;
-		// a flat card like every other one, with a thin colour stripe for the season
+		// a flat card like every other one; the season colour lives in a soft glow behind the chest, not in a side bar
 		cardFrame(c, x, y, w, h, hov, 0);
-		Gfx.rrect(c, x + 14, y + 20, 3, h - 40, 1, stripe);
+		if (clip(c, x + 2, Math.max(y + 2, vy0), x + w - 2, Math.min(y + h - 2, vy1))) {
+			int gx = x + w * 76 / 100, gy = y + h / 2;
+			for (int i = 0; i < 6; i++) {
+				int r = 150 - i * 22;
+				Gfx.rrect(c, gx - r, gy - r * 2 / 3, r * 2, r * 4 / 3, r * 2 / 3, (0x0C + i * 3 << 24) | (stripe & 0xFFFFFF));
+			}
+			c.disableScissor();
+		}
 		if (clip(c, x + 2, Math.max(y + 2, vy0), x + w - 2, Math.min(y + h - 2, vy1))) {
 			int size = d == MIMIC ? 300 : 230;
 			int cx = x + w * 76 / 100, cy = y + h / 2 + (d == MIMIC ? -16 : 6) + Math.round((float) Math.sin(now / 520.0) * 3F);

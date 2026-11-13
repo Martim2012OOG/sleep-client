@@ -13,8 +13,8 @@ public final class Addons {
 	}
 
 	public static void init() {
-		// the built-in ones moved to extensions (PvP / Bridge Practice = the "practice" extension), which call register()
-		register(new DeathAnimationsAddon());
+		// the built-in ones moved to extensions (PvP / Bridge Practice / Ranked PvP = the "practice" extension), which call register()
+		// Death Animations is not an add-on any more: it lives in the Locker (Death Animations section)
 	}
 
 	public static void register(Addon a) {
