@@ -15,7 +15,7 @@ jobs:
   publish:
     runs-on: ubuntu-22.04
     permissions:
-      contents: read
+      contents: write # para pôr os jars numa Release deste repositório
       actions: write # para apagar os artifacts antigos
     steps:
       - uses: actions/checkout@v4
@@ -59,13 +59,15 @@ jobs:
           gh api --paginate "repos/$REPO_SELF/actions/artifacts?name=sleep-client-mod&per_page=100" --jq '.artifacts[].id' | while read -r id; do
             gh api -X DELETE "repos/$REPO_SELF/actions/artifacts/$id" || true
           done
-      # Fica na página da run, em "Artifacts" (lá em baixo): clica em "sleep-client-mod" para baixar só o mod.
-      # Vem depois de publicar e não pode falhar a run: sem espaço de artifacts no GitHub, o launcher recebe o client na mesma.
-      - name: Mod para descarregar
+      # Os jars ficam numa Release deste repositório ("Mod - ultimo build", na coluna da direita da página principal, em Releases).
+      # Uma Release NAO gasta a quota de "artifacts" do GitHub Actions (que enchia e dava "Artifact storage quota has been hit").
+      # Vem depois de publicar e não pode falhar a run: o launcher recebe o client na mesma.
+      - name: Mod para descarregar (Release)
         if: always()
         continue-on-error: true
-        uses: actions/upload-artifact@v4
-        with:
-          name: sleep-client-mod
-          path: download/*.jar
-          retention-days: 3
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view mod-latest --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1 || gh release create mod-latest --repo "$GITHUB_REPOSITORY" --prerelease \
+            --title "Mod - ultimo build" --notes "Jars do último build do client. Cada push substitui estes ficheiros."
+          gh release upload mod-latest download/*.jar --repo "$GITHUB_REPOSITORY" --clobber
