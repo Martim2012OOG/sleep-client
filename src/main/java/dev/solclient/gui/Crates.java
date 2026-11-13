@@ -228,14 +228,14 @@ final class Crates {
 			heroBanner(c, mx, my, x, yy, w, HERO_H, hd, vy0, vy1, now, host);
 			yy += HERO_H + 24;
 		}
-		yy = header(c, x, yy, Lang.tr("Coin Chests", "Baús de Moedas"), Lang.tr("BUY ON THE WEBSITE", "COMPRA NO SITE"));
+		yy = header(c, x, yy, Lang.tr("Coin Chests", "Baús de Moedas"), Lang.tr("Buy on the website", "Compra no site"));
 		int cw = (w - GAP * 2) / 3;
 		for (int i = 0; i < PACKS.length; i++) {
 			coinCard(c, mx, my, x + i * (cw + GAP), yy, i == 2 ? x + w - (x + i * (cw + GAP)) : cw, i, vy0, vy1, now, host);
 		}
 		yy += COIN_ART + COIN_FT + 26;
 		String left = seasonLeft();
-		yy = header(c, x, yy, Lang.tr("Crates", "Caixas"), left == null ? null : left.toUpperCase(Locale.ROOT));
+		yy = header(c, x, yy, Lang.tr("Crates", "Caixas"), left);
 		List<Def> cr = crates();
 		int bw = (w - GAP) / 2;
 		for (int i = 0; i < cr.size(); i++) {
@@ -256,13 +256,11 @@ final class Crates {
 		return true;
 	}
 
-	private static int header(DrawContext c, int x, int y, String title, String pill) {
-		bigText(c, title, x + 2, y + 4, 0xFFFFFFFF, 1.5F, 400);
-		if (pill != null) {
-			int px = x + 2 + Math.round(Gfx.tw(title) * 1.5F) + 14, pw = Gfx.tw(pill) + 16;
-			Gfx.rrect(c, px, y + 3, pw, 17, 3, 0xFF5C4318);
-			Gfx.rrect(c, px + 1, y + 4, pw - 2, 15, 2, 0xFF3A2A14);
-			Gfx.text(c, pill, px + 8, y + 7, 0xFFE0A63A);
+	private static int header(DrawContext c, int x, int y, String title, String note) {
+		bigText(c, title, x + 2, y + 4, Theme.TEXT, 1.3F, 400);
+		if (note != null) {
+			// a quiet note on the same line (no coloured box)
+			Gfx.text(c, note, x + 2 + Math.round(Gfx.tw(title) * 1.3F) + 12, y + 9, Theme.DIM);
 		}
 		return y + SEC_H;
 	}
@@ -293,20 +291,15 @@ final class Crates {
 		m.popMatrix();
 	}
 
+	/** The same flat card as the rest of Sleep: one fill, one thin border, a little lighter under the mouse. */
 	private static void cardFrame(DrawContext c, int x, int y, int w, int h, boolean hov, int border) {
-		Gfx.rrect(c, x, y + 4, w, h, 4, 0x55000000);
-		Gfx.rrect(c, x, y, w, h, 4, hov ? Gfx.blend(border, 0xFFFFFFFF, 0.25F) : border);
-		Gfx.rrect(c, x + 2, y + 2, w - 4, h - 4, 3, 0xFF1D2333);
+		Gfx.rrectBorder(c, x, y, w, h, 8, hov ? Theme.CARD_HOVER : Theme.CARD, hov ? Theme.CARD_BORDER_HOVER : Theme.CARD_BORDER);
 	}
 
 	/** One of our buttons (accent colour, gloss and the running shine). */
 	private static void storeButton(DrawContext c, int mx, int my, int x, int y, int w, int h, String label, boolean coin, int vy0, int vy1, long now, long off, Host host, Runnable click) {
 		boolean hv = in(mx, my, x, y, w, h) && my >= vy0 && my < vy1;
-		Gfx.rrect(c, x, y, w, h, 5, 0xFF0A0B10);
-		Gfx.rrect(c, x + 1, y + 1, w - 2, h - 2, 4, hv ? Theme.accentHover() : Theme.accent());
-		c.fill(x + 3, y + 2, x + w - 3, y + 3, 0x55FFFFFF);
-		c.fill(x + 3, y + h - 5, x + w - 3, y + h - 2, 0x44000000);
-		shine(c, x + 2, y + 2, w - 4, h - 4, now, hv ? 1300 : 2600, 12, 0x70, off);
+		Gfx.rrect(c, x, y, w, h, 6, hv ? Theme.accentHover() : Theme.accent());
 		int lw = Gfx.tw(label);
 		int lx = x + (w - lw - (coin ? 16 : 0)) / 2;
 		Gfx.text(c, label, lx, y + (h - 8) / 2, 0xFFFFFFFF);
@@ -318,9 +311,9 @@ final class Crates {
 
 	private static void infoDot(DrawContext c, int mx, int my, int cx, int cy, Def d, int pack, int vy0, int vy1, Host host) {
 		boolean ih = in(mx, my, cx - 9, cy - 9, 18, 18) && my >= vy0 && my < vy1;
-		Gfx.circle(c, cx, cy, 8F, 0xFF0A0B10);
-		Gfx.circle(c, cx, cy, 7F, ih ? 0xFF7A82A0 : 0xFF3A3F55);
-		Gfx.textC(c, "i", cx, cy - 4, 0xFFFFFFFF);
+		Gfx.circle(c, cx, cy, 8F, ih ? Theme.CARD_BORDER_HOVER : Theme.CARD_BORDER);
+		Gfx.circle(c, cx, cy, 7F, Theme.CARD);
+		Gfx.textC(c, "i", cx, cy - 4, ih ? Theme.TEXT : Theme.DIM);
 		host.region(cx - 9, cy - 9, 18, 18, () -> {
 			infoDef = d;
 			infoPack = pack;
@@ -351,11 +344,10 @@ final class Crates {
 		for (int o : d.odds) {
 			total += o;
 		}
-		Gfx.rrect(c, x - 1, y - 1, w + 2, 8, 3, 0xFF0A0B10);
 		int bx = x;
 		for (int i = 0; i < 4; i++) {
 			int sw = i == 3 ? x + w - bx : Math.max(4, Math.round(w * d.odds[i] / (float) total));
-			c.fill(bx, y, bx + sw - (i < 3 ? 1 : 0), y + 6, RARITY_COL[i]);
+			c.fill(bx, y, bx + sw - (i < 3 ? 2 : 0), y + 4, RARITY_COL[i]);
 			bx += sw;
 		}
 	}
@@ -366,34 +358,26 @@ final class Crates {
 			return;
 		}
 		boolean hov = in(mx, my, x, y, w, h) && my >= vy0 && my < vy1;
-		int[] tint = {0xC27C3A, 0xB8C4D6, 0xFFC53D};
-		cardFrame(c, x, y, w, h, hov, 0xFF2C3449);
+		cardFrame(c, x, y, w, h, hov, 0);
 		int ax = x + 2, ay = y + 2, aw = w - 4, ah = COIN_ART - 2;
 		if (clip(c, ax, Math.max(ay, vy0), ax + aw, Math.min(ay + ah, vy1))) {
-		Gfx.tex(c, Gfx.id("textures/gui/season/glow.png"), x + w / 2 - aw / 2, ay + ah / 2 - aw / 2 + 12, aw, aw, 64, 64, 0x66000000 | tint[i]);
-		cobweb(c, x + w - 56, y + 2, 54, true, 0x40);
-		int size = Math.round(120 * (1F + 0.2F * i));
-		int sx = x + w / 2 - size / 2, sy = ay + ah / 2 - size / 2 + 8 + (hov ? -3 : 0);
-		int frame = (int) ((now / 83L + (i + 1) * 5L) % COINS.idleN);
-		sprite(c, COINS.idleSheet, COINS.idleRows, frame, sx, sy, size, 1F);
-		starshine(c, x, y, w, ah, 5, i + 7, now);
-		c.disableScissor();
+			// just the chest: no glow, no glitter
+			int size = Math.round(120 * (1F + 0.2F * i));
+			int sx = x + w / 2 - size / 2, sy = ay + ah / 2 - size / 2 + 8 + (hov ? -3 : 0);
+			int frame = (int) ((now / 83L + (i + 1) * 5L) % COINS.idleN);
+			sprite(c, COINS.idleSheet, COINS.idleRows, frame, sx, sy, size, 1F);
+			c.disableScissor();
 		}
 		if (i > 0) {
-			tag(c, x + 14, y + 14, i == 1 ? Lang.tr("POPULAR", "POPULAR") : Lang.tr("BEST VALUE", "MELHOR VALOR"), 0);
+			Gfx.text(c, i == 1 ? Lang.tr("Popular", "Popular") : Lang.tr("Best value", "Melhor valor"), x + 14, y + 14, Theme.accent());
 		}
-		String coins = Lang.tr("COINS", "MOEDAS");
-		tag(c, x + w - Gfx.tw(coins) - 14 - 14, y + 14, coins, 1);
 		int fy = y + COIN_ART;
-		c.fill(x + 2, fy, x + w - 2, y + h - 2, 0xFF232A3D);
-		c.fill(x + 2, fy, x + w - 2, fy + 2, 0xFF2C3449);
-		String title = String.format(Locale.ROOT, "%,d", PACKS[i].coins()).replace(',', ' ') + " coins";
-		bigText(c, title, x + 14, fy + 8, 0xFFFFFFFF, 1.15F, w - 120);
-		Gfx.text(c, Lang.t(PACKS[i].name()), x + 14, fy + 24, 0xFF8E96AD);
+		c.fill(x + 14, fy, x + w - 14, fy + 1, Theme.CARD_BORDER);
+		String title = String.format(Locale.ROOT, "%,d", PACKS[i].coins()).replace(',', ' ') + " " + Lang.tr("coins", "moedas");
+		bigText(c, title, x + 14, fy + 10, Theme.TEXT, 1.15F, w - 120);
+		Gfx.text(c, Lang.t(PACKS[i].name()), x + 14, fy + 26, Theme.DIM);
 		String price = PACKS[i].price();
-		int pw = Gfx.tw(price);
-		c.fill(x + w - 14 - pw - 10, fy + 12, x + w - 14 - pw - 9, fy + 32, 0xFF2C3449);
-		Gfx.text(c, price, x + w - 14 - pw, fy + 18, 0xFF8E96AD);
+		Gfx.text(c, price, x + w - 14 - Gfx.tw(price), fy + 18, Theme.TEXT);
 		final int fi = i;
 		host.region(x, y, w, h, () -> start(COINS, fi));
 	}
@@ -404,38 +388,25 @@ final class Crates {
 			return;
 		}
 		boolean hov = in(mx, my, x, y, w, h) && my >= vy0 && my < vy1;
-		cardFrame(c, x, y, w, h, hov, 0xFF2C3449);
+		cardFrame(c, x, y, w, h, hov, 0);
 		int ax = x + 2, ay = y + 2, aw = w - 4, ah = CRATE_ART - 2;
-		int glow = d == MIMIC ? 0x5B2A9E : d == PRESENT ? 0xB23A4A : 0x8A5A1C;
 		if (clip(c, ax, Math.max(ay, vy0), ax + aw, Math.min(ay + ah, vy1))) {
-		Gfx.tex(c, Gfx.id("textures/gui/season/glow.png"), x + w / 2 - aw * 3 / 8, ay + ah / 2 - aw * 3 / 8 + 14, aw * 3 / 4, aw * 3 / 4, 64, 64, 0xAA000000 | glow);
-		cobweb(c, x + w - 66, y + 2, 64, true, 0x40);
-		int size = d == MIMIC ? 290 : 190;
-		int cx = x + w / 2, cy = ay + ah / 2 + (d == MIMIC ? -10 : 2) + (hov ? -3 : Math.round((float) Math.sin(now / 520.0) * 2F));
-		int ray = d == MIMIC ? 0xFFB05CFF : d == PRESENT ? 0xFF4DD964 : 0xFFE0A93B;
-		light(c, cx, cy, size / 3, ray, ray, now, 0.6F, hov ? 0.85F : 0.45F);
-		int frame = (int) ((now / 83L + 5L) % d.idleN);
-		sprite(c, d.idleSheet, d.idleRows, frame, cx - size / 2, cy - size / 2, size + (hov ? 8 : 0), 1F);
-		starshine(c, x, y, w, ah, 9, d.price > 300 ? 11 : 4, now);
-		c.disableScissor();
+			int size = d == MIMIC ? 290 : 190;
+			int cx = x + w / 2, cy = ay + ah / 2 + (d == MIMIC ? -10 : 2) + (hov ? -3 : Math.round((float) Math.sin(now / 520.0) * 2F));
+			int frame = (int) ((now / 83L + 5L) % d.idleN);
+			sprite(c, d.idleSheet, d.idleRows, frame, cx - size / 2, cy - size / 2, size + (hov ? 8 : 0), 1F);
+			c.disableScissor();
 		}
 		int tx = x + 14;
-		if (d.season != 0) {
-			tag(c, tx, y + 14, Lang.tr("NEW", "NOVO"), 0);
-			String lim = Lang.tr("LIMITED", "LIMITADO");
-			tag(c, x + w - Gfx.tw(lim) - 14 - 14, y + 14, lim, 1);
-			tag(c, tx, y + CRATE_ART - 30, d.season == Season.HALLOWEEN ? "HALLOWEEN" : Lang.tr("CHRISTMAS", "NATAL"), 2);
-		} else {
-			String cl = Lang.tr("CLASSIC", "CLÁSSICO");
-			tag(c, x + w - Gfx.tw(cl) - 14 - 14, y + 14, cl, 1);
-		}
+		String kind = d.season == 0 ? Lang.tr("Classic", "Clássico")
+				: Lang.tr("Limited", "Limitado") + "  ·  " + (d.season == Season.HALLOWEEN ? "Halloween" : Lang.tr("Christmas", "Natal"));
+		Gfx.text(c, kind, tx, y + 14, d.season == 0 ? Theme.DIM : Theme.accent());
 		int fy = y + CRATE_ART;
-		c.fill(x + 2, fy, x + w - 2, y + h - 2, 0xFF2E2627);
-		c.fill(x + 2, fy, x + w - 2, fy + 2, 0xFF4A3A34);
-		bigText(c, Lang.t(d.name), tx, fy + 8, 0xFFFFFFFF, 1.15F, w - 200);
+		c.fill(x + 14, fy, x + w - 14, fy + 1, Theme.CARD_BORDER);
+		bigText(c, Lang.t(d.name), tx, fy + 9, Theme.TEXT, 1.15F, w - 200);
 		String leg = Lang.t(RARITY[3]) + " " + d.odds[3] + "%";
-		Gfx.text(c, leg, tx, fy + 25, 0xFF8E96AD);
-		rarityBar(c, tx + Gfx.tw(leg) + 8, fy + 27, 52, d);
+		Gfx.text(c, leg, tx, fy + 26, Theme.DIM);
+		rarityBar(c, tx + Gfx.tw(leg) + 8, fy + 28, 52, d);
 		int bw = 104, bh = 26, bx = x + w - 14 - bw, by = fy + (CRATE_FT - bh) / 2;
 		host.region(x, y, w, h, () -> start(d, -1));
 		storeButton(c, mx, my, bx, by, bw, bh, Lang.tr("Open", "Abrir") + "  " + d.price, true, vy0, vy1, now, d.price * 3L, host, () -> start(d, -1));
@@ -448,64 +419,44 @@ final class Crates {
 		}
 		boolean hov = in(mx, my, x, y, w, h) && my >= vy0 && my < vy1;
 		boolean xmas = d == PRESENT;
-		int top = xmas ? 0xFF7A1D2B : 0xFF4A2186, bot = xmas ? 0xFF14301C : 0xFF2B1452;
-		int line = xmas ? 0xFF3FA55A : 0xFF6F3FC0, accentTxt = xmas ? 0xFF4DD964 : 0xFF9BE22D;
-		Gfx.rrect(c, x, y + 5, w, h, 4, 0x55000000);
-		Gfx.rrect(c, x, y, w, h, 4, hov ? Gfx.blend(line, 0xFFFFFFFF, 0.2F) : line);
-		Gfx.gradientV(c, x + 3, y + 3, w - 6, h - 6, top, bot);
-		if (clip(c, x + 3, Math.max(y + 3, vy0), x + w - 3, Math.min(y + h - 3, vy1))) {
-		Gfx.tex(c, Gfx.id("textures/gui/season/glow.png"), x + w * 78 / 100 - h * 6 / 5, y + h / 2 - h * 6 / 5, h * 12 / 5, h * 12 / 5, 64, 64, 0x88000000 | (xmas ? 0xD04050 : 0x7B3FD6));
-		cobweb(c, x + 3, y + 3, 96, false, 0x55);
-		int size = d == MIMIC ? 300 : 230;
-		int cx = x + w * 76 / 100, cy = y + h / 2 + (d == MIMIC ? -16 : 6) + Math.round((float) Math.sin(now / 520.0) * 3F);
-		light(c, cx, cy, size / 3, xmas ? 0xFF4DD964 : 0xFFB05CFF, xmas ? 0xFF4DD964 : 0xFFB05CFF, now, 0.6F, hov ? 0.9F : 0.55F);
-		int frame = (int) ((now / 83L) % d.idleN);
-		sprite(c, d.idleSheet, d.idleRows, frame, cx - size / 2, cy - size / 2, size, 1F);
-		starshine(c, x + w / 3, y, w * 2 / 3, h, 14, 21, now);
-		c.disableScissor();
+		int stripe = xmas ? 0xFFD64557 : 0xFF9B6BFF;
+		// a flat card like every other one, with a thin colour stripe for the season
+		cardFrame(c, x, y, w, h, hov, 0);
+		Gfx.rrect(c, x + 14, y + 20, 3, h - 40, 1, stripe);
+		if (clip(c, x + 2, Math.max(y + 2, vy0), x + w - 2, Math.min(y + h - 2, vy1))) {
+			int size = d == MIMIC ? 300 : 230;
+			int cx = x + w * 76 / 100, cy = y + h / 2 + (d == MIMIC ? -16 : 6) + Math.round((float) Math.sin(now / 520.0) * 3F);
+			int frame = (int) ((now / 83L) % d.idleN);
+			sprite(c, d.idleSheet, d.idleRows, frame, cx - size / 2, cy - size / 2, size, 1F);
+			c.disableScissor();
 		}
-		int tx = x + 24;
-		Gfx.text(c, xmas ? Lang.tr("CHRISTMAS EVENT", "EVENTO DE NATAL") : Lang.tr("HALLOWEEN EVENT", "EVENTO DE HALLOWEEN"), tx, y + 20, accentTxt);
-		int px = tx + Gfx.tw(xmas ? Lang.tr("CHRISTMAS EVENT", "EVENTO DE NATAL") : Lang.tr("HALLOWEEN EVENT", "EVENTO DE HALLOWEEN")) + 12;
-		String lt = Lang.tr("LIMITED TIME ONLY", "APENAS POR TEMPO LIMITADO");
-		int lw = Gfx.tw(lt) + 16;
-		Gfx.rrect(c, px, y + 14, lw, 20, 3, 0xFFC5FF6A);
-		Gfx.rrect(c, px + 1, y + 15, lw - 2, 18, 2, accentTxt);
-		Gfx.text(c, lt, px + 8, y + 20, 0xFF17260A);
+		int tx = x + 30;
+		String ev = xmas ? Lang.tr("Christmas event", "Evento de Natal") : Lang.tr("Halloween event", "Evento de Halloween");
 		String left = seasonLeft();
-		if (left != null) {
-			int dw = Gfx.tw(left) + 16;
-			Gfx.rrect(c, px + lw + 8, y + 14, dw, 20, 3, 0xFF3A4258);
-			Gfx.rrect(c, px + lw + 9, y + 15, dw - 2, 18, 2, 0xFF141826);
-			Gfx.text(c, left, px + lw + 16, y + 20, 0xFFF1F3F9);
-		}
-		bigText(c, Lang.t(d.name), tx + 1, y + 43, 0x99000000, 2.2F, w / 2);
-		bigText(c, Lang.t(d.name), tx, y + 42, 0xFFFFFFFF, 2.2F, w / 2);
+		Gfx.text(c, ev, tx, y + 20, stripe);
+		Gfx.text(c, "·  " + Lang.tr("Limited time", "Tempo limitado") + (left == null ? "" : "  ·  " + left), tx + Gfx.tw(ev) + 6, y + 20, Theme.DIM);
+		bigText(c, Lang.t(d.name), tx, y + 38, Theme.TEXT, 1.9F, w / 2);
 		String para = xmas ? Lang.tr("Unwrap the Christmas present for emotes, auras and cosmetics you won't find anywhere else.",
 				"Abre o presente de Natal com emotes, auras e cosméticos que não encontras em mais lado nenhum.")
 				: Lang.tr("It looks like loot. It isn't. Open the Halloween-only chest for emotes, auras and cosmetics you won't find anywhere else.",
 						"Parece tesouro. Não é. Abre o baú só de Halloween com emotes, auras e cosméticos que não encontras em mais lado nenhum.");
-		int ty = y + 72;
+		int ty = y + 68;
 		for (String ln : wrap(para, w * 46 / 100, 3)) {
-			Gfx.text(c, ln, tx, ty, 0xFFD9CDF0);
+			Gfx.text(c, ln, tx, ty, Theme.DIM);
 			ty += 12;
 		}
 		host.region(x, y, w, h, () -> start(d, -1));
 		String cta = Lang.tr("Open for ", "Abrir por ") + d.price + " " + Lang.tr("coins", "moedas");
 		int cw = Gfx.tw(cta) + 56;
 		storeButton(c, mx, my, tx, y + 112, cw, 30, cta, true, vy0, vy1, now, 300L, host, () -> start(d, -1));
-		// the chances box
-		int oy = y + h - 44, ox = tx;
-		String l1 = Lang.t(RARITY[3]).toUpperCase(Locale.ROOT), l2 = Lang.t(RARITY[2]).toUpperCase(Locale.ROOT);
-		String v1 = d.odds[3] + "%", v2 = d.odds[2] + "%";
-		int bw1 = Math.max(Gfx.tw(l1), Gfx.tw(v1) * 2) + 18, bw2 = Math.max(Gfx.tw(l2), Gfx.tw(v2) * 2) + 18;
-		Gfx.rrect(c, ox, oy, bw1 + bw2 + 6, 34, 3, 0xFF3B2468);
-		Gfx.rrect(c, ox + 1, oy + 1, bw1 + bw2 + 4, 32, 2, 0xFF1A1030);
-		Gfx.text(c, l1, ox + 10, oy + 6, 0xFF8E96AD);
-		bigText(c, v1, ox + 10, oy + 17, accentTxt, 1.3F, 80);
-		c.fill(ox + bw1, oy + 6, ox + bw1 + 2, oy + 28, 0xFF3B2468);
-		Gfx.text(c, l2, ox + bw1 + 12, oy + 6, 0xFF8E96AD);
-		bigText(c, v2, ox + bw1 + 12, oy + 17, accentTxt, 1.3F, 80);
+		// the chances as one quiet line
+		int oy = y + h - 30, ox = tx;
+		for (int r = 3; r >= 2; r--) {
+			String t = Lang.t(RARITY[r]) + " " + d.odds[r] + "%";
+			c.fill(ox, oy + 2, ox + 6, oy + 8, RARITY_COL[r]);
+			Gfx.text(c, t, ox + 11, oy, Theme.DIM);
+			ox += Gfx.tw(t) + 28;
+		}
 		infoDot(c, mx, my, x + w - 20, y + 20, d, -1, vy0, vy1, host);
 	}
 
