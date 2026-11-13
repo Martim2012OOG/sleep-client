@@ -847,6 +847,7 @@ public final class TextureStyles {
 			return null;
 		}
 		MessageDigest md = MessageDigest.getInstance("SHA-1");
+		md.update("fmt2".getBytes(StandardCharsets.UTF_8)); // packs made before this had a pack.mcmeta the game refused: new name = made again
 		for (var e : new ArrayList<>(CHOICES.entrySet())) {
 			md.update((e.getKey() + e.getValue().sha1() + e.getValue().url()).getBytes(StandardCharsets.UTF_8));
 		}

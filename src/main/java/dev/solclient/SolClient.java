@@ -355,6 +355,8 @@ public class SolClient implements ClientModInitializer {
 		}
 	}
 
+	private static boolean startupFixes;
+
 	private static void tick(MinecraftClient client) {
 		try {
 			ResourceGuard.tick(client);
@@ -368,6 +370,15 @@ public class SolClient implements ClientModInitializer {
 			dev.solclient.gui.SeasonMusic.tick();
 			CinematicIntroMod.clientTick(client);
 			return;
+		}
+		if (!startupFixes) {
+			startupFixes = true;
+			Thread t = new Thread(() -> {
+				dev.solclient.CustomFont.repairOldPacks();
+				client.execute(dev.solclient.mods.TextureStylesMod::ensureApplied);
+			}, "sleep-startup-fixes");
+			t.setDaemon(true);
+			t.start();
 		}
 		long kuboPerfT0 = System.nanoTime();
 		pollKeys();

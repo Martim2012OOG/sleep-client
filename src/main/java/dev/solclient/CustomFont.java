@@ -292,13 +292,104 @@ public final class CustomFont {
 				}
 			}
 		}
-		if (!pack.has("pack_format") && !pack.has("min_format")) {
-			pack.addProperty("pack_format", 75); // the game's own file could not be read: best guess for 1.21.11
+		// Since 1.21.9 a pack newer than format 64 MUST say min_format AND max_format (a lone pack_format is refused: "missing mandatory
+		// fields min_format and max_format", and the pack never loads). The game's own file can't be read (it is built into the game),
+		// so this is the format of 1.21.11, open at the top so the next versions do not turn it "incompatible".
+		if (!pack.has("min_format") || !pack.has("max_format")) {
+			int fmt = 75;
+			try {
+				if (pack.has("pack_format") && pack.get("pack_format").isJsonPrimitive() && pack.get("pack_format").getAsInt() >= 65) {
+					fmt = pack.get("pack_format").getAsInt();
+				}
+			} catch (RuntimeException ignored) {
+				// keeps 75
+			}
+			if (!pack.has("min_format")) {
+				pack.addProperty("min_format", fmt);
+			}
+			if (!pack.has("max_format")) {
+				pack.addProperty("max_format", Math.max(fmt, 999));
+			}
+			pack.remove("pack_format");
+			pack.remove("supported_formats");
 		}
 		pack.addProperty("description", "Sleep custom font: " + name);
 		JsonObject root = new JsonObject();
 		root.add("pack", pack);
 		return root.toString();
+	}
+
+	/**
+	 * Sleep's own generated packs (kubo-font-*.zip) made before this fix have a pack.mcmeta the game refuses, so they never loaded.
+	 * Rewrites that one file, then lets the game see the pack again and switches the newest one on. Run once, off the game thread.
+	 */
+	public static void repairOldPacks() {
+		try {
+			Path packs = folder();
+			if (!Files.isDirectory(packs)) {
+				return;
+			}
+			boolean fixed = false;
+			List<Path> zips = new ArrayList<>();
+			try (var s = Files.list(packs)) {
+				s.filter(p -> p.getFileName().toString().startsWith(PACK_PREFIX) && p.getFileName().toString().endsWith(".zip")).forEach(zips::add);
+			}
+			for (Path z : zips) {
+				String meta = null;
+				try (java.util.zip.ZipFile zf = new java.util.zip.ZipFile(z.toFile())) {
+					var e = zf.getEntry("pack.mcmeta");
+					meta = e == null ? null : new String(zf.getInputStream(e).readAllBytes(), StandardCharsets.UTF_8);
+				} catch (Exception unreadable) {
+					continue;
+				}
+				if (meta != null && meta.contains("min_format") && meta.contains("max_format")) {
+					continue;
+				}
+				String name = "font";
+				if (meta != null && meta.contains("Sleep custom font: ")) {
+					int i = meta.indexOf("Sleep custom font: ") + "Sleep custom font: ".length();
+					int j = meta.indexOf('"', i);
+					name = j > i ? meta.substring(i, j) : name;
+				}
+				Path tmp = z.resolveSibling(z.getFileName() + ".part");
+				try (java.util.zip.ZipFile zf = new java.util.zip.ZipFile(z.toFile());
+						ZipOutputStream out = new ZipOutputStream(Files.newOutputStream(tmp))) {
+					put(out, "pack.mcmeta", mcmeta(name).getBytes(StandardCharsets.UTF_8));
+					var en = zf.entries();
+					while (en.hasMoreElements()) {
+						var e = en.nextElement();
+						if (!e.isDirectory() && !e.getName().equals("pack.mcmeta")) {
+							put(out, e.getName(), zf.getInputStream(e).readAllBytes());
+						}
+					}
+				}
+				Files.move(tmp, z, StandardCopyOption.REPLACE_EXISTING);
+				fixed = true;
+			}
+			if (!fixed) {
+				return;
+			}
+			final Path newest = zips.stream().max(java.util.Comparator.comparing(p -> p.getFileName().toString())).orElse(null);
+			mc().execute(() -> {
+				try {
+					ResourcePackManager pm = mc().getResourcePackManager();
+					pm.scanPacks();
+					String id = newest == null ? null : "file/" + newest.getFileName();
+					if (id != null && pm.getIds().contains(id) && !installed()) {
+						List<String> on = new ArrayList<>(pm.getEnabledIds());
+						on.removeIf(s -> s.startsWith("file/" + PACK_PREFIX));
+						on.add(id);
+						pm.setEnabledProfiles(on);
+						mc().options.refreshResourcePacks(pm);
+						cachedAt = 0L;
+					}
+				} catch (Throwable t) {
+					System.err.println("[Sleep] font pack repair: " + t);
+				}
+			});
+		} catch (Exception e) {
+			System.err.println("[Sleep] font pack repair: " + e);
+		}
 	}
 
 	private static JsonObject gamePack() {

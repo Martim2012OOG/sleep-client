@@ -439,8 +439,10 @@ public final class PackMigrator {
 				? vanillaMeta.getAsJsonObject("pack")
 				: null;
 		if (v == null) {
-			r.notes.add("Could not read the game's pack format: pack.mcmeta left as it was");
-			return null;
+			// the game keeps its own format built in (no pack.mcmeta to read): 1.21.11, open at the top
+			v = new JsonObject();
+			v.addProperty("min_format", 75);
+			v.addProperty("max_format", 999);
 		}
 		String before = describe(pack);
 		String[] keys = {"pack_format", "min_format", "max_format", "supported_formats"};

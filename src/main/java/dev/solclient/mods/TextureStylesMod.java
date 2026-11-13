@@ -47,6 +47,27 @@ public class TextureStylesMod extends Mod {
 		}
 	}
 
+	private static boolean checked;
+
+	/** Once after the game started: your chosen styles must be on. If their pack is not among the enabled ones (an old pack the game refused), build it. */
+	public static void ensureApplied() {
+		if (checked) {
+			return;
+		}
+		checked = true;
+		TextureStyles.load();
+		TextureStylesMod m = instance;
+		if (m == null || !m.enabled || TextureStyles.CHOICES.isEmpty()) {
+			return;
+		}
+		for (String id : net.minecraft.client.MinecraftClient.getInstance().getResourcePackManager().getEnabledIds()) {
+			if (id.startsWith("file/kubo-styles-")) {
+				return;
+			}
+		}
+		apply();
+	}
+
 	/** Only the newest click counts when several are made quickly. */
 	private static final java.util.concurrent.atomic.AtomicInteger GEN = new java.util.concurrent.atomic.AtomicInteger();
 	/** A pack that is built and waits for the menu to close (one reload for all your changes, not one per click). */
