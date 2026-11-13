@@ -359,6 +359,9 @@ public class SolClient implements ClientModInitializer {
 	private static boolean startupFixes;
 
 	private static void tick(MinecraftClient client) {
+		if (client.world != null && client.player != null && client.player.age % 100 == 0) {
+			dev.solclient.fx.DeathAnimBridge.enforce(); // death animations you did not buy stay off
+		}
 		try {
 			ResourceGuard.tick(client);
 		} catch (RuntimeException e) {

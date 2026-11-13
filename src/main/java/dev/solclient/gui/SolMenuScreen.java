@@ -662,14 +662,14 @@ public class SolMenuScreen extends Screen {
 				rk = a;
 			}
 		}
-		String rkText = "Ranked PvP";
+		String rkText = "PvP";
 		int rkW = 10 + 14 + 6 + Gfx.tw(rkText) + 10, rkX = rpX - bgp - rkW;
 		boolean showRk = rk != null && showRp && rkX > cx + 6;
 		if (showRk) {
 			final dev.solclient.addons.Addon fr = rk;
 			boolean rkOn = view == V_ADDONS && embedded != null && embeddedAddon;
 			pill(c, mx, my, rkX, rpY, rkW, rpH, 7, "barRk", rkOn, accent, SUB, TILE_HOVER);
-			Gfx.tex(c, Theme.icon2("ranked_pvp"), rkX + 8, rpY + 4, 14, 14, 64, 64, Theme.TEXT);
+			Gfx.tex(c, Theme.icon2("pvp_group"), rkX + 8, rpY + 4, 14, 14, 64, 64, Theme.TEXT);
 			Gfx.textMid(c, rkText, rkX + 8 + 14 + 6, rpY, rpH, Theme.TEXT);
 			region(rkX, rpY, rkW, rpH, () -> {
 				showView(V_ADDONS, 9);
@@ -4615,6 +4615,9 @@ public class SolMenuScreen extends Screen {
 		scroll = 0;
 		scrollTarget = 0;
 		deathTab = k == 3;
+		if (k == 3) {
+			Social.loadShop("All"); // so we know which ones you own
+		}
 		dev.solclient.fx.DeathAnimBridge.hover(null);
 		if (k == 3) {
 			deathSel = null;
@@ -5151,14 +5154,19 @@ public class SolMenuScreen extends Screen {
 		}
 	}
 
-	/** The Death Animations section: our own cards and panel for the engine's 49 animations (hover = live preview, View = plays in front of you). */
+	/**
+	 * The Death Animations section: square cards like the rest of the shop (hover = the animation plays inside the card, View = plays
+	 * in front of you). They are bought like any cosmetic; only owned ones can be switched on.
+	 */
 	private void drawDeathAnims(DrawContext c, int mx, int my, int gx0, int gx1, int iy0, int iy1, int px, int prevW, int accent) {
+		var bridge = dev.solclient.fx.DeathAnimBridge.class;
 		List<dev.solclient.fx.DeathAnimBridge.Entry> all = dev.solclient.fx.DeathAnimBridge.all();
 		if (all.isEmpty()) {
 			Gfx.textC(c, dev.solclient.Lang.tr("Death animations are not available in this build.", "As animações de morte não estão disponíveis nesta versão."), (gx0 + px) / 2, (iy0 + iy1) / 2, Theme.DIM);
 			maxScroll = 0;
 			return;
 		}
+		dev.solclient.fx.DeathAnimBridge.enforce();
 		int fy = iy0, sortW = 74;
 		field(c, gx0, fy, gx1 - gx0 - sortW - 6, 22, lockerSearch, "Search death animations...", focus == F_LOCKER, accent, true);
 		region(gx0, fy, gx1 - gx0 - sortW - 6, 22, () -> focus = F_LOCKER);
@@ -5171,15 +5179,18 @@ public class SolMenuScreen extends Screen {
 			}
 		}
 		if (lockerSort == 1) {
-			list.sort((a, b) -> a.title.compareToIgnoreCase(b.title));
+			list.sort((x, y) -> x.title.compareToIgnoreCase(y.title));
 		} else if (lockerSort == 2) {
-			list.sort((a, b) -> b.title.compareToIgnoreCase(a.title));
+			list.sort((x, y) -> y.title.compareToIgnoreCase(x.title));
 		}
-		// favourites first
-		list.sort((a, b) -> Boolean.compare(dev.solclient.fx.DeathAnimBridge.favourite(b), dev.solclient.fx.DeathAnimBridge.favourite(a)));
-		int gy0 = fy + 30, gap = 6, minW = 150;
+		// yours first, then favourites
+		list.sort((x, y) -> {
+			int o = Boolean.compare(dev.solclient.fx.DeathAnimBridge.owned(y), dev.solclient.fx.DeathAnimBridge.owned(x));
+			return o != 0 ? o : Boolean.compare(dev.solclient.fx.DeathAnimBridge.favourite(y), dev.solclient.fx.DeathAnimBridge.favourite(x));
+		});
+		int gy0 = fy + 30, gap = 6, minW = 80;
 		int inner = gx1 - gx0, cols = Math.max(1, (inner + gap) / (minW + gap));
-		int cw = (inner - (cols - 1) * gap) / cols, ch = 118;
+		int cw = (inner - (cols - 1) * gap) / cols, ch = cw + 6;
 		int rows = (list.size() + cols - 1) / cols;
 		int contentH = Math.max(0, rows * (ch + gap) - gap);
 		maxScroll = Math.max(0, contentH - (iy1 - gy0));
@@ -5187,6 +5198,7 @@ public class SolMenuScreen extends Screen {
 		scroll = Math.max(0, Math.min(maxScroll, scroll));
 		clipY0 = gy0;
 		clipY1 = iy1;
+		float uu = 1F / f;
 		dev.solclient.fx.DeathAnimBridge.Entry hovered = null;
 		c.enableScissor(gx0 - 4, gy0, gx1 + 4, iy1);
 		for (int i = 0; i < list.size(); i++) {
@@ -5199,41 +5211,66 @@ public class SolMenuScreen extends Screen {
 			if (hov) {
 				hovered = e;
 			}
-			boolean sel = e.id.equals(deathSel), on = dev.solclient.fx.DeathAnimBridge.enabled(e), fav = dev.solclient.fx.DeathAnimBridge.favourite(e);
+			boolean sel = e.id.equals(deathSel), own = dev.solclient.fx.DeathAnimBridge.owned(e);
+			boolean on = own && dev.solclient.fx.DeathAnimBridge.enabled(e), fav = dev.solclient.fx.DeathAnimBridge.favourite(e);
+			var shopItem = dev.solclient.social.Social.deathItem(e.id, e.title);
 			float an = anim("da" + e.id, hov);
-			Gfx.rrectBorder(c, x, y, cw, ch, 6, Gfx.blend(TILE, TILE_HOVER, an), sel ? 0xFFB6BAC8 : Gfx.blend(Theme.CARD_BORDER, Theme.CARD_BORDER_HOVER, an));
-			region(x, y, cw, ch, () -> deathSel = e.id); // first: later regions (the buttons) win
-			// stage: the animation plays right here while the mouse is on the card
-			int stx = x + 6, sty = y + 6, stw = cw - 12, sth = 70;
-			Gfx.rrect(c, stx, sty, stw, sth, 6, Gfx.blend(0xFF15161B, e.accent, 0.22F + 0.10F * an));
+			Gfx.rrectBorder(c, x, y, cw, ch, 3, Gfx.blend(TILE, TILE_HOVER, an), sel ? 0xFFB6BAC8 : Gfx.blend(Theme.CARD_BORDER, Theme.CARD_BORDER_HOVER, an));
+			region(x, y, cw, ch, () -> deathSel = e.id); // first: later regions (buttons) win
+			int stx = x + 4, sty = y + 4, stw = cw - 8, sth = ch - 24;
+			Gfx.rrect(c, stx, sty, stw, sth, 3, Gfx.blend(0xFF1B1D24, e.accent, 0.20F + 0.10F * an));
 			if (hov) {
 				dev.solclient.fx.DeathAnimBridge.hover(e);
-				float uu = 1F / f;
-				dev.solclient.fx.DeathAnimBridge.drawPreview(c, 0F, Math.round(stx * uu), Math.round(sty * uu), Math.round((stx + stw) * uu), Math.round((sty + sth) * uu));
+				c.enableScissor(stx, sty, stx + stw, sty + sth);
+				dev.solclient.fx.DeathAnimBridge.drawPreview(c, 1F, Math.round(stx * uu), Math.round(sty * uu), Math.round((stx + stw) * uu), Math.round((sty + sth) * uu));
+				c.disableScissor();
 			} else if (e.icon != null) {
-				c.drawItem(new net.minecraft.item.ItemStack(e.icon), x + cw / 2 - 8, sty + sth / 2 - 8);
+				var m = c.getMatrices();
+				m.pushMatrix();
+				m.translate(stx + stw / 2F - 12, sty + sth / 2F - 12);
+				m.scale(1.5F, 1.5F);
+				c.drawItem(new net.minecraft.item.ItemStack(e.icon), 0, 0);
+				m.popMatrix();
 			}
-			Gfx.textClip(c, e.title, x + 8, y + 82, cw - 16, Theme.TEXT);
-			int vbw = Gfx.tw("View") + 14;
-			boolean vhov = in(mx, my, x + 8, y + 97, vbw, 15) && my >= gy0 && my < iy1;
-			Gfx.rrect(c, x + 8, y + 97, vbw, 15, 4, vhov ? 0xFF3A3D49 : 0xFF2A2D36);
-			Gfx.textC(c, "View", x + 8 + vbw / 2, y + 101, Theme.TEXT);
-			region(x + 8, y + 97, vbw, 15, () -> viewDeath(e));
-			int sxx = x + cw - 28;
-			boolean sh = in(mx, my, sxx - 2, y + 95, 24, 18) && my >= gy0 && my < iy1;
-			miniSwitch(c, sxx, y + 100, on, sh);
-			region(sxx - 2, y + 95, 24, 18, () -> dev.solclient.fx.DeathAnimBridge.setEnabled(e, !on));
-			int fx = x + cw - 46;
-			boolean fh = in(mx, my, fx - 2, y + 96, 14, 16) && my >= gy0 && my < iy1;
-			Gfx.textRaw(c, fav ? "★" : "☆", fx, y + 100, fav ? 0xFFFFD27A : fh ? Theme.TEXT : Theme.DIM);
-			region(fx - 2, y + 96, 14, 16, () -> dev.solclient.fx.DeathAnimBridge.toggleFavourite(e));
+			if (own) {
+				int fx = stx + stw - 12;
+				boolean fh = in(mx, my, fx - 2, sty + 2, 14, 14) && my >= gy0 && my < iy1;
+				Gfx.textRaw(c, fav ? "★" : "☆", fx, sty + 4, fav ? 0xFFFFD27A : fh ? Theme.TEXT : 0xAAFFFFFF);
+				region(fx - 2, sty + 2, 14, 14, () -> dev.solclient.fx.DeathAnimBridge.toggleFavourite(e));
+			}
+			int ny = y + ch - 15;
+			if (!own) {
+				// for sale: price like every other shop item
+				if (shopItem != null) {
+					String pr = String.valueOf(shopItem.finalPrice);
+					int pw = Gfx.tw(pr);
+					Gfx.text(c, pr, x + cw - 6 - pw, ny + 1, 0xFFFFD27A);
+					Gfx.coin(c, x + cw - 18 - pw, ny, 9);
+					Gfx.textClip(c, e.title.replaceFirst("^Originals: ", ""), x + 6, ny + 1, cw - 30 - pw, Theme.TEXT);
+				} else {
+					Gfx.textClip(c, e.title.replaceFirst("^Originals: ", ""), x + 6, ny + 1, cw - 12, Theme.DIM);
+				}
+			} else {
+				int sxx = x + cw - 24;
+				boolean sh = in(mx, my, sxx - 2, ny - 2, 22, 14) && my >= gy0 && my < iy1;
+				miniSwitch(c, sxx, ny, on, sh);
+				Gfx.textClip(c, e.title.replaceFirst("^Originals: ", ""), x + 6, ny + 1, cw - 36, Theme.TEXT);
+				region(sxx - 2, ny - 2, 22, 14, () -> dev.solclient.fx.DeathAnimBridge.setEnabled(e, !on));
+			}
+			if (hov && Gfx.mc().player != null) {
+				int vbw = Gfx.tw("View") + 16, vbx = x + (cw - vbw) / 2, vby = sty + sth - 20;
+				boolean vh2 = in(mx, my, vbx, vby, vbw, 16);
+				Gfx.rrect(c, vbx, vby, vbw, 16, 5, vh2 ? Theme.accentHover() : Theme.accent());
+				Gfx.textC(c, "View", vbx + vbw / 2, vby + 4, 0xFFFFFFFF);
+				region(vbx, vby, vbw, 16, () -> viewDeath(e));
+			}
 		}
 		c.disableScissor();
 		clipY0 = 0;
 		clipY1 = vh;
 		drawScrollbar(c, gx1 + 3, gy0, iy1, contentH);
 
-		// ---- right panel: live stage + details of the hovered (or picked) animation
+		// ---- right panel: the stage + details + buy / switch of the hovered (or picked) animation
 		dev.solclient.fx.DeathAnimBridge.Entry cur = hovered;
 		if (cur == null) {
 			for (var e : all) {
@@ -5244,12 +5281,13 @@ public class SolMenuScreen extends Screen {
 		}
 		dev.solclient.fx.DeathAnimBridge.hover(cur);
 		Gfx.rrectBorder(c, px, iy0, prevW, iy1 - iy0, 10, Gfx.blend(TILE, 0xFF000000, 0.25F), Theme.CARD_BORDER);
-		int stageH = Math.min(180, (iy1 - iy0) - 150);
+		int stageH = Math.min(170, (iy1 - iy0) - 190);
 		if (stageH > 60) {
 			Gfx.rrect(c, px + 8, iy0 + 8, prevW - 16, stageH, 8, 0xFF15161B);
 			if (cur != null) {
-				float uu = 1F / f;
-				dev.solclient.fx.DeathAnimBridge.drawPreview(c, 0F, Math.round((px + 8) * uu), Math.round((iy0 + 8) * uu), Math.round((px + prevW - 8) * uu), Math.round((iy0 + 8 + stageH) * uu));
+				c.enableScissor(px + 8, iy0 + 8, px + prevW - 8, iy0 + 8 + stageH);
+				dev.solclient.fx.DeathAnimBridge.drawPreview(c, 1F, Math.round((px + 8) * uu), Math.round((iy0 + 8) * uu), Math.round((px + prevW - 8) * uu), Math.round((iy0 + 8 + stageH) * uu));
+				c.disableScissor();
 			} else {
 				Gfx.textFit(c, dev.solclient.Lang.tr("Hover an animation to see it", "Passa o rato numa animação para a ver"), px + prevW / 2, prevW - 24, iy0 + 8 + stageH / 2 - 4, Theme.DIM);
 			}
@@ -5266,10 +5304,32 @@ public class SolMenuScreen extends Screen {
 		int bx = px + 8, bw = prevW - 16, by = iy1 - 30;
 		final var fc = cur;
 		if (cur != null) {
-			button(c, mx, my, bx, by, bw, 22, "View in world", "lviewda", accent, Theme.accentHover(), 0xFFFFFFFF, () -> viewDeath(fc));
+			boolean own = dev.solclient.fx.DeathAnimBridge.owned(cur);
+			var si = dev.solclient.social.Social.deathItem(cur.id, cur.title);
+			if (!own && si != null) {
+				boolean ask = confirming("buyda" + cur.id);
+				boolean afford = dev.solclient.social.Social.coins < 0 || dev.solclient.social.Social.coins >= si.finalPrice;
+				button(c, mx, my, bx, by, bw, 22, ask ? "Confirm " + si.finalPrice + "?" : "Buy  " + si.finalPrice, "lbuyda",
+						ask ? Theme.GREEN_BG : afford ? accent : Theme.OFF_BG, ask ? Theme.GREEN_BG_HOVER : afford ? Theme.accentHover() : Theme.OFF_BG_HOVER,
+						ask ? Theme.GREEN : afford ? 0xFFFFFFFF : Theme.DIM, () -> {
+							if (!afford) {
+								Social.say("Not enough coins", true);
+							} else if (confirm("buyda" + fc.id, "Click again to buy " + fc.title)) {
+								Social.buy(si);
+							}
+						});
+			} else if (!own) {
+				Gfx.rrect(c, bx, by, bw, 22, 7, Theme.OFF_BG);
+				Gfx.textFit(c, "Not for sale yet", px + prevW / 2, prevW - 24, by + 7, Theme.DIM);
+			} else {
+				boolean on = dev.solclient.fx.DeathAnimBridge.enabled(cur);
+				button(c, mx, my, bx, by, bw, 22, on ? "Switch off" : "Switch on", "lsw" + cur.id, on ? Theme.OFF_BG : accent, on ? Theme.OFF_BG_HOVER : Theme.accentHover(), 0xFFFFFFFF,
+						() -> dev.solclient.fx.DeathAnimBridge.setEnabled(fc, !on));
+			}
+			button(c, mx, my, bx, by - 26, bw, 20, "View in world", "lviewda", TILE, TILE_HOVER, Theme.TEXT, () -> viewDeath(fc));
 		}
 		boolean master = dev.solclient.fx.DeathAnimBridge.master(), rnd = dev.solclient.fx.DeathAnimBridge.random();
-		int ry = by - 26;
+		int ry = by - 52;
 		button(c, mx, my, bx, ry, bw, 20, "Random: " + (rnd ? "On" : "Off"), "ldarand", TILE, TILE_HOVER, Theme.TEXT, () -> dev.solclient.fx.DeathAnimBridge.setRandom(!rnd));
 		button(c, mx, my, bx, ry - 24, bw, 20, "Death animations: " + (master ? "On" : "Off"), "damaster", master ? Theme.GREEN_BG : TILE, master ? Theme.GREEN_BG_HOVER : TILE_HOVER, master ? Theme.GREEN : Theme.TEXT,
 				() -> dev.solclient.fx.DeathAnimBridge.setMaster(!master));

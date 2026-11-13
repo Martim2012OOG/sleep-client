@@ -35,7 +35,7 @@ public final class DeathAnimBridge {
 
 	private static boolean tried, ok;
 	private static Class<?> animCls, cfgCls, ctlCls, rendCls, catCls, relCls;
-	private static Method isEnabled, setEnabled, toggleFav, save, setHover, playPreview, recipe, iconOf, animations, useForRandom, previewBody, previewProps;
+	private static Method isEnabled, setEnabled, toggleFav, save, setHover, playPreview, recipe, iconOf, animations, useForRandom, previewBody, previewProps, previewZoom;
 	private static Field instance, favourites, enabledMaster, randomMode, label;
 	private static List<Entry> cache;
 	private static boolean hoverOn;
@@ -71,6 +71,7 @@ public final class DeathAnimBridge {
 			animations = relCls.getMethod("animations");
 			previewBody = rendCls.getMethod("previewBody", DrawContext.class, float.class, int.class, int.class, int.class, int.class);
 			previewProps = rendCls.getMethod("previewProps", DrawContext.class, float.class, int.class, int.class, int.class, int.class);
+			previewZoom = rendCls.getMethod("previewZoom");
 			label = animCls.getField("label");
 			ok = true;
 		} catch (Throwable t) {
@@ -234,11 +235,13 @@ public final class DeathAnimBridge {
 	}
 
 	/** Draws the live preview of the hovered animation inside a rectangle (screen units). */
-	public static void drawPreview(DrawContext c, float partial, int x0, int y0, int x1, int y1) {
+	public static void drawPreview(DrawContext c, float scale, int x0, int y0, int x1, int y1) {
 		try {
 			if (init()) {
-				previewBody.invoke(null, c, partial, x0, y0, x1, y1);
-				previewProps.invoke(null, c, partial, x0, y0, x1, y1);
+				// the engine's own zoom (it is a zoom, not a time: 0 draws a dot); never below 3 like its own screen
+				float zoom = Math.max(3F, (Float) previewZoom.invoke(null) * Math.max(0.5F, scale));
+				previewBody.invoke(null, c, zoom, x0, y0, x1, y1);
+				previewProps.invoke(null, c, zoom, x0, y0, x1, y1);
 			}
 		} catch (Throwable ignored) {
 		}
@@ -255,5 +258,33 @@ public final class DeathAnimBridge {
 			System.err.println("[Sleep] death animation view: " + t);
 		}
 		return false;
+	}
+
+	/** Switches off every animation you do not own (the Locker sells them; the engine would otherwise play all of them). */
+	private static long enforcedAt;
+
+	public static void enforce() {
+		long now = System.currentTimeMillis();
+		if (now - enforcedAt < 1000L) {
+			return;
+		}
+		enforcedAt = now;
+		try {
+			if (!init() || !dev.solclient.social.Social.shopLoaded()) {
+				return;
+			}
+			for (Entry e : all()) {
+				if (!owned(e) && enabled(e)) {
+					setEnabled(e, false);
+				}
+			}
+		} catch (Throwable ignored) {
+		}
+	}
+
+	/** True when you may use it: bought in the shop, or (owner switch) not sold in the shop yet. */
+	public static boolean owned(Entry e) {
+		dev.solclient.social.Social.Item it = dev.solclient.social.Social.deathItem(e.id, e.title);
+		return it != null ? it.owned : dev.solclient.emote.EmoteLibrary.unreleasedAllowed();
 	}
 }

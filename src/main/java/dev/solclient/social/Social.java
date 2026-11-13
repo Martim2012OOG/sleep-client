@@ -1519,6 +1519,29 @@ public final class Social {
 	}
 
 	/** Items per category (and "All"): switching section shows them at once, the site is asked in the background. */
+	/** True once the full shop list has arrived. */
+	public static boolean shopLoaded() {
+		return SHOP_CACHE.get("All") != null;
+	}
+
+	/** The shop item that sells this death animation (category "Death Animations", matched by modelId, id or name), or null. */
+	public static Item deathItem(String animId, String title) {
+		List<Item> all = SHOP_CACHE.get("All");
+		if (all == null) {
+			return null;
+		}
+		for (Item it : all) {
+			if (it.category == null || !(it.category.equalsIgnoreCase("Death Animations") || it.category.equalsIgnoreCase("Death Animation") || it.category.equalsIgnoreCase("Death"))) {
+				continue;
+			}
+			String key = it.modelId != null && !it.modelId.isBlank() ? it.modelId : it.id;
+			if (animId.equalsIgnoreCase(key) || animId.equalsIgnoreCase(it.id) || title.equalsIgnoreCase(it.name)) {
+				return it;
+			}
+		}
+		return null;
+	}
+
 	/** How many items a shop section has (from the full list), or -1 when that is not known. */
 	public static int countIn(String cat) {
 		List<Item> all = SHOP_CACHE.get("All");
