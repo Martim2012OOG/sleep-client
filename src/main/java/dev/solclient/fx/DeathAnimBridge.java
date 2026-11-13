@@ -285,6 +285,7 @@ public final class DeathAnimBridge {
 	/** True when you may use it: bought in the shop, or (owner switch) not sold in the shop yet. */
 	public static boolean owned(Entry e) {
 		dev.solclient.social.Social.Item it = dev.solclient.social.Social.deathItem(e.id, e.title);
-		return it != null ? it.owned : dev.solclient.emote.EmoteLibrary.unreleasedAllowed();
+		// the owner switch (Settings > Emotes) lets the owner account test every animation, bought or not, sold or not
+		return dev.solclient.emote.EmoteLibrary.unreleasedAllowed() || it != null && it.owned;
 	}
 }

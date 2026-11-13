@@ -47,9 +47,8 @@ public final class EmoteLibrary {
 	/** True if you can use this emote (bought in the shop; everything while the site sells no emotes). */
 	public static boolean owned(String id) {
 		java.util.Set<String> o = dev.solclient.social.Social.ownedEmotes();
-		if (o != null && id != null && !o.contains(id.toLowerCase(java.util.Locale.ROOT)) && unreleasedAllowed()
-				&& dev.solclient.social.Social.emoteItem(id, id) == null) {
-			return true; // owner setting: client emotes the shop does not sell yet
+		if (unreleasedAllowed()) {
+			return true; // owner switch: every emote, bought or not, sold or not
 		}
 		return o == null || id != null && o.contains(id.toLowerCase(java.util.Locale.ROOT));
 	}

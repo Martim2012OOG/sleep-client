@@ -296,7 +296,7 @@ public class SolClientMod extends Mod {
 		// ------------------------------------------------------------------ Emotes
 		header("Emotes");
 		unreleasedEmotes = bool("Use Emotes Not In Store Yet", false);
-		unreleasedEmotes.tip("Owner only: lets you use every emote built into the client, including the ones you have not added to the shop / site yet. Other players still see them.");
+		unreleasedEmotes.tip("Owner only: lets you use and test everything in the Locker (emotes and death animations), even what you have not bought and what the shop does not sell yet. Other players still see the emotes.");
 
 		// ------------------------------------------------------------------ Performance
 		header("Performance");
