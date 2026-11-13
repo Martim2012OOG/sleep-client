@@ -187,52 +187,98 @@ public final class SkinChanger {
 
 
 	private static volatile RemoteTextures.Tex ownSkinTex;
-	private static volatile Identifier ownSkinFetched;
+	/** The address of your account's skin (from Mojang's session server) and whether it has slim arms. Kept on disk too. */
+	private static volatile String ownSkinUrl;
+	private static volatile boolean ownSkinSlim;
 	private static volatile long ownSkinTriedAt;
+	private static boolean ownSkinLoaded;
+
+	private static Path ownSkinFile() {
+		return FabricLoader.getInstance().getConfigDir().resolve("kubo").resolve("own-skin.txt");
+	}
+
+	private static synchronized void loadOwnSkinFile() {
+		if (ownSkinLoaded) {
+			return;
+		}
+		ownSkinLoaded = true;
+		try {
+			Path f = ownSkinFile();
+			if (Files.exists(f)) {
+				List<String> l = Files.readAllLines(f);
+				UUID me = MinecraftClient.getInstance().getSession().getUuidOrNull();
+				// first line = whose skin it is, so a switched account never shows the old one
+				if (l.size() >= 3 && me != null && l.get(0).equals(me.toString()) && l.get(1).startsWith("http")) {
+					ownSkinUrl = l.get(1);
+					ownSkinSlim = "slim".equals(l.get(2));
+				}
+			}
+		} catch (Exception ignored) {
+			// asked again below
+		}
+	}
+
+	/** Asks Mojang's session server for the skin address of this account (background; at most once a minute). */
+	private static void fetchOwnSkinUrl(UUID uuid) {
+		long now = System.currentTimeMillis();
+		if (now - ownSkinTriedAt < 60_000L) {
+			return;
+		}
+		ownSkinTriedAt = now;
+		Social.IO.execute(() -> {
+			try {
+				byte[] body = fetch("https://sessionserver.mojang.com/session/minecraft/profile/" + uuid.toString().replace("-", ""));
+				JsonObject o = JsonParser.parseString(new String(body, StandardCharsets.UTF_8)).getAsJsonObject();
+				for (JsonElement e : o.getAsJsonArray("properties")) {
+					JsonObject pr = e.getAsJsonObject();
+					if (!"textures".equals(pr.get("name").getAsString())) {
+						continue;
+					}
+					JsonObject tx = JsonParser.parseString(new String(Base64.getDecoder().decode(pr.get("value").getAsString()), StandardCharsets.UTF_8))
+							.getAsJsonObject().getAsJsonObject("textures");
+					if (tx == null || !tx.has("SKIN")) {
+						return; // this account has no own skin: Steve / Alex is right
+					}
+					JsonObject skin = tx.getAsJsonObject("SKIN");
+					boolean slim = skin.has("metadata") && "slim".equals(skin.getAsJsonObject("metadata").get("model").getAsString());
+					ownSkinUrl = skin.get("url").getAsString();
+					ownSkinSlim = slim;
+					Path f = ownSkinFile();
+					Files.createDirectories(f.getParent());
+					Files.write(f, List.of(uuid.toString(), ownSkinUrl, slim ? "slim" : "wide"));
+					return;
+				}
+			} catch (Throwable e) {
+				System.err.println("[Sleep] could not load your account skin: " + e);
+			}
+		});
+	}
 
 	/**
-	 * A skin da tua conta tal como o jogo a tem: em jogo vem do jogador; no menu principal (sem mundo) pede-se ao Mojang uma vez
-	 * em segundo plano. Devolve null enquanto ainda nao se sabe.
+	 * A skin da tua conta tal como o jogo a tem: em jogo vem do jogador; no menu principal (sem mundo) vai-se buscar o endereco da
+	 * skin ao servidor de sessoes da Mojang e descarrega-se de la (guardado no disco para a proxima vez). Devolve null enquanto ainda
+	 * nao se sabe (o menu usa entao a skin do site / espelhos, nunca uma skin por defeito).
 	 */
 	private static RemoteTextures.Tex ownGameSkin() {
 		MinecraftClient mc = MinecraftClient.getInstance();
 		try {
-			Identifier path = null;
 			if (mc.player != null) {
-				path = mc.player.getSkin().body().texturePath();
-			} else {
-				path = ownSkinFetched;
-				long now = System.currentTimeMillis();
-				UUID uuid = mc.getSession().getUuidOrNull();
-				if (path == null && uuid != null && now - ownSkinTriedAt > 20_000L) {
-					ownSkinTriedAt = now;
-					final String name = mc.getSession().getUsername();
-					Social.IO.execute(() -> {
-						try {
-							var res = mc.getApiServices().sessionService().fetchProfile(uuid, true);
-							com.mojang.authlib.GameProfile gp = res != null ? res.profile() : new com.mojang.authlib.GameProfile(uuid, name);
-							mc.getSkinProvider().fetchSkinTextures(gp).thenAccept(o -> {
-								if (o.isPresent()) {
-									ownSkinFetched = o.get().body().texturePath();
-								}
-							});
-						} catch (Throwable e) {
-							System.err.println("[Sleep] could not load your account skin: " + e);
-						}
-					});
+				Identifier path = mc.player.getSkin().body().texturePath();
+				RemoteTextures.Tex cur = ownSkinTex;
+				if (cur == null || !cur.id().equals(path)) {
+					String p = path.getPath();
+					Identifier asset = Identifier.of(path.getNamespace(), p.startsWith("textures/") ? p.substring(9).replaceAll("\\.png$", "") : p);
+					cur = new RemoteTextures.Tex(path, asset, 64, 64);
+					ownSkinTex = cur;
 				}
+				return cur;
 			}
-			if (path == null) {
-				return null;
+			loadOwnSkinFile();
+			UUID uuid = mc.getSession().getUuidOrNull();
+			if (ownSkinUrl == null && uuid != null) {
+				fetchOwnSkinUrl(uuid);
 			}
-			RemoteTextures.Tex cur = ownSkinTex;
-			if (cur == null || !cur.id().equals(path)) {
-				String p = path.getPath();
-				Identifier asset = Identifier.of(path.getNamespace(), p.startsWith("textures/") ? p.substring(9).replaceAll("\\.png$", "") : p);
-				cur = new RemoteTextures.Tex(path, asset, 64, 64);
-				ownSkinTex = cur;
-			}
-			return cur;
+			return ownSkinUrl == null ? null : RemoteTextures.get(ownSkinUrl);
 		} catch (Throwable t) {
 			return null; // qualquer falha: segue o caminho antigo (site / espelhos)
 		}
@@ -444,7 +490,20 @@ public final class SkinChanger {
 
 	public static boolean selfSlim() {
 		Skin s = active();
-		return s != null && s.slim;
+		if (s != null) {
+			return s.slim;
+		}
+		try {
+			MinecraftClient mc = MinecraftClient.getInstance();
+			if (mc.player != null) {
+				PlayerSkinType slim = modelType(true);
+				return slim != null && mc.player.getSkin().model() == slim;
+			}
+			loadOwnSkinFile();
+			return ownSkinSlim;
+		} catch (Throwable t) {
+			return false;
+		}
 	}
 
 	private static PlayerSkinType slimType, wideType;
