@@ -993,7 +993,13 @@ public class SolMenuScreen extends Screen {
 		if (open != null) {
 			drawSettingsHeader(c, mx, my, ix0, ix1, y + 9);
 			boolean hasDesc = open.description != null && !open.description.isEmpty();
-			drawSettings(c, mx, my, ix0, ix1, iy0 + (hasDesc ? 16 : 0), iy1, barX);
+			// Watch Party has its own Language option: its whole page follows it, not the client language
+			dev.solclient.Lang.override = open instanceof dev.solclient.mods.WatchPartyMod wp ? wp.langOverride() : -1;
+			try {
+				drawSettings(c, mx, my, ix0, ix1, iy0 + (hasDesc ? 16 : 0), iy1, barX);
+			} finally {
+				dev.solclient.Lang.override = -1;
+			}
 			return;
 		}
 		if (view == V_PACKS) {

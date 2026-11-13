@@ -109,6 +109,12 @@ public class WatchPartyMod extends Mod {
 		return adMusic.on();
 	}
 
+	/** The language of this mod's own settings page: 0 English, 1 Portuguese, -1 the client language (Auto). */
+	public int langOverride() {
+		int i = language.idx();
+		return i == 1 ? 0 : i == 2 ? 1 : -1;
+	}
+
 	public boolean friendsOnly() {
 		return from.idx() == 1;
 	}

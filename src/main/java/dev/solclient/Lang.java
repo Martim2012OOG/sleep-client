@@ -38,7 +38,14 @@ public final class Lang {
 	/** Bumped when automatic translations arrive (text widths are measured again). */
 	public static volatile int version;
 
+	/** While a mod's own page is drawn with its own language (Watch Party's Language option): 0 = English, 1 = Portuguese, -1 = the client language. */
+	public static volatile int override = -1;
+
 	public static int idx() {
+		int ov = override;
+		if (ov >= 0 && ov < CODES.length) {
+			return ov;
+		}
 		var s = SolClient.settings;
 		int i = s == null || s.language == null ? 0 : s.language.idx();
 		return i < 0 || i >= CODES.length ? 0 : i;
