@@ -42,6 +42,10 @@ public final class WatchPartyHooks {
 								VideoScreens.play(StringArgumentType.getString(c, "link"));
 								return 1;
 							})))
+							.then(ClientCommandManager.literal("live").then(ClientCommandManager.argument("link", StringArgumentType.greedyString()).executes(c -> {
+								VideoScreens.playLive(StringArgumentType.getString(c, "link"));
+								return 1;
+							})))
 							.then(ClientCommandManager.literal("remove").executes(c -> {
 								VideoScreens.remove();
 								return 1;

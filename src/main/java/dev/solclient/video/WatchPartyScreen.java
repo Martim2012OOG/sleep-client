@@ -17,20 +17,26 @@ public class WatchPartyScreen extends Screen {
 	private ButtonWidget playPause;
 
 	public WatchPartyScreen() {
-		super(Text.literal("Watch Party"));
+		super(Text.literal(WatchPartyText.t("Watch Party")));
 	}
 
 	@Override
 	protected void init() {
 		int cx = width / 2, y = height / 2 - 60;
-		link = new TextFieldWidget(textRenderer, cx - 150, y, 236, 20, Text.literal("YouTube link"));
+		link = new TextFieldWidget(textRenderer, cx - 150, y, 170, 20, Text.literal(WatchPartyText.t("YouTube link")));
 		link.setMaxLength(300);
-		link.setPlaceholder(Text.literal("Paste a YouTube link..."));
+		link.setPlaceholder(Text.literal(WatchPartyText.t("Paste a YouTube link...")));
 		addDrawableChild(link);
 		setInitialFocus(link);
-		addDrawableChild(ButtonWidget.builder(Text.literal("Play"), b -> {
+		addDrawableChild(ButtonWidget.builder(Text.literal(WatchPartyText.t("Play")), b -> {
 			if (!link.getText().isBlank()) {
 				VideoScreens.play(link.getText());
+				link.setText("");
+			}
+		}).dimensions(cx + 24, y, 62, 20).build());
+		addDrawableChild(ButtonWidget.builder(Text.literal("Live"), b -> {
+			if (!link.getText().isBlank()) {
+				VideoScreens.playLive(link.getText());
 				link.setText("");
 			}
 		}).dimensions(cx + 90, y, 60, 20).build());
@@ -39,33 +45,33 @@ public class WatchPartyScreen extends Screen {
 		y += 56;
 		addDrawableChild(ButtonWidget.builder(Text.literal("-1m"), b -> VideoScreens.skip(-60)).dimensions(cx - 150, y, 45, 20).build());
 		addDrawableChild(ButtonWidget.builder(Text.literal("-10s"), b -> VideoScreens.skip(-10)).dimensions(cx - 102, y, 45, 20).build());
-		playPause = addDrawableChild(ButtonWidget.builder(Text.literal(VideoScreens.playing() ? "Pause" : "Resume"), b -> {
+		playPause = addDrawableChild(ButtonWidget.builder(Text.literal(WatchPartyText.t(VideoScreens.playing() ? "Pause" : "Resume")), b -> {
 			VideoScreens.pause(VideoScreens.playing());
-			b.setMessage(Text.literal(VideoScreens.playing() ? "Pause" : "Resume"));
+			b.setMessage(Text.literal(WatchPartyText.t(VideoScreens.playing() ? "Pause" : "Resume")));
 		}).dimensions(cx - 54, y, 108, 20).build());
 		addDrawableChild(ButtonWidget.builder(Text.literal("+10s"), b -> VideoScreens.skip(10)).dimensions(cx + 57, y, 45, 20).build());
 		addDrawableChild(ButtonWidget.builder(Text.literal("+1m"), b -> VideoScreens.skip(60)).dimensions(cx + 105, y, 45, 20).build());
 
 		y += 24;
-		time = new TextFieldWidget(textRenderer, cx - 150, y, 236, 20, Text.literal("Go to time"));
+		time = new TextFieldWidget(textRenderer, cx - 150, y, 236, 20, Text.literal(WatchPartyText.t("Go to time")));
 		time.setMaxLength(12);
-		time.setPlaceholder(Text.literal("Go to time (e.g. 1:30 or 90)"));
+		time.setPlaceholder(Text.literal(WatchPartyText.t("Go to time (e.g. 1:30 or 90)")));
 		addDrawableChild(time);
-		addDrawableChild(ButtonWidget.builder(Text.literal("Go"), b -> goTo()).dimensions(cx + 90, y, 60, 20).build());
+		addDrawableChild(ButtonWidget.builder(Text.literal(WatchPartyText.t("Go")), b -> goTo()).dimensions(cx + 90, y, 60, 20).build());
 
 		y += 24;
-		addDrawableChild(ButtonWidget.builder(Text.literal("Restart"), b -> VideoScreens.seek("0")).dimensions(cx - 150, y, 98, 20).build());
-		addDrawableChild(ButtonWidget.builder(Text.literal("Redraw Corners"), b -> {
+		addDrawableChild(ButtonWidget.builder(Text.literal(WatchPartyText.t("Restart")), b -> VideoScreens.seek("0")).dimensions(cx - 150, y, 98, 20).build());
+		addDrawableChild(ButtonWidget.builder(Text.literal(WatchPartyText.t("Redraw Corners")), b -> {
 			close();
 			VideoScreens.startPlacing();
 		}).dimensions(cx - 49, y, 98, 20).build());
-		addDrawableChild(ButtonWidget.builder(Text.literal("Remove Screen"), b -> {
+		addDrawableChild(ButtonWidget.builder(Text.literal(WatchPartyText.t("Remove Screen")), b -> {
 			VideoScreens.remove();
 			close();
 		}).dimensions(cx + 52, y, 98, 20).build());
 
 		y += 34;
-		addDrawableChild(ButtonWidget.builder(Text.literal("Done"), b -> close()).dimensions(cx - 50, y, 100, 20).build());
+		addDrawableChild(ButtonWidget.builder(Text.literal(WatchPartyText.t("Done")), b -> close()).dimensions(cx - 50, y, 100, 20).build());
 	}
 
 	private void goTo() {
@@ -146,14 +152,14 @@ public class WatchPartyScreen extends Screen {
 			String ds = fmt(dur);
 			c.drawTextWithShadow(textRenderer, ds, bx + 300 - textRenderer.getWidth(ds), barY + 12, 0xFF9AA3B5);
 		} else {
-			c.drawCenteredTextWithShadow(textRenderer, "Loading video length...", cx, barY + 12, 0xFF9AA3B5);
+			c.drawCenteredTextWithShadow(textRenderer, WatchPartyText.t("Loading video length..."), cx, barY + 12, 0xFF9AA3B5);
 		}
 		String now = VideoScreens.nowPlaying();
-		c.drawCenteredTextWithShadow(textRenderer, now == null ? "No video yet" : "Now: " + now, cx, y - 18, 0xFF9AA3B5);
+		c.drawCenteredTextWithShadow(textRenderer, now == null ? WatchPartyText.t("No video yet") : WatchPartyText.t("Now: " + now), cx, y - 18, 0xFF9AA3B5);
 		if (!Mcef.installed()) {
-			c.drawCenteredTextWithShadow(textRenderer, "Video engine missing (rebuild Sleep with MCEF included)", cx, y + 166, 0xFFFF8A8A);
+			c.drawCenteredTextWithShadow(textRenderer, WatchPartyText.t("Video engine missing (rebuild Sleep with MCEF included)"), cx, y + 166, 0xFFFF8A8A);
 		} else if (!Mcef.ready()) {
-			c.drawCenteredTextWithShadow(textRenderer, "Video engine: " + Mcef.status(), cx, y + 166, 0xFFFFD27A);
+			c.drawCenteredTextWithShadow(textRenderer, WatchPartyText.t("Video engine: " + Mcef.status()), cx, y + 166, 0xFFFFD27A);
 		}
 	}
 

@@ -45,6 +45,13 @@ public final class VideoScreens {
 		long nextSync;
 		int bw, bh; // browser size, to detect quality changes
 		double dur; // video length in seconds (reported by the page), 0 = unknown
+		// live mode (the browser in the game cannot decode a live): ffmpeg decodes it, see LiveStream
+		boolean live;
+		volatile String liveUrl, liveFfmpeg, liveErr;
+		volatile boolean liveBusy;
+		boolean liveErrTold;
+		FfVideo ff;
+		LiveStream.Audio audio;
 
 		Screen(String owner) {
 			this.owner = owner;
@@ -106,7 +113,7 @@ public final class VideoScreens {
 	private static void say(String msg, boolean error) {
 		if (mc().inGameHud != null) {
 			mc().inGameHud.getChatHud().addMessage(Text.empty().append(Text.literal("[Watch Party] ").formatted(Formatting.AQUA))
-					.append(Text.literal(msg).formatted(error ? Formatting.RED : Formatting.GRAY)));
+					.append(Text.literal(WatchPartyText.t(msg)).formatted(error ? Formatting.RED : Formatting.GRAY)));
 		}
 	}
 
@@ -114,6 +121,10 @@ public final class VideoScreens {
 	public static void play(String link) {
 		if (!WatchPartyMod.on()) {
 			say("Turn on the Watch Party mod first (Right Shift > mods). The first time it downloads the video engine (~100 MB).", true);
+			return;
+		}
+		if (link != null && link.contains("/live/")) {
+			playLive(link);
 			return;
 		}
 		String vid = videoId(link);
@@ -133,12 +144,142 @@ public final class VideoScreens {
 			s.w = WatchPartyMod.instance.defaultWidth();
 			s.h = s.w * 9F / 16F;
 		}
+		if (s.live) {
+			s.live = false;
+			releaseLive(s);
+		}
 		s.vid = vid;
 		s.pos = 0;
 		s.on = true;
 		s.base = System.currentTimeMillis();
 		broadcast(s);
 		say("Playing on your screen. Friends with Sleep + Watch Party see it too.", false);
+	}
+
+	/**
+	 * A YouTube live on your screen. The browser inside the game cannot play the video format lives use, so this decodes it with
+	 * ffmpeg (the stream address comes from yt-dlp; both are fetched the first time). Only you see it.
+	 */
+	public static void playLive(String link) {
+		if (!WatchPartyMod.on()) {
+			say("Turn on the Watch Party mod first (Right Shift > mods). The first time it downloads the video engine (~100 MB).", true);
+			return;
+		}
+		String vid = videoId(link);
+		if (vid == null) {
+			say("That is not a YouTube link.", true);
+			return;
+		}
+		if (mc().player == null) {
+			return;
+		}
+		Screen s = mine();
+		if (s == null) {
+			s = new Screen(me());
+			SCREENS.put(s.owner, s);
+			place(s);
+			s.w = WatchPartyMod.instance.defaultWidth();
+			s.h = s.w * 9F / 16F;
+		}
+		release(s);
+		s.live = true;
+		s.vid = vid;
+		s.on = true;
+		s.liveErr = null;
+		s.liveErrTold = false;
+		s.liveUrl = null;
+		dev.solclient.social.Presence.sendScreen(null); // friends do not get a live (they would only see the error)
+		say("Opening the live on your screen... the first time it gets the tools it needs, this can take a minute.", false);
+		startLive(s);
+	}
+
+	private static void startLive(Screen s) {
+		if (s.liveBusy) {
+			return;
+		}
+		s.liveBusy = true;
+		final String vid = s.vid;
+		Thread t = new Thread(() -> {
+			try {
+				String ffm = dev.solclient.fightcam.Ffmpeg.findPath();
+				if (ffm == null) {
+					mc().execute(() -> say("Getting ffmpeg (one time)...", false));
+					dev.solclient.fightcam.Ffmpeg.install();
+					ffm = dev.solclient.fightcam.Ffmpeg.findPath();
+				}
+				if (ffm == null) {
+					s.liveErr = "ffmpeg could not be found or downloaded.";
+					return;
+				}
+				String[] err = new String[1];
+				String url = LiveStream.resolve(vid, err);
+				if (url == null) {
+					s.liveErr = err[0] == null ? "Could not open this live." : err[0];
+					return;
+				}
+				s.liveFfmpeg = ffm;
+				s.liveUrl = url;
+			} catch (Throwable e) {
+				s.liveErr = "Could not open this live: " + e.getMessage();
+			} finally {
+				s.liveBusy = false;
+			}
+		}, "Sleep live resolve");
+		t.setDaemon(true);
+		t.start();
+	}
+
+	private static void releaseLive(Screen s) {
+		if (s.ff != null) {
+			s.ff.close();
+			s.ff = null;
+		}
+		if (s.audio != null) {
+			s.audio.close();
+			s.audio = null;
+		}
+	}
+
+	/** Called every tick for a live screen near you: starts the decoder once the address is known, keeps the sound level. */
+	private static void tickLive(Screen s, double dist, double range) {
+		if (s.liveErr != null) {
+			if (!s.liveErrTold) {
+				s.liveErrTold = true;
+				say(s.liveErr, true);
+			}
+			return;
+		}
+		if (s.ff == null) {
+			if (s.liveUrl != null) {
+				// small picture and 24 fps on purpose: every frame is copied into the texture, the game must not lag
+				int[] q = switch (WatchPartyMod.instance.resolution()[0]) {
+					case 854 -> new int[] {640, 360};
+					case 1920 -> new int[] {1280, 720};
+					default -> new int[] {854, 480};
+				};
+				int w = q[0], h = Math.max(2, (Math.round(w * s.h() / Math.max(0.1F, s.w)) / 2) * 2);
+				s.ff = new FfVideo(List.of("-reconnect", "1", "-reconnect_streamed", "1", "-reconnect_delay_max", "5", "-i", s.liveUrl), "fps=24", w, h,
+						Identifier.of("sol_client", "watch_party_live/" + (texCounter++)));
+				if (!s.ff.start(s.liveFfmpeg)) {
+					s.liveErr = "ffmpeg could not start.";
+					releaseLive(s);
+					return;
+				}
+				s.audio = new LiveStream.Audio();
+				s.audio.start(s.liveFfmpeg, s.liveUrl);
+			} else if (!s.liveBusy) {
+				startLive(s);
+			}
+			return;
+		}
+		if (s.ff.failed()) {
+			s.liveErr = "The live stopped or could not be read. Paste the link again to retry.";
+			releaseLive(s);
+			return;
+		}
+		if (s.audio != null) {
+			s.audio.volume = s.on ? Math.max(0F, Math.min(1F, WatchPartyMod.instance.volume() / 100F * (float) Math.pow(Math.max(0, 1 - dist / range), 1.3))) : 0F;
+		}
 	}
 
 	private static void place(Screen s) {
@@ -434,13 +575,16 @@ public final class VideoScreens {
 	}
 
 	private static void broadcast(Screen s) {
+		if (s.live) {
+			return;
+		}
 		dev.solclient.social.Presence.sendScreen(payload(s));
 	}
 
 	/** My screen as sent to the room right now (null = no screen). Used to carry Sleep party / ping data too. */
 	public static JsonObject currentPayload() {
 		Screen s = mine();
-		return s != null && s.vid != null ? payload(s) : null;
+		return s != null && s.vid != null && !s.live ? payload(s) : null;
 	}
 
 	private static JsonObject payload(Screen s) {
@@ -568,7 +712,7 @@ public final class VideoScreens {
 			double dist = Math.sqrt(mc.player.squaredDistanceTo(s.x, s.y + s.h() / 2, s.z));
 			boolean want = s.vid != null && d.equals(s.dim) && dist < range + 8 && allowed(s);
 			if (!want) {
-				if (s.browser != null && (dist > range + 16 || !d.equals(s.dim) || !allowed(s))) {
+				if ((s.browser != null || s.ff != null) && (dist > range + 16 || !d.equals(s.dim) || !allowed(s))) {
 					release(s);
 				}
 				continue;
@@ -581,6 +725,10 @@ public final class VideoScreens {
 		}
 		for (Screen s : eligible.subList(0, Math.min(3, eligible.size()))) {
 			double dist = Math.sqrt(mc.player.squaredDistanceTo(s.x, s.y + s.h() / 2, s.z));
+			if (s.live) {
+				tickLive(s, dist, range);
+				continue;
+			}
 			int[] res = WatchPartyMod.instance.resolution();
 			int bw = res[0], bh = Math.max(120, Math.min(1080, Math.round(bw * s.h() / Math.max(0.1F, s.w))));
 			if (s.browser != null && (s.bw != bw || s.bh != bh)) {
@@ -669,6 +817,7 @@ public final class VideoScreens {
 	}
 
 	private static void release(Screen s) {
+		releaseLive(s);
 		if (s.browser != null) {
 			s.browser.close();
 			s.browser = null;
@@ -802,7 +951,13 @@ public final class VideoScreens {
 				continue;
 			}
 			boolean video = false;
-			if (s.browser != null) {
+			Identifier drawId = s.texId;
+			if (s.live) {
+				if (s.ff != null && s.ff.upload()) {
+					video = true;
+					drawId = s.ff.id();
+				}
+			} else if (s.browser != null) {
 				var view = s.browser.texture();
 				if (view != null) {
 					if (s.tex == null) {
@@ -824,7 +979,8 @@ public final class VideoScreens {
 			queue.submitCustom(matrices, RenderLayers.entityCutoutNoCull(WHITE),
 					(e, vc) -> quad(vc, e, rx, rz, nx, nz, w + frame * 2, h + frame * 2, -frame, -0.02F, 0xFF0B0C10));
 			if (video) {
-				queue.submitCustom(matrices, RenderLayers.entityCutoutNoCull(s.texId),
+				final Identifier tid = drawId;
+				queue.submitCustom(matrices, RenderLayers.entityCutoutNoCull(tid),
 						(e, vc) -> quad(vc, e, rx, rz, nx, nz, w, h, 0, 0F, 0xFFFFFFFF));
 			}
 			matrices.pop();

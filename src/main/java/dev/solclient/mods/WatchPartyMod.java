@@ -22,6 +22,7 @@ public class WatchPartyMod extends Mod {
 	private final Option.Bool debug = bool("Debug Info (green text)", false);
 	private final Option.Choice from = choice("Show Screens From", 0, "Everyone", "Friends Only");
 	private final Option.Num size = num("Quick Screen Width", 6, 2, 32, 1, " blocks");
+	private final Option.Choice language = choice("Language", 0, "Auto", "English", "Português");
 	private boolean keyDown;
 	private boolean clickDown;
 	private boolean leftDown, rightDown;
@@ -97,6 +98,11 @@ public class WatchPartyMod extends Mod {
 		return captions.on();
 	}
 
+	/** 0 = follow the client language, 1 = English, 2 = Portuguese (the texts of Watch Party). */
+	public int languageIdx() {
+		return language.idx();
+	}
+
 	public boolean friendsOnly() {
 		return from.idx() == 1;
 	}
@@ -123,7 +129,7 @@ public class WatchPartyMod extends Mod {
 				"/kubo video play <youtube link> | pause | play | seek 1:30 | remove | cancel",
 				Mcef.installed() ? "Video engine: " + Mcef.status() : "Video engine missing"};
 		for (String l : lines) {
-			mc.inGameHud.getChatHud().addMessage(Text.literal(l).formatted(Formatting.GRAY));
+			mc.inGameHud.getChatHud().addMessage(Text.literal(dev.solclient.video.WatchPartyText.t(l)).formatted(Formatting.GRAY));
 		}
 	}
 }
