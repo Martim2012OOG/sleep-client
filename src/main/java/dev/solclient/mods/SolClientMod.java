@@ -293,6 +293,11 @@ public class SolClientMod extends Mod {
 		keybindsKey = key("Keybinds Editor Key", -1);
 		action("Keys used twice", "Fix", () -> dev.solclient.KeyConflicts.fix(), dev.solclient.KeyConflicts::status);
 
+		// ------------------------------------------------------------------ Emotes
+		header("Emotes");
+		unreleasedEmotes = bool("Use Emotes Not In Store Yet", false);
+		unreleasedEmotes.tip("Owner only: lets you use every emote built into the client, including the ones you have not added to the shop / site yet. Other players still see them.");
+
 		// ------------------------------------------------------------------ Performance
 		header("Performance");
 		action("What is lagging", "Refresh", () -> {
@@ -306,8 +311,6 @@ public class SolClientMod extends Mod {
 		splashOnReload = bool("Also When Reloading Resource Packs", false);
 		hideReloadScreen = bool("Instant Pack Reload", true);
 		hideReloadScreen.tip("Adding or removing a resource pack no longer shows the red loading screen (no fade, no 1 s minimum): you keep seeing the game with a thin progress bar on top.");
-		unreleasedEmotes = bool("Use Emotes Not In Store Yet", false);
-		unreleasedEmotes.tip("Owner only: lets you use every emote built into the client, including the ones you have not added to the shop / site yet. Other players still see them.");
 		hideHudWhileLoading = bool("Hide Sleep HUD While Loading", true);
 
 		// ------------------------------------------------------------------ Setup & reset
