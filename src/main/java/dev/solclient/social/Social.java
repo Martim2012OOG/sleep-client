@@ -1519,24 +1519,25 @@ public final class Social {
 	}
 
 	/** Items per category (and "All"): switching section shows them at once, the site is asked in the background. */
-	/** True once the full shop list has arrived. */
+	/** True once some shop list has arrived. */
 	public static boolean shopLoaded() {
-		return SHOP_CACHE.get("All") != null;
+		return !SHOP_CACHE.isEmpty();
 	}
 
-	/** The shop item that sells this death animation (category "Death Animations", matched by modelId, id or name), or null. */
+	/** Shop items that stand for death animations: their id / modelId is "death_<animation id>". */
+	public static boolean isDeathItem(Item it) {
+		return it != null && (it.id != null && it.id.toLowerCase(Locale.ROOT).startsWith("death_")
+				|| it.modelId != null && it.modelId.toLowerCase(Locale.ROOT).startsWith("death_"));
+	}
+
+	/** The shop item that sells this death animation (id / modelId "death_<id>", in any list the shop sent), or null. */
 	public static Item deathItem(String animId, String title) {
-		List<Item> all = SHOP_CACHE.get("All");
-		if (all == null) {
-			return null;
-		}
-		for (Item it : all) {
-			if (it.category == null || !(it.category.equalsIgnoreCase("Death Animations") || it.category.equalsIgnoreCase("Death Animation") || it.category.equalsIgnoreCase("Death"))) {
-				continue;
-			}
-			String key = it.modelId != null && !it.modelId.isBlank() ? it.modelId : it.id;
-			if (animId.equalsIgnoreCase(key) || animId.equalsIgnoreCase(it.id) || title.equalsIgnoreCase(it.name)) {
-				return it;
+		String want = "death_" + animId.toLowerCase(Locale.ROOT);
+		for (List<Item> list : SHOP_CACHE.values()) {
+			for (Item it : list) {
+				if (want.equalsIgnoreCase(it.id) || want.equalsIgnoreCase(it.modelId)) {
+					return it;
+				}
 			}
 		}
 		return null;

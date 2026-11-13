@@ -3727,21 +3727,21 @@ public class SolMenuScreen extends Screen {
 		}
 		// what you are looking at: Cosmetics / Emotes / Skin, centred on top (like LabyMod)
 		if (!lockerStore) {
-			String[] kinds = {"Cosmetics", "Emotes", "Kill Effects", "Death Animations", "Skin"};
+			String[] kinds = {"Cosmetics", "Emotes", "Kill Effects", "Skin"};
 			boolean emotesNow = lockerShop ? "Emotes".equalsIgnoreCase(Social.shopCategory) : invCat.equals("Emotes");
 			boolean killNow = lockerShop ? "Kill Effects".equalsIgnoreCase(Social.shopCategory) : invCat.equals("Kill Effects");
 			boolean skinNow = !lockerShop && invCat.equals("Skins");
-			int cur = skinNow ? 4 : deathTab ? 3 : killNow ? 2 : emotesNow ? 1 : 0;
+			int cur = skinNow ? 3 : killNow ? 2 : emotesNow ? 1 : 0;
 			int segW = 0;
-			int[] ws = new int[5];
-			for (int i = 0; i < 5; i++) {
+			int[] ws = new int[4];
+			for (int i = 0; i < 4; i++) {
 				ws[i] = Math.max(64, Gfx.tw(kinds[i]) + 24);
 				segW += ws[i];
 			}
 			int sxx = Math.max(tx + 8, (ix0 + ix1) / 2 - (segW + 6) / 2), syy = y + 7; // never on top of Inventory / Shop
 			Gfx.rrectBorder(c, sxx, syy, segW + 6, 22, 4, Theme.FIELD, Theme.CARD_BORDER);
 			int kx = sxx + 3;
-			for (int i = 0; i < 5; i++) {
+			for (int i = 0; i < 4; i++) {
 				boolean sel = i == cur, hov = in(mx, my, kx, syy + 3, ws[i], 16);
 				if (sel) {
 					Gfx.rrect(c, kx, syy + 3, ws[i], 16, 3, SlideBg.colour());
@@ -3816,7 +3816,7 @@ public class SolMenuScreen extends Screen {
 				Gfx.textMid(c, cs, sx + sideW - 14 - Gfx.tw(cs), cy, 22, Theme.DIM);
 			}
 			region(sx + 5, cy, sideW - 10, 22, () -> {
-				deathTab = false;
+				deathSel = null;
 				if (lockerShop) {
 					Social.loadShop(cat);
 				} else {
@@ -3850,11 +3850,6 @@ public class SolMenuScreen extends Screen {
 			drawSkins(c, mx, my, gx0, gx1, fy, iy1, px, iy0, prevW, accent);
 			return;
 		}
-		if (deathTab) {
-			drawDeathAnims(c, mx, my, gx0, gx1, iy0, iy1, px, prevW, accent);
-			return;
-		}
-		dev.solclient.fx.DeathAnimBridge.hover(null);
 		int daW = 0;
 		field(c, gx0, fy, gx1 - gx0 - sortW - 6 - daW, 22, lockerSearch, "Search " + (lockerShop ? "the shop" : invCat.toLowerCase(Locale.ROOT)) + "...", focus == F_LOCKER, accent, true);
 		region(gx0, fy, gx1 - gx0 - sortW - 6 - daW, 22, () -> focus = F_LOCKER);
@@ -3904,6 +3899,9 @@ public class SolMenuScreen extends Screen {
 				// emotes have their own "All Emotes" section: the other sections show only accessories
 				if (lockerShop && it.category != null && (it.category.equalsIgnoreCase("Emotes") || it.category.equalsIgnoreCase("Emojis"))) {
 					continue;
+				}
+				if (Social.isDeathItem(it)) {
+					continue; // drawn by the death animation cards below
 				}
 				if (q.isEmpty() || it.name.toLowerCase(Locale.ROOT).contains(q)) {
 					items.add(it);
@@ -3973,10 +3971,53 @@ public class SolMenuScreen extends Screen {
 				items.sort((a, b) -> Long.compare(a.finalPrice, b.finalPrice));
 			}
 		}
-		int count = emotes ? emoteList.size() : items.size();
+		// the death animations live in the Kill Effects section too (same grid, equip like any kill effect)
+		boolean killSec = !emotes && (lockerShop ? "Kill Effects".equalsIgnoreCase(Social.shopCategory) : invCat.equals("Kill Effects"));
+		List<dev.solclient.fx.DeathAnimBridge.Entry> deaths = new ArrayList<>();
+		if (killSec && dev.solclient.fx.DeathAnimBridge.available()) {
+			dev.solclient.fx.DeathAnimBridge.enforce();
+			for (var e : dev.solclient.fx.DeathAnimBridge.all()) {
+				boolean own = dev.solclient.fx.DeathAnimBridge.owned(e);
+				if (!lockerShop && !own) {
+					continue; // the inventory shows what you have
+				}
+				if (!q.isEmpty() && !e.title.toLowerCase(Locale.ROOT).contains(q)) {
+					continue;
+				}
+				if (lockerOnlyOn && !lockerShop && !dev.solclient.fx.DeathAnimBridge.enabled(e)) {
+					continue;
+				}
+				deaths.add(e);
+			}
+			if (lockerSort == 1) {
+				deaths.sort((a, b) -> a.title.compareToIgnoreCase(b.title));
+			} else if (lockerSort == 2) {
+				deaths.sort((a, b) -> b.title.compareToIgnoreCase(a.title));
+			} else {
+				deaths.sort((a, b) -> Boolean.compare(dev.solclient.fx.DeathAnimBridge.owned(b), dev.solclient.fx.DeathAnimBridge.owned(a)));
+			}
+		} else {
+			deathSel = null;
+			dev.solclient.fx.DeathAnimBridge.hover(null);
+		}
+		int nItems = items.size();
+		int count = emotes ? emoteList.size() : nItems + deaths.size();
 
 		// ---- preview (right)
-		drawLockerPreview(c, mx, my, px, iy0, prevW, iy1 - iy0, accent, emotes, emoteList, items);
+		dev.solclient.fx.DeathAnimBridge.Entry deathCur = deathHover;
+		if (deathCur == null && deathSel != null) {
+			for (var e : deaths) {
+				if (e.id.equals(deathSel)) {
+					deathCur = e;
+				}
+			}
+		}
+		if (killSec && deathCur != null && (deathHover != null || lockerSel == null)) {
+			drawDeathPanel(c, mx, my, px, iy0, prevW, iy1 - iy0 + iy0, accent, deathCur);
+		} else {
+			drawLockerPreview(c, mx, my, px, iy0, prevW, iy1 - iy0, accent, emotes, emoteList, items);
+		}
+		deathHover = null;
 
 		if (count == 0) {
 			String msg = emotes ? "No emotes found"
@@ -4003,7 +4044,7 @@ public class SolMenuScreen extends Screen {
 		int cols = Math.max(1, (inner + gap) / (minW + gap));
 		int cardW = (inner - (cols - 1) * gap) / cols;
 		int cardH = cardW + 6;
-		count = emotes ? emoteList.size() : items.size();
+		count = emotes ? emoteList.size() : nItems + deaths.size();
 		int rows = (count + cols - 1) / cols;
 		int contentH = Math.max(0, rows * (cardH + gap) - gap);
 		maxScroll = Math.max(0, contentH - (iy1 - gy0));
@@ -4020,8 +4061,10 @@ public class SolMenuScreen extends Screen {
 			}
 			if (emotes) {
 				drawEmoteCard(c, mx, my, emoteList.get(i), cx, cyy, cardW, cardH, accent);
-			} else {
+			} else if (i < nItems) {
 				drawItemCard(c, mx, my, items.get(i), cx, cyy, cardW, cardH, accent);
+			} else {
+				drawDeathCard(c, mx, my, deaths.get(i - nItems), cx, cyy, cardW, cardH, accent);
 			}
 		}
 		c.disableScissor();
@@ -4501,34 +4544,6 @@ public class SolMenuScreen extends Screen {
 	 * On the Emotes tab it is your emote wheel (slot, emote, x).
 	 */
 	private void lockerSideList(DrawContext c, int mx, int my, int x, int y, int w, int h) {
-		if (deathTab) {
-			// Death Animations: the ones that are switched on (click one to switch it off)
-			List<dev.solclient.fx.DeathAnimBridge.Entry> on = new ArrayList<>();
-			for (var e : dev.solclient.fx.DeathAnimBridge.all()) {
-				if (dev.solclient.fx.DeathAnimBridge.enabled(e)) {
-					on.add(e);
-				}
-			}
-			Gfx.textRaw(c, fitRaw(dev.solclient.Lang.t("Switched on").toUpperCase(Locale.ROOT), w - 30), x + 8, y + 9, 0xFF6B7080);
-			String cnt = String.valueOf(on.size());
-			Gfx.textRaw(c, cnt, x + w - 8 - Gfx.twRaw(cnt), y + 9, 0xFF6B7080);
-			int dy = y + 22;
-			for (var e : on) {
-				if (dy + 20 > y + h) {
-					break;
-				}
-				boolean hov = in(mx, my, x + 4, dy, w - 8, 20);
-				Gfx.rrectBorder(c, x + 4, dy, w - 8, 20, 3, hov ? TILE_HOVER : Theme.ROW, 0xFF2A2C33);
-				Gfx.rrect(c, x + 9, dy + 7, 6, 6, 3, e.accent);
-				Gfx.textClip(c, e.title, x + 20, dy + 6, w - 32, Theme.TEXT);
-				region(x + 4, dy, w - 8, 20, () -> dev.solclient.fx.DeathAnimBridge.setEnabled(e, false));
-				dy += 24;
-			}
-			if (on.isEmpty()) {
-				Gfx.textRaw(c, dev.solclient.Lang.t("None yet"), x + 10, y + 28, 0xFF5E6272);
-			}
-			return;
-		}
 		boolean emotesTab = invCat.equals("Emotes");
 		boolean killTab = invCat.equals("Kill Effects");
 		List<Social.Item> src = killTab ? Social.killEffectItems() : Social.shop;
@@ -4614,14 +4629,9 @@ public class SolMenuScreen extends Screen {
 		lockerChip = null;
 		scroll = 0;
 		scrollTarget = 0;
-		deathTab = k == 3;
-		if (k == 3) {
-			Social.loadShop("All"); // so we know which ones you own
-		}
+		deathSel = null;
 		dev.solclient.fx.DeathAnimBridge.hover(null);
 		if (k == 3) {
-			deathSel = null;
-		} else if (k == 4) {
 			lockerShop = false;
 			invCat = "Skins";
 		} else if (lockerShop) {
@@ -4634,8 +4644,9 @@ public class SolMenuScreen extends Screen {
 		}
 	}
 
-	private static boolean deathTab;
+	/** The death animation picked in the Kill Effects section (null = a normal kill effect / nothing). */
 	private static String deathSel;
+	private dev.solclient.fx.DeathAnimBridge.Entry deathHover;
 
 	private static String lockerChip;
 	private static boolean lockerOnlyOn;
@@ -4649,7 +4660,7 @@ public class SolMenuScreen extends Screen {
 	}
 
 	private void switchLocker(boolean shop) {
-		deathTab = false;
+		deathSel = null;
 		lockerStore = false;
 		lockerShop = shop;
 		lockerSel = null;
@@ -4767,11 +4778,15 @@ public class SolMenuScreen extends Screen {
 		}
 		region(x, y, w, h - 18, () -> {
 			lockerSel = it.id;
+			deathSel = null;
 			if (doubleClick("it" + it.id) && wearable) {
 				Social.equip(it, !it.equipped);
 			}
 		});
-		region(x, y + h - 18, w - 28, 18, () -> lockerSel = it.id);
+		region(x, y + h - 18, w - 28, 18, () -> {
+			lockerSel = it.id;
+			deathSel = null;
+		});
 		if (hov && Social.isKillEffect(it) && Gfx.mc().player != null) {
 			int vbw = Gfx.tw("View") + 16, vbx = x + (w - vbw) / 2, vby = y + 4 + (h - 24) - 20;
 			boolean vh2 = in(mx, my, vbx, vby, vbw, 16);
@@ -5154,185 +5169,126 @@ public class SolMenuScreen extends Screen {
 		}
 	}
 
-	/**
-	 * The Death Animations section: square cards like the rest of the shop (hover = the animation plays inside the card, View = plays
-	 * in front of you). They are bought like any cosmetic; only owned ones can be switched on.
-	 */
-	private void drawDeathAnims(DrawContext c, int mx, int my, int gx0, int gx1, int iy0, int iy1, int px, int prevW, int accent) {
-		var bridge = dev.solclient.fx.DeathAnimBridge.class;
-		List<dev.solclient.fx.DeathAnimBridge.Entry> all = dev.solclient.fx.DeathAnimBridge.all();
-		if (all.isEmpty()) {
-			Gfx.textC(c, dev.solclient.Lang.tr("Death animations are not available in this build.", "As animações de morte não estão disponíveis nesta versão."), (gx0 + px) / 2, (iy0 + iy1) / 2, Theme.DIM);
-			maxScroll = 0;
+	/** Equipping a death animation: it becomes THE one that plays when you get a kill / die (the others switch off). */
+	private void equipDeath(dev.solclient.fx.DeathAnimBridge.Entry e) {
+		if (!dev.solclient.fx.DeathAnimBridge.owned(e)) {
 			return;
 		}
-		dev.solclient.fx.DeathAnimBridge.enforce();
-		int fy = iy0, sortW = 74;
-		field(c, gx0, fy, gx1 - gx0 - sortW - 6, 22, lockerSearch, "Search death animations...", focus == F_LOCKER, accent, true);
-		region(gx0, fy, gx1 - gx0 - sortW - 6, 22, () -> focus = F_LOCKER);
-		button(c, mx, my, gx1 - sortW, fy, sortW, 22, lockerSort == 1 ? "Sort: A-Z" : lockerSort == 2 ? "Sort: Z-A" : "Sort: Default", "lsort", TILE, TILE_HOVER, Theme.TEXT, () -> lockerSort = (lockerSort + 1) % 3);
-		String q = lockerSearch.text().toLowerCase(Locale.ROOT).trim();
-		List<dev.solclient.fx.DeathAnimBridge.Entry> list = new ArrayList<>();
-		for (var e : all) {
-			if (q.isEmpty() || e.title.toLowerCase(Locale.ROOT).contains(q)) {
-				list.add(e);
+		if (dev.solclient.fx.DeathAnimBridge.enabled(e)) {
+			dev.solclient.fx.DeathAnimBridge.setEnabled(e, false);
+			return;
+		}
+		for (var o : dev.solclient.fx.DeathAnimBridge.all()) {
+			if (o != e && dev.solclient.fx.DeathAnimBridge.enabled(o)) {
+				dev.solclient.fx.DeathAnimBridge.setEnabled(o, false);
 			}
 		}
-		if (lockerSort == 1) {
-			list.sort((x, y) -> x.title.compareToIgnoreCase(y.title));
-		} else if (lockerSort == 2) {
-			list.sort((x, y) -> y.title.compareToIgnoreCase(x.title));
-		}
-		// yours first, then favourites
-		list.sort((x, y) -> {
-			int o = Boolean.compare(dev.solclient.fx.DeathAnimBridge.owned(y), dev.solclient.fx.DeathAnimBridge.owned(x));
-			return o != 0 ? o : Boolean.compare(dev.solclient.fx.DeathAnimBridge.favourite(y), dev.solclient.fx.DeathAnimBridge.favourite(x));
-		});
-		int gy0 = fy + 30, gap = 6, minW = 80;
-		int inner = gx1 - gx0, cols = Math.max(1, (inner + gap) / (minW + gap));
-		int cw = (inner - (cols - 1) * gap) / cols, ch = cw + 6;
-		int rows = (list.size() + cols - 1) / cols;
-		int contentH = Math.max(0, rows * (ch + gap) - gap);
-		maxScroll = Math.max(0, contentH - (iy1 - gy0));
-		scrollTarget = Math.max(0, Math.min(maxScroll, scrollTarget));
-		scroll = Math.max(0, Math.min(maxScroll, scroll));
-		clipY0 = gy0;
-		clipY1 = iy1;
-		float uu = 1F / f;
-		dev.solclient.fx.DeathAnimBridge.Entry hovered = null;
-		c.enableScissor(gx0 - 4, gy0, gx1 + 4, iy1);
-		for (int i = 0; i < list.size(); i++) {
-			var e = list.get(i);
-			int x = gx0 + (i % cols) * (cw + gap), y = gy0 + (i / cols) * (ch + gap) - Math.round(scroll);
-			if (y + ch < gy0 || y > iy1) {
-				continue;
-			}
-			boolean hov = in(mx, my, x, y, cw, ch) && my >= gy0 && my < iy1;
-			if (hov) {
-				hovered = e;
-			}
-			boolean sel = e.id.equals(deathSel), own = dev.solclient.fx.DeathAnimBridge.owned(e);
-			boolean on = own && dev.solclient.fx.DeathAnimBridge.enabled(e), fav = dev.solclient.fx.DeathAnimBridge.favourite(e);
-			var shopItem = dev.solclient.social.Social.deathItem(e.id, e.title);
-			float an = anim("da" + e.id, hov);
-			Gfx.rrectBorder(c, x, y, cw, ch, 3, Gfx.blend(TILE, TILE_HOVER, an), sel ? 0xFFB6BAC8 : Gfx.blend(Theme.CARD_BORDER, Theme.CARD_BORDER_HOVER, an));
-			region(x, y, cw, ch, () -> deathSel = e.id); // first: later regions (buttons) win
-			int stx = x + 4, sty = y + 4, stw = cw - 8, sth = ch - 24;
-			Gfx.rrect(c, stx, sty, stw, sth, 3, Gfx.blend(0xFF1B1D24, e.accent, 0.20F + 0.10F * an));
-			if (hov) {
-				dev.solclient.fx.DeathAnimBridge.hover(e);
-				c.enableScissor(stx, sty, stx + stw, sty + sth);
-				dev.solclient.fx.DeathAnimBridge.drawPreview(c, 1F, Math.round(stx * uu), Math.round(sty * uu), Math.round((stx + stw) * uu), Math.round((sty + sth) * uu));
-				c.disableScissor();
-			} else if (e.icon != null) {
-				var m = c.getMatrices();
-				m.pushMatrix();
-				m.translate(stx + stw / 2F - 12, sty + sth / 2F - 12);
-				m.scale(1.5F, 1.5F);
-				c.drawItem(new net.minecraft.item.ItemStack(e.icon), 0, 0);
-				m.popMatrix();
-			}
-			if (own) {
-				int fx = stx + stw - 12;
-				boolean fh = in(mx, my, fx - 2, sty + 2, 14, 14) && my >= gy0 && my < iy1;
-				Gfx.textRaw(c, fav ? "★" : "☆", fx, sty + 4, fav ? 0xFFFFD27A : fh ? Theme.TEXT : 0xAAFFFFFF);
-				region(fx - 2, sty + 2, 14, 14, () -> dev.solclient.fx.DeathAnimBridge.toggleFavourite(e));
-			}
-			int ny = y + ch - 15;
-			if (!own) {
-				// for sale: price like every other shop item
-				if (shopItem != null) {
-					String pr = String.valueOf(shopItem.finalPrice);
-					int pw = Gfx.tw(pr);
-					Gfx.text(c, pr, x + cw - 6 - pw, ny + 1, 0xFFFFD27A);
-					Gfx.coin(c, x + cw - 18 - pw, ny, 9);
-					Gfx.textClip(c, e.title.replaceFirst("^Originals: ", ""), x + 6, ny + 1, cw - 30 - pw, Theme.TEXT);
-				} else {
-					Gfx.textClip(c, e.title.replaceFirst("^Originals: ", ""), x + 6, ny + 1, cw - 12, Theme.DIM);
-				}
-			} else {
-				int sxx = x + cw - 24;
-				boolean sh = in(mx, my, sxx - 2, ny - 2, 22, 14) && my >= gy0 && my < iy1;
-				miniSwitch(c, sxx, ny, on, sh);
-				Gfx.textClip(c, e.title.replaceFirst("^Originals: ", ""), x + 6, ny + 1, cw - 36, Theme.TEXT);
-				region(sxx - 2, ny - 2, 22, 14, () -> dev.solclient.fx.DeathAnimBridge.setEnabled(e, !on));
-			}
-			if (hov && Gfx.mc().player != null) {
-				int vbw = Gfx.tw("View") + 16, vbx = x + (cw - vbw) / 2, vby = sty + sth - 20;
-				boolean vh2 = in(mx, my, vbx, vby, vbw, 16);
-				Gfx.rrect(c, vbx, vby, vbw, 16, 5, vh2 ? Theme.accentHover() : Theme.accent());
-				Gfx.textC(c, "View", vbx + vbw / 2, vby + 4, 0xFFFFFFFF);
-				region(vbx, vby, vbw, 16, () -> viewDeath(e));
-			}
-		}
-		c.disableScissor();
-		clipY0 = 0;
-		clipY1 = vh;
-		drawScrollbar(c, gx1 + 3, gy0, iy1, contentH);
+		dev.solclient.fx.DeathAnimBridge.setEnabled(e, true);
+		dev.solclient.fx.DeathAnimBridge.setMaster(true);
+	}
 
-		// ---- right panel: the stage + details + buy / switch of the hovered (or picked) animation
-		dev.solclient.fx.DeathAnimBridge.Entry cur = hovered;
-		if (cur == null) {
-			for (var e : all) {
-				if (e.id.equals(deathSel)) {
-					cur = e;
-				}
-			}
+	/** One death animation as a card of the Kill Effects grid: same size and look as the other items. */
+	private void drawDeathCard(DrawContext c, int mx, int my, dev.solclient.fx.DeathAnimBridge.Entry e, int x, int y, int cw, int ch, int accent) {
+		boolean hov = in(mx, my, x, y, cw, ch) && my >= clipY0 && my < clipY1;
+		if (hov) {
+			deathHover = e;
 		}
-		dev.solclient.fx.DeathAnimBridge.hover(cur);
+		boolean sel = e.id.equals(deathSel), own = dev.solclient.fx.DeathAnimBridge.owned(e);
+		boolean on = own && dev.solclient.fx.DeathAnimBridge.enabled(e);
+		var shopItem = dev.solclient.social.Social.deathItem(e.id, e.title);
+		float an = anim("da" + e.id, hov);
+		Gfx.rrectBorder(c, x, y, cw, ch, 3, Gfx.blend(TILE, TILE_HOVER, an), sel ? 0xFFB6BAC8 : Gfx.blend(Theme.CARD_BORDER, Theme.CARD_BORDER_HOVER, an));
+		region(x, y, cw, ch, () -> {
+			deathSel = e.id;
+			lockerSel = null;
+		}); // first: later regions (buttons) win
+		int stx = x + 4, sty = y + 4, stw = cw - 8, sth = ch - 24;
+		Gfx.rrect(c, stx, sty, stw, sth, 3, Gfx.blend(0xFF1B1D24, e.accent, 0.20F + 0.10F * an));
+		float uu = 1F / f;
+		if (hov) {
+			dev.solclient.fx.DeathAnimBridge.hover(e);
+			c.enableScissor(stx, sty, stx + stw, sty + sth);
+			dev.solclient.fx.DeathAnimBridge.drawPreview(c, 1F, Math.round(stx * uu), Math.round(sty * uu), Math.round((stx + stw) * uu), Math.round((sty + sth) * uu));
+			c.disableScissor();
+		} else {
+			var m = c.getMatrices();
+			m.pushMatrix();
+			m.translate(stx + stw / 2F - 12, sty + sth / 2F - 12);
+			m.scale(1.5F, 1.5F);
+			c.drawItem(new net.minecraft.item.ItemStack(e.icon), 0, 0);
+			m.popMatrix();
+		}
+		String name = e.title.replaceFirst("^Originals: ", "");
+		int ny = y + ch - 15;
+		if (!own) {
+			if (shopItem != null) {
+				String pr = String.valueOf(shopItem.finalPrice);
+				int pw = Gfx.tw(pr);
+				Gfx.text(c, pr, x + cw - 6 - pw, ny + 1, 0xFFFFD27A);
+				Gfx.coin(c, x + cw - 18 - pw, ny, 9);
+				Gfx.textClip(c, name, x + 6, ny + 1, cw - 30 - pw, Theme.TEXT);
+			} else {
+				Gfx.textClip(c, name, x + 6, ny + 1, cw - 12, Theme.DIM);
+			}
+		} else {
+			int sxx = x + cw - 24;
+			boolean sh = in(mx, my, sxx - 2, ny - 2, 22, 14) && my >= clipY0 && my < clipY1;
+			miniSwitch(c, sxx, ny, on, sh);
+			Gfx.textClip(c, name, x + 6, ny + 1, cw - 36, Theme.TEXT);
+			region(sxx - 2, ny - 2, 22, 14, () -> equipDeath(e));
+		}
+		if (hov && Gfx.mc().player != null) {
+			int vbw = Gfx.tw("View") + 16, vbx = x + (cw - vbw) / 2, vby = sty + sth - 20;
+			boolean vh2 = in(mx, my, vbx, vby, vbw, 16);
+			Gfx.rrect(c, vbx, vby, vbw, 16, 5, vh2 ? Theme.accentHover() : Theme.accent());
+			Gfx.textC(c, "View", vbx + vbw / 2, vby + 4, 0xFFFFFFFF);
+			region(vbx, vby, vbw, 16, () -> viewDeath(e));
+		}
+	}
+
+	/** Right panel for a death animation: live stage, text, Buy / Equip, View. */
+	private void drawDeathPanel(DrawContext c, int mx, int my, int px, int iy0, int prevW, int iy1, int accent, dev.solclient.fx.DeathAnimBridge.Entry cur) {
 		Gfx.rrectBorder(c, px, iy0, prevW, iy1 - iy0, 10, Gfx.blend(TILE, 0xFF000000, 0.25F), Theme.CARD_BORDER);
-		int stageH = Math.min(170, (iy1 - iy0) - 190);
+		float uu = 1F / f;
+		int stageH = Math.min(190, (iy1 - iy0) - 150);
 		if (stageH > 60) {
 			Gfx.rrect(c, px + 8, iy0 + 8, prevW - 16, stageH, 8, 0xFF15161B);
-			if (cur != null) {
-				c.enableScissor(px + 8, iy0 + 8, px + prevW - 8, iy0 + 8 + stageH);
-				dev.solclient.fx.DeathAnimBridge.drawPreview(c, 1F, Math.round((px + 8) * uu), Math.round((iy0 + 8) * uu), Math.round((px + prevW - 8) * uu), Math.round((iy0 + 8 + stageH) * uu));
-				c.disableScissor();
-			} else {
-				Gfx.textFit(c, dev.solclient.Lang.tr("Hover an animation to see it", "Passa o rato numa animação para a ver"), px + prevW / 2, prevW - 24, iy0 + 8 + stageH / 2 - 4, Theme.DIM);
-			}
+			c.enableScissor(px + 8, iy0 + 8, px + prevW - 8, iy0 + 8 + stageH);
+			dev.solclient.fx.DeathAnimBridge.drawPreview(c, 1F, Math.round((px + 8) * uu), Math.round((iy0 + 8) * uu), Math.round((px + prevW - 8) * uu), Math.round((iy0 + 8 + stageH) * uu));
+			c.disableScissor();
 		}
 		int ty = iy0 + 8 + Math.max(0, stageH) + 10;
-		if (cur != null) {
-			Gfx.textFit(c, fit(cur.title, prevW - 16), px + prevW / 2, prevW - 6, ty, Theme.TEXT);
-			int dy = ty + 14;
-			for (String l : wrap(cur.description, prevW - 20, 3)) {
-				Gfx.textFit(c, l, px + prevW / 2, prevW - 6, dy, 0xFFB8BCC8);
-				dy += 11;
-			}
+		Gfx.textFit(c, fit(cur.title, prevW - 16), px + prevW / 2, prevW - 6, ty, Theme.TEXT);
+		Gfx.textFit(c, "Kill effect", px + prevW / 2, prevW - 6, ty + 11, Theme.DIM);
+		int dy = ty + 25;
+		for (String l : wrap(cur.description, prevW - 20, 3)) {
+			Gfx.textFit(c, l, px + prevW / 2, prevW - 6, dy, 0xFFB8BCC8);
+			dy += 11;
 		}
 		int bx = px + 8, bw = prevW - 16, by = iy1 - 30;
 		final var fc = cur;
-		if (cur != null) {
-			boolean own = dev.solclient.fx.DeathAnimBridge.owned(cur);
-			var si = dev.solclient.social.Social.deathItem(cur.id, cur.title);
-			if (!own && si != null) {
-				boolean ask = confirming("buyda" + cur.id);
-				boolean afford = dev.solclient.social.Social.coins < 0 || dev.solclient.social.Social.coins >= si.finalPrice;
-				button(c, mx, my, bx, by, bw, 22, ask ? "Confirm " + si.finalPrice + "?" : "Buy  " + si.finalPrice, "lbuyda",
-						ask ? Theme.GREEN_BG : afford ? accent : Theme.OFF_BG, ask ? Theme.GREEN_BG_HOVER : afford ? Theme.accentHover() : Theme.OFF_BG_HOVER,
-						ask ? Theme.GREEN : afford ? 0xFFFFFFFF : Theme.DIM, () -> {
-							if (!afford) {
-								Social.say("Not enough coins", true);
-							} else if (confirm("buyda" + fc.id, "Click again to buy " + fc.title)) {
-								Social.buy(si);
-							}
-						});
-			} else if (!own) {
-				Gfx.rrect(c, bx, by, bw, 22, 7, Theme.OFF_BG);
-				Gfx.textFit(c, "Not for sale yet", px + prevW / 2, prevW - 24, by + 7, Theme.DIM);
-			} else {
-				boolean on = dev.solclient.fx.DeathAnimBridge.enabled(cur);
-				button(c, mx, my, bx, by, bw, 22, on ? "Switch off" : "Switch on", "lsw" + cur.id, on ? Theme.OFF_BG : accent, on ? Theme.OFF_BG_HOVER : Theme.accentHover(), 0xFFFFFFFF,
-						() -> dev.solclient.fx.DeathAnimBridge.setEnabled(fc, !on));
-			}
-			button(c, mx, my, bx, by - 26, bw, 20, "View in world", "lviewda", TILE, TILE_HOVER, Theme.TEXT, () -> viewDeath(fc));
+		boolean own = dev.solclient.fx.DeathAnimBridge.owned(cur);
+		var si = dev.solclient.social.Social.deathItem(cur.id, cur.title);
+		if (!own && si != null) {
+			boolean ask = confirming("buyda" + cur.id);
+			boolean afford = dev.solclient.social.Social.coins < 0 || dev.solclient.social.Social.coins >= si.finalPrice;
+			button(c, mx, my, bx, by, bw, 22, ask ? "Confirm " + si.finalPrice + "?" : "Buy  " + si.finalPrice, "lbuyda",
+					ask ? Theme.GREEN_BG : afford ? accent : Theme.OFF_BG, ask ? Theme.GREEN_BG_HOVER : afford ? Theme.accentHover() : Theme.OFF_BG_HOVER,
+					ask ? Theme.GREEN : afford ? 0xFFFFFFFF : Theme.DIM, () -> {
+						if (!afford) {
+							Social.say("Not enough coins", true);
+						} else if (confirm("buyda" + fc.id, "Click again to buy " + fc.title)) {
+							Social.buy(si);
+						}
+					});
+		} else if (!own) {
+			Gfx.rrect(c, bx, by, bw, 22, 7, Theme.OFF_BG);
+			Gfx.textFit(c, "Not for sale yet", px + prevW / 2, prevW - 24, by + 7, Theme.DIM);
+		} else {
+			boolean on = dev.solclient.fx.DeathAnimBridge.enabled(cur);
+			button(c, mx, my, bx, by, bw, 22, on ? "Unequip" : "Equip", "lsw" + cur.id, on ? Theme.OFF_BG : accent, on ? Theme.OFF_BG_HOVER : Theme.accentHover(), 0xFFFFFFFF, () -> equipDeath(fc));
 		}
-		boolean master = dev.solclient.fx.DeathAnimBridge.master(), rnd = dev.solclient.fx.DeathAnimBridge.random();
-		int ry = by - 52;
-		button(c, mx, my, bx, ry, bw, 20, "Random: " + (rnd ? "On" : "Off"), "ldarand", TILE, TILE_HOVER, Theme.TEXT, () -> dev.solclient.fx.DeathAnimBridge.setRandom(!rnd));
-		button(c, mx, my, bx, ry - 24, bw, 20, "Death animations: " + (master ? "On" : "Off"), "damaster", master ? Theme.GREEN_BG : TILE, master ? Theme.GREEN_BG_HOVER : TILE_HOVER, master ? Theme.GREEN : Theme.TEXT,
-				() -> dev.solclient.fx.DeathAnimBridge.setMaster(!master));
+		button(c, mx, my, bx, by - 26, bw, 20, "View in world", "lviewda", TILE, TILE_HOVER, Theme.TEXT, () -> viewDeath(fc));
 	}
 
 	/** Plays an animation in front of you (the menu closes so you can watch). */

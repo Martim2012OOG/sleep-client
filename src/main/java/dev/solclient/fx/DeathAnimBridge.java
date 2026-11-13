@@ -38,6 +38,8 @@ public final class DeathAnimBridge {
 	private static Method isEnabled, setEnabled, toggleFav, save, setHover, playPreview, recipe, iconOf, animations, useForRandom, previewBody, previewProps, previewZoom;
 	private static Field instance, favourites, enabledMaster, randomMode, label;
 	private static List<Entry> cache;
+	private static Object helper;
+	private static Method hIcon, hAccent, hDesc;
 	private static boolean hoverOn;
 
 	private DeathAnimBridge() {
@@ -72,6 +74,18 @@ public final class DeathAnimBridge {
 			previewBody = rendCls.getMethod("previewBody", DrawContext.class, float.class, int.class, int.class, int.class, int.class);
 			previewProps = rendCls.getMethod("previewProps", DrawContext.class, float.class, int.class, int.class, int.class, int.class);
 			previewZoom = rendCls.getMethod("previewZoom");
+			try {
+				Class<?> scr = Class.forName(P + "DeathAnimationsScreen");
+				helper = scr.getConstructor(net.minecraft.client.gui.screen.Screen.class).newInstance((Object) null);
+				hIcon = scr.getDeclaredMethod("icon", animCls);
+				hIcon.setAccessible(true);
+				hAccent = scr.getDeclaredMethod("accent", animCls);
+				hAccent.setAccessible(true);
+				hDesc = scr.getDeclaredMethod("cardDescription", animCls);
+				hDesc.setAccessible(true);
+			} catch (Throwable t) {
+				helper = null; // fall back to the catalog recipes
+			}
 			label = animCls.getField("label");
 			ok = true;
 		} catch (Throwable t) {
@@ -105,21 +119,45 @@ public final class DeathAnimBridge {
 				String desc = "";
 				int accent = 0xFF6BA8FF;
 				Item icon = null;
-				try {
-					Object r = recipe.invoke(null, a);
-					if (r != null) {
-						Method d = r.getClass().getDeclaredMethod("description");
-						d.setAccessible(true);
-						desc = String.valueOf(d.invoke(r));
-						Method ac = r.getClass().getDeclaredMethod("accent");
-						ac.setAccessible(true);
-						accent = 0xFF000000 | (Integer) ac.invoke(r);
+				// the engine's own screen knows every animation's icon, colour and text (a switch inside it): ask it
+				if (helper != null) {
+					try {
+						icon = (Item) hIcon.invoke(helper, a);
+					} catch (Throwable ignored) {
 					}
-				} catch (Throwable ignored) {
+					try {
+						accent = 0xFF000000 | (Integer) hAccent.invoke(helper, a);
+					} catch (Throwable ignored) {
+					}
+					try {
+						desc = String.valueOf(hDesc.invoke(helper, a));
+					} catch (Throwable ignored) {
+					}
 				}
-				try {
-					icon = (Item) iconOf.invoke(null, a);
-				} catch (Throwable ignored) {
+				if (icon == null || desc.isEmpty()) {
+					try {
+						Object r = recipe.invoke(null, a);
+						if (r != null) {
+							if (desc.isEmpty()) {
+								Method d = r.getClass().getDeclaredMethod("description");
+								d.setAccessible(true);
+								desc = String.valueOf(d.invoke(r));
+							}
+							Method ac = r.getClass().getDeclaredMethod("accent");
+							ac.setAccessible(true);
+							accent = 0xFF000000 | (Integer) ac.invoke(r);
+						}
+					} catch (Throwable ignored) {
+					}
+					if (icon == null) {
+						try {
+							icon = (Item) iconOf.invoke(null, a);
+						} catch (Throwable ignored) {
+						}
+					}
+				}
+				if (icon == null || icon == net.minecraft.item.Items.AIR) {
+					icon = net.minecraft.item.Items.SKELETON_SKULL;
 				}
 				out.add(new Entry(a, id, title, desc, accent, icon));
 			}
