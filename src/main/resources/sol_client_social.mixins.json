@@ -28,7 +28,8 @@
     "MobHealthMixin",
     "ScoreboardNickMixin",
     "ScreenVeilMixin",
-    "MusicTagMixin"
+    "MusicTagMixin",
+    "MusicTagFallbackMixin"
   ],
   "injectors": {
     "defaultRequire": 0

@@ -21,6 +21,7 @@ public class MusicShareMod extends Mod {
 	private final Option.Header hSee = header("What I See");
 	private final Option.Bool tags = bool("Music Above Players' Heads", true);
 	private final Option.Bool tagMine = bool("Show My Own Tag (3rd Person)", true);
+	private final Option.Num tagLift = num("Height On Custom Name Tags", 70, 0, 200, 5, " cm");
 	private final Option.Num tagRange = num("Tag Distance", 24, 6, 64, 2, " blocks");
 	private final Option.Key listenKey = key("Listen Along Key", 76); // L
 	private final Option.Action leave = action("Listening Along", "Leave", MusicShare::leave, () -> MusicShare.following == null ? "Not listening along" : "With " + MusicShare.nick(MusicShare.following));
@@ -68,6 +69,11 @@ public class MusicShareMod extends Mod {
 
 	public boolean tagMine() {
 		return tagMine.on();
+	}
+
+	/** Blocks above the usual name tag height, for servers that draw their own tags (the line must not sit on theirs). */
+	public double tagLift() {
+		return tagLift.f() / 100.0;
 	}
 
 	public double tagRange() {
