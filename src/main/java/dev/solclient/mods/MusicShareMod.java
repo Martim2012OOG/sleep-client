@@ -78,10 +78,10 @@ public class MusicShareMod extends Mod {
 
 	@Override
 	public void tick() {
+		MusicShare.tick(mc, this); // also in menus: the listen-along must go on
 		if (mc.player == null || mc.world == null) {
 			return;
 		}
-		MusicShare.tick(mc, this);
 		boolean d = mc.currentScreen == null && Keys.down(listenKey.code());
 		if (d && !keyDown) {
 			String u = MusicShare.aimed(mc);

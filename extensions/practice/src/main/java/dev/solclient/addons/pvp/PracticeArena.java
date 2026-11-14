@@ -13,7 +13,7 @@ public final class PracticeArena {
 
 	/** Half-size / height cleared before every build, so nothing of a previous (bigger) arena is left behind. */
 	private static final int MAX_R = 31;
-	private static final int MAX_H = 50;
+	private static final int MAX_H = 319 - PracticeSession.ARENA_Y; // up to the world's build limit (y 319)
 	/** Rows cleared per /fill: (2*MAX_R+1)^2 * 8 = 31752 blocks, under the 32768 limit of one fill command. */
 	private static final int CLEAR_ROWS = 8;
 
@@ -55,7 +55,7 @@ public final class PracticeArena {
 			fill(s, -MAX_R, y0, -MAX_R, MAX_R, Math.min(y0 + CLEAR_ROWS - 1, y + MAX_H), MAX_R, "minecraft:air");
 		}
 		// invisible shell: four walls + ceiling
-		int w = radius + 1, top = y + height;
+		int w = radius + 1, top = 319; // the roof is the height limit of Minecraft, not a low ceiling
 		fill(s, -w, y, -w, w, top, -w, "minecraft:barrier");
 		fill(s, -w, y, w, w, top, w, "minecraft:barrier");
 		fill(s, -w, y, -w, -w, top, w, "minecraft:barrier");

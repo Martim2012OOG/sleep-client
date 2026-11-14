@@ -442,7 +442,7 @@ public class RankedScreen extends Screen {
 			return;
 		}
 		// podium: 2nd | 1st | 3rd, rising in
-		int ph = 74, pw = 96;
+		int ph = 130, pw = 96;
 		int[] order = {1, 0, 2};
 		int[] heights = {40, 54, 30};
 		int[] cols = {SILVER, GOLD, BRONZE};
@@ -465,16 +465,18 @@ public class RankedScreen extends Screen {
 			if (bh > 14) {
 				Gfx.textC(c, String.valueOf(idx + 1), px + pw / 2, base - bh + 4, col);
 			}
-			// head + name above the block
-			int hs = idx == 0 ? 28 : 22;
-			int hx = px + (pw - hs) / 2, hy = base - bh - hs - 22 + (idx == 0 ? Math.round((float) Math.sin(t / 400.0) * 1.5F) : 0);
+			// the player in 3D standing on the block, name under the feet
+			int bodyH = idx == 0 ? 84 : 72, bodyW = 70;
+			int by = base - bh - 22 - bodyH + (idx == 0 ? Math.round((float) Math.sin(t / 400.0) * 1.5F) : 0);
 			if (idx == 0) {
 				// glow behind the champion
 				float g = 0.5F + 0.5F * (float) Math.sin(t / 300.0);
-				Gfx.rrect(c, hx - 4, hy - 4, hs + 8, hs + 8, 8, Gfx.withAlpha(GOLD & 0xFFFFFF, 0x30 + Math.round(g * 0x30)));
-				c.drawItem(icon("golden_helmet"), hx + hs / 2 - 8, hy - 18);
+				Gfx.rrect(c, px + (pw - 56) / 2, by + 6, 56, bodyH - 6, 10, Gfx.withAlpha(GOLD & 0xFFFFFF, 0x20 + Math.round(g * 0x20)));
 			}
-			Faces.draw(c, r.name(), hx, hy, hs, Math.round(255 * p));
+			if (p < 0.95F || !Faces.body(c, r.name(), px + (pw - bodyW) / 2, by, bodyW, bodyH)) {
+				int hs = idx == 0 ? 28 : 22;
+				Faces.draw(c, r.name(), px + (pw - hs) / 2, base - bh - 22 - hs, hs, Math.round(255 * p));
+			}
 			Gfx.textFit(c, r.name(), px + pw / 2, pw - 4, base - bh - 19, r.name().equalsIgnoreCase(Ranked.me()) ? 0xFF7FD8FF : 0xFFFFFFFF);
 			String val = overall ? r.elo() + " pts" : r.elo() + " ELO";
 			int bw = Gfx.tw(r.tier()) + 8;
@@ -500,7 +502,6 @@ public class RankedScreen extends Screen {
 			int rx = ix + off;
 			Gfx.rrect(c, rx, ry, iw, 20, 6, mine ? 0x3335D0F5 : hov ? 0x22FFFFFF : 0x10FFFFFF);
 			int tc = Ranked.tierColour(r.tier());
-			Gfx.rrect(c, rx, ry + 3, 3, 14, 1, tc);
 			Gfx.text(c, "#" + r.position(), rx + 8, ry + 6, Theme.DIM);
 			Faces.draw(c, r.name(), rx + 36, ry + 2, 16, Math.round(255 * p));
 			Gfx.text(c, r.name(), rx + 58, ry + 6, mine ? 0xFF7FD8FF : 0xFFFFFFFF);

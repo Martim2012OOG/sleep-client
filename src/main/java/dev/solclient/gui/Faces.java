@@ -36,6 +36,34 @@ public final class Faces {
 		initials(c, name, x, y, s, alpha);
 	}
 
+	/**
+	 * The player in 3D (the whole body, standing) inside x..x+w / y..y+h, from the same skin source as the face. False when there is no skin
+	 * yet (the caller draws the face instead). Each name has its own model: the menu draws later in the frame.
+	 */
+	public static boolean body(DrawContext c, String name, int x, int y, int w, int h) {
+		if (name == null || name.isEmpty()) {
+			return false;
+		}
+		try {
+			net.minecraft.util.Identifier skin = null;
+			boolean slim = false;
+			var nh = MinecraftClient.getInstance().getNetworkHandler();
+			var e = nh == null ? null : nh.getPlayerListEntry(name);
+			if (e != null) {
+				skin = e.getSkinTextures().body().texturePath();
+				slim = String.valueOf(e.getSkinTextures().model()).toLowerCase(java.util.Locale.ROOT).contains("slim");
+			} else {
+				RemoteTextures.Tex t = dev.solclient.social.FaceSkins.of(name);
+				if (t != null) {
+					skin = t.id();
+				}
+			}
+			return skin != null && dev.solclient.cosmetic.SkinPreview.drawWearCard(c, "lb:" + name.toLowerCase(java.util.Locale.ROOT), skin, slim, java.util.List.of(), x, y, w, h);
+		} catch (Throwable t) {
+			return false;
+		}
+	}
+
 	/** The fallback: first letter on a grey tile. */
 	public static void initials(DrawContext c, String name, int x, int y, int s, int alpha) {
 		Gfx.rrect(c, x, y, s, s, Math.max(1, s / 5), Gfx.withAlpha(0x3A3D49, alpha));

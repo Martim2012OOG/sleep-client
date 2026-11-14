@@ -74,6 +74,9 @@ public final class PracticeSession {
 		int strafeTime;
 		int heals;
 		int healCd;
+		/** human tricks: drank the buff potions, ticks until the next pearl / golden apple / splash potion */
+		boolean buffed;
+		int pearlCd = 120, gapCd, splashCd = 200;
 		float lastHp = 20F;
 		/** what the bot has in its hand right now */
 		Weapon held;
@@ -334,7 +337,7 @@ public final class PracticeSession {
 		// find + equip newly summoned bots
 		if (--scanTimer <= 0) {
 			scanTimer = 5;
-			Box box = new Box(-33, ARENA_Y - 5, -33, 33, ARENA_Y + 55, 33);
+			Box box = new Box(-33, ARENA_Y - 5, -33, 33, ARENA_Y + 99, 33);
 			for (LivingEntity e : world.getEntitiesByClass(LivingEntity.class, box, x -> x.getCommandTags().contains(TAG))) {
 				if (BOTS.containsKey(e.getUuid()) || !e.isAlive()) {
 					continue;
@@ -421,7 +424,7 @@ public final class PracticeSession {
 				"summon minecraft:husk " + pos + " {Tags:[\"" + TAG + "\"],NoAI:1b,Silent:1b,CustomName:\"" + label + "\",CustomNameVisible:1b}"
 		};
 		var world = s.getOverworld();
-		Box box = new Box(-33, ARENA_Y - 5, -33, 33, ARENA_Y + 55, 33);
+		Box box = new Box(-33, ARENA_Y - 5, -33, 33, ARENA_Y + 99, 33);
 		for (String v : variants) {
 			int before = world.getEntitiesByClass(LivingEntity.class, box, en -> en.getCommandTags().contains(TAG)).size();
 			run(s, v);
@@ -476,6 +479,66 @@ public final class PracticeSession {
 	}
 
 	// ------------------------------------------------------------------ the bot brain
+
+	/**
+	 * What a real player does besides swinging: drinks speed / strength before the fight, eats a golden apple when low, throws an ender
+	 * pearl to close a gap, and splashes a slowness / weakness potion on you in a fight. Harder bots do more of it. Everything is shown
+	 * (sound, particles, a line in the chat) so you can react.
+	 */
+	private static void humanTricks(MinecraftServer server, LivingEntity bot, Bot st, String id, String targetName, ServerPlayerEntity target, double dist,
+			double fx, double fz, float hp, boolean ground) {
+		BotDifficulty d = curDiff;
+		if (d == BotDifficulty.EASY) {
+			return;
+		}
+		if (st.pearlCd > 0) {
+			st.pearlCd--;
+		}
+		if (st.gapCd > 0) {
+			st.gapCd--;
+		}
+		if (st.splashCd > 0) {
+			st.splashCd--;
+		}
+		if (!st.buffed && dist < 18) {
+			st.buffed = true;
+			run(server, "effect give " + id + " minecraft:speed 60 " + (d == BotDifficulty.EXTREME ? 1 : 0) + " true");
+			if (d == BotDifficulty.HARD || d == BotDifficulty.EXTREME) {
+				run(server, "effect give " + id + " minecraft:strength 60 0 true");
+			}
+			run(server, "execute at " + id + " run particle minecraft:witch ~ ~1 ~ 0.3 0.4 0.3 0.02 12");
+			run(server, "execute at " + id + " run playsound minecraft:entity.generic.drink hostile @a ~ ~ ~ 1 1");
+		}
+		// a golden apple when it is hurt
+		if (hp < 9F && st.gapCd <= 0 && d != BotDifficulty.MEDIUM) {
+			st.gapCd = 500;
+			run(server, "effect give " + id + " minecraft:absorption 120 1 true");
+			run(server, "effect give " + id + " minecraft:regeneration 6 1 true");
+			bot.swingHand(Hand.OFF_HAND);
+			run(server, "execute at " + id + " run particle minecraft:heart ~ ~1.6 ~ 0.3 0.3 0.3 0.01 6");
+			run(server, "execute at " + id + " run playsound minecraft:entity.generic.eat hostile @a ~ ~ ~ 1 1");
+		}
+		// an ender pearl to get back to you when you are far away
+		if ((d == BotDifficulty.HARD || d == BotDifficulty.EXTREME) && dist > 14 && ground && st.pearlCd <= 0) {
+			st.pearlCd = 320 + RND.nextInt(120);
+			double tx = target.getX() - fx * 3.5, tz = target.getZ() - fz * 3.5;
+			run(server, "execute at " + id + " run playsound minecraft:entity.ender_pearl.throw hostile @a ~ ~ ~ 1 1");
+			run(server, "execute at " + id + " run particle minecraft:portal ~ ~1 ~ 0.4 0.6 0.4 0.4 30");
+			run(server, "tp " + id + " " + String.format(Locale.ROOT, "%.2f %.2f %.2f", tx, target.getY(), tz));
+			run(server, "execute at " + id + " run particle minecraft:portal ~ ~1 ~ 0.4 0.6 0.4 0.4 30");
+			run(server, "execute at " + id + " run playsound minecraft:entity.player.teleport hostile @a ~ ~ ~ 1 1");
+		}
+		// a splash potion on you (slowness or weakness) from a few blocks
+		if (d == BotDifficulty.EXTREME || d == BotDifficulty.HARD && RND.nextInt(3) == 0) {
+			if (st.splashCd <= 0 && dist > 3 && dist < 8) {
+				st.splashCd = 260 + RND.nextInt(120);
+				String fxn = RND.nextBoolean() ? "slowness" : "weakness";
+				run(server, "effect give " + targetName + " minecraft:" + fxn + " 4 0 true");
+				run(server, "execute at " + targetName + " run particle minecraft:effect ~ ~1 ~ 0.5 0.6 0.5 0.1 30");
+				run(server, "execute at " + targetName + " run playsound minecraft:entity.splash_potion.break hostile @a ~ ~ ~ 1 1");
+			}
+		}
+	}
 	private static void think(MinecraftServer server, LivingEntity bot, Bot st, ServerPlayerEntity target, String targetName) {
 		BotDifficulty d = curDiff;
 		PracticeKit k = curKit;
@@ -641,6 +704,7 @@ public final class PracticeSession {
 		if (!alive) {
 			return;
 		}
+		humanTricks(server, bot, st, id, targetName, target, dist, fx, fz, hp, ground);
 
 		// mace smash: falling, close enough, has fallen far enough
 		if (st.combo > 0 && st.held == Weapon.MACE && fall >= 1.5 && bot.getVelocity().y < -0.05

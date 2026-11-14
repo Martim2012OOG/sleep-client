@@ -51,7 +51,7 @@ public final class MusicShare {
 
 	/** What another player is listening to (as they told us). */
 	public static final class Remote {
-		public String uuid, nick = "", title = "", artist = "", source = "";
+		public String uuid, nick = "", title = "", artist = "", source = "", cover = "";
 		public int vis, lis;
 		public long posMs, durMs, posAt, seen;
 		public boolean playing, hasSong;
@@ -189,7 +189,7 @@ public final class MusicShare {
 				return null;
 			}
 			boolean show = m.showToIdx() != 2;
-			return build(show ? t.title() : null, true, LISTENERS.size());
+			return build(show ? t.title() : null, true, LISTENERS.size(), show && hasCover(MusicHub.artUrl));
 		}
 		Remote r = remote(u);
 		if (r == null && nick != null) {
@@ -199,7 +199,26 @@ public final class MusicShare {
 			return null;
 		}
 		boolean visible = songVisible(r);
-		return build(visible ? r.title : null, canListen(r), r.listeners.size());
+		return build(visible ? r.title : null, canListen(r), r.listeners.size(), visible && hasCover(r.cover));
+	}
+
+	/** The cover picture to show above this player's head (null = none): mine, or the one the other player sent. */
+	public static String coverFor(UUID id, String nick) {
+		String u = key(id);
+		boolean mine = u.equals(me()) || nick != null && nick.equalsIgnoreCase(MinecraftClient.getInstance().getSession().getUsername());
+		if (mine) {
+			MusicShareMod m = MusicShareMod.instance;
+			return m != null && m.showToIdx() != 2 && hasCover(MusicHub.artUrl) ? MusicHub.artUrl : null;
+		}
+		Remote r = remote(u);
+		if (r == null && nick != null) {
+			r = remoteByNick(nick);
+		}
+		return r != null && songVisible(r) && hasCover(r.cover) ? r.cover : null;
+	}
+
+	private static boolean hasCover(String url) {
+		return url != null && url.startsWith("https://") && dev.solclient.social.RemoteTextures.get(url) != null;
 	}
 
 	/** The player sharing music under this nick (when the entity's uuid is not the account's). */
@@ -215,9 +234,10 @@ public final class MusicShare {
 	}
 
 	/** note + song (or a scrambled name) + headphones (when you can listen along) + how many listen. */
-	private static Text build(String title, boolean listenable, int listeners) {
+	private static Text build(String title, boolean listenable, int listeners, boolean cover) {
 		MutableText t = Text.empty();
-		t.append(glyph(NOTE, 0x55FF99)).append(Text.literal(" "));
+		// with a cover the picture takes the place of the note (the room is left here, the picture is drawn by MusicTagMixin)
+		t.append(cover ? Text.literal("    ") : glyph(NOTE, 0x55FF99)).append(Text.literal(" "));
 		if (title == null) {
 			// hidden: the name is scrambled like enchanting-table text
 			t.append(Text.literal("MMMMMMMMMMMM").setStyle(Style.EMPTY.withColor(0xB8BCC8).withObfuscated(true)));
@@ -256,6 +276,8 @@ public final class MusicShare {
 			r.title = o.has("t") ? o.get("t").getAsString() : "";
 			r.artist = o.has("a") ? o.get("a").getAsString() : "";
 			r.source = o.has("s") ? o.get("s").getAsString() : "";
+			String cu = o.has("c") ? o.get("c").getAsString() : "";
+			r.cover = cu.startsWith("https://") && cu.length() <= 200 ? cu : "";
 			r.posMs = o.has("p") ? o.get("p").getAsLong() : 0;
 			r.durMs = o.has("d") ? o.get("d").getAsLong() : 0;
 			r.playing = o.has("pl") && o.get("pl").getAsInt() == 1;
@@ -473,9 +495,7 @@ public final class MusicShare {
 		REMOTE.values().removeIf(r -> now - r.seen > 30_000L);
 		// listeners that went silent
 		LISTENERS.entrySet().removeIf(e -> now - e.getValue() > 12_000L);
-		if (mc.player == null || mc.world == null) {
-			return;
-		}
+		// no world needed: in the title screen, the world list or a loading screen the song is still shared and the listeners keep listening
 		Track t = mine();
 		boolean on = t != null;
 		int vis = m.showToIdx() == 0 ? 2 : m.showToIdx() == 1 ? 1 : 0;
@@ -498,6 +518,10 @@ public final class MusicShare {
 					mu.addProperty("t", clip(t.title(), 60));
 					mu.addProperty("a", clip(t.artist(), 40));
 					mu.addProperty("s", t.source());
+					String cv = MusicHub.artUrl;
+					if (cv != null && cv.startsWith("https://") && cv.length() <= 200) {
+						mu.addProperty("c", cv); // the cover: the others show it above the head
+					}
 				}
 				mu.addProperty("p", Math.max(0, t.positionMs()));
 				mu.addProperty("d", Math.max(0, t.durationMs()));
@@ -513,7 +537,7 @@ public final class MusicShare {
 		synchronized (OUT) {
 			mi = OUT.peek();
 		}
-		if ((mu != null || mi != null) && (Presence.serverRoomOpen() || dev.solclient.social.SyncLink.serverOpen())) {
+		if (mu != null || mi != null) {
 			JsonObject kx = new JsonObject();
 			kx.addProperty("n", mc.getSession().getUsername());
 			if (mu != null) {
@@ -522,8 +546,11 @@ public final class MusicShare {
 			if (mi != null) {
 				kx.add("mi", mi);
 			}
+			// to the players on this server, and ALWAYS to the global lobby too: that one reaches the friend who is listening with you
+			// even when one of you is not in a world (menu, world list) or you are on different servers
 			boolean viaSync = dev.solclient.social.SyncLink.sendServer(kx);
-			if (Presence.sendLink(kx) || viaSync) {
+			boolean viaLobby = dev.solclient.social.SyncLink.sendLobby(kx);
+			if (Presence.sendLink(kx) || viaSync || viaLobby) {
 				if (mu != null) {
 					lastSig = sig;
 					lastSent = now;

@@ -135,8 +135,10 @@ export class Room {
     if (++a.n > RATE_N) { ws.serializeAttachment(a); return; }
     ws.serializeAttachment(a);
     kx.n = a.nick; // the nick in the data is always the real one
-    const text = JSON.stringify(kx);
-    this.last.set(a.uuid, text);
+    // the newest value of every key is what a newcomer gets: a music message must not wipe the badge data and the other way round
+    const merged = Object.assign(JSON.parse(this.last.get(a.uuid) || "{}"), kx);
+    delete merged.pg; delete merged.mi; // pings and listen requests are for the moment: never replayed to who arrives later
+    this.last.set(a.uuid, JSON.stringify(merged));
     if (this.last.size > 600) this.last.delete(this.last.keys().next().value);
     const out = JSON.stringify({ t: "kx", u: a.uuid, kx });
     for (const other of this.ctx.getWebSockets()) {
