@@ -93,6 +93,8 @@ public class MusicShareMod extends Mod {
 			String u = MusicShare.aimed(mc);
 			if (u != null) {
 				MusicShare.request(u);
+			} else {
+				MusicShare.noTarget();
 			}
 		}
 		keyDown = d;

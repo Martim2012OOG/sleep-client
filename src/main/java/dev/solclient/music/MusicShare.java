@@ -460,6 +460,12 @@ public final class MusicShare {
 	}
 
 	/** The nearest player in front of you who shares a song you can listen along with (the key of Music Share), or null. */
+	/** Said in the chat when the listen key is pressed and nobody is aimed at. */
+	public static void noTarget() {
+		say(Lang.tr("Look straight at a player who is sharing music (and lets you listen along), then press the key.",
+				"Olha direto para um jogador que esteja a partilhar música (e deixe ouvir), e carrega na tecla."), true);
+	}
+
 	public static String aimed(MinecraftClient mc) {
 		if (mc.player == null || mc.world == null) {
 			return null;
@@ -472,6 +478,10 @@ public final class MusicShare {
 				continue;
 			}
 			Remote r = remote(key(p.getUuid()));
+			if (r == null) {
+				// offline-mode servers give the entity an uuid made from the name: the player is then found by the nick
+				r = remoteByNick(p.getGameProfile().name());
+			}
 			if (r == null || !canListen(r)) {
 				continue;
 			}
