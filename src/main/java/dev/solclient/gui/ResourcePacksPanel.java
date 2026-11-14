@@ -117,8 +117,8 @@ public class ResourcePacksPanel {
 	private Hit detail;
 
 	// ---- source: Modrinth or the Sleep site (the choice is kept while the game is open)
-	private static boolean lastKubo = true;
-	private boolean kubo = lastKubo;
+	private static boolean lastKubo = false;
+	private boolean kubo = false; // the Sleep source was removed: only Modrinth
 	private final List<KuboPackLogic.Pack> kPacks = new ArrayList<>();
 	private volatile boolean kLoading;
 	private volatile int kGen;
@@ -474,13 +474,14 @@ public class ResourcePacksPanel {
 	private void check(DrawContext c, String id, int x, int y, int w, String label, boolean on, Runnable toggle) {
 		boolean hov = hovered(x, y, w, 14) && mouseY >= oy + M + 34 && mouseY < oy + oh - M - 6;
 		float a = anim("chk" + id, hov);
-		Gfx.rrectBorder(c, x, y + 2, 10, 10, 3, on ? Theme.accent() : Gfx.blend(0xFF0A0B0E, 0xFF1E2128, a), on ? Theme.accent() : Gfx.blend(BORDER, 0xFFFFFFFF, a * 0.5F));
-		if (on) {
-			Gfx.fill(c, x + 3, y + 7, x + 5, y + 9, 0xFFFFFFFF);
-			Gfx.fill(c, x + 5, y + 5, x + 7, y + 7, 0xFFFFFFFF);
-			Gfx.fill(c, x + 7, y + 3, x + 9, y + 5, 0xFFFFFFFF);
+		Gfx.rrectBorder(c, x, y, 14, 14, 4, on ? Theme.accent() : Gfx.blend(0xFF0A0B0E, 0xFF1E2128, a), on ? Theme.accent() : Gfx.blend(BORDER, 0xFFFFFFFF, a * 0.5F));
+		if (on) { // a real tick: two stepped strokes, 2px thick
+			int[][] tick = {{3, 7}, {4, 8}, {5, 9}, {6, 8}, {7, 7}, {8, 6}, {9, 5}, {10, 4}};
+			for (int[] t : tick) {
+				Gfx.fill(c, x + t[0], y + t[1], x + t[0] + 2, y + t[1] + 2, 0xFFFFFFFF);
+			}
 		}
-		Gfx.text(c, label, x + 16, y + 3, on ? 0xFFFFFFFF : Gfx.blend(Theme.DIM, Theme.TEXT, 0.5F + 0.5F * a));
+		Gfx.text(c, label, x + 21, y + 3, on ? 0xFFFFFFFF : Gfx.blend(Theme.DIM, Theme.TEXT, 0.5F + 0.5F * a));
 		int ry0 = Math.max(y, oy + M + 34), ry1 = Math.min(y + 14, oy + oh - M - 6);
 		if (ry1 > ry0) {
 			region(x - 2, ry0, w + 4, ry1 - ry0, toggle);
@@ -705,7 +706,7 @@ public class ResourcePacksPanel {
 
 
 	// ------------------------------------------------------------------ source toggle
-	private static final int TOGGLE_W = 62 * 2 + 4 + 8;
+	private static final int TOGGLE_W = 62 + 8;
 
 	private void setSource(boolean k) {
 		if (kubo == k) {
@@ -720,7 +721,6 @@ public class ResourcePacksPanel {
 
 	private void drawToggle(DrawContext c, int x, int y) {
 		sourceButton(c, "srcmod", x, y, 62, "Modrinth", !kubo, () -> setSource(false));
-		sourceButton(c, "srckubo", x + 66, y, 62, "Sleep", kubo, () -> setSource(true));
 	}
 
 	private void sourceButton(DrawContext c, String id, int x, int y, int w, String label, boolean on, Runnable run) {

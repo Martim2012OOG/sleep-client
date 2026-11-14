@@ -32,6 +32,7 @@ public class ServerFavouritesMod extends Mod {
 	private static final Identifier STAR_FILL = Identifier.of("sol_client", "textures/gui/icon/star_filled.png");
 
 	private final Option.Bool toTop = bool("Favourites On Top", true);
+	private static ButtonWidget currentStar;
 	private final Option.Col starColour = colour("Star Colour", 0xFFFFC83D);
 	private final Option.Text list = text("Favourites", "", 6000, "addresses, separated by commas");
 
@@ -77,10 +78,14 @@ public class ServerFavouritesMod extends Mod {
 					}
 				}).dimensions(bx, by, 20, 20).build();
 				star.active = false;
+				currentStar = star;
 				net.fabricmc.fabric.api.client.screen.v1.Screens.getButtons(screen).add(star);
 				final boolean[] lastFav = {false};
 				final boolean[] first = {true};
 				net.fabricmc.fabric.api.client.screen.v1.ScreenEvents.afterRender(screen).register((sc, ctx, mx, my, delta) -> {
+					if (star != currentStar) {
+						return; // the screen was rebuilt (resize): this is a stale button, drawing it leaves a ghost square
+					}
 					ServerInfo sel = selected(ms);
 					cur[0] = sel;
 					star.active = sel != null;

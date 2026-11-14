@@ -217,6 +217,35 @@ public final class KillFx {
 		}
 	}
 
+	/**
+	 * Draws the effect inside a menu preview (the Locker card). 'ms' is the player-model space of the preview (blocks, y down, 0 = the neck),
+	 * t = seconds since the preview started. Same bones and animation as in the world; the stand-in carries 'skin'.
+	 */
+	public static void previewDraw(String id, float t, MatrixStack ms, net.minecraft.client.render.VertexConsumerProvider p, int light, Identifier skin) {
+		KillFxModel m = KillFxModel.get(id);
+		if (m == null || p == null) {
+			return;
+		}
+		float tt = m.length <= 0F ? 0F : t % (m.length + 0.8F);
+		tt = Math.min(tt, m.length);
+		RenderLayer layer = RenderLayers.entityCutoutNoCull(m.texture);
+		RenderLayer skinLayer = skin == null ? null : RenderLayers.entityTranslucent(skin);
+		ms.push();
+		ms.translate(0F, 1.5F, 0F); // the feet
+		ms.scale(-1F / 16F, -1F / 16F, 1F / 16F); // back to world orientation, in model pixels
+		for (int i = 0; i < m.bones.length; i++) {
+			KillFxModel.Bone b = m.bones[i];
+			if (b.verts.length == 0 || hidden(m, i) || b.skin && skinLayer == null) {
+				continue;
+			}
+			ms.push();
+			apply(m, i, tt, ms, 0);
+			emit(b, ms.peek(), p.getBuffer(b.skin ? skinLayer : layer), light);
+			ms.pop();
+		}
+		ms.pop();
+	}
+
 	private static boolean hidden(KillFxModel m, int i) {
 		for (int d = 0; i >= 0 && d < 16; d++) {
 			if (m.bones[i].preview) {

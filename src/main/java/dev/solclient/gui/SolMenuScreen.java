@@ -3295,9 +3295,9 @@ public class SolMenuScreen extends Screen {
 		if (!cc.isEmpty()) {
 			int fy = cy0 + 52, fw = lw - 20;
 			boolean fOn = dev.solclient.social.ProfileBadges.myFlagOn();
-			toggleRow(c, mx, my, dev.solclient.Lang.tr("Country flag on my name", "Bandeira do pa\u00eds no meu nome"), fOn, left + 10, fy - 3, fw,
+			toggleRow(c, mx, my, dev.solclient.Lang.tr("Flag on my name", "Bandeira no meu nome"), fOn, left + 10, fy - 3, fw,
 					() -> dev.solclient.social.ProfileBadges.setMyFlag(!fOn));
-			Gfx.tex(c, Gfx.id("textures/gui/flag/" + cc + ".png"), left + 10 + fw - 62, fy + 5, 16, 12, 64, 48, fOn ? 0xFFFFFFFF : 0x80FFFFFF);
+			Gfx.tex(c, Gfx.id("textures/gui/flag/" + cc + ".png"), left + 10 + fw - 78, fy + 5, 16, 12, 64, 48, fOn ? 0xFFFFFFFF : 0x80FFFFFF);
 		}
 
 		// ---- right: Badges
@@ -3328,10 +3328,7 @@ public class SolMenuScreen extends Screen {
 				boolean hov = in(mx, my, bx, by, cell, cell);
 				Gfx.rrectBorder(c, bx, by, cell, cell, 9, sel ? SlideBg.colour() : hov ? TILE_HOVER : TILE, isWorn ? accent : sel ? 0xFFB6BAC8 : Theme.CARD_BORDER);
 				Gfx.tex(c, b.texture(), bx + (cell - 26) / 2, by + (cell - 26) / 2, 26, 26, 32, 32, can ? 0xFFFFFFFF : 0x55FFFFFF);
-				if (isWorn) { // a small green check dot in the corner
-					Gfx.circle(c, bx + cell - 7, by + 7, 4.5F, 0xFF2FA866);
-					Gfx.circle(c, bx + cell - 7, by + 7, 2F, 0xFFFFFFFF);
-				} else if (!can) { // a small padlock
+				if (!isWorn && !can) { // a small padlock
 					Gfx.rrect(c, bx + cell - 12, by + cell - 11, 8, 6, 2, 0xFFB6BAC8);
 					Gfx.rrectBorder(c, bx + cell - 11, by + cell - 15, 6, 6, 3, 0, 0xFFB6BAC8);
 				}
@@ -4778,7 +4775,9 @@ public class SolMenuScreen extends Screen {
 		float a = anim("it" + it.id, hov);
 		boolean sel = it.id != null && it.id.equals(lockerSel);
 		Gfx.rrectBorder(c, x, y, w, h, 3, Gfx.blend(TILE, TILE_HOVER, a), sel ? 0xFFB6BAC8 : Gfx.blend(Theme.CARD_BORDER, Theme.CARD_BORDER_HOVER, a));
-		itemImage(c, it, x + 4, y + 4, w - 8, h - 24);
+		if (!liveItemImage(c, it, hov && my >= clipY0 && my < clipY1, x + 4, y + 4, w - 8, h - 24)) {
+			itemImage(c, it, x + 4, y + 4, w - 8, h - 24);
+		}
 		String tag = it.badge != null ? it.badge : it.discountPct > 0 ? "-" + it.discountPct + "%" : null;
 		if ("New".equalsIgnoreCase(tag)) {
 			Gfx.tex(c, Theme.icon2("new_tag"), x + 6, y + 6, 26, 13, 128, 64, accent);
@@ -4826,6 +4825,44 @@ public class SolMenuScreen extends Screen {
 
 	private static final java.util.Map<String, Identifier> THUMBS = new java.util.HashMap<>();
 
+	/** Your own skin in real 3D inside a card (screen box x..x+w, y..y+h in menu units), wearing 'wear'. False when there is no world to draw it. */
+	private boolean livePlayer(DrawContext c, List<dev.solclient.cosmetic.CosmeticModels.Def> wear, int x, int y, int w, int h) {
+		if (MinecraftClient.getInstance().player == null || MinecraftClient.getInstance().world == null) {
+			return false;
+		}
+		float uu = 1F / f;
+		int mid = x + w / 2, half = Math.min(w / 2 - 2, Math.round((h - 8) * 0.38F));
+		c.enableScissor(x, y, x + w, y + h);
+		boolean ok = dev.solclient.cosmetic.PlayerPreview.draw(c, Math.round((mid - half) * uu), Math.round((y + 6) * uu), Math.round((mid + half) * uu),
+				Math.round((y + h - 4) * uu), 0F, wear, previewCape);
+		c.disableScissor();
+		return ok;
+	}
+
+	/**
+	 * Cards that show something live instead of a picture: auras are worn on your own skin, and a kill effect plays (real model, real
+	 * animation) while the mouse is over its card. False = use the normal picture.
+	 */
+	private boolean liveItemImage(DrawContext c, Social.Item it, boolean hov, int px, int py, int pw, int ph) {
+		try {
+			var d = dev.solclient.cosmetic.Variants.resolve(dev.solclient.cosmetic.Cosmetics.modelFor(it));
+			if (d != null && dev.solclient.cosmetic.Auras.is(d)) {
+				Gfx.rrect(c, px, py, pw, ph, 3, 0xFF262935);
+				return livePlayer(c, List.of(d), px, py, pw, ph);
+			}
+			if (hov && Social.isKillEffect(it) && Gfx.mc().player != null) {
+				Identifier skin = Gfx.mc().player.getSkin().body().texturePath();
+				Gfx.rrect(c, px, py, pw, ph, 3, 0xFF262935);
+				c.enableScissor(px, py, px + pw, py + ph);
+				boolean ok = dev.solclient.cosmetic.SkinPreview.drawKillCard(c, Social.killEffectKey(it), skin, px, py, pw, ph);
+				c.disableScissor();
+				return ok;
+			}
+		} catch (RuntimeException ignored) {
+		}
+		return false;
+	}
+
 	/** The generated picture of a bundled cosmetic (textures/cosmetics/thumb/<id>.png), or null. */
 	private static final java.util.Map<String, java.util.Optional<Identifier>> KILL_THUMBS = new java.util.HashMap<>();
 
@@ -4854,49 +4891,67 @@ public class SolMenuScreen extends Screen {
 	 * A cape drawn as a little 3D slab: the outside of the cape (turned a bit and swaying slowly), its thickness on the side and the
 	 * top edge. Atlas capes (2:1, 64x32 layout) use the real cape area; a flat picture is used whole.
 	 */
+	/**
+	 * A cape as a real little box (10 x 16 x 1) seen from above and turning: the top edge, the front, the sides and the inside
+	 * all show as it goes round. Every face is the cape texture moved by a 2D matrix (orthographic projection), so the turn is smooth.
+	 */
 	private void capeCard(DrawContext c, RemoteTextures.Tex t, int px, int py, int pw, int ph) {
 		boolean atlas = Math.abs(t.width() / (float) t.height() - 2F) < 0.05F && t.width() >= 64;
 		float k = atlas ? t.width() / 64F : 1F;
-		float u0 = atlas ? k : 0, v0 = atlas ? k : 0, uw = atlas ? 10 * k : t.width(), vh = atlas ? 16 * k : t.height();
-		float aspect = atlas ? 10F / 16F : Math.max(0.45F, Math.min(1.1F, t.width() / (float) t.height()));
-		int h = Math.round(ph * 0.78F), w = Math.round(h * aspect);
-		// a slow full turn (about 14 s): front, thin edge, the inside of the cape, edge, front...
-		double sec = System.currentTimeMillis() / 1000.0;
-		double yaw = sec * 0.45 + (t.id().hashCode() & 7) * 0.8;
-		float cos = (float) Math.cos(yaw), sin = (float) Math.sin(yaw);
-		boolean front = cos >= 0F;
-		float ac = Math.abs(cos), as = Math.abs(sin);
-		boolean sideRight = front == (sin > 0F);
-		// everything is moved with float transforms (not rounded widths): the turn is smooth at any speed
-		int sideW = Math.max(3, Math.round(w * 0.12F));
-		float faceW = w * ac, edgeW = sideW * as, total = faceW + edgeW;
-		float left = px + pw / 2F - total / 2F;
-		int y0 = py + (ph - h) / 2 + 2;
+		double tilt = Math.toRadians(38);
+		float cosP = (float) Math.cos(tilt), sinP = (float) Math.sin(tilt);
+		double yaw = System.currentTimeMillis() / 1000.0 * 0.8 + (t.id().hashCode() & 7) * 0.8;
+		float cosT = (float) Math.cos(yaw), sinT = (float) Math.sin(yaw);
+		float s = Math.min(ph * 0.84F / (16F * cosP + 10F * sinP * 0.6F), pw * 0.86F / 12F);
+		float cx = px + pw / 2F, cy = py + ph / 2F + 1;
+		Gfx.circle(c, cx, py + ph - 6, Math.max(6F, 7F * s), 0x33000000); // soft shadow
+		// faces: origin (x,y,z), width axis, height axis, size, texture rectangle (atlas) and shade
+		float[][] face = {
+				{-5, 8, 0.5F, 1, 0, 0, 0, -1, 0, 10, 16, 0, 0, 1, 1.00F},   // front: outside of the cape
+				{5, 8, -0.5F, -1, 0, 0, 0, -1, 0, 10, 16, 0, 0, -1, 0.78F},  // back: the inside
+				{5, 8, 0.5F, 0, 0, -1, 0, -1, 0, 1, 16, 1, 0, 0, 0.82F},     // right edge
+				{-5, 8, -0.5F, 0, 0, 1, 0, -1, 0, 1, 16, -1, 0, 0, 0.82F},   // left edge
+				{-5, 8, -0.5F, 1, 0, 0, 0, 0, 1, 10, 1, 0, 1, 0, 0.92F},     // top edge
+		};
 		var m = c.getMatrices();
-		Gfx.circle(c, px + pw / 2F, py + ph - 6, Math.max(6F, total / 2F + 2F), 0x33000000); // soft shadow
-		int g = Math.round(255F * (0.68F + 0.32F * ac));
-		int shade = 0xFF000000 | g << 16 | g << 8 | g;
-		if (ac > 0.02F) {
+		for (int fi = 0; fi < face.length; fi++) {
+			float[] f2 = face[fi];
+			float nx = f2[11], ny = f2[12], nz = f2[13];
+			float nzr = -nx * sinT + nz * cosT;
+			if (ny * sinP + nzr * cosP <= 0.001F) {
+				continue; // turned away
+			}
+			float[] o = proj(f2[0], f2[1], f2[2], cosT, sinT, cosP, sinP), a = proj(f2[0] + f2[3], f2[1] + f2[4], f2[2] + f2[5], cosT, sinT, cosP, sinP),
+					b2 = proj(f2[0] + f2[6], f2[1] + f2[7], f2[2] + f2[8], cosT, sinT, cosP, sinP);
+			int fw = (int) f2[9], fh = (int) f2[10];
+			float shade = f2[14];
+			int g = Math.round(255F * shade);
+			int col = 0xFF000000 | g << 16 | g << 8 | g;
 			m.pushMatrix();
-			m.translate(sideRight ? left : left + edgeW, y0);
-			m.scale(ac, 1F);
-			float fu = atlas && !front ? 12 * k : u0;
-			Gfx.texUv(c, t.id(), 0, 0, w, h, fu, v0, Math.round(uw), Math.round(vh), t.width(), t.height(), front ? shade : (shade & 0xFFE0E0E0));
-			m.popMatrix();
-		}
-		if (as > 0.02F) {
-			m.pushMatrix();
-			m.translate(sideRight ? left + faceW : left, y0);
-			m.scale(as, 1F);
+			m.mul(new org.joml.Matrix3x2f((a[0] - o[0]) * s, (a[1] - o[1]) * s, (b2[0] - o[0]) * s, (b2[1] - o[1]) * s, cx + o[0] * s, cy + o[1] * s));
 			if (atlas) {
-				Gfx.texUv(c, t.id(), 0, 0, sideW, h, (sideRight == front ? 11 : 0) * k, k, Math.max(1, Math.round(k)), Math.round(vh), t.width(), t.height(), 0xFFA8A8A8);
+				int u, v, uw, vh;
+				switch (fi) {
+					case 0 -> { u = Math.round(k); v = Math.round(k); uw = Math.round(10 * k); vh = Math.round(16 * k); }
+					case 1 -> { u = Math.round(12 * k); v = Math.round(k); uw = Math.round(10 * k); vh = Math.round(16 * k); }
+					case 2 -> { u = Math.round(11 * k); v = Math.round(k); uw = Math.max(1, Math.round(k)); vh = Math.round(16 * k); }
+					case 3 -> { u = 0; v = Math.round(k); uw = Math.max(1, Math.round(k)); vh = Math.round(16 * k); }
+					default -> { u = Math.round(k); v = 0; uw = Math.round(10 * k); vh = Math.max(1, Math.round(k)); }
+				}
+				Gfx.texUv(c, t.id(), 0, 0, fw, fh, u, v, uw, vh, t.width(), t.height(), col);
+			} else if (fi == 0) {
+				Gfx.texUv(c, t.id(), 0, 0, fw, fh, 0, 0, t.width(), t.height(), t.width(), t.height(), col);
 			} else {
-				c.fill(0, 0, sideW, h, 0xFF3A3D49);
+				c.fill(0, 0, fw, fh, 0xFF000000 | Math.round(0x3A * shade) << 16 | Math.round(0x3D * shade) << 8 | Math.round(0x49 * shade));
 			}
 			m.popMatrix();
 		}
-		// top edge: a thin lighter strip
-		c.fill(Math.round(left), y0 - 1, Math.round(left + total), y0, 0x40FFFFFF);
+	}
+
+	/** Orthographic projection of a point of the cape box (y up, z toward you): turned by yaw, then seen from above. */
+	private static float[] proj(float x, float y, float z, float cosT, float sinT, float cosP, float sinP) {
+		float xr = x * cosT + z * sinT, zr = -x * sinT + z * cosT;
+		return new float[]{xr, -y * cosP + zr * sinP};
 	}
 
 	private void itemImage(DrawContext c, Social.Item it, int px, int py, int pw, int ph) {
@@ -5241,7 +5296,7 @@ public class SolMenuScreen extends Screen {
 			c.enableScissor(stx, sty, stx + stw, sty + sth);
 			dev.solclient.fx.DeathAnimBridge.drawPreview(c, 1F, Math.round(stx * uu), Math.round(sty * uu), Math.round((stx + stw) * uu), Math.round((sty + sth) * uu));
 			c.disableScissor();
-		} else {
+		} else if (!livePlayer(c, List.of(), stx, sty, stw, sth)) { // your skin standing still, like in the preview panel
 			var m = c.getMatrices();
 			m.pushMatrix();
 			m.translate(stx + stw / 2F - 12, sty + sth / 2F - 12);

@@ -31,6 +31,9 @@ public final class SkinPreview {
 		List<CosmeticModels.Def> wear = List.of();
 		/** The skin this model is drawn with right now and its arm type (the minime copies them). */
 		net.minecraft.util.Identifier skin;
+		/** A kill effect shown on this card model (null = none) and when it started. */
+		String kill;
+		long killStart;
 		final boolean slimArms;
 
 		Model(ModelPart root, boolean slim) {
@@ -164,12 +167,60 @@ public final class SkinPreview {
 		}
 	}
 
+	private static String killCardId;
+	private static long killCardStart;
+
+	/**
+	 * Live preview of a kill effect for the Locker card while the mouse is over it: the real effect (same animation as in the world)
+	 * around your own skin's stand-in, in 3D. Returns false when it can't (the caller keeps the picture).
+	 */
+	public static boolean drawKillCard(DrawContext c, String effectId, net.minecraft.util.Identifier skin, int x, int y, int w, int h) {
+		if (broken || skin == null || effectId == null) {
+			return false;
+		}
+		try {
+			Model m = cardModel("kill:" + effectId, false);
+			m.wear = List.of();
+			m.skin = skin;
+			m.kill = effectId;
+			if (!effectId.equals(killCardId)) {
+				killCardId = effectId;
+				killCardStart = System.currentTimeMillis();
+			}
+			m.killStart = killCardStart;
+			// the effect brings its own stand-in: the mannequin itself is not drawn
+			m.head.visible = false;
+			m.body.visible = false;
+			m.rightArm.visible = false;
+			m.leftArm.visible = false;
+			m.rightLeg.visible = false;
+			m.leftLeg.visible = false;
+			float perBlock = (h - 6) / 3.4F;
+			float cx = x + w / 2F, feetY = y + h - 6;
+			float centerY = feetY - 1.0625F * perBlock;
+			int half = Math.round(perBlock * 1.9F);
+			c.addPlayerSkin(m, skin, perBlock, 0F, 0F, -1.0625F, Math.round(cx - half), Math.round(centerY - half), Math.round(cx + half),
+					Math.round(centerY + half));
+			return true;
+		} catch (Throwable e) {
+			System.err.println("[Sleep] kill effect card preview unavailable: " + e);
+			return false;
+		}
+	}
+
 	/** Called right after Minecraft drew a skin-preview model (PlayerSkinRendererMixin): adds the cosmetics. */
 	public static void afterModel(Object model, MatrixStack matrices, int light) {
 		if (!(model instanceof Model m)) {
 			return;
 		}
 		VertexConsumerProvider p = provider;
+		if (p != null && m.kill != null) {
+			try {
+				dev.solclient.fx.killfx.KillFx.previewDraw(m.kill, (System.currentTimeMillis() - m.killStart) / 1000F, matrices, p, light, m.skin);
+			} catch (Throwable ignored) {
+			}
+			return;
+		}
 		if (p == null || m.wear.isEmpty()) {
 			return;
 		}
