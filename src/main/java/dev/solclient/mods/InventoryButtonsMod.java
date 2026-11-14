@@ -27,7 +27,7 @@ public class InventoryButtonsMod extends Mod {
 	private static InventoryButtonsMod self;
 
 	private final dev.solclient.option.Option.Num clicksPerTick = num("Clicks Per Tick", 6, 1, 20, 1, "");
-	private final dev.solclient.option.Option.Bool includeHotbar = bool("Put All Includes Hotbar", false);
+	private final dev.solclient.option.Option.Bool includeHotbar = bool("Put All Includes Hotbar", true);
 	private final dev.solclient.option.Option.Bool showTips = bool("Button Tooltips", true);
 
 	private record Op(int syncId, int slot, int button, SlotActionType type) {
@@ -213,7 +213,9 @@ public class InventoryButtonsMod extends Mod {
 		for (Slot s : h.slots) {
 			maxBottom = Math.max(maxBottom, s.y + 18);
 		}
-		int x0 = (hs.width - 176) / 2, y0 = (hs.height - (maxBottom + 6)) / 2;
+		// the real top-left corner of the screen: the player inventory is 166 high (it used to be guessed from the slots, which put the button on the off-hand slot)
+		int bgH = h instanceof net.minecraft.screen.PlayerScreenHandler ? 166 : maxBottom + 6;
+		int x0 = (hs.width - 176) / 2, y0 = (hs.height - bgH) / 2;
 		String tip = null;
 		if (supported(h)) {
 			int bx = x0 + 176 - 7 - 3 * 14, by = y0 + 3;

@@ -43,6 +43,8 @@ public final class VideoScreens {
 		Identifier texId;
 		String loadedVid;
 		long nextSync;
+		/** When the screen went out of range (0 = in range). */
+		long farSince;
 		int bw, bh; // browser size, to detect quality changes
 		double dur; // video length in seconds (reported by the page), 0 = unknown
 		// live mode (the browser in the game cannot decode a live): ffmpeg decodes it, see LiveStream
@@ -717,13 +719,26 @@ public final class VideoScreens {
 		List<Screen> eligible = new ArrayList<>();
 		for (Screen s : SCREENS.values()) {
 			double dist = Math.sqrt(mc.player.squaredDistanceTo(s.x, s.y + s.h() / 2, s.z));
-			boolean want = s.vid != null && d.equals(s.dim) && dist < range + 8 && allowed(s);
+			boolean want = s.vid != null && d.equals(s.dim) && dist < range + 24 && allowed(s);
 			if (!want) {
-				if ((s.browser != null || s.ff != null) && (dist > range + 16 || !d.equals(s.dim) || !allowed(s))) {
-					release(s);
+				// walking away must not throw the video away (it used to vanish and reload from zero when you came back):
+				// a screen that is out of range keeps its page for a minute and a half, and it is only dropped at once if it can never play
+				// for you (another dimension, not allowed)
+				boolean never = !d.equals(s.dim) || !allowed(s);
+				if (s.browser != null || s.ff != null) {
+					if (s.farSince == 0L) {
+						s.farSince = now;
+					}
+					if (never || (dist > range + 24 && now - s.farSince > 90_000L)) {
+						release(s);
+					} else if (s.audio == null && s.browser != null && now >= s.nextSync) {
+						s.nextSync = now + 1000;
+						s.browser.js("var v=document.querySelector('video');if(v){v.muted=true;v.volume=0;}"); // silent while you are far
+					}
 				}
 				continue;
 			}
+			s.farSince = 0L;
 			eligible.add(s);
 		}
 		eligible.sort((a, b) -> Double.compare(mc.player.squaredDistanceTo(a.x, a.y, a.z), mc.player.squaredDistanceTo(b.x, b.y, b.z)));

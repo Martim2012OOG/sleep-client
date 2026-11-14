@@ -142,12 +142,8 @@ public class TextureStylesMod extends Mod {
 						return; // a newer click is on its way
 					}
 					status = b == null ? "" : TextureStyles.CHOICES.size() + " styles";
-					if (mc.player != null && menuOpen(mc)) {
-						pendingFile = b == null ? null : b.packFile();
-						pending = true;
-					} else {
-						activateNow(b == null ? null : b.packFile());
-					}
+					// on at once, like Lunar: it used to wait for the menu to close
+					activateNow(b == null ? null : b.packFile());
 				});
 			} catch (Throwable e) {
 				if (gen == GEN.get()) {

@@ -47,8 +47,8 @@ public class Physics3DMod extends Mod {
 	private final Option.Num range = num("Max Distance", 32, 8, 64, 4, " blocks");
 
 	// ---- screens
-	private final Option.Header hGui = header("3D Screens");
-	private final Option.Bool gui = bool("3D Screens", true).tip("Inventory, crafting table, furnace and the other workstations lean towards your cursor like a 3D slab. Never the Sleep menu, the pause menu or chests.");
+	private final Option.Header hGui = header("3D Screens (Beta)");
+	private final Option.Bool gui = bool("3D Screens", true).tip("BETA, it does not always look right. Inventory, crafting table, furnace and the other workstations lean towards your cursor like a 3D slab. Never the Sleep menu, the pause menu or chests.");
 	private final Option.Bool gInv = bool("Inventory", true);
 	private final Option.Bool gCraft = bool("Crafting Table", true);
 	private final Option.Bool gFurnace = bool("Furnaces", true);
@@ -57,7 +57,7 @@ public class Physics3DMod extends Mod {
 	private final Option.Num angle = num("Angle", 14, 6, 30, 1, "°");
 	private final Option.Choice turn = choice("Turned Towards", 0, "Left", "Right");
 	private final Option.Bool floatAnim = bool("Floating Animation", true);
-	private final Option.Bool glow = bool("Glow Frame", true);
+	private final Option.Bool glow = bool("Glow Frame", false);
 	private final Option.Bool clear = bool("Keep The World Clear", true).tip("No dark veil and no blur behind the screen, so the world stays visible around it.");
 	private final Option.Num tilt = num("Tilt", 100, 20, 200, 10, "%");
 	private final Option.Num thickness = num("Thickness", 5, 0, 12, 1, "");

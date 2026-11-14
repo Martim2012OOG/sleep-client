@@ -341,6 +341,20 @@ public class SolMenuScreen extends Screen {
 		return 1F - (float) Math.exp(-frameDt * k);
 	}
 
+	private static final java.util.Map<String, Float> SWITCH_POS = new java.util.HashMap<>();
+
+	/** Position 0..1 of an on / off switch: it glides to its side in about a quarter of a second (always, whatever the hover-animation setting). */
+	private static float swAnim(String key, boolean on) {
+		float t = on ? 1F : 0F;
+		float v = SWITCH_POS.getOrDefault(key, t);
+		v += (t - v) * (1F - (float) Math.exp(-frameDt * 16F));
+		if (Math.abs(t - v) < 0.01F) {
+			v = t;
+		}
+		SWITCH_POS.put(key, v);
+		return v;
+	}
+
 	// ------------------------------------------------------------- render
 	private float anim(String key, boolean target) {
 		if (SolClient.settings != null && !SolClient.settings.buttonAnimations.on()) {
@@ -2023,6 +2037,7 @@ public class SolMenuScreen extends Screen {
 			boolean off = child && !pg.child.enabled;
 			if (selected) {
 				Gfx.rrect(c, ix, py, iw, ih, 6, Gfx.withAlpha(0xFFFFFF, 26)); // bg-muted
+				Gfx.rrect(c, ix, py + 5, 3, ih - 10, 1, acc); // a thin accent bar on the open page
 			} else if (a > 0.01F) {
 				Gfx.rrect(c, ix, py, iw, ih, 6, Gfx.withAlpha(0xFFFFFF, Math.round(13 * a))); // hover:bg-muted/50
 			}
@@ -2033,9 +2048,7 @@ public class SolMenuScreen extends Screen {
 			String info = SECTION_INFO.get(pg.title);
 			if (info != null && hov) {
 				tooltipText = dev.solclient.Lang.t(info);
-			} else if (off && hov) {
-				tooltipText = dev.solclient.Lang.tr("Off", "Desligado");
-			}
+			} // (a mod that is off is already shown dimmed: its tooltip used to cover the description next to the list)
 			final int idx = i;
 			region(ix, py, iw, ih, () -> {
 				PAGE_SEL.put(m.id, idx);
@@ -2290,9 +2303,8 @@ public class SolMenuScreen extends Screen {
 	private int toggleRow(DrawContext c, int mx, int my, String label, boolean on, int x, int y, int rw, Runnable toggle) {
 		boolean hov = in(mx, my, x, y, rw, CHECK_ROW) && my >= clipY0 && my < clipY1;
 		String key = "cb" + (open == null ? "" : open.id) + label;
-		hoverAnim.putIfAbsent(key + "sw", on ? 1F : 0F); // first time on screen: already in the right position (no slide from OFF)
 		float a = anim(key, hov);
-		float sa = anim(key + "sw", on);
+		float sa = swAnim(key + "sw", on);
 		int acc = Theme.accent() | 0xFF000000;
 		Gfx.rrect(c, x, y, rw, CHECK_ROW, 8, hov ? Theme.CARD_HOVER : Theme.ROW); // no outline: just the soft card
 		Gfx.textMid(c, fit(label, rw - 66), x + 14, y, CHECK_ROW, on ? Theme.TEXT : Gfx.blend(Theme.DIM, Theme.TEXT, 0.5F + 0.5F * a));
@@ -2313,8 +2325,7 @@ public class SolMenuScreen extends Screen {
 
 	/** On / off switch with almost square corners: a small block slides inside a flat track (no ON / OFF text). */
 	private void squareSwitch(DrawContext c, String key, int x, int y, boolean on, boolean hov) {
-		hoverAnim.putIfAbsent(key + "sw", on ? 1F : 0F);
-		float a = anim(key + "sw", on);
+		float a = swAnim(key + "sw", on);
 		int w = 30, h = 14;
 		int track = Gfx.blend(Theme.OFF_BG_HOVER | 0xFF000000, Theme.GREEN_BG | 0xFF000000, a);
 		Gfx.rrect(c, x, y, w, h, 3, hov ? Gfx.blend(track, 0xFFFFFFFF, 0.08F) : track);
@@ -2691,16 +2702,18 @@ public class SolMenuScreen extends Screen {
 			int avail = rw - 28 - Gfx.tw(o.name) - 16;
 			if (n <= 6 && segW <= avail) {
 				int bx = rx - segW;
-				Gfx.rrect(c, bx, y + 2, segW, 24, 8, Gfx.blend(Theme.ROW | 0xFF000000, 0xFF000000, 0.4F));
+				// same look as the on / off switch: a dark square track, the chosen value lifted with a thin accent lip under it
+				Gfx.rrect(c, bx, y + 2, segW, 24, 4, 0xFF07080F);
 				int acc = accent | 0xFF000000, cur = Math.floorMod(ch.idx(), n), px = bx + 3;
 				for (int i = 0; i < n; i++) {
 					boolean hov = in(mx, my, px, y + 5, ws[i], 18) && my >= clipY0 && my < clipY1;
 					if (i == cur) {
-						Gfx.rrect(c, px, y + 5, ws[i], 18, 6, Gfx.blend(0xFF1B1E29, acc, 0.5F));
+						Gfx.rrect(c, px, y + 5, ws[i], 18, 3, 0xFF2D3147);
+						c.fill(px + 2, y + 21, px + ws[i] - 2, y + 23, acc);
 					} else if (hov) {
-						Gfx.rrect(c, px, y + 5, ws[i], 18, 6, Gfx.withAlpha(0xFFFFFF, 18));
+						Gfx.rrect(c, px, y + 5, ws[i], 18, 3, 0xFF1A1D2B);
 					}
-					Gfx.textFit(c, ch.names[i], px + ws[i] / 2, ws[i] - 4, y + 10, i == cur ? 0xFFFFFFFF : hov ? Theme.TEXT : Theme.DIM);
+					Gfx.textFit(c, ch.names[i], px + ws[i] / 2, ws[i] - 4, y + 9, i == cur ? 0xFFFFFFFF : hov ? Theme.TEXT : Theme.DIM);
 					final int idx = i;
 					region(px, y + 5, ws[i], 18, () -> ch.set(idx));
 					px += ws[i] + 2;
@@ -4677,11 +4690,12 @@ public class SolMenuScreen extends Screen {
 	private static boolean lockerOnlyOn;
 
 	/** Small on / off switch (cards): green when on. */
-	private static void miniSwitch(DrawContext c, int x, int y, boolean on, boolean hov) {
+	private static void miniSwitch(DrawContext c, String key, int x, int y, boolean on, boolean hov) {
 		int w = 18, h = 10;
-		Gfx.rrect(c, x, y, w, h, 3, on ? (hov ? 0xFF2FA866 : 0xFF248A52) : (hov ? 0xFF3A3D49 : 0xFF2A2D36));
-		int kx = on ? x + w - 8 : x + 2;
-		Gfx.rrect(c, kx, y + 2, 6, 6, 2, on ? 0xFFFFFFFF : 0xFFB6BAC8);
+		float a = swAnim("mini" + key, on);
+		int off = hov ? 0xFF3A3D49 : 0xFF2A2D36, onC = hov ? 0xFF2FA866 : 0xFF248A52;
+		Gfx.rrect(c, x, y, w, h, 3, Gfx.blend(off, onC, a));
+		Gfx.rrectF(c, x + 2 + a * (w - 10), y + 2, 6, 6, 2, Gfx.blend(0xFFB6BAC8, 0xFFFFFFFF, a));
 	}
 
 	private void switchLocker(boolean shop) {
@@ -4736,7 +4750,7 @@ public class SolMenuScreen extends Screen {
 		} else if (canWear) {
 			int sxx = x + w - 24;
 			boolean sh = in(mx, my, sxx - 2, ny - 2, 22, 14) && my >= clipY0 && my < clipY1;
-			miniSwitch(c, sxx, ny, slot >= 0, sh);
+			miniSwitch(c, "e" + e.id(), sxx, ny, slot >= 0, sh);
 			Gfx.textClip(c, e.name(), x + 6, ny + 1, w - 36, Theme.TEXT);
 			region(sxx - 2, ny - 2, 22, 14, () -> equipEmote(e));
 		} else {
@@ -4797,7 +4811,7 @@ public class SolMenuScreen extends Screen {
 		} else if (wearable) {
 			int sxx = x + w - 24;
 			boolean sh = in(mx, my, sxx - 2, ny - 2, 22, 14) && my >= clipY0 && my < clipY1;
-			miniSwitch(c, sxx, ny, it.equipped, sh);
+			miniSwitch(c, "i" + it.id, sxx, ny, it.equipped, sh);
 			Gfx.textClip(c, it.name, x + 6, ny + 1, w - 36, Theme.TEXT);
 			region(sxx - 2, ny - 2, 22, 14, () -> Social.equip(it, !it.equipped));
 		} else {
@@ -4826,15 +4840,14 @@ public class SolMenuScreen extends Screen {
 	private static final java.util.Map<String, Identifier> THUMBS = new java.util.HashMap<>();
 
 	/** Your own skin in real 3D inside a card (screen box x..x+w, y..y+h in menu units), wearing 'wear'. False when there is no world to draw it. */
-	private boolean livePlayer(DrawContext c, List<dev.solclient.cosmetic.CosmeticModels.Def> wear, int x, int y, int w, int h) {
-		if (MinecraftClient.getInstance().player == null || MinecraftClient.getInstance().world == null) {
+	private boolean livePlayer(DrawContext c, String key, List<dev.solclient.cosmetic.CosmeticModels.Def> wear, int x, int y, int w, int h) {
+		var p = MinecraftClient.getInstance().player;
+		if (p == null) {
 			return false;
 		}
-		float uu = 1F / f;
-		int mid = x + w / 2, half = Math.min(w / 2 - 2, Math.round((h - 8) * 0.38F));
+		Identifier skin = p.getSkin().body().texturePath();
 		c.enableScissor(x, y, x + w, y + h);
-		boolean ok = dev.solclient.cosmetic.PlayerPreview.draw(c, Math.round((mid - half) * uu), Math.round((y + 6) * uu), Math.round((mid + half) * uu),
-				Math.round((y + h - 4) * uu), 0F, wear, previewCape);
+		boolean ok = dev.solclient.cosmetic.SkinPreview.drawWearCard(c, key, skin, dev.solclient.skin.SkinChanger.selfSlim(), wear, x, y, w, h);
 		c.disableScissor();
 		return ok;
 	}
@@ -4848,13 +4861,13 @@ public class SolMenuScreen extends Screen {
 			var d = dev.solclient.cosmetic.Variants.resolve(dev.solclient.cosmetic.Cosmetics.modelFor(it));
 			if (d != null && dev.solclient.cosmetic.Auras.is(d)) {
 				Gfx.rrect(c, px, py, pw, ph, 3, 0xFF262935);
-				return livePlayer(c, List.of(d), px, py, pw, ph);
+				return livePlayer(c, "aura:" + d.id(), List.of(d), px, py, pw, ph);
 			}
-			if (hov && Social.isKillEffect(it) && Gfx.mc().player != null) {
+			if (Social.isKillEffect(it) && Gfx.mc().player != null) { // always live: a still frame, playing while the mouse is over it
 				Identifier skin = Gfx.mc().player.getSkin().body().texturePath();
 				Gfx.rrect(c, px, py, pw, ph, 3, 0xFF262935);
 				c.enableScissor(px, py, px + pw, py + ph);
-				boolean ok = dev.solclient.cosmetic.SkinPreview.drawKillCard(c, Social.killEffectKey(it), skin, px, py, pw, ph);
+				boolean ok = dev.solclient.cosmetic.SkinPreview.drawKillCard(c, Social.killEffectKey(it), skin, hov, px, py, pw, ph);
 				c.disableScissor();
 				return ok;
 			}
@@ -4898,20 +4911,20 @@ public class SolMenuScreen extends Screen {
 	private void capeCard(DrawContext c, RemoteTextures.Tex t, int px, int py, int pw, int ph) {
 		boolean atlas = Math.abs(t.width() / (float) t.height() - 2F) < 0.05F && t.width() >= 64;
 		float k = atlas ? t.width() / 64F : 1F;
-		double tilt = Math.toRadians(38);
+		double tilt = Math.toRadians(17); // like Lunar: a little from above
 		float cosP = (float) Math.cos(tilt), sinP = (float) Math.sin(tilt);
-		double yaw = System.currentTimeMillis() / 1000.0 * 0.8 + (t.id().hashCode() & 7) * 0.8;
+		double yaw = System.currentTimeMillis() / 1000.0 * 0.9 + (t.id().hashCode() & 7) * 0.8;
 		float cosT = (float) Math.cos(yaw), sinT = (float) Math.sin(yaw);
-		float s = Math.min(ph * 0.84F / (16F * cosP + 10F * sinP * 0.6F), pw * 0.86F / 12F);
+		float s = Math.min(ph * 0.92F / (16F * cosP + 10F * sinP * 0.6F), pw * 0.92F / 11.5F);
 		float cx = px + pw / 2F, cy = py + ph / 2F + 1;
 		Gfx.circle(c, cx, py + ph - 6, Math.max(6F, 7F * s), 0x33000000); // soft shadow
 		// faces: origin (x,y,z), width axis, height axis, size, texture rectangle (atlas) and shade
 		float[][] face = {
-				{-5, 8, 0.5F, 1, 0, 0, 0, -1, 0, 10, 16, 0, 0, 1, 1.00F},   // front: outside of the cape
-				{5, 8, -0.5F, -1, 0, 0, 0, -1, 0, 10, 16, 0, 0, -1, 0.78F},  // back: the inside
-				{5, 8, 0.5F, 0, 0, -1, 0, -1, 0, 1, 16, 1, 0, 0, 0.82F},     // right edge
-				{-5, 8, -0.5F, 0, 0, 1, 0, -1, 0, 1, 16, -1, 0, 0, 0.82F},   // left edge
-				{-5, 8, -0.5F, 1, 0, 0, 0, 0, 1, 10, 1, 0, 1, 0, 0.92F},     // top edge
+				{-5, 8, 0.75F, 1, 0, 0, 0, -1, 0, 10, 16, 0, 0, 1, 1.00F},    // front: outside of the cape
+				{5, 8, -0.75F, -1, 0, 0, 0, -1, 0, 10, 16, 0, 0, -1, 0.78F},  // back: the inside
+				{5, 8, 0.75F, 0, 0, -0.75F, 0, -1, 0, 2, 16, 1, 0, 0, 0.80F}, // right edge (2 px of 0.75 = 1.5 thick)
+				{-5, 8, -0.75F, 0, 0, 0.75F, 0, -1, 0, 2, 16, -1, 0, 0, 0.80F}, // left edge
+				{-5, 8, -0.75F, 1, 0, 0, 0, 0, 0.75F, 10, 2, 0, 1, 0, 0.94F}, // top edge
 		};
 		var m = c.getMatrices();
 		for (int fi = 0; fi < face.length; fi++) {
@@ -5296,7 +5309,15 @@ public class SolMenuScreen extends Screen {
 			c.enableScissor(stx, sty, stx + stw, sty + sth);
 			dev.solclient.fx.DeathAnimBridge.drawPreview(c, 1F, Math.round(stx * uu), Math.round(sty * uu), Math.round((stx + stw) * uu), Math.round((sty + sth) * uu));
 			c.disableScissor();
-		} else if (!livePlayer(c, List.of(), stx, sty, stw, sth)) { // your skin standing still, like in the preview panel
+		} else if (livePlayer(c, "death:" + e.id, List.of(), stx, sty, stw, sth)) {
+			// your skin standing, and the animation's own little icon in the corner so the cards are told apart
+			var m = c.getMatrices();
+			m.pushMatrix();
+			m.translate(stx + stw - 17, sty + 2);
+			m.scale(0.9F, 0.9F);
+			c.drawItem(new net.minecraft.item.ItemStack(e.icon), 0, 0);
+			m.popMatrix();
+		} else { // your skin standing still, like in the preview panel
 			var m = c.getMatrices();
 			m.pushMatrix();
 			m.translate(stx + stw / 2F - 12, sty + sth / 2F - 12);
@@ -5319,7 +5340,7 @@ public class SolMenuScreen extends Screen {
 		} else {
 			int sxx = x + cw - 24;
 			boolean sh = in(mx, my, sxx - 2, ny - 2, 22, 14) && my >= clipY0 && my < clipY1;
-			miniSwitch(c, sxx, ny, on, sh);
+			miniSwitch(c, "d" + e.id, sxx, ny, on, sh);
 			Gfx.textClip(c, name, x + 6, ny + 1, cw - 36, Theme.TEXT);
 			region(sxx - 2, ny - 2, 22, 14, () -> equipDeath(e));
 		}

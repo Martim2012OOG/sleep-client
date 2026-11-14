@@ -226,7 +226,8 @@ public final class KillFx {
 		if (m == null || p == null) {
 			return;
 		}
-		float tt = m.length <= 0F ? 0F : t % (m.length + 0.8F);
+		// t < 0: a still frame (-t = how far into the effect), for the cards the mouse is not on
+		float tt = t < 0F ? m.length * Math.min(1F, -t) : m.length <= 0F ? 0F : t % (m.length + 0.8F);
 		tt = Math.min(tt, m.length);
 		RenderLayer layer = RenderLayers.entityCutoutNoCull(m.texture);
 		RenderLayer skinLayer = skin == null ? null : RenderLayers.entityTranslucent(skin);

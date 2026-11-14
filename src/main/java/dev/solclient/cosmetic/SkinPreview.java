@@ -34,6 +34,7 @@ public final class SkinPreview {
 		/** A kill effect shown on this card model (null = none) and when it started. */
 		String kill;
 		long killStart;
+		boolean killStill;
 		final boolean slimArms;
 
 		Model(ModelPart root, boolean slim) {
@@ -167,6 +168,46 @@ public final class SkinPreview {
 		}
 	}
 
+	/**
+	 * Your skin standing in a card, wearing 'wear' (an aura, nothing...). Every card has its OWN model: the menu draws later in the frame,
+	 * so cards that shared one model (or the global preview) all showed whatever was set last.
+	 */
+	public static boolean drawWearCard(DrawContext c, String key, net.minecraft.util.Identifier skin, boolean slim, List<CosmeticModels.Def> wear, int x, int y,
+			int w, int h) {
+		if (broken || skin == null) {
+			return false;
+		}
+		try {
+			Model m = cardModel("wear:" + key, slim);
+			m.wear = wear == null ? List.of() : wear;
+			m.skin = skin;
+			m.kill = null;
+			m.head.visible = true;
+			m.body.visible = true;
+			m.rightArm.visible = true;
+			m.leftArm.visible = true;
+			m.rightLeg.visible = true;
+			m.leftLeg.visible = true;
+			m.head.resetTransform();
+			m.body.resetTransform();
+			m.rightArm.resetTransform();
+			m.leftArm.resetTransform();
+			m.rightLeg.resetTransform();
+			m.leftLeg.resetTransform();
+			dev.solclient.emote.EmoteRig.resetBends(m.rightArm, m.leftArm, m.rightLeg, m.leftLeg);
+			float perBlock = (h - 6) / 2.5F;
+			float cx = x + w / 2F, feetY = y + h - 4;
+			float centerY = feetY - 1.0625F * perBlock;
+			int half = Math.round(perBlock * 1.5F);
+			c.addPlayerSkin(m, skin, perBlock, -4F, -20F, -1.0625F, Math.round(cx - half), Math.round(centerY - half), Math.round(cx + half),
+					Math.round(centerY + half));
+			return true;
+		} catch (Throwable e) {
+			System.err.println("[Sleep] card preview unavailable: " + e);
+			return false;
+		}
+	}
+
 	private static String killCardId;
 	private static long killCardStart;
 
@@ -174,7 +215,7 @@ public final class SkinPreview {
 	 * Live preview of a kill effect for the Locker card while the mouse is over it: the real effect (same animation as in the world)
 	 * around your own skin's stand-in, in 3D. Returns false when it can't (the caller keeps the picture).
 	 */
-	public static boolean drawKillCard(DrawContext c, String effectId, net.minecraft.util.Identifier skin, int x, int y, int w, int h) {
+	public static boolean drawKillCard(DrawContext c, String effectId, net.minecraft.util.Identifier skin, boolean play, int x, int y, int w, int h) {
 		if (broken || skin == null || effectId == null) {
 			return false;
 		}
@@ -183,11 +224,16 @@ public final class SkinPreview {
 			m.wear = List.of();
 			m.skin = skin;
 			m.kill = effectId;
-			if (!effectId.equals(killCardId)) {
-				killCardId = effectId;
-				killCardStart = System.currentTimeMillis();
+			m.killStill = !play;
+			if (play) {
+				if (!effectId.equals(killCardId)) {
+					killCardId = effectId;
+					killCardStart = System.currentTimeMillis();
+				}
+				m.killStart = killCardStart;
+			} else if (effectId.equals(killCardId)) {
+				killCardId = null; // the next hover starts from the beginning
 			}
-			m.killStart = killCardStart;
 			// the effect brings its own stand-in: the mannequin itself is not drawn
 			m.head.visible = false;
 			m.body.visible = false;
@@ -216,7 +262,7 @@ public final class SkinPreview {
 		VertexConsumerProvider p = provider;
 		if (p != null && m.kill != null) {
 			try {
-				dev.solclient.fx.killfx.KillFx.previewDraw(m.kill, (System.currentTimeMillis() - m.killStart) / 1000F, matrices, p, light, m.skin);
+				dev.solclient.fx.killfx.KillFx.previewDraw(m.kill, m.killStill ? -0.45F : (System.currentTimeMillis() - m.killStart) / 1000F, matrices, p, light, m.skin);
 			} catch (Throwable ignored) {
 			}
 			return;

@@ -511,7 +511,7 @@ public class ResourcePacksPanel {
 				}
 				startSearch(false);
 			});
-			yy += 14;
+			yy += 19;
 		}
 		yy += 6;
 		Gfx.text(c, Lang.tr("Resolution", "Resolução"), ix, yy, Theme.DIM);
@@ -525,7 +525,7 @@ public class ResourcePacksPanel {
 				}
 				startSearch(false);
 			});
-			yy += 14;
+			yy += 19;
 		}
 		yy += 6;
 		Gfx.text(c, Lang.tr("Minecraft version", "Versão do Minecraft"), ix, yy, Theme.DIM);
@@ -534,7 +534,7 @@ public class ResourcePacksPanel {
 			thisVersionOnly = !thisVersionOnly;
 			startSearch(false);
 		});
-		yy += 14;
+		yy += 19;
 		sideH = yy + sideScroll - y0 + 4;
 		c.disableScissor();
 	}
