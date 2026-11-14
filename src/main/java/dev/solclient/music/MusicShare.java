@@ -161,13 +161,15 @@ public final class MusicShare {
 	}
 
 	/** The line above a player's name (null = nothing to show for this player). */
-	public static Text tagFor(UUID id, double distSq) {
+	public static Text tagFor(UUID id, String nick, double distSq) {
 		MusicShareMod m = MusicShareMod.instance;
 		if (m == null || !m.enabled || !m.tags() || distSq > m.tagRange() * m.tagRange()) {
 			return null;
 		}
 		String u = key(id);
-		if (u.equals(me())) {
+		// servers in offline mode (many of them) give the player an uuid made from the name: it is not the account's. The nick is what matches.
+		boolean mine = u.equals(me()) || nick != null && nick.equalsIgnoreCase(MinecraftClient.getInstance().getSession().getUsername());
+		if (mine) {
 			if (!m.tagMine()) {
 				return null;
 			}
@@ -179,11 +181,26 @@ public final class MusicShare {
 			return build(show ? t.title() : null, true, LISTENERS.size());
 		}
 		Remote r = remote(u);
+		if (r == null && nick != null) {
+			r = remoteByNick(nick);
+		}
 		if (r == null || !r.hasSong) {
 			return null;
 		}
 		boolean visible = songVisible(r);
 		return build(visible ? r.title : null, canListen(r), r.listeners.size());
+	}
+
+	/** The player sharing music under this nick (when the entity's uuid is not the account's). */
+	private static Remote remoteByNick(String nick) {
+		long now = System.currentTimeMillis();
+		for (Remote r : REMOTE.values()) {
+			String n = r.nick != null && !r.nick.isEmpty() ? r.nick : NICKS.get(r.uuid);
+			if (n != null && n.equalsIgnoreCase(nick) && now - r.seen < 15_000L) {
+				return r;
+			}
+		}
+		return null;
 	}
 
 	/** note + song (or a scrambled name) + headphones (when you can listen along) + how many listen. */

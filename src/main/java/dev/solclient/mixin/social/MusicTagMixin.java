@@ -32,7 +32,7 @@ public abstract class MusicTagMixin {
 			if (e == null) {
 				return;
 			}
-			Text tag = MusicShare.tagFor(e.getUuid(), state.squaredDistanceToCamera);
+			Text tag = MusicShare.tagFor(e.getUuid(), e instanceof net.minecraft.entity.player.PlayerEntity pe ? pe.getGameProfile().name() : null, state.squaredDistanceToCamera);
 			if (tag != null) {
 				// seen in game: a positive offset puts the line UNDER the name (it hung in front of the body), so it goes up with a negative one.
 				// With a scoreboard line (the hearts / the sleep score) the name is already a line higher.
