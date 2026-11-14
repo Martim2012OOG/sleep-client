@@ -1,0 +1,3 @@
+Country flags (assets/sol_client/textures/gui/flag/*.png): Twemoji graphics, Copyright 2020 Twitter, Inc and other contributors,
+licensed under CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Source: https://github.com/jdecked/twemoji (15.1.0).
+These are the flags Discord shows as emoji. They were scaled to fit the game's flag size; nothing else was changed.

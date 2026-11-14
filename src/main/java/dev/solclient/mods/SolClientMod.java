@@ -323,6 +323,8 @@ public class SolClientMod extends Mod {
 		onboarded.showIf(() -> false);
 		action("First-time setup (language, performance, theme, HUD)", "Open", () -> mc.execute(() -> mc.setScreen(new dev.solclient.gui.OnboardingScreen(mc.currentScreen))),
 				() -> "");
+		action("Import settings from other clients (Lunar, Badlion, Feather / Dawn)", "Import", () -> mc.execute(() -> mc.setScreen(new dev.solclient.gui.ImportClientsScreen(mc.currentScreen))),
+				() -> "");
 		action("Everything in this card back to normal", "Reset Settings", () -> {
 			if (asking(askAll)) {
 				askAll = 0;

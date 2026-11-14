@@ -70,7 +70,7 @@ public class OnboardingScreen extends UiScreen {
 			float a = anim("obl" + i, hov);
 			Gfx.rrect(c, rx, ry, colW, rh, 4, on ? Theme.ROW : Gfx.blend(Theme.PANEL_UI | 0xFF000000, Theme.ROW, a));
 			CheckBox.draw(c, "obl" + i, rx + 6, ry + 5.5F, 11, on, hov);
-			Gfx.tex(c, Gfx.id("textures/gui/flag/" + Lang.FLAGS[i] + ".png"), rx + 22, ry + 3, 16, 16, 72, 72, 0xFFFFFFFF);
+			Gfx.tex(c, Gfx.id("textures/gui/flag/" + Lang.FLAGS[i] + ".png"), rx + 22, ry + 5, 16, 12, 64, 48, 0xFFFFFFFF);
 			Gfx.textRaw(c, Lang.NAMES[i], rx + 42, ry + 7, on ? Theme.TEXT : Gfx.blend(Theme.DIM, Theme.TEXT, a));
 			final int idx = i;
 			region(rx, ry, colW, rh, () -> {

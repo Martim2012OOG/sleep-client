@@ -1119,7 +1119,7 @@ public class SolMenuScreen extends Screen {
 		int itemH = gridView ? cardH : rowH;
 		int rowGap = gridView ? gap : 4;
 		int rows = (list.size() + cols - 1) / cols;
-		int contentH = Math.max(0, rows * (itemH + rowGap) - rowGap);
+		int contentH = Math.max(0, rows * (itemH + rowGap) - rowGap) + 10;
 		maxScroll = Math.max(0, contentH - (iy1 - iy0));
 		scrollTarget = Math.max(0, Math.min(maxScroll, scrollTarget));
 		scroll = Math.max(0, Math.min(maxScroll, scroll));
@@ -1282,7 +1282,7 @@ public class SolMenuScreen extends Screen {
 		int cols = Math.max(1, (inner + gap) / (minW + gap));
 		int cardW = (inner - (cols - 1) * gap) / cols;
 		int rows = (list.size() + cols - 1) / cols;
-		int contentH = Math.max(0, rows * (cardH + gap) - gap);
+		int contentH = Math.max(0, rows * (cardH + gap) - gap) + 10;
 		maxScroll = Math.max(0, contentH - (iy1 - top));
 		scrollTarget = Math.max(0, Math.min(maxScroll, scrollTarget));
 		scroll = Math.max(0, Math.min(maxScroll, scroll));
@@ -1485,7 +1485,7 @@ public class SolMenuScreen extends Screen {
 		int cols = Math.max(1, (inner + gap) / (minW + gap));
 		int cardW = (inner - (cols - 1) * gap) / cols;
 		int rows = (list.size() + cols - 1) / cols;
-		int contentH = Math.max(0, rows * (cardH + gap) - gap);
+		int contentH = Math.max(0, rows * (cardH + gap) - gap) + 10;
 		maxScroll = Math.max(0, contentH - (bottom - iy0));
 		scrollTarget = Math.max(0, Math.min(maxScroll, scrollTarget));
 		scroll = Math.max(0, Math.min(maxScroll, scroll));
@@ -2521,7 +2521,7 @@ public class SolMenuScreen extends Screen {
 		boolean hov = in(mx, my, bx, by, bw, 20);
 		Gfx.rrectBorder(c, bx, by, bw, 20, 7, hov || langOpen ? Theme.OFF_BG_HOVER : Theme.OFF_BG, langOpen ? Theme.accent() : Theme.CARD_BORDER);
 		int cur = Math.floorMod(ch.idx(), ch.names.length);
-		Gfx.tex(c, Gfx.id("textures/gui/flag/" + LANG_FLAGS[Math.min(cur, LANG_FLAGS.length - 1)] + ".png"), bx + 7, by + 2, 16, 16, 72, 72, 0xFFFFFFFF);
+		Gfx.tex(c, Gfx.id("textures/gui/flag/" + LANG_FLAGS[Math.min(cur, LANG_FLAGS.length - 1)] + ".png"), bx + 7, by + 4, 16, 12, 64, 48, 0xFFFFFFFF);
 		Gfx.textRaw(c, ch.names[cur], bx + 28, by + 6, Theme.TEXT);
 		chevron(c, bx + bw - 12, by + 10, !langOpen, Theme.DIM);
 		region(bx, by, bw, 20, () -> langOpen = !langOpen);
@@ -2537,7 +2537,7 @@ public class SolMenuScreen extends Screen {
 			if (sel || h) {
 				Gfx.rrect(c, bx + 4, ry, bw - 8, rh, 6, sel ? Gfx.blend(Theme.accent(), Theme.FIELD, 0.75F) : Theme.OFF_BG);
 			}
-			Gfx.tex(c, Gfx.id("textures/gui/flag/" + LANG_FLAGS[Math.min(i, LANG_FLAGS.length - 1)] + ".png"), bx + 10, ry + 4, 16, 16, 72, 72, 0xFFFFFFFF);
+			Gfx.tex(c, Gfx.id("textures/gui/flag/" + LANG_FLAGS[Math.min(i, LANG_FLAGS.length - 1)] + ".png"), bx + 10, ry + 6, 16, 12, 64, 48, 0xFFFFFFFF);
 			Gfx.textRaw(c, ch.names[i], bx + 32, ry + 8, sel ? 0xFFFFFFFF : Theme.TEXT);
 			if (sel) {
 				// check mark (a smooth icon: hand-drawn pixels broke apart at some GUI scales)
@@ -3306,38 +3306,44 @@ public class SolMenuScreen extends Screen {
 			return;
 		}
 		Gfx.text(c, "Badges", rx, top + 2, Theme.DIM);
-		int cols = rw >= 560 ? 6 : rw >= 440 ? 5 : rw >= 330 ? 4 : 3, cardW = (rw - (cols - 1) * 6) / cols, cardH = 46;
-		int gy = top + 16;
-		// the locator colour + commands cards below need room: with many badges, make the badge cards and the detail panel smaller
-		int bRows = (all.length + cols - 1) / cols, dh = 92, minLower = 100;
-		int spare = (bottom - gy) - (bRows * (cardH + 6) + 2 + dh + 8 + minLower);
-		if (spare < 0) {
-			int cut = Math.min(cardH - 28, (-spare + bRows - 1) / bRows); // down to one line per badge
-			cardH -= cut;
-			spare += cut * bRows;
+		// compact tiles (icon only, the name shows when you point at it): yours first, then the locked ones
+		int cell = 40, gp = 6;
+		int cols = Math.max(3, (rw + gp) / (cell + gp));
+		java.util.List<dev.solclient.social.ProfileBadges.Badge> mine = new java.util.ArrayList<>(), locked = new java.util.ArrayList<>();
+		for (var bb : all) {
+			(dev.solclient.social.ProfileBadges.allowed(bb) ? mine : locked).add(bb);
 		}
-		if (spare < 0) {
-			int cut = Math.min(dh - 74, -spare);
-			dh -= cut;
-		}
-		for (int i = 0; i < all.length; i++) {
-			var b = all[i];
-			int bx = rx + (i % cols) * (cardW + 6), by = gy + (i / cols) * (cardH + 6);
-			boolean can = dev.solclient.social.ProfileBadges.allowed(b), isWorn = b == worn, sel = b == badgeSel;
-			boolean hov = in(mx, my, bx, by, cardW, cardH);
-			Gfx.rrectBorder(c, bx, by, cardW, cardH, 8, sel ? SlideBg.colour() : hov ? TILE_HOVER : TILE, sel ? accent : Theme.CARD_BORDER);
-			Gfx.tex(c, b.texture(), bx + 7, by + (cardH - 24) / 2, 24, 24, 32, 32, can ? 0xFFFFFFFF : 0x55FFFFFF);
-			boolean twoLines = cardH >= 38;
-			Gfx.textClip(c, dev.solclient.Lang.tr(b.en, b.pt), bx + 36, twoLines ? by + cardH / 2 - 11 : by + (cardH - 8) / 2, cardW - 40,
-					isWorn ? accent : can ? Theme.TEXT : Theme.DIM);
-			if (twoLines) {
-				String state = isWorn ? dev.solclient.Lang.tr("Equipped", "Equipada") : can ? dev.solclient.Lang.tr("Available", "Disponível") : dev.solclient.Lang.tr("Locked", "Bloqueada");
-				Gfx.textClip(c, state, bx + 36, by + cardH / 2 + 2, cardW - 40, isWorn ? accent : Theme.DIM);
+		int gy = top + 18, yy = gy, dh = 92;
+		for (int part = 0; part < 2; part++) {
+			var list = part == 0 ? mine : locked;
+			if (list.isEmpty()) {
+				continue;
 			}
-			region(bx, by, cardW, cardH, () -> badgeSel = b);
+			Gfx.textRaw(c, (part == 0 ? dev.solclient.Lang.t("Yours") : dev.solclient.Lang.t("Locked")).toUpperCase(Locale.ROOT) + "  " + list.size(), rx, yy, 0xFF6B7080);
+			yy += 12;
+			for (int i = 0; i < list.size(); i++) {
+				var b = list.get(i);
+				int bx = rx + (i % cols) * (cell + gp), by = yy + (i / cols) * (cell + gp);
+				boolean can = part == 0, isWorn = b == worn, sel = b == badgeSel;
+				boolean hov = in(mx, my, bx, by, cell, cell);
+				Gfx.rrectBorder(c, bx, by, cell, cell, 9, sel ? SlideBg.colour() : hov ? TILE_HOVER : TILE, isWorn ? accent : sel ? 0xFFB6BAC8 : Theme.CARD_BORDER);
+				Gfx.tex(c, b.texture(), bx + (cell - 26) / 2, by + (cell - 26) / 2, 26, 26, 32, 32, can ? 0xFFFFFFFF : 0x55FFFFFF);
+				if (isWorn) { // a small green check dot in the corner
+					Gfx.circle(c, bx + cell - 7, by + 7, 4.5F, 0xFF2FA866);
+					Gfx.circle(c, bx + cell - 7, by + 7, 2F, 0xFFFFFFFF);
+				} else if (!can) { // a small padlock
+					Gfx.rrect(c, bx + cell - 12, by + cell - 11, 8, 6, 2, 0xFFB6BAC8);
+					Gfx.rrectBorder(c, bx + cell - 11, by + cell - 15, 6, 6, 3, 0, 0xFFB6BAC8);
+				}
+				if (hov) {
+					tooltipText = dev.solclient.Lang.tr(b.en, b.pt);
+				}
+				region(bx, by, cell, cell, () -> badgeSel = b);
+			}
+			yy += ((list.size() + cols - 1) / cols) * (cell + gp) + 2;
 		}
-		int rows = (all.length + cols - 1) / cols;
-		int dy = gy + rows * (cardH + 6) + 2;
+		int dy = yy + 2;
+		int cardH = cell;
 
 		// detail panel of the selected badge
 		Gfx.rrectBorder(c, rx, dy, rw, dh, 8, SUB, Theme.CARD_BORDER);
@@ -4052,7 +4058,7 @@ public class SolMenuScreen extends Screen {
 		int cardH = cardW + 6;
 		count = emotes ? emoteList.size() : nItems + deaths.size();
 		int rows = (count + cols - 1) / cols;
-		int contentH = Math.max(0, rows * (cardH + gap) - gap);
+		int contentH = Math.max(0, rows * (cardH + gap) - gap) + 10;
 		maxScroll = Math.max(0, contentH - (iy1 - gy0));
 		scrollTarget = Math.max(0, Math.min(maxScroll, scrollTarget));
 		scroll = Math.max(0, Math.min(maxScroll, scroll));
@@ -4135,7 +4141,7 @@ public class SolMenuScreen extends Screen {
 		int cardW = (inner - (cols - 1) * gap) / cols;
 		int cardH = Math.round(cardW * 1.3F) + 14;
 		int rows = (list.size() + cols - 1) / cols;
-		int contentH = Math.max(0, rows * (cardH + gap) - gap);
+		int contentH = Math.max(0, rows * (cardH + gap) - gap) + 10;
 		maxScroll = Math.max(0, contentH - (iy1 - gy0));
 		scrollTarget = Math.max(0, Math.min(maxScroll, scrollTarget));
 		scroll = Math.max(0, Math.min(maxScroll, scroll));
@@ -4860,39 +4866,43 @@ public class SolMenuScreen extends Screen {
 		float cos = (float) Math.cos(yaw), sin = (float) Math.sin(yaw);
 		boolean front = cos >= 0F;
 		float ac = Math.abs(cos), as = Math.abs(sin);
-		int ww = Math.max(2, Math.round(w * ac)), thick = Math.max(2, Math.round(Math.max(3, w * 0.10F) * as * 2F));
 		boolean sideRight = front == (sin > 0F);
-		float tilt = -0.05F;
-		int total = ww + thick;
-		int x0 = px + (pw - total) / 2, y0 = py + (ph - h) / 2 + 2;
+		// everything is moved with float transforms (not rounded widths): the turn is smooth at any speed
+		int sideW = Math.max(3, Math.round(w * 0.12F));
+		float faceW = w * ac, edgeW = sideW * as, total = faceW + edgeW;
+		float left = px + pw / 2F - total / 2F;
+		int y0 = py + (ph - h) / 2 + 2;
 		var m = c.getMatrices();
-		Gfx.circle(c, px + pw / 2F, py + ph - 6, Math.max(6, total / 2F), 0x33000000); // soft shadow
-		int faceX = sideRight ? x0 : x0 + thick, sideX = sideRight ? x0 + ww : x0;
-		// the big face: the outside of the cape in front, the inside (a bit darker) when it has turned round
-		m.pushMatrix();
-		m.translate(faceX, y0 - tilt * ww * 0.5F);
-		m.mul(new org.joml.Matrix3x2f(1F, tilt, 0F, 1F, 0F, 0F));
-		float fu = atlas && !front ? 12 * k : u0;
-		Gfx.texUv(c, t.id(), 0, 0, ww, h, fu, v0, Math.round(uw), Math.round(vh), t.width(), t.height(), front ? 0xFFFFFFFF : 0xFFB4B4B4);
-		m.popMatrix();
-		// the thickness on the side that shows (darker)
-		m.pushMatrix();
-		m.translate(sideX, y0 - tilt * ww * 0.5F + (sideRight ? tilt * ww : 0F));
-		m.mul(new org.joml.Matrix3x2f(1F, tilt * 0.4F, 0F, 1F, 0F, 0F));
-		if (atlas) {
-			Gfx.texUv(c, t.id(), 0, 0, thick, h, (sideRight == front ? 11 : 0) * k, k, Math.max(1, Math.round(k)), Math.round(vh), t.width(), t.height(), 0xFFA8A8A8);
-		} else {
-			c.fill(0, 0, thick, h, 0xFF2A2C35);
+		Gfx.circle(c, px + pw / 2F, py + ph - 6, Math.max(6F, total / 2F + 2F), 0x33000000); // soft shadow
+		int g = Math.round(255F * (0.68F + 0.32F * ac));
+		int shade = 0xFF000000 | g << 16 | g << 8 | g;
+		if (ac > 0.02F) {
+			m.pushMatrix();
+			m.translate(sideRight ? left : left + edgeW, y0);
+			m.scale(ac, 1F);
+			float fu = atlas && !front ? 12 * k : u0;
+			Gfx.texUv(c, t.id(), 0, 0, w, h, fu, v0, Math.round(uw), Math.round(vh), t.width(), t.height(), front ? shade : (shade & 0xFFE0E0E0));
+			m.popMatrix();
 		}
-		m.popMatrix();
+		if (as > 0.02F) {
+			m.pushMatrix();
+			m.translate(sideRight ? left + faceW : left, y0);
+			m.scale(as, 1F);
+			if (atlas) {
+				Gfx.texUv(c, t.id(), 0, 0, sideW, h, (sideRight == front ? 11 : 0) * k, k, Math.max(1, Math.round(k)), Math.round(vh), t.width(), t.height(), 0xFFA8A8A8);
+			} else {
+				c.fill(0, 0, sideW, h, 0xFF3A3D49);
+			}
+			m.popMatrix();
+		}
 		// top edge: a thin lighter strip
-		c.fill(x0, y0 - 1, x0 + total, y0, 0x40FFFFFF);
+		c.fill(Math.round(left), y0 - 1, Math.round(left + total), y0, 0x40FFFFFF);
 	}
 
 	private void itemImage(DrawContext c, Social.Item it, int px, int py, int pw, int ph) {
 		int c1 = it.colors.isEmpty() ? 0xFF2C2F38 : parseColour(it.colors.get(0), 0xFF2C2F38);
 		int c2 = it.colors.size() > 1 ? parseColour(it.colors.get(1), c1) : Gfx.blend(c1, 0xFF000000, 0.35F);
-		Gfx.rrect(c, px, py, pw, ph, 3, Gfx.blend(0xFF1B1D24, Gfx.blend(c1, c2, 0.5F), 0.18F)); // dark, a hint of the item's colour
+		Gfx.rrect(c, px, py, pw, ph, 3, Gfx.blend(0xFF30333F, Gfx.blend(c1, c2, 0.5F), 0.22F)); // a mid grey-blue (not black), with a hint of the item's colour
 		RemoteTextures.Tex t = RemoteTextures.get(it.imageUrl);
 		if (Social.isKillEffect(it) && killThumb(it) != null) {
 			// the kill effect's own picture, bundled in the client (always there, even before the site sends one)
@@ -5560,7 +5570,7 @@ public class SolMenuScreen extends Screen {
 		int cardW = (inner - (cols - 1) * gap) / cols;
 		int cardH = cardW + 16;
 		int rows = (capes.size() + cols - 1) / cols;
-		int contentH = Math.max(0, rows * (cardH + gap) - gap);
+		int contentH = Math.max(0, rows * (cardH + gap) - gap) + 10;
 		maxScroll = Math.max(0, contentH - (iy1 - iy0));
 		scrollTarget = Math.max(0, Math.min(maxScroll, scrollTarget));
 		scroll = Math.max(0, Math.min(maxScroll, scroll));
@@ -6577,7 +6587,7 @@ public class SolMenuScreen extends Screen {
 		Gfx.text(c, fit(dev.solclient.Lang.tr("For every chat. Only the messages you send after choosing.", "Para todas as conversas. Só as mensagens que enviares depois."), iw - 4),
 				ix + 2, y0 + 11, Theme.DIM);
 		String mine = dev.solclient.chat.Bubbles.mine();
-		int cols = 3, gap = 6, cw = (iw - gap * (cols - 1)) / cols, ch = 50;
+		int cols = 3, gap = 6, cw = (iw - gap * (cols - 1)) / cols, ch = 76;
 		int top = y0 + 30;
 		var all = dev.solclient.chat.Bubbles.ALL;
 		for (int i = 0; i < all.size(); i++) {
@@ -6598,11 +6608,11 @@ public class SolMenuScreen extends Screen {
 				Gfx.rrectBorder(c, cx0, cy0, cw, ch, 6, 0, accent);
 			}
 			// preview bubble
-			int[] ex = dev.solclient.chat.Bubbles.extents(st, 15);
-			int pbh = 15, pbx = cx0 + 6 + ex[0], pbw = cw - 12 - ex[0] - ex[2], pby = cy0 + 4 + Math.max(4, ex[1]);
+			int[] ex = dev.solclient.chat.Bubbles.extents(st, 26);
+			int pbh = 26, pbx = cx0 + 6 + ex[0], pbw = cw - 12 - ex[0] - ex[2], pby = cy0 + 4 + Math.max(4, ex[1]);
 			dev.solclient.chat.Bubbles.draw(c, st, pbx, pby, pbw, pbh, accent, false);
 			boolean styled = !st.plain();
-			Gfx.text(c, fit("Hey!", pbw - 8), pbx + 5, pby + 3, styled ? st.text() : 0xFFFFFFFF);
+			Gfx.text(c, fit("Hey!", pbw - 8), pbx + 6, pby + 9, styled ? st.text() : 0xFFFFFFFF);
 			Gfx.textFit(c, st.name(), cx0 + cw / 2, cw - 6, cy0 + ch - 11, sel ? 0xFFFFFFFF : Theme.DIM);
 			if (settled) {
 				final String id = st.id();

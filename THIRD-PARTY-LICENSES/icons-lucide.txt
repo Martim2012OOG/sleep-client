@@ -4,3 +4,4 @@ Permission to use, copy, modify, and/or distribute this software for any purpose
 Source: https://lucide.dev (lucide-static 0.456.0). Used in assets/sol_client/textures/font/music_icons.png (Music Share tags).
 Also: layers (icon of 3D Skin Layers) -> assets/sol_client/textures/gui/icon/skin_layers_3d.png
 Also: music-2 and headphones as icons of Music Share / Music Listeners (assets/sol_client/textures/gui/icon/music_share.png, music_listeners.png)
+Also: moon, swords, feather as neutral icons of the importer (assets/sol_client/textures/gui/icon/import_*.png)

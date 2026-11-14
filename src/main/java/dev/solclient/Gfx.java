@@ -383,7 +383,7 @@ public final class Gfx {
 		int px = Math.round(x * s), py = Math.round(y * s);
 		int pw = Math.max(2, Math.round(w * s)), ph = Math.max(2, Math.round(h * s));
 		int pr = Math.round(corner(r) * s);
-		int t = Math.max(1, Math.round(s * 0.5F));
+		int t = Math.max(2, Math.round(s * 1.0F)); // a real stroke (1 gui unit), not a hairline
 		fill = fade(fill);
 		border = fade(border);
 		c.getMatrices().pushMatrix();
