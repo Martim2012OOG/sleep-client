@@ -593,6 +593,67 @@ public final class SpotifyClient {
 		});
 	}
 
+	/**
+	 * Listen along: finds this song on Spotify (by title and artist) and plays it on your Spotify device from this position. Blocking:
+	 * call from a worker thread. False (with the reason in {@link #status}) when it could not.
+	 */
+	public static boolean playMatch(String title, String artist, long positionMs) {
+		if (!connected) {
+			status = "Connect Spotify first";
+			return false;
+		}
+		String uri = null;
+		for (String q : new String[] {"track:" + title + " artist:" + artist, title + " " + artist}) {
+			String[] out = new String[1];
+			int c = call("GET", "/search?q=" + java.net.URLEncoder.encode(q, StandardCharsets.UTF_8) + "&type=track&limit=1", null, out);
+			if (c == 200 && out[0] != null) {
+				try {
+					JsonArray items = JsonParser.parseString(out[0]).getAsJsonObject().getAsJsonObject("tracks").getAsJsonArray("items");
+					if (items.size() > 0) {
+						uri = items.get(0).getAsJsonObject().get("uri").getAsString();
+						break;
+					}
+				} catch (RuntimeException ignored) {
+				}
+			}
+		}
+		if (uri == null) {
+			status = "Could not find this song on Spotify";
+			return false;
+		}
+		JsonObject b = new JsonObject();
+		JsonArray uris = new JsonArray();
+		uris.add(uri);
+		b.add("uris", uris);
+		b.addProperty("position_ms", Math.max(0, positionMs));
+		int c = call("PUT", "/me/player/play", b.toString(), null);
+		if (c == 403) {
+			status = "Spotify Premium is needed to listen along";
+			return false;
+		}
+		if (c == 404) {
+			status = "Open Spotify on a device first";
+			return false;
+		}
+		try {
+			Thread.sleep(400);
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+		}
+		poll();
+		return c == 204 || c == 200;
+	}
+
+	/** Jumps to a position of the current song (listen along keeps in step with the host). */
+	public static void seek(long positionMs) {
+		command("PUT", "/me/player/seek?position_ms=" + Math.max(0, positionMs), null);
+	}
+
+	/** Plays or pauses (not a toggle: listen along sets what the host is doing). */
+	public static void setPlaying(boolean play) {
+		command("PUT", play ? "/me/player/play" : "/me/player/pause", null);
+	}
+
 	/** Starts the next one of your playlists (the first press loads the list). */
 	public static void nextPlaylist() {
 		if (!connected) {

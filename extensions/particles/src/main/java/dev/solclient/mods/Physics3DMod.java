@@ -53,6 +53,12 @@ public class Physics3DMod extends Mod {
 	private final Option.Bool gCraft = bool("Crafting Table", true);
 	private final Option.Bool gFurnace = bool("Furnaces", true);
 	private final Option.Bool gOther = bool("Anvil, Enchanting, Brewing, Smithing...", true).tip("Anvil, enchanting table, brewing stand, smithing table, stonecutter, loom, grindstone and cartography table.");
+	private final Option.Choice style = choice("Style", 0, "Floating Screen", "Lean To Cursor");
+	private final Option.Num angle = num("Angle", 14, 6, 30, 1, "°");
+	private final Option.Choice turn = choice("Turned Towards", 0, "Left", "Right");
+	private final Option.Bool floatAnim = bool("Floating Animation", true);
+	private final Option.Bool glow = bool("Glow Frame", true);
+	private final Option.Bool clear = bool("Keep The World Clear", true).tip("No dark veil and no blur behind the screen, so the world stays visible around it.");
 	private final Option.Num tilt = num("Tilt", 100, 20, 200, 10, "%");
 	private final Option.Num thickness = num("Thickness", 5, 0, 12, 1, "");
 	private final Option.Bool shadow = bool("Shadow", true);
@@ -64,6 +70,8 @@ public class Physics3DMod extends Mod {
 	private long openedAt;
 	private float sx, sy; // smoothed cursor offset, -1..1
 	private long lastFrame;
+	private boolean floating;
+	private int fx0, fy0, fw, fh, farDir;
 
 	public Physics3DMod() {
 		super("3D Physics", "physics_3d", "Broken blocks fall apart into real 3D cubes, and the inventory, crafting table and furnaces become 3D slabs. No lag.", Category.VISUAL);
@@ -81,7 +89,13 @@ public class Physics3DMod extends Mod {
 		gCraft.showIf(gui::on);
 		gFurnace.showIf(gui::on);
 		gOther.showIf(gui::on);
-		tilt.showIf(gui::on);
+		style.showIf(gui::on);
+		angle.showIf(() -> gui.on() && style.idx() == 0);
+		turn.showIf(() -> gui.on() && style.idx() == 0);
+		floatAnim.showIf(() -> gui.on() && style.idx() == 0);
+		glow.showIf(() -> gui.on() && style.idx() == 0);
+		clear.showIf(() -> gui.on() && style.idx() == 0);
+		tilt.showIf(() -> gui.on() && style.idx() == 1);
 		thickness.showIf(gui::on);
 		shadow.showIf(gui::on);
 		pop.showIf(gui::on);
@@ -152,8 +166,8 @@ public class Physics3DMod extends Mod {
 	// ---------------------------------------------------------------- 3D screens
 	/** Only these. Never SolMenuScreen, the pause menu, chests, shulker boxes, hoppers... */
 	public boolean allowed(Screen s) {
-		if (!enabled || !gui.on() || s == null || dev.solclient.mods.HologramScreensMod.on()) {
-			return false; // (the experimental 3D GUI replaces this tilt)
+		if (!enabled || !gui.on() || s == null) {
+			return false;
 		}
 		if (s instanceof InventoryScreen) {
 			return gInv.on();
@@ -200,6 +214,12 @@ public class Physics3DMod extends Mod {
 		float k = Math.min(1F, dt * 10F);
 		sx += (tx - sx) * k;
 		sy += (ty - sy) * k;
+		if (style.idx() == 0) {
+			floating = true;
+			return beginFloating(c, s, mx, my, px, py, pw, ph, now);
+		}
+		floating = false;
+		dev.solclient.fx.ScreenClear.screen = null;
 		float deg = 7F * tilt.f() / 100F;
 		float ay = sx * (float) Math.toRadians(deg), ax = -sy * (float) Math.toRadians(deg);
 		float a = (float) Math.cos(ay), d = (float) Math.cos(ax);
@@ -237,7 +257,72 @@ public class Physics3DMod extends Mod {
 		return true;
 	}
 
+	/**
+	 * "Floating Screen": the panel hangs turned in front of you (fixed pose, a little parallax from the cursor), with a thick edge, a
+	 * shadow, a glowing frame and a dark gradient on the far side so it reads as depth. The world stays clear behind it.
+	 */
+	private boolean beginFloating(DrawContext c, Screen s, int mx, int my, int px, int py, int pw, int ph, long now) {
+		dev.solclient.fx.ScreenClear.screen = clear.on() ? s : null;
+		float p = ease((now - openedAt) / 340F);
+		float t = now / 1000F;
+		int sign = turn.idx() == 0 ? 1 : -1;
+		float yawDeg = sign * angle.f() * p + sx * 3F + (floatAnim.on() ? (float) Math.sin(t * 0.9F) * 1.3F : 0F);
+		float pitchDeg = -3.5F * p + sy * 2F + (floatAnim.on() ? (float) Math.sin(t * 1.3F + 1F) * 0.8F : 0F);
+		float ay = (float) Math.toRadians(yawDeg), ax = (float) Math.toRadians(pitchDeg);
+		float a = (float) Math.cos(ay), d = (float) Math.cos(ax);
+		float b = (float) Math.sin(ay) * 0.55F, cc = (float) Math.sin(ax) * 0.30F;
+		float grow = 0.9F + 0.1F * p;
+		fx0 = px;
+		fy0 = py;
+		fw = pw;
+		fh = ph;
+		farDir = sign; // +1: the right side is the far one
+		var ms = c.getMatrices();
+		ms.pushMatrix();
+		// pivoted on the cursor (like the old tilt): what is under the cursor is exactly what you click
+		ms.translate(mx, my);
+		ms.mul(new Matrix3x2f(a * grow, b * grow, cc * grow, d * grow, 0F, 0F));
+		ms.translate(-mx, -my);
+		float ox = -sign * 1.4F, oy = 0.3F;
+		if (shadow.on()) {
+			for (int i = 0; i < 5; i++) {
+				int al = Math.round((26 - i * 4) * p);
+				int g = 2 + i * 2;
+				c.fill(px - g + Math.round(ox * 4F), py - g + 6, px + pw + g + Math.round(ox * 4F), py + ph + g + 6, al << 24);
+			}
+		}
+		if (glow.on()) {
+			int ga = Math.round(80 * p);
+			for (int i = 0; i < 5; i++) {
+				int al = Math.max(0, ga - i * 14), o = 2 + i * 2;
+				c.fill(px - o, py - o, px + pw + o, py - o + 2, al << 24 | 0x6FD8FF);
+				c.fill(px - o, py + ph + o - 2, px + pw + o, py + ph + o, al << 24 | 0x6FD8FF);
+				c.fill(px - o, py - o, px - o + 2, py + ph + o, al << 24 | 0x6FD8FF);
+				c.fill(px + pw + o - 2, py - o, px + pw + o, py + ph + o, al << 24 | 0x6FD8FF);
+			}
+		}
+		int layers = thickness.i();
+		for (int i = layers; i >= 1; i--) {
+			float f = i / (float) Math.max(1, layers);
+			int shade = 0x24 + Math.round((1F - f) * 0x30);
+			int col = 0xFF000000 | shade << 16 | shade << 8 | shade + 6;
+			c.fill(px + Math.round(ox * i), py + Math.round(oy * i), px + pw + Math.round(ox * i), py + ph + Math.round(oy * i), col);
+		}
+		return true;
+	}
+
 	public void end(DrawContext c) {
+		if (floating && fw > 0) {
+			// depth cue: the far side gets darker
+			int n = 16, sw = Math.max(1, fw / n);
+			for (int i = 0; i < n; i++) {
+				float k = i / (float) (n - 1);
+				float far = farDir > 0 ? k : 1F - k;
+				int al = Math.round(60 * far * far);
+				int x0 = fx0 + i * sw, x1 = i == n - 1 ? fx0 + fw : x0 + sw;
+				c.fill(x0, fy0, x1, fy0 + fh, al << 24);
+			}
+		}
 		c.getMatrices().popMatrix();
 	}
 }

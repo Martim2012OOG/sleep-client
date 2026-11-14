@@ -29,6 +29,8 @@ public class WaypointEditorScreen extends Screen {
 	private final List<Runnable> acts = new ArrayList<>();
 	private DoubleConsumer slider;
 	private int sliderX, sliderW;
+	/** The whole editor is drawn in a virtual size and scaled down to fit small windows / big GUI scales. */
+	private float k = 1F;
 
 	public WaypointEditorScreen(Screen parent) {
 		super(Text.literal("Waypoints"));
@@ -61,23 +63,33 @@ public class WaypointEditorScreen extends Screen {
 	}
 
 	@Override
-	public void render(DrawContext c, int mx, int my, float delta) {
+	public void render(DrawContext c, int mouseX, int mouseY, float delta) {
 		hits.clear();
 		acts.clear();
-		renderBackground(c, mx, my, delta);
-		int pw = Math.min(780, width - 24), ph = Math.min(420, height - 24);
-		int x = (width - pw) / 2, y = (height - ph) / 2;
-		Gfx.rrectBorder(c, x, y, pw, ph, 6, Theme.PANEL_UI, Theme.PANEL_BORDER);
-		Gfx.text(c, "Waypoints", x + 16, y + 14, Theme.TEXT);
-		Gfx.text(c, hint.isEmpty() ? "Changes save on their own" : hint, x + 16 + Gfx.tw("Waypoints") + 12, y + 14, Theme.DIM);
-		button(c, mx, my, x + pw - 40, y + 8, 28, 22, "x", false, this::close);
+		renderBackground(c, mouseX, mouseY, delta);
+		// fit: the editor needs about 780 x 440 units; on a smaller screen everything is scaled down together
+		k = Math.max(0.4F, Math.min(1F, Math.min((width - 12) / 780F, (height - 12) / 440F)));
+		int vw = Math.round(width / k), vh = Math.round(height / k);
+		int mx = Math.round(mouseX / k), my = Math.round(mouseY / k);
+		c.getMatrices().pushMatrix();
+		c.getMatrices().scale(k, k);
+		try {
+			int pw = Math.min(780, vw - 12), ph = Math.min(440, vh - 12);
+			int x = (vw - pw) / 2, y = (vh - ph) / 2;
+			Gfx.rrectBorder(c, x, y, pw, ph, 6, Theme.PANEL_UI, Theme.PANEL_BORDER);
+			Gfx.text(c, "Waypoints", x + 16, y + 14, Theme.TEXT);
+			Gfx.text(c, hint.isEmpty() ? "Changes save on their own" : hint, x + 16 + Gfx.tw("Waypoints") + 12, y + 14, Theme.DIM);
+			button(c, mx, my, x + pw - 40, y + 8, 28, 22, "x", false, this::close);
 
-		int top = y + 40, bot = y + ph - 14;
-		int lw = 200, rw = 236;
-		int lx = x + 14, cx = lx + lw + 12, rx = x + pw - rw - 14, cw = rx - cx - 12;
-		drawList(c, mx, my, lx, top, lw, bot - top);
-		drawPreview(c, cx, top, cw, bot - top);
-		drawProps(c, mx, my, rx, top, rw, bot - top);
+			int top = y + 40, bot = y + ph - 14;
+			int lw = Math.min(200, pw / 4), rw = Math.min(236, pw * 3 / 10);
+			int lx = x + 14, cx = lx + lw + 12, rx = x + pw - rw - 14, cw = rx - cx - 12;
+			drawList(c, mx, my, lx, top, lw, bot - top);
+			drawPreview(c, cx, top, Math.max(60, cw), bot - top);
+			drawProps(c, mx, my, rx, top, rw, bot - top);
+		} finally {
+			c.getMatrices().popMatrix();
+		}
 	}
 
 	// ------------------------------------------------------------------ list
@@ -280,7 +292,7 @@ public class WaypointEditorScreen extends Screen {
 	// ------------------------------------------------------------------ input
 	@Override
 	public boolean mouseClicked(Click click, boolean doubled) {
-		double mx = click.x(), my = click.y();
+		double mx = click.x() / k, my = click.y() / k;
 		renaming = false;
 		for (int i = hits.size() - 1; i >= 0; i--) {
 			int[] r = hits.get(i);
@@ -295,7 +307,7 @@ public class WaypointEditorScreen extends Screen {
 	@Override
 	public boolean mouseDragged(Click click, double dx, double dy) {
 		if (slider != null) {
-			slider.accept((click.x() - sliderX) / (double) sliderW);
+			slider.accept((click.x() / k - sliderX) / (double) sliderW);
 			return true;
 		}
 		return super.mouseDragged(click, dx, dy);
@@ -309,7 +321,7 @@ public class WaypointEditorScreen extends Screen {
 
 	@Override
 	public boolean mouseScrolled(double mx, double my, double h, double v) {
-		listScroll -= (float) v * 24;
+		listScroll -= (float) v * 24 / k;
 		return true;
 	}
 

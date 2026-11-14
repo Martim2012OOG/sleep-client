@@ -210,6 +210,9 @@ public final class KuboLink {
 		long now = System.currentTimeMillis();
 		String nick = Json.str(kx, "n");
 		ProfileBadges.rememberUuid(uuid, nick);
+		if (kx.has("mu") || kx.has("mi")) {
+			dev.solclient.music.MusicShare.onRemote(uuid, nick, kx); // Music Share: the song above the head, listen-along messages
+		}
 		if (kx.has("bd") && nick != null) {
 			lastRecvAt = now;
 			lastRecvNick = nick;

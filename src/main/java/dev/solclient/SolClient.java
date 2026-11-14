@@ -106,7 +106,9 @@ public class SolClient implements ClientModInitializer {
 		MODS.add(new ChatBubblesMod());
 		MODS.add(new WaypointsMod());
 		MODS.add(new InventoryButtonsMod());
-		MODS.add(new HologramScreensMod());
+		MODS.add(new MusicShareMod());
+		MODS.add(new SkinLayers3DMod());
+		MODS.add(new ListenersHudMod());
 		MODS.add(new FullbrightMod());
 		MODS.add(new BossBarMod());
 		MODS.add(new PackDisplayMod());
@@ -252,6 +254,7 @@ public class SolClient implements ClientModInitializer {
 		HudRenderCallback.EVENT.register((context, tickCounter) -> renderHud(context));
 		dev.solclient.social.ServerShare.register();
 		dev.solclient.video.WatchPartyHooks.register();
+		dev.solclient.music.MusicShareHooks.register();
 		dev.solclient.video.Panels.register();
 		dev.solclient.cosmetic.pet.Pets.init();
 		dev.solclient.fx.MaceFx.init();

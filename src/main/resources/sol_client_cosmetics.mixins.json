@@ -10,7 +10,12 @@
     "InventoryScreenAccessor",
     "LivingEntityRendererAccessor",
     "PlayerRendererCosmeticsMixin",
-    "ElytraHiddenByWingsMixin"
+    "ElytraHiddenByWingsMixin",
+    "SkinCaptureMixin",
+    "PlayerStateMaskMixin",
+    "LivingRendererInvoker",
+    "PlayerLayersRendererMixin",
+    "PlayerModelLayersMixin"
   ],
   "injectors": { "defaultRequire": 0 }
 }

@@ -27,11 +27,8 @@
     "TransparentPlayersMixin",
     "MobHealthMixin",
     "ScoreboardNickMixin",
-    "HoloHandledScreenMixin",
-    "HoloScreenMixin",
-    "HoloProjectionAccessor",
-    "HoloGuiRendererMixin",
-    "HoloGameRendererMixin"
+    "ScreenVeilMixin",
+    "MusicTagMixin"
   ],
   "injectors": {
     "defaultRequire": 0

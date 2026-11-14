@@ -1076,7 +1076,6 @@ Percentage On Hotbar Items	Percentagem nos itens da hotbar
 Performance	Desempenho
 Performance Card	Cartão de desempenho
 Permanent	Permanente
-Perspective	Perspetiva
 Petals	Pétalas
 Photo	Foto
 Photo Mode	Modo foto
@@ -3273,11 +3272,38 @@ Always Show Players' Names	Mostrar sempre os nomes dos jogadores
 Always Show My Own Name	Mostrar sempre o meu nome
 Music During Ads	Música durante os anúncios
 Inventory Buttons	Botões do inventário
-3D GUI (Experimental)	3D GUI (Experimental)
-Angle	Ângulo
-Perspective	Perspetiva
-Turned Towards	Virado para
-Floating Animation	Animação a flutuar
-Glow Frame	Moldura com brilho
-Keep The World Clear	Manter o mundo limpo
-Inventory And Containers Only	Só inventário e contentores
+Music Share	Partilhar música
+What I Share	O que partilho
+Who Can See My Music	Quem pode ver a minha música
+Who Can Listen Along	Quem pode ouvir comigo
+Ask Me Before Someone Joins	Perguntar antes de alguém entrar
+Max Listeners	Máximo de ouvintes
+What I See	O que vejo
+Music Above Players' Heads	Música por cima da cabeça dos jogadores
+Show My Own Tag (3rd Person)	Mostrar a minha etiqueta (3.ª pessoa)
+Tag Distance	Distância da etiqueta
+Listen Along Key	Tecla para ouvir com alguém
+Listening Along	A ouvir com alguém
+My Listeners	Os meus ouvintes
+Music Listeners	Ouvintes de música
+Head Size	Tamanho das cabeças
+Layout	Disposição
+Show Names	Mostrar nomes
+Colour Ring	Anel de cor
+Hide When Alone	Esconder quando estou sozinho
+Friends Only	Só amigos
+Nobody	Ninguém
+Everyone	Toda a gente
+Leave	Sair
+Remove All	Remover todos
+3D Skin Layers	3D Skin Layers
+Thickness	Espessura
+Max Distance	Distância máxima
+Quality	Qualidade
+Hat Layer	Camada do chapéu
+Jacket Layer	Camada do casaco
+Sleeve Layers	Camadas das mangas
+Pants Layers	Camadas das calças
+Low (many players)	Baixa (muitos jogadores)
+Medium	Média
+High	Alta

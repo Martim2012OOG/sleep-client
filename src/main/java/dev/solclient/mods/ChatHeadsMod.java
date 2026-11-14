@@ -45,10 +45,36 @@ public class ChatHeadsMod extends Mod {
 		if (m == null || !m.enabled || msg == null || m.mc.getNetworkHandler() == null) return msg;
 		String s = msg.getString();
 		String name = null;
-		for (String tok : s.split("[\\s<>\\[\\]:|»>]+", 6)) {
-			if (tok.length() >= 3 && tok.length() <= 16 && tok.matches("[A-Za-z0-9_]+") && m.mc.getNetworkHandler().getPlayerListEntry(tok) != null) {
-				name = tok;
-				break;
+		// the sender is in the part BEFORE the text ("<Name> hi", "[Rank] Name: hi", "Name » hi"): a name said inside the text is never the sender
+		int cut = -1;
+		if (s.startsWith("<") && s.indexOf('>') > 0) {
+			cut = s.indexOf('>');
+		} else {
+			for (int i = 0; i < s.length(); i++) {
+				char ch = s.charAt(i);
+				if (ch == ':' || ch == '\u00bb' || ch == '>' || ch == '|') {
+					cut = i;
+					break;
+				}
+			}
+		}
+		if (cut > 0) {
+			// the name is the last word of the header (ranks and tags come before it)
+			String[] toks = s.substring(0, cut).split("[\\s<>\\[\\]:|\u00bb>()]+");
+			for (int i = toks.length - 1; i >= 0 && name == null; i--) {
+				String tok = toks[i];
+				if (tok.length() >= 3 && tok.length() <= 16 && tok.matches("[A-Za-z0-9_]+") && m.mc.getNetworkHandler().getPlayerListEntry(tok) != null) {
+					name = tok;
+				}
+			}
+		} else {
+			// no separator ("Name joined the game"): only the first words can be the name
+			String[] toks = s.split("[\\s<>\\[\\]:|\u00bb>]+", 4);
+			for (int i = 0; i < Math.min(2, toks.length) && name == null; i++) {
+				String tok = toks[i];
+				if (tok.length() >= 3 && tok.length() <= 16 && tok.matches("[A-Za-z0-9_]+") && m.mc.getNetworkHandler().getPlayerListEntry(tok) != null) {
+					name = tok;
+				}
 			}
 		}
 		if (name == null) return msg;
