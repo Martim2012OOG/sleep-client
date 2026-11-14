@@ -48,7 +48,7 @@ public abstract class MusicTagMixin {
 					matrices.push();
 					matrices.translate(state.nameLabelPos.x, state.nameLabelPos.y - y * 0.025F, state.nameLabelPos.z);
 					matrices.multiply(camera.orientation);
-					matrices.translate(-half + 0.04F, 0.27F, 0.0F); // inside the left end of the line, centred on the text
+					matrices.translate(-half - 0.08F, 0.27F, 0.0F); // inside the left end of the line, centred on the text
 					queue.submitCustom(matrices, net.minecraft.client.render.RenderLayers.entityCutoutNoCull(id), (entry, vc) -> {
 						int light = net.minecraft.client.render.LightmapTextureManager.MAX_LIGHT_COORDINATE;
 						int ov = net.minecraft.client.render.OverlayTexture.DEFAULT_UV;
