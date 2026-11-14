@@ -54,7 +54,7 @@ public final class MusicShare {
 		public String uuid, nick = "", title = "", artist = "", source = "", cover = "";
 		public int vis, lis;
 		public long posMs, durMs, posAt, seen;
-		public boolean playing, hasSong;
+		public boolean playing, hasSong, stream;
 		public final List<String> listeners = new ArrayList<>();
 	}
 
@@ -237,7 +237,7 @@ public final class MusicShare {
 	private static Text build(String title, boolean listenable, int listeners, boolean cover) {
 		MutableText t = Text.empty();
 		// with a cover the picture takes the place of the note (the room is left here, the picture is drawn by MusicTagMixin)
-		t.append(cover ? Text.literal("    ") : glyph(NOTE, 0x55FF99)).append(Text.literal(" "));
+		t.append(cover ? Text.literal("  ") : glyph(NOTE, 0x55FF99)).append(Text.literal(" "));
 		if (title == null) {
 			// hidden: the name is scrambled like enchanting-table text
 			t.append(Text.literal("MMMMMMMMMMMM").setStyle(Style.EMPTY.withColor(0xB8BCC8).withObfuscated(true)));
@@ -281,6 +281,7 @@ public final class MusicShare {
 			r.posMs = o.has("p") ? o.get("p").getAsLong() : 0;
 			r.durMs = o.has("d") ? o.get("d").getAsLong() : 0;
 			r.playing = o.has("pl") && o.get("pl").getAsInt() == 1;
+			r.stream = o.has("st") && o.get("st").getAsInt() == 1;
 			r.posAt = now;
 			r.seen = now;
 			r.listeners.clear();
@@ -386,7 +387,7 @@ public final class MusicShare {
 			say(Lang.tr("You cannot listen along with this player.", "Não podes ouvir com este jogador."), true);
 			return;
 		}
-		if (!SpotifyClient.connected) {
+		if (!SpotifyClient.connected && !r.stream) {
 			say(Lang.tr("To listen along connect Spotify first (Settings > Music) - Spotify Premium is needed.",
 					"Para ouvir com alguém liga primeiro o Spotify (Definições > Música) - é preciso Spotify Premium."), true);
 			return;
@@ -504,7 +505,8 @@ public final class MusicShare {
 			stopHosting();
 		}
 		// ---- what I send
-		String sig = on ? t.title() + "|" + t.artist() + "|" + t.playing() + "|" + vis + "|" + lis + "|" + LISTENERS.keySet() : "off";
+		boolean canStream = on && m.streamMine() && AudioStream.capable();
+		String sig = on ? t.title() + "|" + t.artist() + "|" + t.playing() + "|" + vis + "|" + lis + "|" + LISTENERS.keySet() + "|" + canStream : "off";
 		boolean beat = now >= nextBeat;
 		boolean changed = !sig.equals(lastSig);
 		JsonObject mu = null;
@@ -514,6 +516,7 @@ public final class MusicShare {
 			if (on) {
 				mu.addProperty("v", vis);
 				mu.addProperty("l", lis);
+				mu.addProperty("st", canStream ? 1 : 0); // "my sound can be streamed": the listener does not need Spotify then
 				if (vis > 0) { // nobody: the song is never sent
 					mu.addProperty("t", clip(t.title(), 60));
 					mu.addProperty("a", clip(t.artist(), 40));
@@ -564,6 +567,11 @@ public final class MusicShare {
 				}
 			}
 		}
+		// ---- sound streaming: capture only while somebody listens; play only when the host we follow streams
+		AudioStream.hostWant(canStream && !LISTENERS.isEmpty());
+		String fh = following;
+		Remote fr = fh == null ? null : remote(fh);
+		AudioStream.listenTo(fr != null && fr.stream && songVisible(fr) ? fh : null);
 		// ---- listening along
 		followTick(mc, now);
 	}
@@ -584,6 +592,9 @@ public final class MusicShare {
 		if (now >= nextHb) {
 			nextHb = now + 3000L;
 			send(h, "hb", "");
+		}
+		if (r.stream) {
+			return; // the sound comes from the host itself (AudioStream): nothing to do with Spotify
 		}
 		if (followBusy || now < nextDrift) {
 			return;

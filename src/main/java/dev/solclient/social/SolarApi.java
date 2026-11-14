@@ -43,6 +43,12 @@ public final class SolarApi {
 	/** Session token (Bearer). Saved in config/plegumo-social.json so you stay logged in. */
 	static volatile String token;
 
+	/** The Sleep session token (for the sync / audio Workers, which ask the site who it belongs to). */
+	public static String tokenValue() {
+		return token == null ? "" : token;
+	}
+
+
 	private SolarApi() {
 	}
 

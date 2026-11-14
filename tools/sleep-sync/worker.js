@@ -25,6 +25,11 @@ export default {
   async fetch(req, env) {
     const url = new URL(req.url);
     if (url.pathname === "/") return new Response("sleep-sync ok");
+    const au = url.pathname.match(/^\/audio\/([0-9a-f]{32})$/);
+    if (au) {
+      if (req.headers.get("Upgrade") !== "websocket") return new Response("Expected WebSocket", { status: 426 });
+      return env.AUDIO.get(env.AUDIO.idFromName(au[1])).fetch(new Request(req.url, { headers: req.headers }), { room: au[1] });
+    }
     const m = url.pathname.match(/^\/ws\/([0-9a-f]{16,64})$/);
     if (!m || !ROOM_RE.test(m[1])) return new Response("Not found", { status: 404 });
     if (req.headers.get("Upgrade") !== "websocket") return new Response("Expected WebSocket", { status: 426 });
@@ -97,36 +102,8 @@ export class Room {
     }
   }
 
-  // who is this? The Sleep API tells us (the token is the player's session); the client only gets to say its uuid / nick for offline accounts
   async identify(o) {
-    const token = typeof o.token === "string" ? o.token : "";
-    if (token.length < 10 || token.length > 4096) return null;
-    const now = Date.now();
-    const hit = this.verified.get(token);
-    if (hit && hit.until > now && (typeof o.nick !== "string" || o.nick.toLowerCase() === hit.nick.toLowerCase())) return hit;
-    let user = null;
-    if (this.env.DEV_TRUST === "1") {
-      user = { mcUuid: o.uuid, mcUsername: o.nick }; // local tests only (wrangler dev --var DEV_TRUST:1)
-    } else {
-      try {
-        const r = await fetch(`${this.env.API_BASE}/auth/get-session`, {
-          headers: { Authorization: "Bearer " + token, Accept: "application/json", "User-Agent": "sleep-sync/1.0", ...(this.env.CLIENT_KEY ? { "X-Client-Key": this.env.CLIENT_KEY } : {}) },
-        });
-        if (!r.ok) return null;
-        const j = await r.json();
-        user = j && j.user;
-      } catch (e) { return null; }
-    }
-    if (!user) return null;
-    const nick = (user.mcUsername && NICK_RE.test(user.mcUsername)) ? user.mcUsername : (typeof o.nick === "string" && NICK_RE.test(o.nick) ? o.nick : null);
-    const uuid = normUuid(user.mcUuid) || normUuid(o.uuid);
-    if (!nick || !uuid) return null;
-    // the account says its Minecraft nick: the client can not claim another one
-    if (user.mcUsername && typeof o.nick === "string" && o.nick.toLowerCase() !== user.mcUsername.toLowerCase()) return null;
-    const id = { uuid, nick, until: now + 600_000 };
-    this.verified.set(token, id);
-    if (this.verified.size > 200) this.verified.clear();
-    return id;
+    return identifyUser(this.env, this.verified, o);
   }
 
   kx(ws, a, kx) {
@@ -157,5 +134,102 @@ export class Room {
     try { ws.close(); } catch (e) {}
   }
 
+  async webSocketError(ws) { try { ws.close(); } catch (e) {} }
+}
+
+
+// who is this? The Sleep API tells us (the token is the player's session); the client only says its uuid / nick for offline accounts
+async function identifyUser(env, verified, o) {
+  const token = typeof o.token === "string" ? o.token : "";
+  if (token.length < 10 || token.length > 4096) return null;
+  const now = Date.now();
+  const hit = verified.get(token);
+  if (hit && hit.until > now && (typeof o.nick !== "string" || o.nick.toLowerCase() === hit.nick.toLowerCase())) return hit;
+  let user = null;
+  if (env.DEV_TRUST === "1") {
+    user = { mcUuid: o.uuid, mcUsername: o.nick };
+  } else {
+    try {
+      const r = await fetch(`${env.API_BASE}/auth/get-session`, {
+        headers: { Authorization: "Bearer " + token, Accept: "application/json", "User-Agent": "sleep-sync/1.0", ...(env.CLIENT_KEY ? { "X-Client-Key": env.CLIENT_KEY } : {}) },
+      });
+      if (!r.ok) return null;
+      const j = await r.json();
+      user = j && j.user;
+    } catch (e) { return null; }
+  }
+  if (!user) return null;
+  const nick = (user.mcUsername && NICK_RE.test(user.mcUsername)) ? user.mcUsername : (typeof o.nick === "string" && NICK_RE.test(o.nick) ? o.nick : null);
+  const uuid = normUuid(user.mcUuid) || normUuid(o.uuid);
+  if (!nick || !uuid) return null;
+  if (user.mcUsername && typeof o.nick === "string" && o.nick.toLowerCase() !== user.mcUsername.toLowerCase()) return null;
+  const id = { uuid, nick, until: now + 600_000 };
+  verified.set(token, id);
+  if (verified.size > 200) verified.clear();
+  return id;
+}
+
+// One room per sharing player (/audio/<uuid>): the owner sends binary frames (mu-law, 24 kHz mono, ~40 ms each), everybody else only listens.
+export class AudioRoom {
+  constructor(ctx, env) {
+    this.ctx = ctx;
+    this.env = env;
+    this.verified = new Map();
+    this.roomUuid = null;
+    ctx.setWebSocketAutoResponse(new WebSocketRequestResponsePair("ping", "pong"));
+  }
+
+  async fetch(req, props) {
+    const m = new URL(req.url).pathname.match(/^\/audio\/([0-9a-f]{32})$/);
+    if (m) this.roomUuid = m[1];
+    if (this.ctx.getWebSockets().length >= 16) return new Response("Room full", { status: 503 });
+    const pair = new WebSocketPair();
+    const [client, server] = [pair[0], pair[1]];
+    this.ctx.acceptWebSocket(server);
+    server.serializeAttachment({ authed: false, host: false, at: Date.now(), room: this.roomUuid });
+    await this.ctx.storage.setAlarm(Date.now() + HELLO_TIMEOUT_MS);
+    return new Response(null, { status: 101, webSocket: client });
+  }
+
+  async alarm() {
+    const now = Date.now();
+    for (const ws of this.ctx.getWebSockets()) {
+      const a = ws.deserializeAttachment();
+      if (a && !a.authed && now - a.at >= HELLO_TIMEOUT_MS) { try { ws.close(4001, "hello timeout"); } catch (e) {} }
+    }
+  }
+
+  async webSocketMessage(ws, message) {
+    const a = ws.deserializeAttachment() || {};
+    if (typeof message === "string") {
+      if (a.authed) return;
+      let o; try { o = JSON.parse(message); } catch (e) { return; }
+      if (o.t !== "hello") return;
+      const id = await identifyUser(this.env, this.verified, o);
+      if (!id) { try { ws.close(4003, "not logged in"); } catch (e) {} return; }
+      a.authed = true;
+      a.uuid = id.uuid;
+      a.host = a.room && id.uuid === a.room;
+      if (a.host) { // a new host replaces the old one
+        for (const other of this.ctx.getWebSockets()) {
+          if (other === ws) continue;
+          const b = other.deserializeAttachment();
+          if (b && b.host) { try { other.close(4002, "replaced"); } catch (e) {} }
+        }
+      }
+      ws.serializeAttachment(a);
+      ws.send(JSON.stringify({ t: "ready", host: !!a.host }));
+      return;
+    }
+    // binary: only the owner's frames, small, and relayed at once to the listeners
+    if (!a.authed || !a.host || message.byteLength > 4096 || message.byteLength < 8) return;
+    for (const other of this.ctx.getWebSockets()) {
+      if (other === ws) continue;
+      const b = other.deserializeAttachment();
+      if (b && b.authed && !b.host) { try { other.send(message); } catch (e) {} }
+    }
+  }
+
+  async webSocketClose(ws) { try { ws.close(); } catch (e) {} }
   async webSocketError(ws) { try { ws.close(); } catch (e) {} }
 }

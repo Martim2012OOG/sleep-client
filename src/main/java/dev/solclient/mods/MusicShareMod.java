@@ -16,6 +16,7 @@ public class MusicShareMod extends Mod {
 	private final Option.Choice showTo = choice("Who Can See My Music", 0, "Everyone", "Friends Only", "Nobody");
 	private final Option.Choice listenFrom = choice("Who Can Listen Along", 1, "Everyone", "Friends Only", "Nobody");
 	private final Option.Bool ask = bool("Ask Me Before Someone Joins", true);
+	private final Option.Bool streamMine = bool("Send My Sound To Listeners (Mac)", true);
 	private final Option.Num maxListeners = num("Max Listeners", 10, 1, 10, 1, "");
 	private final Option.Header hSee = header("What I See");
 	private final Option.Bool tags = bool("Music Above Players' Heads", true);
@@ -38,6 +39,11 @@ public class MusicShareMod extends Mod {
 	@Override
 	public boolean enabledByDefault() {
 		return true;
+	}
+
+	/** Send the sound of this computer to the friends who listen along (macOS: asks once for the screen / system audio permission). */
+	public boolean streamMine() {
+		return streamMine.on();
 	}
 
 	public int showToIdx() {
