@@ -2028,6 +2028,9 @@ public final class Social {
 
 	/** Equips / unequips at once on screen, then tells the server in the background (and undoes it if the server says no). */
 	public static void equip(Item it, boolean on) {
+		if (on && isKillEffect(it)) {
+			dev.solclient.fx.DeathAnimBridge.unequip(); // one kill effect at a time: a death animation steps aside
+		}
 		final boolean was = it.equipped;
 		final List<Item> off = new ArrayList<>();
 		holdEquip(it.category, 20_000L);

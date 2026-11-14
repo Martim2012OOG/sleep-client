@@ -298,9 +298,84 @@ public final class DeathAnimBridge {
 		return false;
 	}
 
-	/** Switches off every animation you do not own (the Locker sells them; the engine would otherwise play all of them). */
+	// ------------------------------------------------------------------ equipped (one at a time, like any kill effect)
+	private static String equippedId;
+	private static boolean equippedLoaded;
 	private static long enforcedAt;
 
+	private static java.nio.file.Path equippedFile() {
+		return net.fabricmc.loader.api.FabricLoader.getInstance().getConfigDir().resolve("kubo").resolve("death-equipped.txt");
+	}
+
+	private static synchronized void loadEquipped() {
+		if (equippedLoaded) {
+			return;
+		}
+		equippedLoaded = true;
+		try {
+			java.nio.file.Path f = equippedFile();
+			if (java.nio.file.Files.isRegularFile(f)) {
+				String t = java.nio.file.Files.readString(f).trim();
+				equippedId = t.isEmpty() ? null : t;
+			}
+		} catch (Exception ignored) {
+		}
+	}
+
+	private static void saveEquipped() {
+		try {
+			java.nio.file.Files.createDirectories(equippedFile().getParent());
+			java.nio.file.Files.writeString(equippedFile(), equippedId == null ? "" : equippedId);
+		} catch (Exception ignored) {
+		}
+	}
+
+	/** The death animation that is equipped (the one that plays), or null. */
+	public static Entry equipped() {
+		loadEquipped();
+		if (equippedId == null) {
+			return null;
+		}
+		for (Entry e : all()) {
+			if (e.id.equals(equippedId)) {
+				return e;
+			}
+		}
+		return null;
+	}
+
+	public static boolean isEquipped(Entry e) {
+		loadEquipped();
+		return e != null && e.id.equals(equippedId);
+	}
+
+	/** Equips this one (the others and the normal kill effects are switched off by the caller / the shop). */
+	public static void equip(Entry e) {
+		loadEquipped();
+		if (e == null || !owned(e)) {
+			return;
+		}
+		equippedId = e.id;
+		saveEquipped();
+		enforcedAt = 0;
+		enforce();
+	}
+
+	public static void unequip() {
+		loadEquipped();
+		if (equippedId == null) {
+			return;
+		}
+		equippedId = null;
+		saveEquipped();
+		enforcedAt = 0;
+		enforce();
+	}
+
+	/**
+	 * Keeps the engine in line with what is equipped: only the equipped (and owned) animation is on and nothing else, random off. The engine
+	 * itself starts with all of them on, which is why this runs once a second.
+	 */
 	public static void enforce() {
 		long now = System.currentTimeMillis();
 		if (now - enforcedAt < 1000L) {
@@ -311,10 +386,24 @@ public final class DeathAnimBridge {
 			if (!init() || !dev.solclient.social.Social.shopLoaded()) {
 				return;
 			}
+			loadEquipped();
+			Entry eq = equipped();
+			if (eq != null && !owned(eq)) {
+				equippedId = null;
+				eq = null;
+				saveEquipped();
+			}
 			for (Entry e : all()) {
-				if (!owned(e) && enabled(e)) {
-					setEnabled(e, false);
+				boolean want = e == eq;
+				if (enabled(e) != want) {
+					setEnabled(e, want);
 				}
+			}
+			if (master() != (eq != null)) {
+				setMaster(eq != null);
+			}
+			if (random()) {
+				setRandom(false);
 			}
 		} catch (Throwable ignored) {
 		}

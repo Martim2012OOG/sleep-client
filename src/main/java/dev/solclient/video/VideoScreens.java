@@ -361,6 +361,8 @@ public final class VideoScreens {
 		return best;
 	}
 
+	private static long lastOwnerMsg;
+
 	/** Right click while aiming at a screen: pause / play (only the owner of the screen can). */
 	public static void onClick() {
 		if (placing || mc().player == null || mc().currentScreen != null) {
@@ -373,7 +375,11 @@ public final class VideoScreens {
 		if (s == mine()) {
 			pause(s.on);
 		} else {
-			say("Only the owner of this screen can pause it.", true);
+			long nowMs = System.currentTimeMillis();
+			if (nowMs - lastOwnerMsg > 6000L) {
+				lastOwnerMsg = nowMs;
+				say("Only the owner of this screen can pause it.", true);
+			}
 		}
 	}
 
@@ -904,9 +910,17 @@ public final class VideoScreens {
 	 * background), skips ads when possible, keeps the time in sync and sets the volume.
 	 */
 	private static final String SYNC_JS = "(function(p,on,vol,q,cc,dbg){try{"
-			+ "if(location.hostname.indexOf('consent.')===0){var b=document.querySelectorAll('button');for(var i=0;i<b.length;i++){"
-			+ "var t=((b[i].getAttribute('aria-label')||'')+' '+(b[i].textContent||'')).toLowerCase();"
-			+ "if(t.indexOf('reject')>=0||t.indexOf('rejeitar')>=0||t.indexOf('recusar')>=0||t.indexOf('accept')>=0||t.indexOf('aceitar')>=0){b[i].click();break;}}return;}"
+			// YouTube's cookie page ("Before you continue"): say no (or yes if there is no "no") in any language, and submit the form if no button is found
+			+ "if(location.hostname.indexOf('consent.')===0){"
+			+ "var els=document.querySelectorAll('button,input[type=submit],[role=button]');var rej=null,acc=null;"
+			+ "var rx=/reject|rejeitar|recusar|rechazar|refuser|ablehnen|rifiuta|afwijzen|odm[ií]tnout|odrzu[cć]|avvis|avsl[åa]|avvisa|afvis|hylk[äa][äa]|\\u03b1\\u03c0\\u03bf\\u03c1\\u03c1|\\u043e\\u0442\\u043a\\u043b\\u043e\\u043d|\\u62d2\\u7edd|\\u62d2\\u5426|\\uac70\\ubd80/i;"
+			+ "var ax=/accept|aceitar|aceptar|accepter|akzeptieren|accetta|accepteren|zaakceptuj|godk[äa]nn|accept[ée]r|hyv[äa]ksy|\\u03b1\\u03c0\\u03bf\\u03b4\\u03bf\\u03c7|\\u043f\\u0440\\u0438\\u043d\\u044f\\u0442|\\u63a5\\u53d7|\\u540c\\u610f|\\ub3d9\\uc758/i;"
+			+ "for(var i=0;i<els.length;i++){var t=(els[i].getAttribute('aria-label')||'')+' '+(els[i].textContent||'')+' '+(els[i].value||'');"
+			+ "if(!rej&&rx.test(t)){rej=els[i];}if(!acc&&ax.test(t)){acc=els[i];}}"
+			+ "var cb=rej||acc;"
+			+ "if(cb){try{cb.click();}catch(e8){}try{['mousedown','mouseup','click'].forEach(function(n){cb.dispatchEvent(new MouseEvent(n,{bubbles:true,cancelable:true,view:window}));});}catch(e9){}}"
+			+ "else{var cf=document.querySelector('form[action*=\"consent\"]');if(cf){try{cf.submit();}catch(e7){}}}"
+			+ "return;}"
 			// the page must never think it is hidden (YouTube / Chromium pause or throttle hidden pages)
 			+ "try{Object.defineProperty(document,'hidden',{configurable:true,get:function(){return false;}});"
 			+ "Object.defineProperty(document,'visibilityState',{configurable:true,get:function(){return 'visible';}});}catch(e0){}"

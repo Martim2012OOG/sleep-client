@@ -3990,7 +3990,7 @@ public class SolMenuScreen extends Screen {
 				if (!q.isEmpty() && !e.title.toLowerCase(Locale.ROOT).contains(q)) {
 					continue;
 				}
-				if (lockerOnlyOn && !lockerShop && !dev.solclient.fx.DeathAnimBridge.enabled(e)) {
+				if (lockerOnlyOn && !lockerShop && !dev.solclient.fx.DeathAnimBridge.isEquipped(e)) {
 					continue;
 				}
 				deaths.add(e);
@@ -4565,6 +4565,10 @@ public class SolMenuScreen extends Screen {
 					rows.add(new String[] {it.id, it.name, null});
 				}
 			}
+			var deq = killTab ? dev.solclient.fx.DeathAnimBridge.equipped() : null;
+			if (deq != null) {
+				rows.add(new String[] {"death:" + deq.id, deq.title.replaceFirst("^Originals: ", ""), null});
+			}
 		}
 		String title = dev.solclient.Lang.t(emotesTab ? "Emote wheel" : killTab ? "Kill effect on" : "My cosmetics").toUpperCase(Locale.ROOT);
 		Gfx.textRaw(c, fitRaw(title, w - 30), x + 8, y + 9, 0xFF6B7080);
@@ -4594,6 +4598,9 @@ public class SolMenuScreen extends Screen {
 				if (it != null) {
 					itemImage(c, it, tx - 2, ry + 3, 14, 14);
 					tx += 16;
+				} else if (r[0].startsWith("death:")) {
+					Gfx.rrect(c, tx - 1, ry + 6, 8, 8, 4, 0xFFB8BCC8);
+					tx += 12;
 				}
 			}
 			Gfx.textClip(c, empty ? dev.solclient.Lang.t("Empty") : r[1], tx, ry + 6, x + w - 22 - tx, empty ? 0xFF5E6272 : Theme.TEXT);
@@ -4609,6 +4616,8 @@ public class SolMenuScreen extends Screen {
 				region(bx - 2, by - 2, 12, 12, () -> {
 					if (row[2] != null) {
 						EmoteSlots.clear(Integer.parseInt(row[2]));
+					} else if (row[0].startsWith("death:")) {
+						dev.solclient.fx.DeathAnimBridge.unequip();
 					} else {
 						for (Social.Item s2 : src) {
 							if (row[0].equals(s2.id)) {
@@ -4617,7 +4626,14 @@ public class SolMenuScreen extends Screen {
 						}
 					}
 				});
-				region(x + 4, ry, w - 24, rh, () -> lockerSel = row[0]);
+				region(x + 4, ry, w - 24, rh, () -> {
+					if (row[0].startsWith("death:")) {
+						deathSel = row[0].substring(6);
+						lockerSel = null;
+					} else {
+						lockerSel = row[0];
+					}
+				});
 			} else if (r[2] != null) {
 				final int slotIdx = Integer.parseInt(r[2]);
 				region(x + 4, ry, w - 8, rh, () -> lockerSlot = slotIdx); // pick the slot, then switch an emote on
@@ -5175,22 +5191,21 @@ public class SolMenuScreen extends Screen {
 		}
 	}
 
-	/** Equipping a death animation: it becomes THE one that plays when you get a kill / die (the others switch off). */
+	/** Equipping a death animation: it becomes THE kill effect (the equipped normal one and the other animations switch off). */
 	private void equipDeath(dev.solclient.fx.DeathAnimBridge.Entry e) {
 		if (!dev.solclient.fx.DeathAnimBridge.owned(e)) {
 			return;
 		}
-		if (dev.solclient.fx.DeathAnimBridge.enabled(e)) {
-			dev.solclient.fx.DeathAnimBridge.setEnabled(e, false);
+		if (dev.solclient.fx.DeathAnimBridge.isEquipped(e)) {
+			dev.solclient.fx.DeathAnimBridge.unequip();
 			return;
 		}
-		for (var o : dev.solclient.fx.DeathAnimBridge.all()) {
-			if (o != e && dev.solclient.fx.DeathAnimBridge.enabled(o)) {
-				dev.solclient.fx.DeathAnimBridge.setEnabled(o, false);
+		for (Social.Item k : new ArrayList<>(Social.killEffectItems())) {
+			if (k.equipped) {
+				Social.equip(k, false);
 			}
 		}
-		dev.solclient.fx.DeathAnimBridge.setEnabled(e, true);
-		dev.solclient.fx.DeathAnimBridge.setMaster(true);
+		dev.solclient.fx.DeathAnimBridge.equip(e);
 	}
 
 	/** One death animation as a card of the Kill Effects grid: same size and look as the other items. */
@@ -5200,7 +5215,7 @@ public class SolMenuScreen extends Screen {
 			deathHover = e;
 		}
 		boolean sel = e.id.equals(deathSel), own = dev.solclient.fx.DeathAnimBridge.owned(e);
-		boolean on = own && dev.solclient.fx.DeathAnimBridge.enabled(e);
+		boolean on = own && dev.solclient.fx.DeathAnimBridge.isEquipped(e);
 		var shopItem = dev.solclient.social.Social.deathItem(e.id, e.title);
 		float an = anim("da" + e.id, hov);
 		Gfx.rrectBorder(c, x, y, cw, ch, 3, Gfx.blend(TILE, TILE_HOVER, an), sel ? 0xFFB6BAC8 : Gfx.blend(Theme.CARD_BORDER, Theme.CARD_BORDER_HOVER, an));
@@ -5291,7 +5306,7 @@ public class SolMenuScreen extends Screen {
 			Gfx.rrect(c, bx, by, bw, 22, 7, Theme.OFF_BG);
 			Gfx.textFit(c, "Not for sale yet", px + prevW / 2, prevW - 24, by + 7, Theme.DIM);
 		} else {
-			boolean on = dev.solclient.fx.DeathAnimBridge.enabled(cur);
+			boolean on = dev.solclient.fx.DeathAnimBridge.isEquipped(cur);
 			button(c, mx, my, bx, by, bw, 22, on ? "Unequip" : "Equip", "lsw" + cur.id, on ? Theme.OFF_BG : accent, on ? Theme.OFF_BG_HOVER : Theme.accentHover(), 0xFFFFFFFF, () -> equipDeath(fc));
 		}
 		button(c, mx, my, bx, by - 26, bw, 20, "View in world", "lviewda", TILE, TILE_HOVER, Theme.TEXT, () -> viewDeath(fc));
