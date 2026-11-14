@@ -91,8 +91,9 @@ public class ListenersHudMod extends HudMod {
 			int x = horizontal ? i * (hs + 4) : 0, y = horizontal ? 0 : i * rowH();
 			boolean host = MusicShare.following != null ? i == 0 : false;
 			// only the heads: no circle behind them
-			PlayerSkinDrawer.draw(c, skin(u), x, y, hs);
 			String nm = edit && u.startsWith("0000") ? "Friend " + u.substring(u.length() - 1) : MusicShare.nick(u);
+			// the head by NAME: on offline-mode servers the uuid is not the account's and the skin never matched
+			dev.solclient.gui.Faces.draw(c, nm, x, y, hs, 255);
 			if (names.on()) {
 				if (horizontal) {
 					c.drawText(mc.textRenderer, mc.textRenderer.trimToWidth(nm, hs + 4), x, y + hs + 2, 0xFFFFFFFF, true);

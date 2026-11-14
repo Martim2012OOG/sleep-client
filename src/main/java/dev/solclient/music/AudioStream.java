@@ -141,15 +141,47 @@ public final class AudioStream {
 	}
 
 	/** Called every tick: starts the capture when somebody listens, stops it when nobody does. Cheap: no work while nothing changes. */
-	public static void hostWant(boolean want) {
+	public static void hostWant(boolean want, String source) {
+		String src = source == null ? "" : source;
+		if (hosting() && want && startedFor != null && !startedFor.equals(src)) {
+			hostStop(); // the song now comes from another player: capture that one instead
+		}
 		if (want && !hosting() && !hostStarting) {
 			hostStarting = true;
+			startedFor = src;
 			Thread t = new Thread(AudioStream::hostStart, "Sleep audio start");
 			t.setDaemon(true);
 			t.start();
 		} else if (!want && (hosting() || hostWs != null)) {
 			hostStop();
 		}
+	}
+
+	private static volatile String startedFor;
+
+	/** Linux: the PulseAudio / PipeWire "sink input" of the music player (by name), so only its sound is sent. Null = not found. */
+	private static String linuxSinkInput(String source) {
+		if (source == null || source.isEmpty()) {
+			return null;
+		}
+		String key = source.toLowerCase(Locale.ROOT).replace(" music", "");
+		try {
+			Process p = new ProcessBuilder("pactl", "list", "sink-inputs").redirectErrorStream(true).start();
+			String out = new String(p.getInputStream().readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+			p.waitFor(3, TimeUnit.SECONDS);
+			for (String block : out.split("Sink Input #")) {
+				if (block.toLowerCase(Locale.ROOT).contains(key)) {
+					int nl = block.indexOf('\n');
+					String id = (nl > 0 ? block.substring(0, nl) : block).trim();
+					if (id.matches("\\d+")) {
+						return id;
+					}
+				}
+			}
+		} catch (Exception ignored) {
+			// no pactl
+		}
+		return null;
 	}
 
 	private static void hostStart() {
@@ -171,7 +203,16 @@ public final class AudioStream {
 					Files.copy(in, exe, StandardCopyOption.REPLACE_EXISTING);
 				}
 				exe.toFile().setExecutable(true);
-				p = new ProcessBuilder(exe.toString()).redirectErrorStream(false).start();
+				String src = startedFor == null ? "" : startedFor;
+				java.util.List<String> cmd = new java.util.ArrayList<>(java.util.List.of(exe.toString()));
+				if (src.equals("Spotify")) {
+					cmd.add("--only");
+					cmd.add("com.spotify.client");
+				} else if (src.equals("Apple Music")) {
+					cmd.add("--only");
+					cmd.add("com.apple.Music");
+				}
+				p = new ProcessBuilder(cmd).redirectErrorStream(false).start();
 			} else if (WIN) {
 				Path ps = dir.resolve("audio.ps1");
 				try (InputStream in = AudioStream.class.getResourceAsStream("/kubo/audio.ps1")) {
@@ -184,6 +225,12 @@ public final class AudioStream {
 				p = new ProcessBuilder("powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass", "-WindowStyle", "Hidden", "-File", ps.toString()).start();
 			} else {
 				String[] cmd = linuxCommand();
+				if (cmd != null && cmd[0].equals("parec")) {
+					String idx = linuxSinkInput(startedFor);
+					if (idx != null) { // only the music player's own stream, not the whole output
+						cmd = new String[] {"parec", "--format=s16le", "--rate=24000", "--channels=1", "--latency-msec=40", "--monitor-stream=" + idx};
+					}
+				}
 				if (cmd == null) {
 					status = "install pulseaudio-utils (parec) or pipewire to send your sound";
 					return;

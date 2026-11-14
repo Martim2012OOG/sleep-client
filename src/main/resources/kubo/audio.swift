@@ -45,7 +45,24 @@ Task {
 			FileHandle.standardError.write(Data("no display\n".utf8))
 			exit(2)
 		}
-		let filter = SCContentFilter(display: display, excludingWindows: [])
+		// ONLY the music: with "--only id,id" just those apps (Spotify, Apple Music...); otherwise every app EXCEPT the game, the voice chats and
+		// the like, so your voice, your friends and the game's sounds never go out
+		var only: [String] = []
+		if let i = CommandLine.arguments.firstIndex(of: "--only"), i + 1 < CommandLine.arguments.count {
+			only = CommandLine.arguments[i + 1].split(separator: ",").map { String($0) }
+		}
+		let filter: SCContentFilter
+		let wanted = content.applications.filter { only.contains($0.bundleIdentifier) }
+		if !only.isEmpty && !wanted.isEmpty {
+			filter = SCContentFilter(display: display, including: wanted, exceptingWindows: [])
+		} else {
+			let skip = ["java", "minecraft", "discord", "sleep", "zoom", "teams", "facetime", "skype", "slack", "whatsapp", "telegram", "obs", "voicechat", "ts3", "teamspeak"]
+			let out = content.applications.filter { app in
+				let n = app.applicationName.lowercased(), b = app.bundleIdentifier.lowercased()
+				return skip.contains { n.contains($0) || b.contains($0) }
+			}
+			filter = SCContentFilter(display: display, excludingApplications: out, exceptingWindows: [])
+		}
 		let cfg = SCStreamConfiguration()
 		cfg.capturesAudio = true
 		cfg.sampleRate = 24000

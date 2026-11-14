@@ -69,6 +69,7 @@ public final class MusicShare {
 	/** The host I listen along with (no dashes), or null. */
 	public static volatile String following;
 	private static String followKey = "";
+	private static String lastAudioStatus = "";
 	private static boolean followPlaying = true;
 	private static long followStartedAt, nextHb, nextDrift, lastFollowFail;
 	private static boolean followBusy;
@@ -256,6 +257,9 @@ public final class MusicShare {
 	// ------------------------------------------------------------------ incoming
 	/** A "mu" (what a player listens to) and / or "mi" (listen-along messages) arrived from the server room (client thread). */
 	public static void onRemote(String uuid, String nick, JsonObject kx) {
+		if (uuid != null) {
+			uuid = uuid.replace("-", "").toLowerCase(java.util.Locale.ROOT); // the same player arrives by 3 roads, always under one id
+		}
 		if (uuid == null || uuid.equals(me())) {
 			return;
 		}
@@ -308,6 +312,13 @@ public final class MusicShare {
 		}
 		switch (type) {
 			case "req" -> {
+				if (LISTENERS.containsKey(from)) {
+					send(from, "ok", ""); // already in: only confirm again (the request came twice by two roads)
+					return;
+				}
+				if (PENDING.containsKey(from)) {
+					return; // already asked: one question in the chat is enough
+				}
 				Track t = mine();
 				if (t == null) {
 					send(from, "no", "idle");
@@ -400,6 +411,7 @@ public final class MusicShare {
 	}
 
 	public static void accept(String uuid) {
+		uuid = uuid.replace("-", "").toLowerCase(java.util.Locale.ROOT);
 		MusicShareMod m = MusicShareMod.instance;
 		PENDING.remove(uuid);
 		if (m == null || LISTENERS.size() >= Math.min(MAX_LISTENERS, m.maxListeners())) {
@@ -413,6 +425,7 @@ public final class MusicShare {
 	}
 
 	public static void decline(String uuid) {
+		uuid = uuid.replace("-", "").toLowerCase(java.util.Locale.ROOT);
 		PENDING.remove(uuid);
 		send(uuid, "no", "");
 	}
@@ -578,7 +591,12 @@ public final class MusicShare {
 			}
 		}
 		// ---- sound streaming: capture only while somebody listens; play only when the host we follow streams
-		AudioStream.hostWant(canStream && !LISTENERS.isEmpty());
+		AudioStream.hostWant(canStream && !LISTENERS.isEmpty(), MusicHub.source);
+		String ast = AudioStream.status;
+		if (ast != null && !ast.isEmpty() && !ast.equals(lastAudioStatus)) {
+			say(Lang.tr("Sound: ", "Som: ") + ast, ast.startsWith("macOS") || ast.startsWith("audio") || ast.startsWith("this") || ast.startsWith("install"));
+		}
+		lastAudioStatus = ast == null ? "" : ast;
 		String fh = following;
 		Remote fr = fh == null ? null : remote(fh);
 		AudioStream.listenTo(fr != null && fr.stream && songVisible(fr) ? fh : null);
