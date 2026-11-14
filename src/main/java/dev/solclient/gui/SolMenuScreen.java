@@ -2709,7 +2709,6 @@ public class SolMenuScreen extends Screen {
 					boolean hov = in(mx, my, px, y + 5, ws[i], 18) && my >= clipY0 && my < clipY1;
 					if (i == cur) {
 						Gfx.rrect(c, px, y + 5, ws[i], 18, 3, 0xFF2D3147);
-						c.fill(px + 2, y + 21, px + ws[i] - 2, y + 23, acc);
 					} else if (hov) {
 						Gfx.rrect(c, px, y + 5, ws[i], 18, 3, 0xFF1A1D2B);
 					}

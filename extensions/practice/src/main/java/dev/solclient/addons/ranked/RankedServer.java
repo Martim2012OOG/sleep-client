@@ -179,11 +179,25 @@ public final class RankedServer {
 			return;
 		}
 		ticks++;
-		if ((phase == Phase.COUNTDOWN || phase == Phase.FIGHT) && ticks % 10 == 0) {
-			// everyone who fights is in survival: the host's world may have been opened in creative, and nobody flies or breaks the map from there
+		if (ticks % 20 == 0 && phase != Phase.DONE) {
+			// every second, for everybody in the match: survival (adventure while waiting), no flying. The host's world may be creative and the host
+			// can't be allowed to fly or build from there. It is the game's own call, not a command, so no permission can stop it.
+			net.minecraft.world.GameMode want = phase == Phase.WAITING ? net.minecraft.world.GameMode.ADVENTURE : net.minecraft.world.GameMode.SURVIVAL;
 			for (ServerPlayerEntity p : allPlayers(s)) {
-				if (p.isCreative() || p.getAbilities().allowFlying && !p.isSpectator() && !p.isCreative()) {
-					run(s, "gamemode survival " + p.getUuidAsString());
+				try {
+					boolean wrong = p.interactionManager.getGameMode() != want && p.interactionManager.getGameMode() != net.minecraft.world.GameMode.SPECTATOR;
+					if (wrong) {
+						p.changeGameMode(want);
+					}
+					var ab = p.getAbilities();
+					if (!p.isSpectator() && (wrong || ab.allowFlying || ab.flying)) {
+						ab.allowFlying = false;
+						ab.flying = false;
+						ab.invulnerable = false;
+						p.sendAbilitiesUpdate();
+					}
+				} catch (RuntimeException ignored) {
+					// next second
 				}
 			}
 		}

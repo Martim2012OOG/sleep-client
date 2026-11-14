@@ -156,6 +156,17 @@ public final class MusicShare {
 		return Text.literal(g).setStyle(Style.EMPTY.withFont(FONT).withColor(rgb));
 	}
 
+	/** A short window of the title that slides from one side to the other (like the signs in a supermarket) when the title is longer than the window. */
+	private static String marquee(String s, int win) {
+		if (s.length() <= win) {
+			return s;
+		}
+		String loop = s + "   ·   ";
+		int off = (int) ((System.currentTimeMillis() / 240L) % loop.length());
+		String two = loop + loop;
+		return two.substring(off, off + win);
+	}
+
 	private static String clip(String s, int max) {
 		return s.length() <= max ? s : s.substring(0, Math.max(1, max - 1)) + "…";
 	}
@@ -211,7 +222,7 @@ public final class MusicShare {
 			// hidden: the name is scrambled like enchanting-table text
 			t.append(Text.literal("MMMMMMMMMMMM").setStyle(Style.EMPTY.withColor(0xB8BCC8).withObfuscated(true)));
 		} else {
-			t.append(Text.literal(clip(title, 30)).setStyle(Style.EMPTY.withColor(0xFFFFFF)));
+			t.append(Text.literal(marquee(title, 16)).setStyle(Style.EMPTY.withColor(0xFFFFFF)));
 		}
 		if (listenable) {
 			t.append(Text.literal(" ")).append(glyph(PHONES, 0xA8E6FF));

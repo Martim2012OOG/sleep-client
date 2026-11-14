@@ -18,7 +18,6 @@ public class ListenersHudMod extends HudMod {
 	private final Option.Num headSize = num("Head Size", 16, 8, 40, 1, "px");
 	private final Option.Choice layout = choice("Layout", 0, "Vertical", "Horizontal");
 	private final Option.Bool names = bool("Show Names", true);
-	private final Option.Bool rings = bool("Colour Ring", true);
 	private final Option.Bool onlyWhenOn = bool("Hide When Alone", true);
 
 	public ListenersHudMod() {
@@ -91,10 +90,7 @@ public class ListenersHudMod extends HudMod {
 			String u = l.get(i);
 			int x = horizontal ? i * (hs + 4) : 0, y = horizontal ? 0 : i * rowH();
 			boolean host = MusicShare.following != null ? i == 0 : false;
-			if (rings.on()) {
-				int col = host ? 0xFF55FF99 : 0xFF6FB6FF;
-				Gfx.circle(c, x + hs / 2F, y + hs / 2F, hs / 2F + 1.6F, col);
-			}
+			// only the heads: no circle behind them
 			PlayerSkinDrawer.draw(c, skin(u), x, y, hs);
 			String nm = edit && u.startsWith("0000") ? "Friend " + u.substring(u.length() - 1) : MusicShare.nick(u);
 			if (names.on()) {
