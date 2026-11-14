@@ -24,10 +24,13 @@ public abstract class LocatorHeadMixin {
 
 	@Unique
 	private static TrackedWaypoint kubo$wp;
+	@Unique
+	private static Entity kubo$viewer;
 
 	@Inject(method = "method_70870", at = @At("HEAD"), require = 0)
 	private void kubo$grab(Entity viewer, World world, EntityTickProgress tick, DrawContext c, int y, TrackedWaypoint wp, CallbackInfo ci) {
 		kubo$wp = wp;
+		kubo$viewer = viewer;
 	}
 
 	@Redirect(method = "method_70870", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/DrawContext;drawGuiTexture(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/util/Identifier;IIIII)V", ordinal = 0), require = 0)
@@ -39,7 +42,20 @@ public abstract class LocatorHeadMixin {
 				if (id.isPresent()) {
 					PlayerListEntry e = MinecraftClient.getInstance().getNetworkHandler().getPlayerListEntry(id.get());
 					if (e != null) {
-						PlayerSkinDrawer.draw(c, e.getSkinTextures(), x, y, 9);
+						// like the vanilla bar: the farther the player, the smaller the head (big when close, a small one far away)
+						int size = 9;
+						try {
+							Entity v = kubo$viewer;
+							if (v != null) {
+								double d = Math.sqrt(wp.squaredDistanceTo(v));
+								float t = (float) Math.max(0.0, Math.min(1.0, (d - 24.0) / 276.0));
+								size = Math.round(11F - 6F * t);
+							}
+						} catch (RuntimeException ignored) {
+							size = 9;
+						}
+						int off = (9 - size) / 2;
+						PlayerSkinDrawer.draw(c, e.getSkinTextures(), x + off, y + off, size);
 						return;
 					}
 				}

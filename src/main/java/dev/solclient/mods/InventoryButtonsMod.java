@@ -213,18 +213,29 @@ public class InventoryButtonsMod extends Mod {
 		for (Slot s : h.slots) {
 			maxBottom = Math.max(maxBottom, s.y + 18);
 		}
-		// the real top-left corner of the screen: the player inventory is 166 high (it used to be guessed from the slots, which put the button on the off-hand slot)
-		int bgH = h instanceof net.minecraft.screen.PlayerScreenHandler ? 166 : maxBottom + 6;
-		int x0 = (hs.width - 176) / 2, y0 = (hs.height - bgH) / 2;
+		// the screen's real top-left corner and size (read from the screen itself: guessing broke on the creative / modded inventories)
+		int x0, y0, bgW;
+		try {
+			var acc = (dev.solclient.mixin.overlay.HandledScreenAccessor) hs;
+			x0 = acc.sol$x();
+			y0 = acc.sol$y();
+			bgW = acc.sol$w();
+		} catch (Throwable t) {
+			x0 = (hs.width - 176) / 2;
+			y0 = (hs.height - (maxBottom + 6)) / 2;
+			bgW = 176;
+		}
 		String tip = null;
 		if (supported(h)) {
-			int bx = x0 + 176 - 7 - 3 * 14, by = y0 + 3;
+			int bx = x0 + bgW - 7 - 3 * 14, by = y0 + 3;
 			tip = button(c, mx, my, bx, by, 0, "Sort the chest", tip, () -> sort(h, containerSlots(h)));
 			tip = button(c, mx, my, bx + 14, by, 1, "Take everything", tip, () -> takeAll(h));
 			tip = button(c, mx, my, bx + 28, by, 2, "Put everything in", tip, () -> putAll(h));
 		}
+		// above the right end of the first row of your inventory, where every inventory has a free corner
+		Slot rowEnd = own.get(Math.min(8, own.size() - 1));
 		int ly = y0 + own.get(0).y - 14;
-		tip = button(c, mx, my, x0 + 176 - 7 - 14, ly, 0, "Sort my inventory", tip, () -> sort(h, own));
+		tip = button(c, mx, my, x0 + rowEnd.x + 4, ly, 0, "Sort my inventory", tip, () -> sort(h, own));
 		if (tip != null && showTips.on()) {
 			var tr = mc.textRenderer;
 			int w = tr.getWidth(tip);
