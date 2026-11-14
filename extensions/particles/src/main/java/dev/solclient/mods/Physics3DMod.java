@@ -152,8 +152,8 @@ public class Physics3DMod extends Mod {
 	// ---------------------------------------------------------------- 3D screens
 	/** Only these. Never SolMenuScreen, the pause menu, chests, shulker boxes, hoppers... */
 	public boolean allowed(Screen s) {
-		if (!enabled || !gui.on() || s == null) {
-			return false;
+		if (!enabled || !gui.on() || s == null || dev.solclient.mods.HologramScreensMod.on()) {
+			return false; // (the experimental 3D GUI replaces this tilt)
 		}
 		if (s instanceof InventoryScreen) {
 			return gInv.on();

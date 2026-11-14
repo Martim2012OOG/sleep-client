@@ -26,7 +26,12 @@
     "SmoothFishingLineMixin",
     "TransparentPlayersMixin",
     "MobHealthMixin",
-    "ScoreboardNickMixin"
+    "ScoreboardNickMixin",
+    "HoloHandledScreenMixin",
+    "HoloScreenMixin",
+    "HoloProjectionAccessor",
+    "HoloGuiRendererMixin",
+    "HoloGameRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 0
