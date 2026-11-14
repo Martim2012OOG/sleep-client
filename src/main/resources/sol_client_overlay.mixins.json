@@ -6,6 +6,7 @@
   "client": [
     "PersistentProjectileAccessor",
     "HandledScreenAccessor",
+    "ExplosionBlocksMixin",
     "SeasonMusicMixin",
     "ChatHudAccessor",
     "ChatTimestampsMixin",

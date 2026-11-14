@@ -332,6 +332,9 @@ public class RankedScreen extends Screen {
 		boolean searching = !"idle".equals(Ranked.queueState);
 		if (Ranked.inMatch()) {
 			Gfx.text(c, Lang.tr("In a match - good luck!", "Numa partida - boa sorte!"), ix, cy + 6, 0xFF55FF7F);
+			String lv = Lang.tr("Leave the match (counts as a loss)", "Sair da partida (conta como derrota)");
+			int lw = Gfx.tw(lv) + 24;
+			bigButton(c, mx, my, ix + iw - lw, cy, lw, 22, lv, 0xFF7A2E38, () -> Ranked.leaveMatch(net.minecraft.client.MinecraftClient.getInstance()));
 		} else if (searching) {
 			long s = (System.currentTimeMillis() - Ranked.queuedAt) / 1000;
 			bigButton(c, mx, my, ix, cy, iw, 26, Lang.tr("Searching... ", "A procurar... ") + s / 60 + ":" + String.format("%02d", s % 60) + Lang.tr("  (click to cancel)", "  (clica para cancelar)"),

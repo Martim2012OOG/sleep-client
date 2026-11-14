@@ -93,6 +93,7 @@ public final class KuboLink {
 	/** Every client tick. */
 	public static void tick(MinecraftClient mc) {
 		long now = System.currentTimeMillis();
+		SyncLink.tick(mc);
 		synchronized (PINGS) {
 			PINGS.removeIf(p -> now - p.at > 9000L);
 		}
@@ -145,7 +146,8 @@ public final class KuboLink {
 			a.add(outgoing.dim);
 			kx.add("pg", a);
 		}
-		if (Presence.sendLink(kx)) {
+		boolean viaSync = SyncLink.sendServer(kx);
+		if (Presence.sendLink(kx) || viaSync) {
 			lastSend = now;
 			lastBadge = sig;
 			lastBadgeAt = now;
@@ -175,7 +177,8 @@ public final class KuboLink {
 		if (cx.size() > 0) {
 			kx.add("cx", cx);
 		}
-		if (Presence.sendLinkLobby(kx)) {
+		boolean lobbyViaSync = SyncLink.sendLobby(kx);
+		if (Presence.sendLinkLobby(kx) || lobbyViaSync) {
 			lastLobbyAt = now;
 			lastLobbySig = sig;
 			lastSentAt = now;
@@ -191,6 +194,7 @@ public final class KuboLink {
 		String s = "Lobby " + (Presence.connected() ? Presence.lobbyPlayers().size() + " online" : "OFF") + " | Server room "
 				+ (Presence.serverRoomOpen() ? Presence.serverPlayers().size() + " players" : "OFF") + " | sent " + ago(lastSentAt)
 				+ " | got " + (lastRecvNick.isEmpty() ? "nothing yet" : lastRecvNick + " " + ago(lastRecvAt));
+		s = s + " || " + SyncLink.diag();
 		return Presence.problem == null ? s : s + " | " + Presence.problem;
 	}
 

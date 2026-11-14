@@ -36,6 +36,13 @@ public class PracticeExtension implements KuboExtension {
 			return; // reinstalled in the same session: the hooks below are still there
 		}
 		hooked = true;
+		// /leave: only exists while you are in a Ranked / Duel match
+		net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback.EVENT.register((d, reg) -> d.register(
+				net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal("leave").requires(src -> on && dev.solclient.addons.ranked.Ranked.inMatch())
+						.executes(ctx -> {
+							dev.solclient.addons.ranked.Ranked.leaveMatch(net.minecraft.client.MinecraftClient.getInstance());
+							return 1;
+						})));
 		net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry.playC2S().register(dev.solclient.addons.ranked.RankedReady.ID, dev.solclient.addons.ranked.RankedReady.CODEC);
 		net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.registerGlobalReceiver(dev.solclient.addons.ranked.RankedReady.ID,
 				(payload, ctx) -> dev.solclient.addons.ranked.RankedServer.markReady(ctx.player()));
@@ -57,8 +64,16 @@ public class PracticeExtension implements KuboExtension {
 				dev.solclient.addons.ranked.RankedServer.onLeave(h.player);
 			}
 		});
-		net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents.BEFORE.register((world, player, pos, state, be) -> !on || player.isCreative()
-				|| world.getServer() == null || dev.solclient.addons.ranked.RankedServer.canBreak(world.getServer()));
+		net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents.BEFORE.register((world, player, pos, state, be) -> !on
+				|| world.getServer() == null || dev.solclient.addons.ranked.RankedServer.canBreak(world.getServer(), pos));
+		// what the players place is the only thing that can be broken or blown up in an arena
+		net.fabricmc.fabric.api.event.player.UseBlockCallback.EVENT.register((player, world, hand, hit) -> {
+			if (on && !world.isClient()) {
+				dev.solclient.addons.ranked.RankedServer.notePlace(world, hit.getBlockPos(), hit.getSide());
+			}
+			return net.minecraft.util.ActionResult.PASS;
+		});
+		dev.solclient.fx.ExplosionGuard.allow = (w, p) -> !on || dev.solclient.addons.ranked.RankedServer.explosionMayBreak(w.getServer(), p);
 		ClientTickEvents.END_CLIENT_TICK.register(mc -> {
 			if (on) {
 				dev.solclient.addons.ranked.Ranked.tick(mc);

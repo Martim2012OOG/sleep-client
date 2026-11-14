@@ -34,8 +34,9 @@ public abstract class MusicTagMixin {
 			}
 			Text tag = MusicShare.tagFor(e.getUuid(), state.squaredDistanceToCamera);
 			if (tag != null) {
-				// vanilla draws the name at 0 and the scoreboard line under it; positive = higher. With a scoreboard line the name is lifted a line.
-				int y = state.playerName != null ? 21 : 11;
+				// seen in game: a positive offset puts the line UNDER the name (it hung in front of the body), so it goes up with a negative one.
+				// With a scoreboard line (the hearts / the sleep score) the name is already a line higher.
+				int y = state.playerName != null ? -20 : -11;
 				queue.submitLabel(matrices, state.nameLabelPos, y, tag, !state.sneaking, state.light, state.squaredDistanceToCamera, camera);
 			}
 		} catch (RuntimeException ignored) {

@@ -336,14 +336,40 @@ public final class Ranked {
 		}
 	}
 
+	private static long joinTryAt;
+	private static int joinTries;
+	private static String triesFor;
+
+	/**
+	 * Takes you to the match's server. If the connection fails (a mod mismatch, the host's server not ready yet, a hiccup) it is tried again
+	 * every 12 s, up to 6 times, instead of leaving you "in a match" while sitting in the menu.
+	 */
 	private static void joinTick(MinecraftClient mc, Match m) {
-		if (m.address == null || m.id.equals(joiningFor)) {
+		if (m.address == null || m.id.equals(ignoredMatch)) {
 			return;
 		}
 		if (mc.currentScreen instanceof net.minecraft.client.gui.screen.multiplayer.ConnectScreen) {
+			joinTryAt = System.currentTimeMillis();
+			return;
+		}
+		if (!m.id.equals(triesFor)) {
+			triesFor = m.id;
+			joinTries = 0;
+			joinTryAt = 0;
+		}
+		var cur = mc.getCurrentServerEntry();
+		if (mc.world != null && cur != null && m.address.equalsIgnoreCase(cur.address)) {
+			joiningFor = m.id; // in the match
+			joinTries = 0;
+			return;
+		}
+		long now = System.currentTimeMillis();
+		if (m.id.equals(joiningFor) && (now - joinTryAt < 12_000L || joinTries >= 6)) {
 			return;
 		}
 		joiningFor = m.id;
+		joinTryAt = now;
+		joinTries++;
 		String addr = m.address;
 		mc.execute(() -> {
 			if (mc.world != null) {
@@ -352,6 +378,33 @@ public final class Ranked {
 			var info = new net.minecraft.client.network.ServerInfo("Sleep " + (m.ranked ? "Ranked" : "Duel"), addr, net.minecraft.client.network.ServerInfo.ServerType.OTHER);
 			net.minecraft.client.gui.screen.multiplayer.ConnectScreen.connect(new net.minecraft.client.gui.screen.TitleScreen(), mc,
 					net.minecraft.client.network.ServerAddress.parse(addr), info, false, null);
+		});
+	}
+
+	/** The match this game left on purpose (/leave or the button): it is no longer shown as running. */
+	private static volatile String ignoredMatch;
+
+	/** /leave (only while a match runs) and the menu button: leave the match = lose it. The host leaving also ends it (the site sees the heartbeat stop). */
+	public static void leaveMatch(MinecraftClient mc) {
+		Match m = match;
+		if (m == null) {
+			return;
+		}
+		final String id = m.id;
+		ignoredMatch = id;
+		match = null;
+		joiningFor = id;
+		async(() -> {
+			SolarApi.call("POST", "/pvp/matches/" + SolarApi.enc(id) + "/leave", new JsonObject());
+			poll(true);
+		});
+		mc.execute(() -> {
+			if (mc.world != null) {
+				quit(mc, true);
+			}
+			if (mc.player != null) {
+				mc.inGameHud.getChatHud().addMessage(net.minecraft.text.Text.literal("[Sleep] You left the match."));
+			}
 		});
 	}
 
@@ -453,6 +506,9 @@ public final class Ranked {
 			JsonObject mo = obj(o, "match");
 			Match old = match;
 			match = mo == null ? (old != null && ("finished".equals(old.status) || "cancelled".equals(old.status)) ? old : null) : parseMatch(mo);
+			if (match != null && match.id.equals(ignoredMatch) && !"finished".equals(match.status) && !"cancelled".equals(match.status)) {
+				match = null; // you left this one: it does not hold you in "In a match" any more
+			}
 			if (old == null && match != null && "hosting".equals(match.status)) {
 				queueState = "idle";
 				net.minecraft.client.MinecraftClient.getInstance().execute(() -> RankedFx.found(match));

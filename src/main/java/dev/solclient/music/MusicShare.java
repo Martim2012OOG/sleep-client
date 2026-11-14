@@ -485,7 +485,7 @@ public final class MusicShare {
 		synchronized (OUT) {
 			mi = OUT.peek();
 		}
-		if ((mu != null || mi != null) && Presence.serverRoomOpen()) {
+		if ((mu != null || mi != null) && (Presence.serverRoomOpen() || dev.solclient.social.SyncLink.serverOpen())) {
 			JsonObject kx = new JsonObject();
 			kx.addProperty("n", mc.getSession().getUsername());
 			if (mu != null) {
@@ -494,7 +494,8 @@ public final class MusicShare {
 			if (mi != null) {
 				kx.add("mi", mi);
 			}
-			if (Presence.sendLink(kx)) {
+			boolean viaSync = dev.solclient.social.SyncLink.sendServer(kx);
+			if (Presence.sendLink(kx) || viaSync) {
 				if (mu != null) {
 					lastSig = sig;
 					lastSent = now;

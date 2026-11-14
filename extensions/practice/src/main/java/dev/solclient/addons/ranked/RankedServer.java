@@ -66,6 +66,7 @@ public final class RankedServer {
 		scoreB = 0;
 		DEAD.clear();
 		READY.clear();
+		PLACED.clear();
 		PARKED.clear();
 		allOnlineAt = -1;
 		allReadyAt = -1;
@@ -94,9 +95,46 @@ public final class RankedServer {
 		return m != null && phase != Phase.IDLE && isArenaWorld(s);
 	}
 
-	/** Blocks can be broken only while fighting (building kits); never during the intro or between rounds. */
-	public static boolean canBreak(MinecraftServer s) {
-		return !active(s) || phase == Phase.FIGHT;
+	/** Blocks the players placed in this match (long BlockPos): the only ones that can be broken or blown up. The map is never touched. */
+	private static final java.util.Set<Long> PLACED = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+	/** A player used an item on a block: whatever gets placed there (in air or a replaceable block) is theirs to break. */
+	public static void notePlace(net.minecraft.world.World world, net.minecraft.util.math.BlockPos pos, net.minecraft.util.math.Direction side) {
+		var s = world.getServer();
+		if (s == null || !active(s)) {
+			return;
+		}
+		if (world.getBlockState(pos).isReplaceable()) {
+			PLACED.add(pos.asLong());
+		}
+		net.minecraft.util.math.BlockPos off = pos.offset(side);
+		if (world.getBlockState(off).isReplaceable()) {
+			PLACED.add(off.asLong());
+		}
+	}
+
+	/** Inside an arena match only blocks the players placed may be broken, and only while fighting (not creative: nobody breaks the map). */
+	public static boolean canBreak(MinecraftServer s, net.minecraft.util.math.BlockPos pos) {
+		if (!active(s)) {
+			return true;
+		}
+		if (phase != Phase.FIGHT || !PLACED.contains(pos.asLong())) {
+			return false;
+		}
+		PLACED.remove(pos.asLong());
+		return true;
+	}
+
+	/** Explosions: the arena's map blocks stay; only placed blocks may go. */
+	public static boolean explosionMayBreak(MinecraftServer s, net.minecraft.util.math.BlockPos pos) {
+		if (!active(s)) {
+			return true;
+		}
+		if (PLACED.contains(pos.asLong())) {
+			PLACED.remove(pos.asLong());
+			return true;
+		}
+		return false;
 	}
 
 	private static boolean isArenaWorld(MinecraftServer s) {
@@ -141,6 +179,14 @@ public final class RankedServer {
 			return;
 		}
 		ticks++;
+		if ((phase == Phase.COUNTDOWN || phase == Phase.FIGHT) && ticks % 10 == 0) {
+			// everyone who fights is in survival: the host's world may have been opened in creative, and nobody flies or breaks the map from there
+			for (ServerPlayerEntity p : allPlayers(s)) {
+				if (p.isCreative() || p.getAbilities().allowFlying && !p.isSpectator() && !p.isCreative()) {
+					run(s, "gamemode survival " + p.getUuidAsString());
+				}
+			}
+		}
 		if (phase != Phase.WAITING && ticks % 20 == 0 && phase != Phase.DONE) {
 			sidebar(s, mm);
 		}
@@ -500,6 +546,7 @@ public final class RankedServer {
 	}
 
 	private static void place(MinecraftServer s, List<String> names, RankedWorld.Spot first, RankedWorld.Spot second, List<String> kit) {
+		PLACED.clear();
 		for (int i = 0; i < names.size(); i++) {
 			ServerPlayerEntity p = player(s, names.get(i));
 			if (p == null) {
