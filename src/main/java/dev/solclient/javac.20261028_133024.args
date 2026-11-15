@@ -1,6 +1,0 @@
--proc:none
--Xmaxerrs
-50
--d
-/tmp/claude-0/jc_out
-gui/SolMenuScreen.java

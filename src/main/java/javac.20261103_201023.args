@@ -1,6 +1,0 @@
--proc:none
--d
-/tmp/jx
-dev/solclient/SolClient.java
-dev/solclient/mixin/InGameHudMixin.java
-dev/solclient/mods/SolClientMod.java

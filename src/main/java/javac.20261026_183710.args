@@ -1,9 +1,0 @@
--proc:none
--sourcepath
-.
--Xmaxerrs
-50000
--d
-/tmp/out
-dev/solclient/CustomFont.java
-dev/solclient/mods/SolClientMod.java

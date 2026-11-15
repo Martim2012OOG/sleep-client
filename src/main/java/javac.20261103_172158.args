@@ -1,7 +1,0 @@
--proc:none
--Xmaxerrs
-20000
--d
-/tmp/jc
-dev/solclient/music/NowPlayingCard.java
-dev/solclient/mods/SpotifyMod.java

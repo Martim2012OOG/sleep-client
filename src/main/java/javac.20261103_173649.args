@@ -1,6 +1,0 @@
--proc:none
--Xmaxerrs
-20000
--d
-/tmp/jc4
-dev/solclient/mods/AutoPasswordMod.java
