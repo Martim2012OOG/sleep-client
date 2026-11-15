@@ -43,6 +43,23 @@ sourceSets {
 	}
 }
 
+// Um ficheiro que existe na pasta da versao (src/v26_x) SUBSTITUI o de src/main com o mesmo caminho. Assim, se sobrar uma copia antiga
+// em src/main (por exemplo "Update from ZIP" nao apaga ficheiros), o build nao falha com "duplicate class".
+def overrides = { String sub ->
+	def dir = file("src/${verDir}/${sub}")
+	def set = new HashSet<String>()
+	if (dir.exists()) {
+		fileTree(dir).visit { if (!it.isDirectory()) set.add(it.relativePath.pathString) }
+	}
+	return set
+}
+def javaOver = overrides('java')
+def resOver = overrides('resources')
+def mainJava = file('src/main/java').absolutePath
+def mainRes = file('src/main/resources').absolutePath
+sourceSets.main.java.exclude { e -> e.file.absolutePath.startsWith(mainJava) && javaOver.contains(e.relativePath.pathString) }
+sourceSets.main.resources.exclude { e -> e.file.absolutePath.startsWith(mainRes) && resOver.contains(e.relativePath.pathString) }
+
 dependencies {
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	implementation "net.fabricmc:fabric-loader:${project.loader_version}"

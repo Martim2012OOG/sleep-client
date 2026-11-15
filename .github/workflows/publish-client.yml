@@ -93,8 +93,6 @@ jobs:
           distribution: temurin
           java-version: 25
       - uses: gradle/actions/setup-gradle@v4
-        with:
-          build-root-directory: port26
       - name: Compilar ${{ matrix.mc }}
         working-directory: port26
         run: |

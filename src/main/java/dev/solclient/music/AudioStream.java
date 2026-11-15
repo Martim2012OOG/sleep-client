@@ -198,15 +198,29 @@ public final class AudioStream {
 			Files.createDirectories(dir);
 			Process p;
 			if (MAC) {
-				Path exe = dir.resolve("audio-helper");
+				// O macOS liga a permissao (gravar o som do Mac) ao ficheiro. Por isso o helper fica SEMPRE no mesmo sitio (partilhado por todas as
+				// instancias) e so e escrito uma vez por versao: se o reescrevessemos a cada arranque, o macOS tratava-o como um programa novo e voltava a pedir.
+				Path exe;
 				try (InputStream in = AudioStream.class.getResourceAsStream("/kubo/audio-helper")) {
 					if (in == null) {
 						status = "this Sleep has no audio helper";
 						return;
 					}
-					Files.copy(in, exe, StandardCopyOption.REPLACE_EXISTING);
+					byte[] bin = in.readAllBytes();
+					StringBuilder hash = new StringBuilder();
+					for (byte b : java.security.MessageDigest.getInstance("SHA-1").digest(bin)) {
+						hash.append(String.format("%02x", b));
+					}
+					Path hdir = Path.of(System.getProperty("user.home"), "Library", "Application Support", "Sleep", "helper");
+					Files.createDirectories(hdir);
+					exe = hdir.resolve("audio-" + hash.substring(0, 10));
+					if (!Files.isRegularFile(exe) || Files.size(exe) != bin.length) {
+						Path tmp = hdir.resolve(exe.getFileName() + ".part");
+						Files.write(tmp, bin);
+						Files.move(tmp, exe, StandardCopyOption.REPLACE_EXISTING);
+					}
 				}
-				exe.toFile().setExecutable(true);
+				exe.toFile().setExecutable(true, false);
 				String src = startedFor == null ? "" : startedFor;
 				java.util.List<String> cmd = new java.util.ArrayList<>(java.util.List.of(exe.toString()));
 				if (src.equals("Spotify")) {
