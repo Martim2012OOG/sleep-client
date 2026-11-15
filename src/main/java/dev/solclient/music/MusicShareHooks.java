@@ -47,6 +47,14 @@ public final class MusicShareHooks {
 								MusicShare.decline(StringArgumentType.getString(c, "id"));
 								return 1;
 							})))
+							.then(ClientCommandManager.literal("remove").then(ClientCommandManager.argument("id", StringArgumentType.word()).executes(c -> {
+								MusicShare.remove(StringArgumentType.getString(c, "id"));
+								return 1;
+							})))
+							.then(ClientCommandManager.literal("stop").executes(c -> {
+								MusicShare.stopHosting(); // everybody who listens to me is taken out
+								return 1;
+							}))
 							.then(ClientCommandManager.literal("leave").executes(c -> {
 								MusicShare.leave();
 								return 1;

@@ -368,6 +368,12 @@ public final class MusicShare {
 					LISTENERS.put(from, System.currentTimeMillis());
 				}
 			}
+			case "kick" -> {
+				if (from.equals(following)) { // the host took me out of the session
+					following = null;
+					say(nickOf(from) + Lang.tr(" removed you from listening along.", " tirou-te de ouvir."), true);
+				}
+			}
 			case "leave" -> {
 				if (LISTENERS.remove(from) != null) {
 					say(nickOf(from) + Lang.tr(" stopped listening.", " deixou de ouvir."), false);
@@ -421,7 +427,24 @@ public final class MusicShare {
 		LISTENERS.put(uuid, System.currentTimeMillis());
 		send(uuid, "ok", "");
 		lastSig = ""; // tell everybody about the new listener now
-		say(nickOf(uuid) + Lang.tr(" is listening along with you now.", " está a ouvir contigo."), false);
+		MinecraftClient mc = MinecraftClient.getInstance();
+		if (mc.inGameHud != null) {
+			final String id = uuid;
+			mc.inGameHud.getChatHud().addMessage(Text.empty().append(Text.literal("[Music] ").formatted(Formatting.GREEN))
+					.append(Text.literal(nickOf(uuid) + Lang.tr(" is listening along with you now. ", " está a ouvir contigo. ")).formatted(Formatting.GRAY))
+					.append(Text.literal("[" + Lang.tr("Remove", "Remover") + "]").setStyle(Style.EMPTY.withColor(Formatting.RED).withBold(true)
+							.withClickEvent(new ClickEvent.RunCommand("/sleep music remove " + id)))));
+		}
+	}
+
+	/** The host takes one listener out (the [Remove] button in the chat, or /sleep music remove). */
+	public static void remove(String uuid) {
+		uuid = uuid.replace("-", "").toLowerCase(java.util.Locale.ROOT);
+		if (LISTENERS.remove(uuid) != null) {
+			send(uuid, "kick", "");
+			lastSig = ""; // tell everybody the new list now
+			say(nickOf(uuid) + Lang.tr(" is no longer listening.", " já não está a ouvir."), false);
+		}
 	}
 
 	public static void decline(String uuid) {
@@ -443,7 +466,7 @@ public final class MusicShare {
 	/** Kick everybody who listens to me. */
 	public static void stopHosting() {
 		for (String u : new ArrayList<>(LISTENERS.keySet())) {
-			send(u, "no", "idle");
+			send(u, "kick", "");
 		}
 		LISTENERS.clear();
 	}
