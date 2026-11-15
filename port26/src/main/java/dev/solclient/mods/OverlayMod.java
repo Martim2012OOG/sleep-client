@@ -111,7 +111,7 @@ public class OverlayMod extends Mod {
 	private void reloadChunks() {
 		try {
 			if (mc.level != null && mc.levelRenderer != null) {
-				((WorldRendererInvoker) (Object) mc.levelRenderer).sol$reload();
+				((WorldRendererInvoker) (Object) dev.solclient.compat.Mc.levelObj(mc)).sol$reload();
 			}
 		} catch (Throwable t) {
 			System.err.println("[Sleep] Hide Foliage: could not reload chunks: " + t);

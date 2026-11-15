@@ -38,6 +38,12 @@ public class SolClient implements ClientModInitializer {
 
 	@Override
 	public void onInitializeClient() {
+		if (System.getProperty("sleep.mixinaudit") != null) { // so em desenvolvimento: forca o carregamento de todos os alvos dos mixins
+			net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents.CLIENT_STARTED.register(c -> {
+				try { org.spongepowered.asm.mixin.MixinEnvironment.getCurrentEnvironment().audit(); } catch (Throwable t) { t.printStackTrace(); }
+				System.out.println("[Sleep] mixin audit done");
+			});
+		}
 		settings = new SolClientMod();
 		reach = new ReachDisplayMod();
 		combo = new ComboCounterMod();

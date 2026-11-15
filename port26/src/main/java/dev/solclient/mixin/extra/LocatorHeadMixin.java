@@ -26,13 +26,13 @@ public abstract class LocatorHeadMixin {
 	@Unique
 	private static Entity kubo$viewer;
 
-	@Inject(method = "extractRenderState", at = @At("HEAD"), require = 0)
+	@Inject(method = "lambda$extractRenderState$1", at = @At("HEAD"), require = 0)
 	private void kubo$grab(Entity viewer, Level world, PartialTickSupplier tick, GuiGraphicsExtractor c, int y, TrackedWaypoint wp, CallbackInfo ci) {
 		kubo$wp = wp;
 		kubo$viewer = viewer;
 	}
 
-	@Redirect(method = "extractRenderState", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;blitSprite(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/resources/Identifier;IIIII)V", ordinal = 0), require = 0)
+	@Redirect(method = "lambda$extractRenderState$1", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;blitSprite(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/resources/Identifier;IIIII)V", ordinal = 0), require = 0)
 	private void kubo$icon(GuiGraphicsExtractor c, RenderPipeline pipeline, Identifier sprite, int x, int y, int w, int h, int colour) {
 		try {
 			TrackedWaypoint wp = kubo$wp;

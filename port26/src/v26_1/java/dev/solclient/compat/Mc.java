@@ -35,4 +35,5 @@ public final class Mc {
 	public static boolean publish(net.minecraft.client.server.IntegratedServer s, net.minecraft.world.level.GameType gm, boolean cheats, int port) { return s.publishServer(gm, cheats, port); }
 	public static net.minecraft.client.telemetry.WorldSessionTelemetryManager worldTelemetry(Minecraft mc) { return mc.getTelemetryManager().createWorldSessionManager(false, java.time.Duration.ZERO, null); }
 	public static void submitNameTag(net.minecraft.client.renderer.OrderedSubmitNodeCollector q, com.mojang.blaze3d.vertex.PoseStack m, net.minecraft.world.phys.Vec3 pos, int y, Component tag, boolean notDiscrete, int light, double distSq, net.minecraft.client.renderer.state.level.CameraRenderState cam) { q.submitNameTag(m, pos, y, tag, notDiscrete, light, distSq, cam); }
+	public static Object levelObj(Minecraft mc) { return mc.levelRenderer; }
 }
