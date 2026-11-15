@@ -218,7 +218,13 @@ export class AudioRoom {
         }
       }
       ws.serializeAttachment(a);
-      ws.send(JSON.stringify({ t: "ready", host: !!a.host }));
+      let hostOn = !!a.host;
+      for (const other of this.ctx.getWebSockets()) {
+        const b = other.deserializeAttachment();
+        if (b && b.authed && b.host) hostOn = true;
+      }
+      ws.send(JSON.stringify({ t: "ready", host: !!a.host, hostOn }));
+      if (a.host) this.tell({ t: "host", on: true }); // the listeners learn the owner is here
       return;
     }
     // binary: only the owner's frames, small, and relayed at once to the listeners
@@ -230,6 +236,18 @@ export class AudioRoom {
     }
   }
 
-  async webSocketClose(ws) { try { ws.close(); } catch (e) {} }
+  tell(obj) {
+    const text = JSON.stringify(obj);
+    for (const other of this.ctx.getWebSockets()) {
+      const b = other.deserializeAttachment();
+      if (b && b.authed && !b.host) { try { other.send(text); } catch (e) {} }
+    }
+  }
+
+  async webSocketClose(ws) {
+    const a = ws.deserializeAttachment();
+    try { ws.close(); } catch (e) {}
+    if (a && a.host) this.tell({ t: "host", on: false });
+  }
   async webSocketError(ws) { try { ws.close(); } catch (e) {} }
 }

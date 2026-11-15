@@ -143,6 +143,10 @@ public final class AudioStream {
 	/** Called every tick: starts the capture when somebody listens, stops it when nobody does. Cheap: no work while nothing changes. */
 	public static void hostWant(boolean want, String source) {
 		String src = source == null ? "" : source;
+		if (hosting() && want && !hostWarned && System.currentTimeMillis() - hostStartedAt > 9000L && bytesCaptured == 0) {
+			hostWarned = true;
+			status = "audio: the capture is running but your computer gives it no sound. macOS: System Settings > Privacy & Security > Screen & System Audio Recording, turn it ON for Sleep / Java, restart the game. Also check that the music is playing";
+		}
 		if (hosting() && want && startedFor != null && !startedFor.equals(src)) {
 			hostStop(); // the song now comes from another player: capture that one instead
 		}
@@ -312,6 +316,9 @@ public final class AudioStream {
 	/** Reads the captured PCM, compresses it and sends 40 ms frames. A frame is dropped (never queued) when the network is behind: no lag builds up. */
 	private static void pump(Process p) {
 		byte[] raw = new byte[FRAME_SAMPLES * 2];
+		bytesCaptured = 0;
+		hostStartedAt = System.currentTimeMillis();
+		hostWarned = false;
 		long lastTry = System.currentTimeMillis();
 		CompletableFuture<?> last = null;
 		try (InputStream in = p.getInputStream()) {
@@ -324,6 +331,7 @@ public final class AudioStream {
 					}
 					got += n;
 				}
+				bytesCaptured += raw.length;
 				WebSocket ws = hostWs;
 				if (ws == null || !hostReady) {
 					long now = System.currentTimeMillis();
@@ -378,7 +386,8 @@ public final class AudioStream {
 	private static volatile boolean playing;
 	/** 0..1 */
 	public static volatile float volume = 1F;
-	private static volatile long framesSent, framesGot, framesPlayed;
+	private static volatile long framesSent, framesGot, framesPlayed, bytesCaptured, hostStartedAt, hostOnAt;
+	private static volatile boolean lisReady, hostOn, lisWarned, hostWarned;
 
 	/** One line for the sync status in the settings: what the sound is doing right now. */
 	public static String diag() {
@@ -392,6 +401,10 @@ public final class AudioStream {
 			listenStop();
 			listenHost = hostUuid;
 			lisRetryAt = 0;
+		}
+		if (hostUuid != null && lisReady && hostOn && !lisWarned && framesGot == 0 && System.currentTimeMillis() - hostOnAt > 7000L) {
+			lisWarned = true;
+			status = "audio: the host is connected but no sound arrives: on the host computer the capture is silent (permission or nothing playing)";
 		}
 		if (hostUuid != null && lisWs == null && !lisBusy && System.currentTimeMillis() >= lisRetryAt) {
 			lisBusy = true;
@@ -416,7 +429,10 @@ public final class AudioStream {
 				lisBusy = false;
 				framesGot = 0;
 				framesPlayed = 0;
-				status = "connected to the sound, waiting for it";
+				lisReady = false;
+				hostOn = false;
+				lisWarned = false;
+				status = "connecting to the sound room...";
 				ws.sendText(hello, true);
 				startPlayer();
 				ws.request(1);
@@ -424,6 +440,17 @@ public final class AudioStream {
 
 			@Override
 			public CompletionStage<?> onText(WebSocket ws, CharSequence data, boolean last) {
+				String t = data.toString();
+				if (t.contains("\"ready\"")) {
+					lisReady = true;
+					hostOn = t.contains("\"hostOn\":true");
+					hostOnAt = System.currentTimeMillis();
+					status = hostOn ? "connected, the host's sound room is open: waiting for the sound" : "connected, but the host is not sending sound yet";
+				} else if (t.contains("\"host\"")) {
+					hostOn = t.contains("\"on\":true");
+					hostOnAt = System.currentTimeMillis();
+					status = hostOn ? "the host started sending sound" : "the host stopped sending sound";
+				}
 				ws.request(1);
 				return null;
 			}

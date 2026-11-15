@@ -209,7 +209,10 @@ final class MacMusic {
 			sb.append("set r to execute tb javascript \"").append(asq(JS_INFO)).append("\"\n");
 			sb.append("if r is not \"\" then set res to res & wid & \":\" & (id of tb) & \"").append(SEP).append("\" & r & linefeed\n");
 		}
-		sb.append("end if\non error m\nset res to res & \"ERR").append(SEP).append("\" & m & linefeed\nend try\nend repeat\n");
+		sb.append("end if\non error m\nset tt to \"\"\ntry\nset tt to title of tb\nend try\nset ti to \"\"\ntry\n");
+		sb.append(safari ? "set ti to i as text\n" : "set ti to (id of tb) as text\n");
+		sb.append("end try\nset res to res & \"ERR").append(SEP).append("\" & m & \"").append(SEP).append("\" & u & \"").append(SEP)
+				.append("\" & tt & \"").append(SEP).append("\" & wid & \":\" & ti & linefeed\nend try\nend repeat\n");
 		sb.append("end try\nend repeat\nend tell\nreturn res");
 		Sh.Result r = osa(sb.toString());
 		String all = r.out() + "\n" + r.err();
@@ -226,6 +229,14 @@ final class MacMusic {
 					err = safari ? "Safari: Develop menu > Allow JavaScript from Apple Events"
 							: app + ": View > Developer > Allow JavaScript from Apple Events";
 				}
+				// the browser would not run our script: still show the song from the tab title (no need for any switch)
+				String[] g = line.split(java.util.regex.Pattern.quote(SEP), -1);
+				if (g.length >= 5) {
+					Track t = fromTabTitle(app, g[2], g[3], tabCtl(app, safari, g[4]));
+					if (t != null) {
+						out.add(t);
+					}
+				}
 				continue;
 			}
 			String[] f = line.split(java.util.regex.Pattern.quote(SEP), -1);
@@ -241,6 +252,41 @@ final class MacMusic {
 					tabCtl(app, safari, ids)));
 		}
 		return err;
+	}
+
+	/** A song read from a tab title ("Song - YouTube Music", "Song \u2022 Artist" ...), or null when the tab is not playing a song. */
+	private static Track fromTabTitle(String app, String url, String rawTitle, Track.Ctl ctl) {
+		if (rawTitle == null) {
+			return null;
+		}
+		String t = rawTitle.strip().replaceFirst("^\\(\\d+\\)\\s*", "");
+		boolean ytm = url.contains("music.youtube.com"), yt = url.contains("youtube.com") && !ytm;
+		if (!ytm && !yt && !url.contains("open.spotify.com") && !url.contains("soundcloud.com")) {
+			return null;
+		}
+		for (String suf : new String[] {" - YouTube Music", " - YouTube", " | Spotify", " - Spotify", " | SoundCloud", " - SoundCloud"}) {
+			if (t.endsWith(suf)) {
+				t = t.substring(0, t.length() - suf.length()).strip();
+			}
+		}
+		String low = t.toLowerCase();
+		if (t.isEmpty() || low.equals("youtube music") || low.equals("youtube") || low.startsWith("spotify") || low.equals("soundcloud")
+				|| low.equals("home") || low.startsWith("explore") || low.startsWith("search") || low.endsWith("web player")) {
+			return null;
+		}
+		String title = t, artist = "";
+		int i = t.indexOf(" \u2022 ");
+		if (i > 0) {
+			title = t.substring(0, i).strip();
+			artist = t.substring(i + 3).strip();
+		} else if (!ytm && !yt) {
+			int d = t.indexOf(" - ");
+			if (d > 0) {
+				artist = t.substring(0, d).strip();
+				title = t.substring(d + 3).strip();
+			}
+		}
+		return new Track(app, title + "\u0001" + artist, title, artist, "", 0, 0, true, ctl);
 	}
 
 	/** Text for inside an AppleScript string: backslashes and double quotes escaped. */

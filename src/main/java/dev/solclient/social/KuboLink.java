@@ -102,10 +102,11 @@ public final class KuboLink {
 		String myLook = dev.solclient.mods.NameColourMod.encodeMine();
 		String myFlag = ProfileBadges.myFlagCode();
 		JsonObject myCx = myCosmetics(mc);
-		String sig = myBadge + "|" + myLook + "|" + ProfileBadges.myColourOn() + "|" + myFlag + "|" + myCx;
-		lobbyTick(mc, now, sig, myBadge, myLook, myFlag, myCx);
+		String myDn = dev.solclient.mods.NickHiderMod.publicNick();
+		String sig = myDn + "|" + myBadge + "|" + myLook + "|" + ProfileBadges.myColourOn() + "|" + myFlag + "|" + myCx;
+		lobbyTick(mc, now, sig, myBadge, myLook, myFlag, myCx, myDn);
 		boolean badgeDue = mc.player != null && (!sig.equals(lastBadge) ? now - lastBadgeAt > 1500L
-				: (!myBadge.isEmpty() || !myLook.isEmpty() || !myFlag.isEmpty() || myCx.size() > 0)
+				: (!myDn.isEmpty() || !myBadge.isEmpty() || !myLook.isEmpty() || !myFlag.isEmpty() || myCx.size() > 0)
 						&& now - lastBadgeAt > 6_000L);
 		if (mc.player == null || mc.world == null || !(wantParty || wantPings && outgoing != null || badgeDue)) {
 			return;
@@ -129,6 +130,7 @@ public final class KuboLink {
 			kx.addProperty("z", Math.round(mc.player.getZ()));
 			kx.addProperty("d", mc.world.getRegistryKey().getValue().toString());
 		}
+		kx.addProperty("dn", myDn);
 		kx.addProperty("bd", myBadge);
 		kx.addProperty("bc", ProfileBadges.myColourOn() ? 1 : 0);
 		kx.addProperty("nn", myLook);
@@ -159,17 +161,18 @@ public final class KuboLink {
 	 * Your public profile (badge, name style, flag, cosmetics) also goes to the global lobby, so players who reached the same
 	 * server through another address (another server room) still see your crown, badges and name colour. No position, health or pings.
 	 */
-	private static void lobbyTick(MinecraftClient mc, long now, String sig, String badge, String look, String flag, JsonObject cx) {
+	private static void lobbyTick(MinecraftClient mc, long now, String sig, String badge, String look, String flag, JsonObject cx, String dn) {
 		if (mc.player == null || mc.world == null || mc.isInSingleplayer()) {
 			return;
 		}
 		boolean changed = !sig.equals(lastLobbySig);
-		boolean has = !badge.isEmpty() || !look.isEmpty() || !flag.isEmpty() || cx.size() > 0;
+		boolean has = !dn.isEmpty() || !badge.isEmpty() || !look.isEmpty() || !flag.isEmpty() || cx.size() > 0;
 		if (!(changed ? now - lastLobbyAt > 1500L : has && now - lastLobbyAt > 6_000L)) {
 			return;
 		}
 		JsonObject kx = new JsonObject();
 		kx.addProperty("n", mc.getSession().getUsername());
+		kx.addProperty("dn", dn);
 		kx.addProperty("bd", badge);
 		kx.addProperty("bc", ProfileBadges.myColourOn() ? 1 : 0);
 		kx.addProperty("nn", look);
@@ -216,6 +219,9 @@ public final class KuboLink {
 		ProfileBadges.rememberUuid(uuid, nick);
 		if (kx.has("mu") || kx.has("mi")) {
 			dev.solclient.music.MusicShare.onRemote(uuid, nick, kx); // Music Share: the song above the head, listen-along messages
+		}
+		if (kx.has("dn") && nick != null) {
+			dev.solclient.mods.NickHiderMod.onRemote(nick, Json.str(kx, "dn"));
 		}
 		if (kx.has("bd") && nick != null) {
 			lastRecvAt = now;

@@ -4862,7 +4862,7 @@ public class SolMenuScreen extends Screen {
 				Gfx.rrect(c, px, py, pw, ph, 3, 0xFF262935);
 				return livePlayer(c, "aura:" + d.id(), List.of(d), px, py, pw, ph);
 			}
-			if (Social.isKillEffect(it) && Gfx.mc().player != null) { // always live: a still frame, playing while the mouse is over it
+			if (false && Social.isKillEffect(it) && Gfx.mc().player != null) { // the live card drew only black: the bundled picture is used (itemImage): a still frame, playing while the mouse is over it
 				Identifier skin = Gfx.mc().player.getSkin().body().texturePath();
 				Gfx.rrect(c, px, py, pw, ph, 3, 0xFF262935);
 				c.enableScissor(px, py, px + pw, py + ph);

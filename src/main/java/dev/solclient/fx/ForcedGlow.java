@@ -9,6 +9,7 @@ public final class ForcedGlow {
 	private static final Map<Integer, Integer> COLOURS = new ConcurrentHashMap<>();
 
 	/** RGB the dropped items glow with, or -1 when item glow is off (Item Finder). */
+	/** Not used any more (the Item Finder was removed: it showed items through walls). */
 	public static volatile int itemRgb = -1;
 
 	private ForcedGlow() {

@@ -29,7 +29,8 @@ public abstract class OwnNametagMixin {
 					|| mc.currentScreen != null && entity == mc.getCameraEntity() && mc.options.getPerspective().isFirstPerson()) {
 				return;
 			}
-			boolean normal = OwnNametagMod.on() && !OwnNametagMod.serverHandlesName(mc.player);
+			// only a real plate of the server (text display / armor stand over you) keeps your name away: a team that merely HIDES names does not, hiding is what this overrides
+			boolean normal = OwnNametagMod.on() && !OwnNametagMod.customPlate(mc.player);
 			// forced: the server hides the name (a team rule, say) but draws no plate of its own
 			boolean forced = NameTagStyleMod.forceOwn() && !OwnNametagMod.customPlate(mc.player);
 			if (normal || forced) {

@@ -131,7 +131,6 @@ public class SolClient implements ClientModInitializer {
 		MODS.add(new PatPatMod());
 		MODS.add(new ChristmasWorldMod());
 		MODS.add(new TotemAnimationMod());
-		MODS.add(new BodyGlowMod());
 		MODS.add(new NoFluidOverlayMod());
 		MODS.add(new BactroTweaksMod());
 		MODS.add(new LowShieldMod());
@@ -149,7 +148,6 @@ public class SolClient implements ClientModInitializer {
 		MODS.add(new ChatHeadsMod());
 		MODS.add(new GhostItemFixMod());
 		MODS.add(new dev.solclient.mods.BetterSearchMod());
-		MODS.add(new dev.solclient.mods.ItemFinderMod());
 		MODS.add(new FightCamMod());
 		MODS.add(new ClipEventsMod());
 		MODS.add(new PhotoModeMod());
@@ -201,8 +199,8 @@ public class SolClient implements ClientModInitializer {
 				FovChangerMod.class, StableFovMod.class, SpeedFovLimiterMod.class);
 		group(new ModGroup("Nametags", "nametags", "Name tag style, your own nametag, hearts under names and your name colour.", Mod.Category.VISUAL),
 				NameTagStyleMod.class, OwnNametagMod.class, NametagHealthMod.class, NameColourMod.class);
-		group(new ModGroup("Player Visuals", "player_visuals", "Transparent players, hide armour, durability overlay, hitboxes and body glow.", Mod.Category.VISUAL),
-				TransparentPlayersMod.class, HideArmorMod.class, DurabilityOverlayMod.class, HitboxesMod.class, BodyGlowMod.class);
+		group(new ModGroup("Player Visuals", "player_visuals", "Transparent players, hide armour, durability overlay and hitboxes.", Mod.Category.VISUAL),
+				TransparentPlayersMod.class, HideArmorMod.class, DurabilityOverlayMod.class, HitboxesMod.class);
 		group(new ModGroup("Hand & Items", "hand_items", "Custom hand, 1.7 animations, item physics, crossbow and a smooth fishing line.", Mod.Category.VISUAL),
 				CustomHandMod.class, OldAnimationsMod.class, ItemPhysicsMod.class, CrossbowTweaksMod.class, SmoothFishingLineMod.class);
 		group(new ModGroup("Profiles & Sync", "profiles_sync", "Auto profiles, HUD layouts, resource pack sets and cloud settings.", Mod.Category.UTILITY),
@@ -606,9 +604,6 @@ public class SolClient implements ClientModInitializer {
 		dev.solclient.ext.KuboApi.drawF3(context);
 		// FIX: o HUD aparece SEMPRE. Antes escondia-se quando f3Open() dava true; em alguns PCs isso acontecia sem F3 aberto
 		// (o HUD só voltava ao ligar as hitboxes com F3+B). Já não depende do estado do F3 / hitboxes.
-		if (dev.solclient.mods.ItemFinderMod.instance != null && dev.solclient.mods.ItemFinderMod.instance.enabled) {
-			dev.solclient.mods.ItemFinderMod.instance.draw(context);
-		}
 		if (WaypointsMod.instance != null && WaypointsMod.instance.enabled) {
 			WaypointsMod.instance.draw(context);
 		}

@@ -32,6 +32,7 @@
     "EndPortalMixin",
     "HeadlessHorseMixin",
     "DeathAnimationMixin",
+    "DeathAnimScreenBlockMixin",
     "SkyRenderingMixin",
     "HurtCamWeatherMixin",
     "HurtCamRenderMixin",

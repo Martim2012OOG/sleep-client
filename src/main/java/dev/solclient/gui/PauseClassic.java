@@ -35,6 +35,8 @@ public final class PauseClassic {
 			Consumer<ButtonWidget> addButton, Consumer<Drawable> addDrawable) {
 		MinecraftClient mc = MinecraftClient.getInstance();
 		var st = SolClient.settings;
+		// the Multiplayer button goes in first (above Mods): everything below it moves down one row before the Sleep icons are placed
+		PauseMultiplayerButton.insert(screen, children, addButton);
 		if (st == null || !st.customPause.on() || !st.classicPause() || mc.world == null) {
 			return;
 		}
@@ -88,7 +90,7 @@ public final class PauseClassic {
 			}
 		} else {
 			// icon row under the vanilla buttons (never touches what other mods put on the sides)
-			int n = items.size(), bs = 22, total = n * bs + (n - 1) * gap, x0 = cx - total / 2, y = maxY + 10;
+			int n = items.size(), bs = 22, total = n * bs + (n - 1) * gap, x0 = cx - total / 2, y = maxY + 22; // clearly under the buttons
 			addDrawable.accept((DrawContext c, int mx, int my, float delta) ->
 					Gfx.rrectBorder(c, x0 - 7, y - 6, total + 14, bs + 12, 8, panel, Theme.PANEL_BORDER));
 			for (int i = 0; i < n; i++) {
@@ -108,8 +110,15 @@ public final class PauseClassic {
 				}
 			}
 			// logo + name, bottom-right
-			Gfx.tex(c, Theme.icon2("sol_client"), width - Gfx.tw("SLEEP") - 30, height - 24, 16, 16, 64, 64, 0xFFFFFFFF);
-			Gfx.text(c, "SLEEP", width - Gfx.tw("SLEEP") - 30 + 21, height - 20, Theme.TEXT);
+			float ts = 1.9F;
+			int logo = 28, tw = Math.round(Gfx.tw("SLEEP") * ts), bx = width - tw - logo - 22, by = height - logo - 10;
+			Gfx.tex(c, Theme.icon2("sol_client"), bx, by, logo, logo, 64, 64, 0xFFFFFFFF);
+			var mm = c.getMatrices();
+			mm.pushMatrix();
+			mm.translate(bx + logo + 6, by + (logo - 8 * ts) / 2F + 1);
+			mm.scale(ts, ts);
+			Gfx.text(c, "SLEEP", 0, 0, Theme.TEXT);
+			mm.popMatrix();
 		});
 
 		// your player on the left, in a card, with the Locker button inside it

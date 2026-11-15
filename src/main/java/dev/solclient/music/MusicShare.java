@@ -349,6 +349,9 @@ public final class MusicShare {
 				}
 			}
 			case "ok" -> {
+				if (from.equals(following) && System.currentTimeMillis() - followStartedAt < 8000L) {
+					return; // the same answer came by another road: already handled
+				}
 				following = from;
 				followKey = "";
 				followPlaying = true;
@@ -398,7 +401,17 @@ public final class MusicShare {
 	}
 
 	/** Ask a player to listen along with them. */
+	private static long lastAsk;
+
 	public static void request(String uuid) {
+		if (uuid.equals(following)) {
+			say(Lang.tr("You are already listening along with ", "Já estás a ouvir com ") + nickOf(uuid) + Lang.tr(" (/sleep music leave to stop).", " (/sleep music leave para parar)."), false);
+			return;
+		}
+		if (System.currentTimeMillis() - lastAsk < 4000L) {
+			return; // one request is enough: the host answers when ready
+		}
+		lastAsk = System.currentTimeMillis();
 		Remote r = remote(uuid);
 		if (r == null || !canListen(r)) {
 			say(Lang.tr("You cannot listen along with this player.", "Não podes ouvir com este jogador."), true);

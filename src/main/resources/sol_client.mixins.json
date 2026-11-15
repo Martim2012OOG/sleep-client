@@ -17,7 +17,6 @@
     "InGameOverlayRendererMixin",
     "EntityRenderDispatcherMixin",
     "LivingEntityMixin",
-    "BodyGlowMixin",
     "KuboRenderStateMixin",
     "KuboEntityRendererMixin",
     "KuboLivingRendererMixin",

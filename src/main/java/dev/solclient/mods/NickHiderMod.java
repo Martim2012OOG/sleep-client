@@ -22,6 +22,7 @@ public class NickHiderMod extends Mod {
 	private final Option.Bool hideYourNick = bool("Hide Your Nick", true);
 	private final Option.Choice yourNick = choice("Nickname", 0, "You", "Player", "Me", "Hidden", "Custom");
 	private final Option.Text customNick = text("Custom Nickname", "", 32, "any name you like");
+	private final Option.Bool shareNick = bool("Show My Nickname To Other Sleep Players", true);
 	private final Option.Bool hideOthers = bool("Hide Others' Names", false);
 	private final Option.Bool hideYourSkin = bool("Hide Your Skin", false);
 	private final Option.Bool hideOthersSkins = bool("Hide Others' Skins", false);
@@ -30,6 +31,50 @@ public class NickHiderMod extends Mod {
 		super("Nick Hider", "nick_hider", "Hide your nick and skin (or everyone's) on your screen.", Category.UTILITY);
 		instance = this;
 		customNick.showIf(() -> yourNick.idx() == 4);
+	}
+
+	/** Nicknames other Sleep players chose to show instead of their real one (real nick lower case -> shown nick, when it arrived). */
+	private static final Map<String, Object[]> REMOTE = new java.util.concurrent.ConcurrentHashMap<>();
+	private static String lastWarned = "";
+
+	/**
+	 * What other Sleep players should see instead of your real nick: your Nick Hider name (a custom one has to pass the word /
+	 * phone / link filter), or "" to show the real nick.
+	 */
+	public static String publicNick() {
+		if (!hidingSelf() || !instance.shareNick.on()) {
+			return "";
+		}
+		String n = selfName();
+		if (instance.yourNick.idx() == 4) {
+			String why = dev.solclient.social.NickFilter.problem(n);
+			if (why != null) {
+				if (!n.equals(lastWarned)) {
+					lastWarned = n;
+					MinecraftClient mc = MinecraftClient.getInstance();
+					if (mc.player != null) {
+						mc.player.sendMessage(Text.literal("[Sleep] Other players will not see that custom nick (" + why + " are not allowed). Only you see it.")
+								.formatted(net.minecraft.util.Formatting.YELLOW), false);
+					}
+				}
+				return "Player";
+			}
+		}
+		return n.length() > 32 ? n.substring(0, 32) : n;
+	}
+
+	/** A Sleep player told us what to show instead of their nick ("" = back to the real one). */
+	public static void onRemote(String realNick, String shown) {
+		if (realNick == null || realNick.isEmpty()) {
+			return;
+		}
+		String k = realNick.toLowerCase(java.util.Locale.ROOT);
+		String s = shown == null ? "" : shown.strip();
+		if (s.isEmpty() || s.equalsIgnoreCase(realNick) || dev.solclient.social.NickFilter.problem(s) != null) {
+			REMOTE.remove(k);
+			return;
+		}
+		REMOTE.put(k, new Object[] {realNick, s.length() > 32 ? s.substring(0, 32) : s, System.currentTimeMillis()});
 	}
 
 	private static boolean on() {
@@ -63,19 +108,31 @@ public class NickHiderMod extends Mod {
 
 	/** Replaces hidden names inside a text (keeps colours of each piece). */
 	public static Text apply(Text t) {
-		if (!on() || t == null) {
+		if (t == null) {
+			return t;
+		}
+		long nowMs = System.currentTimeMillis();
+		if (!REMOTE.isEmpty()) {
+			REMOTE.values().removeIf(v -> nowMs - (long) v[2] > 60_000L);
+		}
+		if (!on() && REMOTE.isEmpty()) {
 			return t;
 		}
 		Map<String, String> map = new LinkedHashMap<>();
 		MinecraftClient mc = MinecraftClient.getInstance();
 		String self = mc.getSession().getUsername();
-		if (instance.hideYourNick.on() && self != null && !self.isEmpty()) {
+		if (on() && instance.hideYourNick.on() && self != null && !self.isEmpty()) {
 			map.put(self, selfName());
 		}
-		if (instance.hideOthers.on() && mc.getNetworkHandler() != null) {
+		for (Object[] v : REMOTE.values()) {
+			if (!((String) v[0]).equals(self)) {
+				map.put((String) v[0], (String) v[1]);
+			}
+		}
+		if (on() && instance.hideOthers.on() && mc.getNetworkHandler() != null) {
 			for (PlayerListEntry e : mc.getNetworkHandler().getPlayerList()) {
 				String n = nameOf(e);
-				if (n != null && !n.equals(self) && n.length() > 2) {
+				if (n != null && !n.equals(self) && n.length() > 2 && !map.containsKey(n)) {
 					map.put(n, "Player");
 				}
 			}

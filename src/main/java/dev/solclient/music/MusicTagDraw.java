@@ -36,9 +36,10 @@ public final class MusicTagDraw {
 					float size = 0.28F;
 					net.minecraft.util.Identifier id = tex.id();
 					matrices.push();
-					matrices.translate(pos.x, pos.y - y * 0.025F, pos.z);
+					matrices.translate(pos.x, pos.y, pos.z);
 					matrices.multiply(camera.orientation);
-					matrices.translate(-half - 0.08F, 0.27F, 0.0F); // inside the left end of the line, centred on the text
+					// the line's own offset is in the camera's axes (it turns with the view): the cover must use the same, or it slides when you look up / down
+					matrices.translate(-half - 0.08F, 0.27F - y * 0.025F, 0.0F); // inside the left end of the line, centred on the text
 					queue.submitCustom(matrices, net.minecraft.client.render.RenderLayers.entityCutoutNoCull(id), (entry, vc) -> {
 						int light = net.minecraft.client.render.LightmapTextureManager.MAX_LIGHT_COORDINATE;
 						int ov = net.minecraft.client.render.OverlayTexture.DEFAULT_UV;

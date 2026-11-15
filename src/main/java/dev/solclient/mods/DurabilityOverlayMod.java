@@ -62,7 +62,7 @@ public class DurabilityOverlayMod extends Mod {
 			return false;
 		}
 		Entity e = m.mc.world.getEntityById(entityId);
-		return wants(e) && !e.isGlowing() && !BodyGlowMod.glows(e);
+		return wants(e) && !e.isGlowing();
 	}
 
 	/** Outline colour (ARGB) for one armour piece, or 0 when it gets none. */
