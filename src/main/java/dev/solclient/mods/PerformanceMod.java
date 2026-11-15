@@ -124,6 +124,19 @@ public class PerformanceMod extends Mod {
 
 	public final Option.Action maxFps = action("Max FPS Mode", "Apply", () -> dev.solclient.gui.Presets.performance(0),
 			() -> "Uncapped FPS, no vsync, no clouds, less particles / shadows / distance");
+	public final Option.Action prettyMode = action("Best Looks Mode (smooth, sharp far away)", "Apply", () -> {
+		try {
+			var o = net.minecraft.client.MinecraftClient.getInstance().options;
+			o.getAo().setValue(true); // smooth lighting: soft shadows in corners
+			o.getMipmapLevels().setValue(4); // far textures stay smooth instead of pixelated / shimmering
+			o.getBiomeBlendRadius().setValue(3);
+			o.getEntityShadows().setValue(true);
+			o.write();
+			net.minecraft.client.MinecraftClient.getInstance().worldRenderer.reload();
+		} catch (Throwable t) {
+			System.err.println("[Sleep] best looks mode: " + t);
+		}
+	}, () -> "Smooth lighting, 4 mipmap levels, biome blending and entity shadows (costs very little with Sodium). Does not change render distance.");
 
 	public PerformanceMod() {
 		super("Performance", "performance", "Saves resources: lower FPS in the background and skips far-away cosmetics.", Category.UTILITY);

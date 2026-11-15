@@ -1,0 +1,63 @@
+plugins {
+	id 'net.fabricmc.fabric-loom'
+}
+
+version = '1.0.0'
+group = 'dev.kuboext'
+
+base {
+	archivesName = 'kubo-ext-streamer'
+}
+
+dependencies {
+	minecraft "com.mojang:minecraft:${rootProject.minecraft_version}"
+	implementation "net.fabricmc:fabric-loader:${rootProject.loader_version}"
+	implementation "net.fabricmc.fabric-api:fabric-api:${rootProject.fabric_version}"
+	// the Kubo client itself (only to compile against: the player already has it)
+	compileOnly project(':')
+}
+
+processResources {
+	inputs.property "version", project.version
+	filesMatching("fabric.mod.json") {
+		expand "version": inputs.properties.version
+	}
+}
+
+tasks.withType(JavaCompile).configureEach {
+	it.options.release = 25
+	it.options.encoding = 'UTF-8'
+}
+
+java {
+	sourceCompatibility = JavaVersion.VERSION_25
+	targetCompatibility = JavaVersion.VERSION_25
+}
+
+// TikTok Live plays mp3 sounds with JLayer; the Kubo jar already ships it, so only needed to compile
+repositories {
+	mavenCentral()
+	// TikTokLiveJava (MIT): the "Automatic" source - connects to a TikTok live with only the @user
+	maven {
+		url = uri('https://jitpack.io')
+		content { includeGroupByRegex 'com\\.github\\..*' }
+	}
+}
+def tiktokLive = '1.13.0-Release'
+dependencies {
+	compileOnly 'javazoom:jlayer:1.0.1'
+	implementation("com.github.jwdeveloper.TikTok-Live-Java:Client:${tiktokLive}") {
+		exclude group: 'org.slf4j', module: 'slf4j-simple' // Minecraft has its own logger
+		exclude group: 'com.google.code.gson' // Minecraft ships Gson
+		exclude group: 'org.testng'
+	}
+	// bundled inside the extension jar (jar-in-jar), nothing is downloaded by the player
+	include("com.github.jwdeveloper.TikTok-Live-Java:Client:${tiktokLive}")
+	include("com.github.jwdeveloper.TikTok-Live-Java:API:${tiktokLive}")
+	include 'com.google.protobuf:protobuf-java:4.26.1'
+	include 'org.java-websocket:Java-WebSocket:1.5.5'
+	// TikTokLiveJava needs its DepenDance injector at runtime ("Could not connect: io/github/jwdeveloper/dependance/Dependance")
+	include 'com.github.jwdeveloper.DepenDance:DepenDance-Full:0.0.18-Release'
+	include 'com.github.jwdeveloper.DepenDance:Injector:0.0.18-Release'
+	include 'com.github.jwdeveloper.DepenDance:Decorator:0.0.18-Release'
+}

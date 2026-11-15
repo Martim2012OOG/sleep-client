@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "kubo_ext_fun",
+  "version": "${version}",
+  "name": "Sleep – Fun",
+  "description": "Baby Mode, Dynamic Island and Skin Totem.",
+  "authors": [
+    "Sleep"
+  ],
+  "license": "GPL-3.0-only",
+  "environment": "client",
+  "entrypoints": {
+    "kubo": [
+      "dev.kuboext.fun.FunExtension"
+    ]
+  },
+  "depends": {
+    "sol_client": "*",
+    "minecraft": ">=26.1 <26.3",
+    "fabricloader": ">=0.20.1"
+  },
+  "custom": {
+    "kubo:extension": true
+  }
+}

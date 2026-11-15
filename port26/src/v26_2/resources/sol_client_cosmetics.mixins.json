@@ -1,0 +1,19 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "dev.solclient.mixin.cosmetic",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "GuiEntityRenderFlagMixin",
+    "InventoryScreenAccessor",
+    "LivingEntityRendererAccessor",
+    "PlayerRendererCosmeticsMixin",
+    "ElytraHiddenByWingsMixin",
+    "SkinCaptureMixin",
+    "PlayerStateMaskMixin",
+    "LivingRendererInvoker",
+    "PlayerLayersRendererMixin",
+    "PlayerModelLayersMixin"
+  ],
+  "injectors": { "defaultRequire": 0 }
+}

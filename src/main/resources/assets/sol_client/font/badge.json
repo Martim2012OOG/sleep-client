@@ -1,5 +1,5 @@
 {
   "providers": [
-    { "type": "bitmap", "file": "sol_client:font/badge.png", "ascent": 7, "height": 8, "chars": [""] }
+    { "type": "bitmap", "file": "sol_client:font/badge.png", "ascent": 9, "height": 11, "chars": [""] }
   ]
 }

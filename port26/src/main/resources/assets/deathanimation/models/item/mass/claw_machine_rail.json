@@ -1,0 +1,109 @@
+{
+  "textures": {
+    "particle": "#cyan",
+    "cyan": "minecraft:block/cyan_concrete",
+    "red": "minecraft:block/red_concrete",
+    "blue": "minecraft:block/blue_concrete",
+    "glass": "minecraft:block/light_blue_stained_glass",
+    "silver": "minecraft:block/iron_block",
+    "dark": "minecraft:block/black_concrete",
+    "gold": "minecraft:block/gold_block",
+    "white": "minecraft:block/white_concrete",
+    "pink": "minecraft:block/pink_wool",
+    "green": "minecraft:block/lime_wool",
+    "orange": "minecraft:block/orange_wool",
+    "brown": "minecraft:block/brown_wool",
+    "light": "minecraft:block/sea_lantern",
+    "yellow": "minecraft:block/yellow_wool"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#silver",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#silver",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#silver",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#silver",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#silver",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#silver",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      }
+    }
+  ],
+  "display": {
+    "fixed": {
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    }
+  },
+  "gui_light": "side"
+}

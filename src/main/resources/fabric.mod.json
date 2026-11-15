@@ -17,13 +17,10 @@
   ],
   "entrypoints": {
     "client": [
-      "com.baom5.deathanimation.client.DeathanimationClient",
       "dev.solclient.SolClient"
     ]
   },
   "mixins": [
-    "deathanimation.mixins.json",
-    { "config": "deathanimation.client.mixins.json", "environment": "client" },
     "sol_client.mixins.json",
     "sol_client_overlay.mixins.json",
     "sol_client_emote.mixins.json",

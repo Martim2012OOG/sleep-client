@@ -1,0 +1,105 @@
+plugins {
+	id 'net.fabricmc.fabric-loom' version '1.19-SNAPSHOT'
+	id 'maven-publish'
+}
+
+// Tabela de versoes suportadas: Minecraft -> Fabric API
+def mcTable = [
+	'26.1': '0.145.1+26.1',
+	'26.2': '0.161.0+26.2'
+]
+ext.minecraft_version = project.mc
+if (!mcTable.containsKey(project.mc)) {
+	throw new GradleException("Versao nao suportada: ${project.mc}. Usa uma de ${mcTable.keySet()}")
+}
+ext.fabric_version = mcTable[project.mc]
+ext.mcef_version = "0.3.3+mc${project.mc}.jcef146.0.10"
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+	archivesName = "${project.archives_base_name}-mc${project.mc}"
+}
+
+repositories {
+	mavenCentral()
+	// MCEF Modern (Chromium for Minecraft, LGPL-2.1) - bundled inside Kubo for the Watch Party videos
+	maven { url = uri('https://maven.dimaskama.net/releases') }
+	// Modrinth maven: performance mods shipped inside Kubo (open-source licences that allow bundling)
+	maven {
+		url = uri('https://api.modrinth.com/maven')
+		content { includeGroup 'maven.modrinth' }
+	}
+}
+
+// Codigo especifico de cada versao do Minecraft (as pastas v26_1 / v26_2). 26.3 usa o mesmo que 26.2.
+def verDir = (project.mc == '26.1') ? 'v26_1' : 'v26_2'
+ext.verDir = verDir
+sourceSets {
+	main {
+		java.srcDir "src/${verDir}/java"
+		resources.srcDir "src/${verDir}/resources"
+	}
+}
+
+dependencies {
+	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+	// shipped inside the Kubo jar (jar-in-jar), so players don't have to install it; Kubo talks to it by reflection
+	include "net.dimaskama:mcef-modern:${project.mcef_version}"
+	// FerriteCore (MIT) cuts memory use.
+	// ImmediatelyFast was REMOVED: on Windows (Intel/AMD/NVIDIA drivers) its HUD/GUI batching made the normal GUI disappear
+	// (fine on Mac). Minecraft 1.21.11 already batches GUI drawing itself, so the FPS gain was small.
+	include "maven.modrinth:ferrite-core:${project.ferritecore_version}"
+	// MP3 decoder (JLayer, LGPL-2.1) for the seasonal menu music, shipped inside the Kubo jar
+	// Offline speech recognition (Vosk, Apache-2.0) for Clip Events "save by voice"; JNA comes with Minecraft
+	implementation('com.alphacephei:vosk:0.3.45') { exclude group: 'net.java.dev.jna' }
+	include 'com.alphacephei:vosk:0.3.45'
+	compileOnly 'net.java.dev.jna:jna:5.13.0'
+	implementation 'javazoom:jlayer:1.0.1'
+	include 'javazoom:jlayer:1.0.1'
+	// Kubo extensions travel inside this jar (jar-in-jar). Each one stays switched off until the player installs it in Mods > Extensions
+	include project(':extensions:better_f3')
+	include project(':extensions:building')
+	include project(':extensions:far_horizons')
+	include project(':extensions:friends')
+	include project(':extensions:fun')
+	include project(':extensions:hypixel')
+	include project(':extensions:particles')
+	include project(':extensions:pvp_extras')
+	include project(':extensions:stats')
+	include project(':extensions:streamer')
+	include project(':extensions:water_effects')
+	include project(':extensions:chat_translator')
+	include project(':extensions:combat')
+	include project(':extensions:hud_extras')
+	include project(':extensions:practice')
+	include project(':extensions:utilities')
+	testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.10.2'
+}
+
+test {
+	useJUnitPlatform()
+}
+
+processResources {
+	inputs.property "version", project.version
+	filesMatching("fabric.mod.json") {
+		expand "version": inputs.properties.version
+	}
+}
+
+tasks.withType(JavaCompile).configureEach {
+	it.options.release = 25
+	it.options.compilerArgs << '-Xmaxerrs' << '100000'
+	it.options.encoding = 'UTF-8'
+}
+
+java {
+	withSourcesJar()
+	sourceCompatibility = JavaVersion.VERSION_25
+	targetCompatibility = JavaVersion.VERSION_25
+}

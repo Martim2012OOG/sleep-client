@@ -1,0 +1,20 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "dev.solclient.mixin.perf",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "ZipPackIndexMixin",
+    "TextDisplayCacheMixin",
+    "ClientWorldWaveMixin",
+    "FrameSyncMixin",
+    "ArmorStandPoseMixin",
+    "KillFxHideMixin",
+    "RetinaMixin",
+    "WorldScaleMixin",
+    "WorldScaleFramebufferMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 0
+  }
+}

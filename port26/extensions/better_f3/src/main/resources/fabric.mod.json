@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "kubo_ext_better_f3",
+  "version": "${version}",
+  "name": "Sleep – Better F3",
+  "description": "A clean, readable F3 screen with only what matters.",
+  "authors": [
+    "Sleep"
+  ],
+  "license": "GPL-3.0-only",
+  "environment": "client",
+  "entrypoints": {
+    "kubo": [
+      "dev.kuboext.better_f3.BetterF3Extension"
+    ]
+  },
+  "depends": {
+    "sol_client": "*",
+    "minecraft": ">=26.1 <26.3",
+    "fabricloader": ">=0.20.1"
+  },
+  "custom": {
+    "kubo:extension": true
+  }
+}

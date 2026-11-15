@@ -52,8 +52,8 @@ final class Season {
 			Gfx.tex(c, Gfx.id("textures/gui/season/pumpkin.png"), x + Math.round(s * 0.66F), y + Math.round(s * 0.66F), ps, ps, 128, 128, 0xFFFFFFFF);
 		} else if (season == CHRISTMAS) {
 			// the original Santa hat, turned a little and sitting on the cube's head (not floating over the wings)
-			Gfx.tex(c, Gfx.id("textures/gui/season/santa_hat2.png"), x + Math.round(s * 101F / 256F), y + Math.round(s * 5F / 256F),
-					Math.round(s * 152F / 256F), Math.round(s * 109F / 256F), 152, 109, 0xFFFFFFFF);
+			Gfx.tex(c, Gfx.id("textures/gui/season/santa_hat2.png"), x + Math.round(s * 91F / 256F), y + Math.round(s * 26F / 256F),
+					Math.round(s * 143F / 256F), Math.round(s * 102F / 256F), 152, 109, 0xFFFFFFFF);
 		}
 	}
 
@@ -279,15 +279,75 @@ final class Season {
 			}
 		}
 		// snow piled up along the bottom
-		for (int x = 0; x < w; x += 64) {
-			Gfx.tex(c, Gfx.id("textures/gui/season/snow_pile.png"), x, h - 18, 64, 18, 64, 24, 0xF0FFFFFF);
-		}
+		snowPile(c, w, h);
 		// presents in the bottom-left corner
 		String[] g = {"gift_red", "gift_green", "gift_blue", "gift_green", "gift_red"};
 		int[][] pos = {{10, 34, 30}, {38, 28, 24}, {62, 36, 32}, {22, 50, 22}, {90, 26, 22}};
 		for (int i = 0; i < GIFTS; i++) {
 			int sz = pos[i][2];
 			Gfx.tex(c, Gfx.id("textures/gui/season/" + g[i] + ".png"), pos[i][0], h - pos[i][1] - sz / 3, sz, sz, 16, 16, 0xFFFFFFFF);
+		}
+	}
+
+	// ------------------------------------------------------------------ snow that piles up along the bottom
+	private static final int COL = 3;
+	private static float[] pile = new float[0];
+	private static boolean melting;
+	private static long pileAt;
+	private static final float PILE_MAX = 26F, PILE_MIN = 2F;
+
+	/** Snow that slowly builds up along the bottom (uneven, soft), then settles / melts away once it is deep, and starts again. */
+	private static void snowPile(DrawContext c, int w, int h) {
+		int n = w / COL + 2;
+		long now = System.currentTimeMillis();
+		float dt = pileAt == 0 ? 0F : Math.min(0.1F, (now - pileAt) / 1000F);
+		pileAt = now;
+		if (pile.length != n) {
+			pile = new float[n];
+			java.util.Arrays.fill(pile, PILE_MIN);
+		}
+		float sum = 0;
+		for (float v : pile) {
+			sum += v;
+		}
+		float avg = sum / n;
+		if (!melting && avg >= PILE_MAX * 0.78F) {
+			melting = true;
+		} else if (melting && avg <= PILE_MIN + 0.6F) {
+			melting = false;
+		}
+		if (melting) {
+			float k = dt * 2.6F; // it slides down / thaws
+			for (int i = 0; i < n; i++) {
+				pile[i] = Math.max(PILE_MIN, pile[i] - k * (0.6F + (pile[i] / PILE_MAX)));
+			}
+		} else {
+			int landings = Math.round(dt * 90F * (w / 640F)); // flakes landing this frame
+			for (int k = 0; k < landings; k++) {
+				int i = (int) (Math.random() * n);
+				float add = 0.22F * (1F - pile[i] / (PILE_MAX * 1.1F));
+				for (int d = -3; d <= 3; d++) { // a flake sits on the heap and spreads a little
+					int j = i + d;
+					if (j >= 0 && j < n) {
+						pile[j] += add * (1F - Math.abs(d) / 4F);
+					}
+				}
+			}
+		}
+		// smooth so it looks like soft drifts, not bars
+		float prev = pile[0];
+		for (int i = 1; i < n - 1; i++) {
+			float cur = pile[i];
+			pile[i] = cur * 0.6F + (prev + pile[i + 1]) * 0.2F;
+			prev = cur;
+		}
+		for (int i = 0; i < n; i++) {
+			int x = i * COL;
+			int top = h - Math.round(Math.min(PILE_MAX, pile[i]));
+			c.fill(x, top, x + COL, h, 0xF2EEF4FF);
+			c.fill(x, top, x + COL, top + 1, 0xFFFFFFFF); // bright top edge
+			c.fill(x, top + 1, x + COL, top + 3, 0xF8F8FBFF);
+			c.fill(x, h - 5, x + COL, h, 0xF2D5E2F6); // a touch of blue shade at the very bottom
 		}
 	}
 }

@@ -1,0 +1,35 @@
+plugins {
+	id 'net.fabricmc.fabric-loom'
+}
+
+version = '1.0.0'
+group = 'dev.kuboext'
+
+base {
+	archivesName = 'kubo-ext-pvp-extras'
+}
+
+dependencies {
+	minecraft "com.mojang:minecraft:${rootProject.minecraft_version}"
+	implementation "net.fabricmc:fabric-loader:${rootProject.loader_version}"
+	implementation "net.fabricmc.fabric-api:fabric-api:${rootProject.fabric_version}"
+	// the Kubo client itself (only to compile against: the player already has it)
+	compileOnly project(':')
+}
+
+processResources {
+	inputs.property "version", project.version
+	filesMatching("fabric.mod.json") {
+		expand "version": inputs.properties.version
+	}
+}
+
+tasks.withType(JavaCompile).configureEach {
+	it.options.release = 25
+	it.options.encoding = 'UTF-8'
+}
+
+java {
+	sourceCompatibility = JavaVersion.VERSION_25
+	targetCompatibility = JavaVersion.VERSION_25
+}

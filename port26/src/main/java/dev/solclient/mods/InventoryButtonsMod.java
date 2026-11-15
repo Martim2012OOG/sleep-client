@@ -1,0 +1,279 @@
+package dev.solclient.mods;
+
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
+import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerInput;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
+
+/**
+ * Inventory Tweaks: small buttons on chests, shulker boxes, barrels and your inventory: sort, take everything, put everything.
+ * The moves are normal inventory clicks sent a few per tick (so servers see a player, not a burst).
+ */
+public class InventoryButtonsMod extends Mod {
+
+	private static boolean hooked;
+	private static InventoryButtonsMod self;
+
+	private final dev.solclient.option.Option.Num clicksPerTick = num("Clicks Per Tick", 6, 1, 20, 1, "");
+	private final dev.solclient.option.Option.Bool includeHotbar = bool("Put All Includes Hotbar", true);
+	private final dev.solclient.option.Option.Bool showTips = bool("Button Tooltips", true);
+
+	private record Op(int syncId, int slot, int button, ContainerInput type) {
+	}
+
+	private final ArrayDeque<Op> queue = new ArrayDeque<>();
+	private final List<int[]> rects = new ArrayList<>();
+	private final List<Runnable> acts = new ArrayList<>();
+
+	public InventoryButtonsMod() {
+		super("Inventory Buttons", "inventory_buttons", "Buttons on chests and your inventory: sort, take all, put all.", Category.UTILITY);
+		self = this;
+		enabled = true;
+	}
+
+	@Override
+	protected void onEnable() {
+		if (hooked) {
+			return;
+		}
+		hooked = true;
+		ScreenEvents.AFTER_INIT.register((client, screen, w, h) -> {
+			if (!(screen instanceof AbstractContainerScreen<?> hs)) {
+				return;
+			}
+			ScreenEvents.afterExtract(screen).register((s, ctx, mx, my, delta) -> {
+				if (self != null && self.enabled) {
+					self.render(hs, ctx, mx, my);
+				}
+			});
+			ScreenMouseEvents.allowMouseClick(screen).register((Screen s, MouseButtonEvent click) -> !(self != null && self.enabled && self.click(click)));
+		});
+	}
+
+	@Override
+	public void tick() {
+		if (queue.isEmpty()) {
+			return;
+		}
+		if (mc.player == null || mc.gameMode == null || !(dev.solclient.compat.Mc.screen(mc) instanceof AbstractContainerScreen<?> hs)
+				|| hs.getMenu().containerId != queue.peek().syncId()) {
+			queue.clear();
+			return;
+		}
+		int n = Math.max(1, Math.round(clicksPerTick.f()));
+		while (n-- > 0 && !queue.isEmpty()) {
+			Op o = queue.poll();
+			mc.gameMode.handleContainerInput(o.syncId(), o.slot(), o.button(), o.type(), mc.player);
+		}
+	}
+
+	// ------------------------------------------------------------------ slots
+	private static boolean supported(AbstractContainerMenu h) {
+		return h instanceof net.minecraft.world.inventory.ChestMenu || h instanceof net.minecraft.world.inventory.ShulkerBoxMenu
+				|| h instanceof net.minecraft.world.inventory.HopperMenu || h instanceof net.minecraft.world.inventory.DispenserMenu;
+	}
+
+	private static List<Slot> containerSlots(AbstractContainerMenu h) {
+		List<Slot> out = new ArrayList<>();
+		for (Slot s : h.slots) {
+			if (!(s.container instanceof Inventory)) {
+				out.add(s);
+			}
+		}
+		return out;
+	}
+
+	/** The 27 main inventory slots (and the hotbar when asked), in screen order. */
+	private List<Slot> playerSlots(AbstractContainerMenu h, boolean hotbar) {
+		List<Slot> out = new ArrayList<>();
+		for (Slot s : h.slots) {
+			if (s.container instanceof Inventory && (s.getContainerSlot() >= 9 && s.getContainerSlot() < 36 || hotbar && s.getContainerSlot() < 9)) {
+				out.add(s);
+			}
+		}
+		return out;
+	}
+
+	// ------------------------------------------------------------------ actions
+	private void takeAll(AbstractContainerMenu h) {
+		for (Slot s : containerSlots(h)) {
+			if (s.hasItem()) {
+				queue.add(new Op(h.containerId, s.index, 0, ContainerInput.QUICK_MOVE));
+			}
+		}
+	}
+
+	private void putAll(AbstractContainerMenu h) {
+		for (Slot s : playerSlots(h, includeHotbar.on())) {
+			if (s.hasItem()) {
+				queue.add(new Op(h.containerId, s.index, 0, ContainerInput.QUICK_MOVE));
+			}
+		}
+	}
+
+	private void sort(AbstractContainerMenu h, List<Slot> slots) {
+		int n = slots.size();
+		ItemStack[] st = new ItemStack[n];
+		for (int i = 0; i < n; i++) {
+			st[i] = slots.get(i).getItem().copy();
+		}
+		int sync = h.containerId;
+		// 1) merge half-empty stacks of the same thing
+		for (int i = 0; i < n; i++) {
+			if (st[i].isEmpty() || st[i].getCount() >= st[i].getMaxStackSize()) {
+				continue;
+			}
+			for (int j = i + 1; j < n && st[i].getCount() < st[i].getMaxStackSize(); j++) {
+				if (st[j].isEmpty() || !ItemStack.isSameItemSameComponents(st[i], st[j])) {
+					continue;
+				}
+				int total = st[i].getCount() + st[j].getCount();
+				int newI = Math.min(st[i].getMaxStackSize(), total), newJ = total - newI;
+				queue.add(new Op(sync, slots.get(j).index, 0, ContainerInput.PICKUP));
+				queue.add(new Op(sync, slots.get(i).index, 0, ContainerInput.PICKUP));
+				if (newJ > 0) {
+					queue.add(new Op(sync, slots.get(j).index, 0, ContainerInput.PICKUP));
+				}
+				st[i].setCount(newI);
+				if (newJ == 0) {
+					st[j] = ItemStack.EMPTY;
+				} else {
+					st[j].setCount(newJ);
+				}
+			}
+		}
+		// 2) the order we want: by item, biggest stacks first
+		List<ItemStack> want = new ArrayList<>();
+		for (ItemStack s : st) {
+			if (!s.isEmpty()) {
+				want.add(s);
+			}
+		}
+		want.sort(Comparator.<ItemStack, String>comparing(s -> BuiltInRegistries.ITEM.getKey(s.getItem()).toString()).thenComparing(s -> -s.getCount()));
+		// 3) put them there with swaps
+		for (int pos = 0; pos < want.size(); pos++) {
+			ItemStack target = want.get(pos);
+			int j = -1;
+			for (int k = pos; k < n; k++) {
+				if (st[k] == target) {
+					j = k;
+					break;
+				}
+			}
+			if (j < 0 || j == pos) {
+				continue;
+			}
+			if (!st[pos].isEmpty()) {
+				queue.add(new Op(sync, slots.get(pos).index, 0, ContainerInput.PICKUP));
+			}
+			queue.add(new Op(sync, slots.get(j).index, 0, ContainerInput.PICKUP));
+			queue.add(new Op(sync, slots.get(pos).index, 0, ContainerInput.PICKUP));
+			ItemStack t = st[pos];
+			st[pos] = st[j];
+			st[j] = t;
+		}
+	}
+
+	// ------------------------------------------------------------------ buttons
+	private boolean click(MouseButtonEvent click) {
+		if (click.button() != 0) {
+			return false;
+		}
+		for (int i = rects.size() - 1; i >= 0; i--) {
+			int[] r = rects.get(i);
+			if (click.x() >= r[0] && click.x() < r[0] + r[2] && click.y() >= r[1] && click.y() < r[1] + r[3]) {
+				acts.get(i).run();
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private void render(AbstractContainerScreen<?> hs, GuiGraphicsExtractor c, int mx, int my) {
+		rects.clear();
+		acts.clear();
+		AbstractContainerMenu h = hs.getMenu();
+		List<Slot> own = playerSlots(h, false);
+		if (own.isEmpty()) {
+			return;
+		}
+		int maxBottom = 0;
+		for (Slot s : h.slots) {
+			maxBottom = Math.max(maxBottom, s.y + 18);
+		}
+		// the screen's real top-left corner and size (read from the screen itself: guessing broke on the creative / modded inventories)
+		int x0, y0, bgW;
+		try {
+			var acc = (dev.solclient.mixin.overlay.HandledScreenAccessor) hs;
+			x0 = acc.sol$x();
+			y0 = acc.sol$y();
+			bgW = acc.sol$w();
+		} catch (Throwable t) {
+			x0 = (hs.width - 176) / 2;
+			y0 = (hs.height - (maxBottom + 6)) / 2;
+			bgW = 176;
+		}
+		String tip = null;
+		if (supported(h)) {
+			int bx = x0 + bgW - 7 - 3 * 14, by = y0 + 3;
+			tip = button(c, mx, my, bx, by, 0, "Sort the chest", tip, () -> sort(h, containerSlots(h)));
+			tip = button(c, mx, my, bx + 14, by, 1, "Take everything", tip, () -> takeAll(h));
+			tip = button(c, mx, my, bx + 28, by, 2, "Put everything in", tip, () -> putAll(h));
+		}
+		// above the right end of the first row of your inventory, where every inventory has a free corner
+		Slot rowEnd = own.get(Math.min(8, own.size() - 1));
+		int ly = y0 + own.get(0).y - 14;
+		tip = button(c, mx, my, x0 + rowEnd.x + 4, ly, 0, "Sort my inventory", tip, () -> sort(h, own));
+		if (tip != null && showTips.on()) {
+			var tr = mc.font;
+			int w = tr.width(tip);
+			int tx = Math.min(mx + 8, hs.width - w - 8), ty = my - 16;
+			c.fill(tx - 3, ty - 2, tx + w + 3, ty + 10, 0xE0101218);
+			c.text(tr, tip, tx, ty, 0xFFFFFFFF, false);
+		}
+	}
+
+	private String button(GuiGraphicsExtractor c, int mx, int my, int x, int y, int icon, String tip, String curTip, Runnable run) {
+		boolean hov = mx >= x && mx < x + 12 && my >= y && my < y + 12;
+		c.fill(x, y, x + 12, y + 12, 0xFF000000);
+		c.fill(x + 1, y + 1, x + 11, y + 11, hov ? 0xFF4A4E5C : 0xFF2B2E38);
+		int col = hov ? 0xFFFFFFFF : 0xFFC9CCD8;
+		switch (icon) {
+			case 0 -> { // sort: three bars getting shorter
+				c.fill(x + 2, y + 3, x + 10, y + 4, col);
+				c.fill(x + 2, y + 5, x + 8, y + 6, col);
+				c.fill(x + 2, y + 7, x + 6, y + 8, col);
+				c.fill(x + 2, y + 9, x + 4, y + 10, col);
+			}
+			case 1 -> { // take: arrow down into the inventory
+				c.fill(x + 5, y + 2, x + 7, y + 7, col);
+				c.fill(x + 3, y + 6, x + 9, y + 7, col);
+				c.fill(x + 4, y + 7, x + 8, y + 8, col);
+				c.fill(x + 5, y + 8, x + 7, y + 9, col);
+				c.fill(x + 3, y + 10, x + 9, y + 11, col);
+			}
+			default -> { // put: arrow up into the chest
+				c.fill(x + 5, y + 5, x + 7, y + 10, col);
+				c.fill(x + 3, y + 5, x + 9, y + 6, col);
+				c.fill(x + 4, y + 4, x + 8, y + 5, col);
+				c.fill(x + 5, y + 3, x + 7, y + 4, col);
+				c.fill(x + 3, y + 1, x + 9, y + 2, col);
+			}
+		}
+		rects.add(new int[] {x, y, 12, 12});
+		acts.add(run);
+		return hov ? tip : curTip;
+	}
+}

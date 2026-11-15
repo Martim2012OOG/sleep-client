@@ -1,0 +1,26 @@
+pluginManagement {
+	repositories {
+		maven { name = 'Fabric'; url = 'https://maven.fabricmc.net/' }
+		mavenCentral()
+		gradlePluginPortal()
+	}
+}
+rootProject.name = 'sol-client-fabric'
+
+// Kubo extensions: separate jars for the store (Mods > Extensions). Each builds to extensions/<name>/build/libs/
+include 'extensions:better_f3'
+include 'extensions:building'
+include 'extensions:far_horizons'
+include 'extensions:friends'
+include 'extensions:fun'
+include 'extensions:hypixel'
+include 'extensions:particles'
+include 'extensions:pvp_extras'
+include 'extensions:stats'
+include 'extensions:streamer'
+include 'extensions:water_effects'
+include 'extensions:chat_translator'
+include 'extensions:combat'
+include 'extensions:hud_extras'
+include 'extensions:practice'
+include 'extensions:utilities'

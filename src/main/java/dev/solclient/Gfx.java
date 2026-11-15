@@ -555,6 +555,47 @@ public final class Gfx {
 		c.drawTexture(RenderPipelines.GUI_TEXTURED, id, x, y, 0f, 0f, w, h, texW, texH, texW, texH, color);
 	}
 
+	private static final java.util.Map<String, float[]> SPIN = new java.util.HashMap<>();
+	private static long spinAt;
+
+	/**
+	 * A gear (or any icon) that turns while the mouse is over it and then settles back to upright smoothly (like Lunar's settings icon).
+	 * {@code key} tells apart the icons on one screen. Call once per frame per icon.
+	 */
+	public static void texSpin(DrawContext c, Identifier id, int x, int y, int w, int h, int texW, int texH, int color, String key, boolean hover) {
+		long now = System.currentTimeMillis();
+		float dt = spinAt == 0 ? 0.016F : Math.min(0.1F, (now - spinAt) / 1000F);
+		float[] st = SPIN.computeIfAbsent(key, k -> new float[] {0F, 0F}); // angle (degrees), speed
+		if (SPIN.size() > 64) {
+			SPIN.keySet().removeIf(k -> !k.equals(key) && SPIN.get(k)[1] == 0F && SPIN.get(k)[0] == 0F);
+		}
+		if (hover || st[0] % 360F > 1F && st[0] % 360F < 359F) {
+			float target = hover ? 150F : 70F; // spins up fast, keeps going until it is upright again
+			st[1] += (target - st[1]) * (1F - (float) Math.exp(-dt * 9F));
+			st[0] += st[1] * dt;
+			if (!hover && st[0] % 360F > 355F) {
+				st[0] = 360F;
+			}
+		} else {
+			st[0] = 0F;
+			st[1] = 0F;
+		}
+		if (st[0] > 3600F) {
+			st[0] %= 360F;
+		}
+		if (st[0] == 0F) {
+			tex(c, id, x, y, w, h, texW, texH, color);
+			return;
+		}
+		var m = c.getMatrices();
+		m.pushMatrix();
+		m.translate(x + w / 2F, y + h / 2F);
+		m.rotate((float) Math.toRadians(st[0]));
+		m.translate(-w / 2F, -h / 2F);
+		tex(c, id, 0, 0, w, h, texW, texH, color);
+		m.popMatrix();
+	}
+
 	/** Draws the (u, v, rw, rh) part of a texW x texH texture at x, y scaled to w x h. */
 	public static void texUv(DrawContext c, Identifier id, int x, int y, int w, int h, float u, float v, int rw, int rh, int texW, int texH, int color) {
 		c.drawTexture(RenderPipelines.GUI_TEXTURED, id, x, y, u, v, w, h, rw, rh, texW, texH, color);

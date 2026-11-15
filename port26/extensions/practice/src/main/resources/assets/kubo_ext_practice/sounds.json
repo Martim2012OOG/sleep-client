@@ -1,0 +1,5 @@
+{
+  "duel.intro": { "sounds": [ { "name": "kubo_ext_practice:duel/intro", "stream": true } ] },
+  "duel.win": { "sounds": [ { "name": "kubo_ext_practice:duel/win", "stream": true } ] },
+  "duel.lose": { "sounds": [ { "name": "kubo_ext_practice:duel/lose", "stream": true } ] }
+}

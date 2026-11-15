@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "kubo_ext_building",
+  "version": "${version}",
+  "name": "Sleep – Building",
+  "description": "Sleep Builder (schematics), Litematica Helper and Ruler.",
+  "authors": [
+    "Sleep"
+  ],
+  "license": "GPL-3.0-only",
+  "environment": "client",
+  "entrypoints": {
+    "kubo": [
+      "dev.kuboext.building.BuildingExtension"
+    ]
+  },
+  "depends": {
+    "sol_client": "*",
+    "minecraft": ">=26.1 <26.3",
+    "fabricloader": ">=0.20.1"
+  },
+  "custom": {
+    "kubo:extension": true
+  }
+}

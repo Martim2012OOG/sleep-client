@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "kubo_ext_hypixel",
+  "version": "${version}",
+  "name": "Sleep – Hypixel",
+  "description": "Everything for Hypixel: Quick Play, Hypixel Additions, Level Head and the Stats Overlay.",
+  "authors": [
+    "Sleep"
+  ],
+  "license": "GPL-3.0-only",
+  "environment": "client",
+  "entrypoints": {
+    "kubo": [
+      "dev.kuboext.hypixel.HypixelExtension"
+    ]
+  },
+  "depends": {
+    "sol_client": "*",
+    "minecraft": ">=26.1 <26.3",
+    "fabricloader": ">=0.20.1"
+  },
+  "custom": {
+    "kubo:extension": true
+  }
+}

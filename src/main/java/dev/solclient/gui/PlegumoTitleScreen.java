@@ -27,8 +27,21 @@ public class PlegumoTitleScreen extends UiScreen {
 		return false;
 	}
 
+	private long openAt;
+
+	/** 0..1 ease-out (cubic) of the entrance, delayed by {@code delay} seconds. */
+	private float intro(float delay, float len) {
+		float t = (System.currentTimeMillis() - openAt) / 1000F - delay;
+		float k = Math.max(0F, Math.min(1F, t / len));
+		float r = 1F - k;
+		return 1F - r * r * r;
+	}
+
 	@Override
 	protected void draw(DrawContext c, float delta) {
+		if (openAt == 0) {
+			openAt = System.currentTimeMillis();
+		}
 		int cx = width / 2;
 		int slide = 0; // no intro motion
 		if (Season.active()) {
@@ -51,7 +64,8 @@ public class PlegumoTitleScreen extends UiScreen {
 
 		// logo, top centre
 		int logoSize = Math.max(56, Math.min(110, height / 4));
-		int logoY = Math.max(10, height / 12) + slide;
+		int bob = Math.round((float) Math.sin(System.currentTimeMillis() / 1000.0 * 1.6) * 2.2F); // the logo floats gently
+		int logoY = Math.max(10, height / 12) + slide + bob - Math.round((1F - intro(0F, 0.55F)) * 16F);
 		if (!dev.solclient.mods.CinematicIntroMod.homeActive()) { // the intro video has its own logo
 			Gfx.tex(c, Gfx.id("icon.png"), cx - logoSize / 2, logoY, logoSize, logoSize, 256, 256, 0xFFFFFFFF);
 			Season.decorateLogo(c, cx - logoSize / 2, logoY, logoSize);
@@ -60,9 +74,10 @@ public class PlegumoTitleScreen extends UiScreen {
 		// buttons
 		int bw = Math.min(200, width / 3), bh = 20;
 		int by = Math.max(logoY + logoSize + 16, height / 2 - 20);
-		button(c, "sp", cx - bw / 2, by, bw, bh, "Singleplayer", () -> mc.setScreen(new SelectWorldScreen(this)));
-		button(c, "mp", cx - bw / 2, by + bh + 6, bw, bh, "Multiplayer", () -> mc.setScreen(new MultiplayerScreen(this)));
-		int is = 20, ig = 6, iy = by + 2 * bh + 14;
+		int o1 = Math.round((1F - intro(0.06F, 0.5F)) * 18F), o2 = Math.round((1F - intro(0.12F, 0.5F)) * 18F), o3 = Math.round((1F - intro(0.18F, 0.5F)) * 18F);
+		button(c, "sp", cx - bw / 2, by + o1, bw, bh, "Singleplayer", () -> mc.setScreen(new SelectWorldScreen(this)));
+		button(c, "mp", cx - bw / 2, by + bh + 6 + o2, bw, bh, "Multiplayer", () -> mc.setScreen(new MultiplayerScreen(this)));
+		int is = 20, ig = 6, iy = by + 2 * bh + 14 + o3;
 		boolean mm = ModMenuLink.preferred();
 		int n = mm ? 5 : 4;
 		int ix = cx - (n * is + (n - 1) * ig) / 2;
@@ -84,6 +99,12 @@ public class PlegumoTitleScreen extends UiScreen {
 
 		// Christmas snow on top of everything
 		Season.snow(c, width, height);
+
+		// soft fade in from black when the screen opens
+		int fade = Math.round((1F - intro(0F, 0.4F)) * 255F);
+		if (fade > 2) {
+			c.fill(0, 0, width, height, fade << 24);
+		}
 	}
 
 	// ------------------------------------------------------------------ skin + accounts

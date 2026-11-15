@@ -1,0 +1,12 @@
+{
+  "providers": [
+    {
+      "type": "ttf",
+      "file": "sol_client:lyrics.ttf",
+      "size": 12.0,
+      "oversample": 6.0,
+      "shift": [0.0, 0.0],
+      "skip": []
+    }
+  ]
+}

@@ -1,0 +1,107 @@
+{
+  "textures": {
+    "stone": "minecraft:block/polished_andesite",
+    "dark": "minecraft:block/deepslate",
+    "red": "minecraft:block/red_concrete",
+    "shade": "minecraft:block/red_terracotta",
+    "pink": "minecraft:block/pink_concrete",
+    "white": "minecraft:block/white_concrete",
+    "yellow": "minecraft:block/yellow_concrete",
+    "black": "minecraft:block/black_concrete",
+    "metal": "minecraft:block/gray_concrete",
+    "blue": "minecraft:block/light_blue_concrete",
+    "glass": "minecraft:block/light_blue_stained_glass",
+    "particle": "#stone"
+  },
+  "elements": [
+    {
+      "from": [
+        7,
+        7,
+        7
+      ],
+      "to": [
+        9,
+        9,
+        9
+      ],
+      "shade": false,
+      "faces": {
+        "north": {
+          "texture": "#white",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#white",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#white",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#white",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#white",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#white",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      }
+    }
+  ],
+  "display": {
+    "fixed": {
+      "rotation": [
+        0,
+        180,
+        0
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    }
+  },
+  "gui_light": "front"
+}

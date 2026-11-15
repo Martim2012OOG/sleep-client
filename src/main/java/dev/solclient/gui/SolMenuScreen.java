@@ -701,7 +701,7 @@ public class SolMenuScreen extends Screen {
 			int col = sel ? 0xFFFFFFFF : Theme.TEXT;
 			int icx = bx + bs / 2, icy = by + bs / 2;
 			if (i == 0) {
-				Gfx.tex(c, Theme.icon2("settings_small"), bx + 3, by + 3, 16, 16, 64, 64, col);
+				Gfx.texSpin(c, Theme.icon2("settings_small"), bx + 3, by + 3, 16, 16, 64, 64, col, "gear:bar", in(mx, my, bx, by, bs, bs));
 			} else if (i == 1) {
 				cartIcon(c, icx, icy, col);
 			} else if (i == 2) {
@@ -1673,7 +1673,7 @@ public class SolMenuScreen extends Screen {
 		// settings gear (top-right): opens this mod's settings
 		int sx = x + w - 15, sy = y + 13;
 		boolean hs = in(mx, my, sx - 8, sy - 8, 16, 16) && my >= cy0 && my < cy1;
-		Gfx.tex(c, Theme.icon2("settings_small"), sx - 6, sy - 6, 12, 12, 64, 64, hs ? accent : (sel ? 0xFFFFFFFF : Theme.DIM));
+		Gfx.texSpin(c, Theme.icon2("settings_small"), sx - 6, sy - 6, 12, 12, 64, 64, hs ? accent : (sel ? 0xFFFFFFFF : Theme.DIM), "gear:" + sx + ":" + sy, hs);
 		region(sx - 9, sy - 9, 18, 18, () -> openSettings(m));
 
 		// like / favourite heart (top-left): click to add it to Favourites
@@ -1688,7 +1688,7 @@ public class SolMenuScreen extends Screen {
 			inside = optionMatch(m, sq);
 		}
 		if (inside == null) {
-			modIcon(c, m, x + w / 2F, y + 38, 34, m.enabled || m.locked);
+			modIcon(c, m, x + w / 2F, y + 37, 40, m.enabled || m.locked);
 			Gfx.textFit(c, fit(m.name, w - 10), x + w / 2, w - 6, y + h - 44, m.enabled || m.locked ? Theme.TEXT : 0xFFB6BAC8);
 		} else {
 			modIcon(c, m, x + w / 2F, y + 32, 28, m.enabled || m.locked);
@@ -1802,7 +1802,7 @@ public class SolMenuScreen extends Screen {
 		}
 		int sx = px - 16, sy = y + h / 2;
 		boolean hs = in(mx, my, sx - 8, sy - 8, 16, 16) && my >= cy0 && my < cy1;
-		Gfx.tex(c, Theme.icon2("settings_small"), sx - 6, sy - 6, 12, 12, 64, 64, hs ? accent : Theme.DIM);
+		Gfx.texSpin(c, Theme.icon2("settings_small"), sx - 6, sy - 6, 12, 12, 64, 64, hs ? accent : Theme.DIM, "gear:" + sx + ":" + sy, hs);
 		region(sx - 9, sy - 9, 18, 18, () -> openSettings(m));
 		if (!m.locked) {
 			heartButton(c, mx, my, m, sx - 20, sy, cy0, cy1, accent);
@@ -2915,7 +2915,7 @@ public class SolMenuScreen extends Screen {
 		{
 			int gx = px + EW - 24, gy = y + 7;
 			boolean hg = in(mx, my, gx, gy, 16, 16);
-			Gfx.tex(c, Theme.icon2("settings_small"), gx + 2, gy + 2, 12, 12, 64, 64, hg ? 0xFFFFFFFF : Theme.DIM);
+			Gfx.texSpin(c, Theme.icon2("settings_small"), gx + 2, gy + 2, 12, 12, 64, 64, hg ? 0xFFFFFFFF : Theme.DIM, "gear:" + gx + ":" + gy, hg);
 			if (hg) {
 				tooltipText = selected == null ? "Sleep settings" : "Settings of " + selected.name;
 			}

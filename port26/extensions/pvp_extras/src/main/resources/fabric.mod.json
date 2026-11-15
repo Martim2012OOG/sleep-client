@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "kubo_ext_pvp_extras",
+  "version": "${version}",
+  "name": "Sleep – PvP Extras",
+  "description": "Pop Chams (ghost on totem pop), TierTagger (MCTiers tiers on names) and Cobweb Tweaks.",
+  "authors": [
+    "Sleep"
+  ],
+  "license": "GPL-3.0-only",
+  "environment": "client",
+  "entrypoints": {
+    "kubo": [
+      "dev.kuboext.pvp_extras.PvpExtrasExtension"
+    ]
+  },
+  "depends": {
+    "sol_client": "*",
+    "minecraft": ">=26.1 <26.3",
+    "fabricloader": ">=0.20.1"
+  },
+  "custom": {
+    "kubo:extension": true
+  }
+}

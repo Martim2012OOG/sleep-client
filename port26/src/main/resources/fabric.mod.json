@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "id": "sol_client",
+  "version": "${version}",
+  "name": "Sleep",
+  "description": "Sleep para Fabric 1.21.11 com a nova GUI (Right Shift).",
+  "authors": [
+    "Sleep"
+  ],
+  "license": "GPL-3.0-only",
+  "icon": "assets/sol_client/icon.png",
+  "environment": "client",
+  "jars": [
+    {
+      "file": "META-INF/jars/bettersearch-1.6.0.jar"
+    }
+  ],
+  "entrypoints": {
+    "client": [
+      "dev.solclient.SolClient"
+    ]
+  },
+  "mixins": [
+    "sol_client.mixins.json",
+    "sol_client_overlay.mixins.json",
+    "sol_client_emote.mixins.json",
+    "sol_client_social.mixins.json",
+    "sol_client_splash.mixins.json",
+    "sol_client_cape.mixins.json",
+    "sol_client_cosmetics.mixins.json",
+    "sol_client_fightcam.mixins.json",
+    "sol_client_extra.mixins.json",
+    "sol_client_display.mixins.json",
+    "sol_client_font.mixins.json",
+    "sol_client_perf.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.20.1",
+    "minecraft": ">=26.1 <26.3",
+    "java": ">=25",
+    "fabric-api": ">=0.145.1"
+  }
+}

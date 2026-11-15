@@ -104,6 +104,12 @@ public class SolClient implements ClientModInitializer {
 		MODS.add(new GameTimeMod());
 		MODS.add(new PlayerCountMod());
 		MODS.add(new RotationMod());
+		MODS.add(new HeightLimitMod());
+		MODS.add(new HorseStatsMod());
+		MODS.add(new SpeedometerMod());
+		MODS.add(new CooldownsMod());
+		MODS.add(new KillSoundsMod());
+		MODS.add(new PotionCounterMod());
 		MODS.add(new ChatTimestampsMod());
 		MODS.add(new ChatBubblesMod());
 		MODS.add(new WaypointsMod());
@@ -296,8 +302,14 @@ public class SolClient implements ClientModInitializer {
 	}
 
 	/** Puts the registered mods of these classes inside a group card (and adds the card). */
+	/** false: every mod has its own card in the menu (easier to find, like the big clients). true: small mods live inside one card each. */
+	private static final boolean GROUP_MODS = false;
+
 	@SafeVarargs
 	private static void group(ModGroup g, Class<? extends Mod>... types) {
+		if (!GROUP_MODS) {
+			return;
+		}
 		int at = -1;
 		for (int i = 0; i < MODS.size(); i++) {
 			Mod m = MODS.get(i);

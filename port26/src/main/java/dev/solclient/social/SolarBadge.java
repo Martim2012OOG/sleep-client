@@ -1,0 +1,154 @@
+package dev.solclient.social;
+
+import com.google.gson.JsonObject;
+import com.mojang.serialization.JsonOps;
+import java.lang.reflect.Method;
+import java.util.UUID;
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
+
+/** The Plegumo logo in front of the names (nametags and tab list) of players who use the client. */
+public final class SolarBadge {
+
+	private static Component badge;
+	private static Method profileId;
+	private static Method profileName;
+
+	private SolarBadge() {
+	}
+
+	/** The logo as one character of the "sol_client:badge" bitmap font (assets/sol_client/font/badge.json). */
+	private static Component badge() {
+		if (badge == null) {
+			JsonObject o = new JsonObject();
+			o.addProperty("text", "");
+			o.addProperty("font", "sol_client:badge");
+			o.addProperty("color", "white");
+			badge = ComponentSerialization.CODEC.parse(JsonOps.INSTANCE, o).result().orElse(Component.literal(""));
+		}
+		return badge;
+	}
+
+	/** True if this player is using Plegumo right now (in your server's presence room), or you while connected. */
+	public static boolean uses(UUID id) {
+		return uses(id, null);
+	}
+
+	/** Same as uses(UUID), but also matches by game nick (needed on offline-mode servers, where uuids differ). */
+	public static boolean uses(UUID id, String nick) {
+		if (id == null || dev.solclient.SolClient.settings == null || !dev.solclient.SolClient.settings.nameBadge.on()) {
+			return false;
+		}
+		// Only people using the client RIGHT NOW: connected to the presence Worker in this server's room.
+		// (The site's /players/lookup lists everyone who ever made an account, so it is not used here.)
+		if (Presence.inServerRoom(id, nick) || Presence.inLobby(id, nick)) {
+			return true; // the lobby is the global room: it also finds players who joined this server by another address
+		}
+		if (onlineFriend(nick)) {
+			return true; // a friend online in Sleep with this nick: they use it even when the presence rooms missed them
+		}
+		// you: always (you ARE using Plegumo), even while the presence connection is down
+		Minecraft mc = Minecraft.getInstance();
+		UUID me = mc.getUser().getProfileId();
+		// your in-game UUID differs from your account's on offline-mode servers
+		return id.equals(me) || mc.player != null && id.equals(mc.player.getUUID());
+	}
+
+	/**
+	 * True if this player of the world uses the client right now: you, or someone in your server's presence room - the same
+	 * check as the logo in the tab list, but it does not depend on the "name badge" setting. Cosmetics, emotes and capes of
+	 * other players are only drawn when this is true. The 3D previews in the menus always count.
+	 */
+	public static boolean usesClient(net.minecraft.world.entity.player.Player p) {
+		if (p == null) {
+			return false;
+		}
+		if (dev.solclient.cosmetic.Cosmetics.inGui) {
+			return true;
+		}
+		Minecraft mc = Minecraft.getInstance();
+		if (p == mc.player) {
+			return true;
+		}
+		long now = System.currentTimeMillis();
+		Object[] c = USES_CACHE.get(p.getUUID());
+		if (c != null && (long) c[0] > now) {
+			return (boolean) c[1];
+		}
+		String nick = p.getName().getString();
+		boolean r = Presence.inServerRoom(p.getUUID(), nick) || Presence.inServerRoom(Presence.backendId(p), nick) || Presence.inLobby(p.getUUID(), nick)
+				|| onlineFriend(nick);
+		if (USES_CACHE.size() > 512) {
+			USES_CACHE.clear();
+		}
+		USES_CACHE.put(p.getUUID(), new Object[] {now + 500L, r});
+		return r;
+	}
+
+	/** A friend of yours who is online in Sleep right now and plays with this nick. */
+	public static boolean onlineFriend(String nick) {
+		if (nick == null || nick.isEmpty()) {
+			return false;
+		}
+		try {
+			for (Social.User u : Social.friends) {
+				if (u != null && u.online() && (nick.equalsIgnoreCase(u.mcUsername) || nick.equalsIgnoreCase(u.display()))) {
+					return true;
+				}
+			}
+		} catch (RuntimeException ignored) {
+			// the list changed while reading: next frame
+		}
+		return false;
+	}
+
+	private static final java.util.Map<java.util.UUID, Object[]> USES_CACHE = new java.util.concurrent.ConcurrentHashMap<>();
+
+	public static Component decorate(Component name) {
+		if (name == null || badge().getString().isEmpty()) {
+			return name;
+		}
+		return Component.empty().append(badge()).append(ProfileBadges.gap()).append(name);
+	}
+
+	/** The game nick of a GameProfile (name() in newer authlib, getName() in older ones). */
+	public static String nameOf(Object gameProfile) {
+		if (gameProfile == null) {
+			return null;
+		}
+		try {
+			if (profileName == null) {
+				try {
+					profileName = gameProfile.getClass().getMethod("name");
+				} catch (NoSuchMethodException e) {
+					profileName = gameProfile.getClass().getMethod("getName");
+				}
+			}
+			Object v = profileName.invoke(gameProfile);
+			return v instanceof String n ? n : null;
+		} catch (ReflectiveOperationException | RuntimeException e) {
+			return null;
+		}
+	}
+
+	/** GameProfile changed from getId() to a record id() in newer authlib: read it either way. */
+	public static UUID idOf(Object gameProfile) {
+		if (gameProfile == null) {
+			return null;
+		}
+		try {
+			if (profileId == null) {
+				try {
+					profileId = gameProfile.getClass().getMethod("id");
+				} catch (NoSuchMethodException e) {
+					profileId = gameProfile.getClass().getMethod("getId");
+				}
+			}
+			Object v = profileId.invoke(gameProfile);
+			return v instanceof UUID u ? u : null;
+		} catch (ReflectiveOperationException | RuntimeException e) {
+			return null;
+		}
+	}
+}

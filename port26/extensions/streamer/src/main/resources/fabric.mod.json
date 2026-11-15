@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "id": "kubo_ext_streamer",
+  "version": "${version}",
+  "name": "Sleep – Streamer Tools",
+  "description": "Streamer Mode (hide IP, coordinates, messages) and TikTok Live (chat, gifts, sounds).",
+  "authors": [
+    "Sleep"
+  ],
+  "license": "GPL-3.0-only",
+  "environment": "client",
+  "entrypoints": {
+    "kubo": [
+      "dev.kuboext.streamer.StreamerExtension"
+    ]
+  },
+  "depends": {
+    "sol_client": "*",
+    "minecraft": ">=26.1 <26.3",
+    "fabricloader": ">=0.20.1"
+  },
+  "mixins": [
+    "kubo_ext_streamer.mixins.json"
+  ],
+  "custom": {
+    "kubo:extension": true
+  }
+}

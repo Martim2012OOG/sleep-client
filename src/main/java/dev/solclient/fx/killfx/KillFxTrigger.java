@@ -63,7 +63,7 @@ public final class KillFxTrigger {
 			}
 			return;
 		}
-		if (!(e instanceof net.minecraft.entity.player.PlayerEntity l) || e == MinecraftClient.getInstance().player || equipped() == null
+		if (!(e instanceof net.minecraft.entity.player.PlayerEntity l) || e == MinecraftClient.getInstance().player || equipped() == null && !dev.solclient.mods.KillSoundsMod.on()
 				|| l.isDead() || l.getHealth() <= 0F || recentlyKilled(e.getId())) {
 			return; // hitting the body while it falls must not count again
 		}
@@ -268,6 +268,7 @@ public final class KillFxTrigger {
 			KILLED.values().removeIf(t -> now - t > 10_000L);
 			KILLED.put(h.e.getId(), now);
 		}
+		dev.solclient.mods.KillSoundsMod.onKill();
 		String id = equipped();
 		System.out.println("[Sleep] kill effect: " + h.name + " -> " + why + " -> " + id);
 		if (id == null) {

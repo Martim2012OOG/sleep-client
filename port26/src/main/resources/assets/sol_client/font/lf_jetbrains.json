@@ -1,0 +1,19 @@
+{
+  "providers": [
+    {
+      "type": "ttf",
+      "file": "sol_client:lf_jetbrains.ttf",
+      "size": 9,
+      "oversample": 8.0,
+      "shift": [
+        0.0,
+        0.0
+      ],
+      "skip": ""
+    },
+    {
+      "type": "reference",
+      "id": "sol_client:ui"
+    }
+  ]
+}

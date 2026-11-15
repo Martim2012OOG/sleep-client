@@ -1,0 +1,6 @@
+{
+  "providers": [
+    { "type": "ttf", "file": "sol_client:f_jetbrains.ttf", "size": 8.6, "oversample": 8.0, "shift": [0.0, 0.0], "skip": "" },
+    { "type": "reference", "id": "sol_client:ui" }
+  ]
+}

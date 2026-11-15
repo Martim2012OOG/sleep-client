@@ -83,6 +83,35 @@ public final class NickFilter {
 		return null;
 	}
 
+	private static final String[] SEVERE = {"nigg", "fag", "retard", "nazi", "hitler", "kkk", "pedo", "rapist", "molest", "kys", "viado", "paneleiro", "pedofil", "estupr", "maricon", "violador"};
+
+	/** True when one word of a chat message is a swear word ({@code severeOnly}: only slurs and the worst words). */
+	public static boolean isBadWord(String word, boolean severeOnly) {
+		if (word == null || word.length() < 2) {
+			return false;
+		}
+		String lowered = Normalizer.normalize(word.toLowerCase(Locale.ROOT), Normalizer.Form.NFD).replaceAll("\\p{M}", "");
+		String tight = unleet(lowered).replaceAll("[^a-z]", "");
+		if (tight.length() < 2) {
+			return false;
+		}
+		String squeezed = tight.replaceAll("(.)\\1+", "$1");
+		for (String w : severeOnly ? SEVERE : WORDS) {
+			String k = w.replace(" ", "");
+			if (tight.contains(k) || squeezed.contains(k.replaceAll("(.)\\1+", "$1"))) {
+				return true;
+			}
+		}
+		if (!severeOnly) {
+			for (String w : WHOLE) {
+				if (tight.equals(w) || squeezed.equals(w)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
 	private static String unleet(String s) {
 		StringBuilder b = new StringBuilder(s.length());
 		for (int i = 0; i < s.length(); i++) {

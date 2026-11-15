@@ -1,0 +1,12 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "deathanimation:item/pac_lower",
+    "tints": [
+      {
+        "type": "minecraft:constant",
+        "value": -256
+      }
+    ]
+  }
+}

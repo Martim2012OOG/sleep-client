@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "kubo_ext_utilities",
+  "version": "${version}",
+  "name": "Sleep – Utilities",
+  "description": "Quick Phrases, Slot Lock, Auto Respawn, Slow Mouse, Hotkeys, Inventory Tweaks, Container Preview, Monsters in the Closet, Tools Optimizer and Chunk Borders.",
+  "authors": [
+    "Sleep"
+  ],
+  "license": "GPL-3.0-only",
+  "environment": "client",
+  "entrypoints": {
+    "kubo": [
+      "dev.kuboext.utilities.UtilitiesExtension"
+    ]
+  },
+  "depends": {
+    "sol_client": "*",
+    "minecraft": ">=26.1 <26.3",
+    "fabricloader": ">=0.20.1"
+  },
+  "custom": {
+    "kubo:extension": true
+  }
+}

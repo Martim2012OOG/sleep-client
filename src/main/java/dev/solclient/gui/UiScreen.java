@@ -258,7 +258,11 @@ public abstract class UiScreen extends Screen {
 		float a = anim(id, hov);
 		buttonBg(c, x, y, s, s, a);
 		int is = Math.round(s * 0.6F);
-		Gfx.tex(c, Theme.icon2(icon), x + (s - is) / 2, y + (s - is) / 2, is, is, 64, 64, 0xFFFFFFFF);
+		if (icon.equals("settings") || icon.equals("settings_small")) {
+			Gfx.texSpin(c, Theme.icon2(icon), x + (s - is) / 2, y + (s - is) / 2, is, is, 64, 64, 0xFFFFFFFF, "gear:" + id, hov);
+		} else {
+			Gfx.tex(c, Theme.icon2(icon), x + (s - is) / 2, y + (s - is) / 2, is, is, 64, 64, 0xFFFFFFFF);
+		}
 		if (hov) {
 			tooltip = tip;
 		}
