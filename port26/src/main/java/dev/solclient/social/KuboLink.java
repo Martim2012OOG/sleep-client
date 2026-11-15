@@ -218,7 +218,11 @@ public final class KuboLink {
 		String nick = Json.str(kx, "n");
 		ProfileBadges.rememberUuid(uuid, nick);
 		if (kx.has("mu") || kx.has("mi")) {
-			dev.solclient.music.MusicShare.onRemote(uuid, nick, kx); // Music Share: the song above the head, listen-along messages
+			try {
+				dev.solclient.music.MusicShare.onRemote(uuid, nick, kx); // Music Share: the song above the head, listen-along messages
+			} catch (Throwable t) { // um pedido estranho de outro jogador nunca pode deitar o jogo abaixo
+				System.err.println("[Sleep] Music Share ignored a message: " + t);
+			}
 		}
 		if (kx.has("dn") && nick != null) {
 			dev.solclient.mods.NickHiderMod.onRemote(nick, Json.str(kx, "dn"));

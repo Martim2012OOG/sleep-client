@@ -25,6 +25,18 @@ public class KillSoundsMod extends Mod {
 
 	public static KillSoundsMod instance;
 
+	/**
+	 * Compatibility with the core's KillFxTrigger, which calls these two statics on the class of the same name. This
+	 * extension class replaces the core one when installed, so without them the game crashed with NoSuchMethodError on
+	 * the first hit. This mod does its own kill detection in onAttack, so the core must not play a second sound.
+	 */
+	public static boolean on() {
+		return false;
+	}
+
+	public static void onKill() {
+	}
+
 	// the chosen sounds (hidden text options: they only keep the choice in the config; the buttons below show them)
 	private final Option.Text killId = text("Kill Sound Id", "minecraft:block.note_block.bell", 160, "").showIf(() -> false);
 	private final Option.Text playerId = text("Player Kill Sound Id", "", 160, "").showIf(() -> false);
