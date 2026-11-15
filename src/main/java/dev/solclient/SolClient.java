@@ -47,6 +47,7 @@ public class SolClient implements ClientModInitializer {
 		MODS.add(new FpsMod());
 		MODS.add(new CpsMod());
 		MODS.add(new dev.solclient.mods.ClickCounterMod());
+		MODS.add(new dev.solclient.mods.DangerDetectionMod());
 		MODS.add(new PingMod());
 		MODS.add(new CoordinatesMod());
 		MODS.add(new KeystrokesMod());

@@ -274,7 +274,7 @@ public final class PrivateConnection {
 		java.util.concurrent.atomic.AtomicBoolean won = new java.util.concurrent.atomic.AtomicBoolean();
 		for (int i = 0; i < cands.size(); i++) {
 			final Server c = cands.get(i);
-			final long delay = i == 0 ? 0 : 500L + 250L * i; // the chosen one gets a head start
+			final long delay = i == 0 ? 0 : 250L + 150L * i; // the chosen one gets a short head start
 			done.submit(() -> {
 				if (delay > 0) {
 					Thread.sleep(delay);
@@ -500,12 +500,54 @@ public final class PrivateConnection {
 		}
 	}
 
-	/** Round trip through the server in ms, or -1. */
+	/** A public Minecraft server used only to check that a free server can really carry the game: port 25565 and a real answer. */
+	private static final String TEST_HOST = "mc.hypixel.net";
+	private static final int TEST_PORT = 25565;
+
+	private static void varInt(java.io.ByteArrayOutputStream o, int v) {
+		while ((v & ~0x7F) != 0) {
+			o.write((v & 0x7F) | 0x80);
+			v >>>= 7;
+		}
+		o.write(v);
+	}
+
+	/** The Minecraft "status" handshake + request: what the game itself sends first. */
+	private static byte[] statusRequest() {
+		java.io.ByteArrayOutputStream d = new java.io.ByteArrayOutputStream();
+		varInt(d, 0); // handshake packet
+		varInt(d, 767);
+		byte[] h = TEST_HOST.getBytes(StandardCharsets.UTF_8);
+		varInt(d, h.length);
+		d.write(h, 0, h.length);
+		d.write(TEST_PORT >> 8);
+		d.write(TEST_PORT & 0xFF);
+		varInt(d, 1); // next state: status
+		java.io.ByteArrayOutputStream o = new java.io.ByteArrayOutputStream();
+		varInt(o, d.size());
+		o.write(d.toByteArray(), 0, d.size());
+		o.write(1); // status request: length 1, id 0
+		o.write(0);
+		return o.toByteArray();
+	}
+
+	/**
+	 * Round trip through the server in ms, or -1. A free server only counts when it carries a real Minecraft connection: it opens a tunnel to a
+	 * Minecraft server on port 25565 AND the answer comes back. (It used to test port 443 / 80: almost every server passed that and then
+	 * refused the game's port, so nine out of ten "working" servers could not join anything.)
+	 */
 	public static int test(Server s) {
 		long t0 = System.nanoTime();
-		// HTTP proxies often only tunnel to port 443: test them on 80, so the ones that pass also let the game's port through
-		boolean http = "http".equals(s.type);
-		try (Socket x = openThrough(s, "1.1.1.1", http ? 80 : 443, TEST_MS)) {
+		try (Socket x = openThrough(s, TEST_HOST, TEST_PORT, TEST_MS)) {
+			x.setSoTimeout(TEST_MS);
+			OutputStream out = x.getOutputStream();
+			out.write(statusRequest());
+			out.flush();
+			int first = x.getInputStream().read(); // the first byte of the answer
+			if (first <= 0) {
+				s.ping = -1;
+				return -1;
+			}
 			int ms = (int) ((System.nanoTime() - t0) / 1_000_000L);
 			s.ping = Math.max(1, ms);
 		} catch (IOException e) {
@@ -550,13 +592,13 @@ public final class PrivateConnection {
 	private static final ExecutorService SCAN = Executors.newThreadPerTaskExecutor(Thread.ofVirtual().name("Sleep-PrivateConnection-Test", 0).factory());
 	private static final java.util.concurrent.Semaphore PARALLEL = new java.util.concurrent.Semaphore(96); // fewer tests at once: 384 flooded the network (game lag)
 	/** How many servers of each country the background check may try (most free servers are dead)... */
-	private static final int SCAN_PER_COUNTRY = 40;
+	private static final int SCAN_PER_COUNTRY = 80;
 	/** ...it stops for a country once this many answered. */
 	private static final int SCAN_ENOUGH = 3;
 	/** At most this many servers kept per country (the huge lists are mostly the same few countries). */
 	private static final int MAX_PER_COUNTRY = 4000;
 	/** A test gives up after this long (connect + handshake). */
-	private static final int TEST_MS = 2500;
+	private static final int TEST_MS = 3500;
 
 	/** {kind, list on GitHub (via jsDelivr), format}: csv = proxifly (has the country), txt = host:port per line (country from the IP). */
 	private static final String[][] LISTS = {
@@ -575,7 +617,39 @@ public final class PrivateConnection {
 			{"socks4", "roosterkid/openproxylist@main/SOCKS4_RAW.txt", "txt"},
 			{"socks5", "roosterkid/openproxylist@main/SOCKS5_RAW.txt", "txt"},
 			{"socks5", "zloi-user/hideip.me@main/socks5.txt", "txt"},
-			{"socks5", "sunny9577/proxy-scraper@master/generated/socks5_proxies.txt", "txt"}};
+			{"socks5", "sunny9577/proxy-scraper@master/generated/socks5_proxies.txt", "txt"},
+			// more public lists (checked: every one of them answers and is big enough to be worth reading)
+			{"socks5", "monosans/proxy-list@main/proxies/socks5.txt", "txt"},
+			{"socks5", "ShiftyTR/Proxy-List@master/socks5.txt", "txt"},
+			{"socks5", "jetkai/proxy-list@main/online-proxies/txt/proxies-socks5.txt", "txt"},
+			{"socks5", "Zaeem20/FREE_PROXIES_LIST@master/socks5.txt", "txt"},
+			{"socks5", "mmpx12/proxy-list@master/socks5.txt", "txt"},
+			{"socks5", "ALIILAPRO/Proxy@main/socks5.txt", "txt"},
+			{"socks5", "iplocate/free-proxy-list@main/protocols/socks5.txt", "txt"},
+			{"socks5", "Anonym0usWork1221/Free-Proxies@main/proxy_files/socks5_proxies.txt", "txt"},
+			{"socks5", "rdavydov/proxy-list@main/proxies/socks5.txt", "txt"},
+			{"socks5", "B4RC0DE-TM/proxy-list@main/SOCKS5.txt", "txt"},
+			{"socks5", "r00tee/Proxy-List@main/Socks5.txt", "txt"},
+			{"socks5", "dpangestuw/Free-Proxy@main/socks5_proxies.txt", "txt"},
+			{"socks5", "TuanMinPay/live-proxy@master/socks5.txt", "txt"},
+			{"socks5", "Vann-Dev/proxy-list@main/proxies/socks5.txt", "txt"},
+			{"socks5", "casals-ar/proxy-list@main/socks5", "txt"},
+			{"socks4", "monosans/proxy-list@main/proxies/socks4.txt", "txt"},
+			{"socks4", "ShiftyTR/Proxy-List@master/socks4.txt", "txt"},
+			{"socks4", "jetkai/proxy-list@main/online-proxies/txt/proxies-socks4.txt", "txt"},
+			{"socks4", "prxchk/proxy-list@main/socks4.txt", "txt"},
+			{"socks4", "Zaeem20/FREE_PROXIES_LIST@master/socks4.txt", "txt"},
+			{"socks4", "mmpx12/proxy-list@master/socks4.txt", "txt"},
+			{"socks4", "ALIILAPRO/Proxy@main/socks4.txt", "txt"},
+			{"socks4", "iplocate/free-proxy-list@main/protocols/socks4.txt", "txt"},
+			{"socks4", "Anonym0usWork1221/Free-Proxies@main/proxy_files/socks4_proxies.txt", "txt"},
+			{"socks4", "rdavydov/proxy-list@main/proxies/socks4.txt", "txt"},
+			{"socks4", "B4RC0DE-TM/proxy-list@main/SOCKS4.txt", "txt"},
+			{"socks4", "r00tee/Proxy-List@main/Socks4.txt", "txt"},
+			{"socks4", "dpangestuw/Free-Proxy@main/socks4_proxies.txt", "txt"},
+			{"socks4", "TuanMinPay/live-proxy@master/socks4.txt", "txt"},
+			{"socks4", "Vann-Dev/proxy-list@main/proxies/socks4.txt", "txt"},
+			{"socks4", "casals-ar/proxy-list@main/socks4", "txt"}};
 
 	private static final java.net.http.HttpClient HTTP = java.net.http.HttpClient.newBuilder()
 			.followRedirects(java.net.http.HttpClient.Redirect.ALWAYS).connectTimeout(java.time.Duration.ofSeconds(6)).build();
@@ -723,7 +797,7 @@ public final class PrivateConnection {
 	public static volatile int listsDone, listsTotal;
 
 	private static Path cacheFile() {
-		return FabricLoader.getInstance().getConfigDir().resolve("kubo-private-connection-cache.txt");
+		return FabricLoader.getInstance().getConfigDir().resolve("kubo-private-connection-cache-v2.txt");
 	}
 
 	/** Shows the saved list straight away (with the pings it had), then downloads every list again in the background. */

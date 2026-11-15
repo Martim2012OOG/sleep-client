@@ -284,6 +284,11 @@ public final class AudioStream {
 			public CompletionStage<?> onText(WebSocket ws, CharSequence data, boolean last) {
 				if (data.toString().contains("\"ready\"")) {
 					hostReady = true;
+					if (data.toString().contains("\"host\":false")) {
+						status = "audio: the Worker did not take you as the owner of this sound room (account mismatch)";
+					} else if (status == null || status.isEmpty() || status.startsWith("starting") || status.startsWith("sending")) {
+						status = "your sound is going out to your listeners";
+					}
 				}
 				ws.request(1);
 				return null;
@@ -337,6 +342,7 @@ public final class AudioStream {
 					enc[i] = ENC[s & 0xFFFF];
 				}
 				last = ws.sendBinary(ByteBuffer.wrap(enc), true);
+				framesSent++;
 			}
 		} catch (Exception ignored) {
 			// stopped
@@ -372,6 +378,12 @@ public final class AudioStream {
 	private static volatile boolean playing;
 	/** 0..1 */
 	public static volatile float volume = 1F;
+	private static volatile long framesSent, framesGot, framesPlayed;
+
+	/** One line for the sync status in the settings: what the sound is doing right now. */
+	public static String diag() {
+		return "Audio: send " + (hosting() ? (hostReady ? "ON" : "connecting") : "off") + " (" + framesSent + " sent), listen " + (listenHost == null ? "off" : (lisWs == null ? "connecting" : "ON")) + " (" + framesGot + " got, " + framesPlayed + " played)" + (status == null || status.isEmpty() ? "" : " | " + status);
+	}
 
 	/** Called every tick with the host to listen to (uuid, no dashes), or null to stop. */
 	public static void listenTo(String hostUuid) {
@@ -402,6 +414,9 @@ public final class AudioStream {
 			public void onOpen(WebSocket ws) {
 				lisWs = ws;
 				lisBusy = false;
+				framesGot = 0;
+				framesPlayed = 0;
+				status = "connected to the sound, waiting for it";
 				ws.sendText(hello, true);
 				startPlayer();
 				ws.request(1);
@@ -427,6 +442,9 @@ public final class AudioStream {
 						pcm[2 * i] = (byte) s;
 						pcm[2 * i + 1] = (byte) (s >> 8);
 					}
+					if (framesGot++ == 0) {
+						status = "receiving the sound";
+					}
 					while (!PLAY.offer(pcm)) {
 						PLAY.poll(); // too far behind: drop the oldest, the delay stays short
 					}
@@ -438,6 +456,9 @@ public final class AudioStream {
 			@Override
 			public CompletionStage<?> onClose(WebSocket ws, int code, String reason) {
 				lisWs = null;
+				if (code == 4003) {
+					status = "audio: the sound Worker did not accept your login";
+				}
 				return null;
 			}
 
@@ -461,11 +482,14 @@ public final class AudioStream {
 		Thread t = new Thread(() -> {
 			SourceDataLine line = null;
 			try {
-				AudioFormat fmt = new AudioFormat(RATE, 16, 1, true, false);
+				// 24 kHz mono is not accepted by every sound card (it used to fail without a word): the line is 48 kHz stereo, which all of them take,
+				// and the sound is doubled up to it here
+				AudioFormat fmt = new AudioFormat(48000, 16, 2, true, false);
 				line = AudioSystem.getSourceDataLine(fmt);
-				line.open(fmt, RATE * 2 / 2); // 0.5 s of buffer
+				line.open(fmt, 48000 * 4 / 2); // 0.5 s of buffer
 				line.start();
 				boolean primed = false;
+				short prev = 0;
 				while (playing && listenHost != null) {
 					if (!primed) {
 						if (PLAY.size() < 8) { // ~320 ms before the first sound: smooths the network
@@ -480,17 +504,28 @@ public final class AudioStream {
 						continue;
 					}
 					float v = volume;
-					if (v < 0.99F) {
-						for (int i = 0; i + 1 < f.length; i += 2) {
-							int s = Math.round(((short) ((f[i] & 0xFF) | (f[i + 1] << 8))) * v);
-							f[i] = (byte) s;
-							f[i + 1] = (byte) (s >> 8);
-						}
+					int n = f.length / 2;
+					byte[] out = new byte[n * 8]; // each mono sample -> 2 stereo frames of 4 bytes
+					for (int i = 0; i < n; i++) {
+						short cur = (short) ((f[2 * i] & 0xFF) | (f[2 * i + 1] << 8));
+						short mid = (short) ((prev + cur) / 2);
+						prev = cur;
+						short a1 = (short) Math.round(mid * v), a2 = (short) Math.round(cur * v);
+						int o = i * 8;
+						out[o] = (byte) a1;
+						out[o + 1] = (byte) (a1 >> 8);
+						out[o + 2] = (byte) a1;
+						out[o + 3] = (byte) (a1 >> 8);
+						out[o + 4] = (byte) a2;
+						out[o + 5] = (byte) (a2 >> 8);
+						out[o + 6] = (byte) a2;
+						out[o + 7] = (byte) (a2 >> 8);
 					}
-					line.write(f, 0, f.length);
+					line.write(out, 0, out.length);
+					framesPlayed++;
 				}
-			} catch (Throwable ignored) {
-				// no sound device: nothing to play
+			} catch (Throwable e) {
+				status = "audio: could not play the sound (" + e.getClass().getSimpleName() + ": " + e.getMessage() + ")";
 			} finally {
 				if (line != null) {
 					line.stop();

@@ -444,7 +444,6 @@ public class PrivateConnectionScreen extends UiScreen {
 
 		int colW = Math.min(110, (w - 20) / 4);
 		int gx = x + 10, gy = y + 22;
-		int servers = cur == null || cur.mine ? 0 : PrivateConnection.free.getOrDefault(cur.country, List.of()).size();
 		int lat = on && cur != null && cur.ping > 0 ? cur.ping : -1;
 		if (on && PrivateConnection.latencyCount > 0) {
 			int last = PrivateConnection.LATENCY[PrivateConnection.LATENCY.length - 1];
@@ -452,15 +451,11 @@ public class PrivateConnectionScreen extends UiScreen {
 				lat = last;
 			}
 		}
-		stat(c, gx, gy, colW, dev.solclient.Lang.tr("Address", "Endereço"), PrivateConnection.myIp.isEmpty() ? "..." : PrivateConnection.myIp);
-		stat(c, gx + colW, gy, colW, dev.solclient.Lang.tr("Servers", "Servidores"),
-				on && cur != null ? (cur.mine ? dev.solclient.Lang.tr("yours", "teu") : String.format(Locale.ROOT, "%,d", servers).replace(',', ' ')) : "-");
-		stat(c, gx, gy + 17, colW, dev.solclient.Lang.tr("Protocol", "Protocolo"),
-				on && cur != null ? (cur.type == null ? "socks5" : cur.type).toUpperCase(Locale.ROOT) : "-");
-		stat(c, gx + colW, gy + 17, colW, dev.solclient.Lang.tr("Latency", "Latência"), lat > 0 ? lat + " ms" : "-");
+		stat(c, gx, gy + 4, colW + 20, dev.solclient.Lang.tr("Address", "Endereço"), PrivateConnection.myIp.isEmpty() ? "..." : PrivateConnection.myIp);
+		stat(c, gx + colW + 24, gy + 4, colW, dev.solclient.Lang.tr("Latency", "Latência"), lat > 0 ? lat + " ms" : "-");
 
 		// live latency graph
-		int chX = gx + colW * 2 + 8, chW = x + w - 10 - chX, chY = y + 8, chH = h - 16;
+		int chX = gx + colW * 2 + 40, chW = x + w - 10 - chX, chY = y + 8, chH = h - 16;
 		if (chW < 40) {
 			return;
 		}
@@ -524,11 +519,16 @@ public class PrivateConnectionScreen extends UiScreen {
 		}
 	}
 
+	/** A quiet text button: no box, the text lights up (and gets a thin line) when the mouse is over it. */
 	private void smallButton(DrawContext c, String id, int x, int y, int w, String label, Runnable run) {
 		boolean hov = hovered(x, y, w, 16);
 		float a = anim(id, hov);
-		Gfx.rrectBorder(c, x, y, w, 16, 5, Gfx.blend(0xE01E2028, 0xF02A2D36, a), Gfx.blend(0x20FFFFFF, TEAL, a * 0.7F));
-		Gfx.textFit(c, label, x + w / 2, w - 8, y + 4, Theme.TEXT);
+		int col = Gfx.blend(0xFF8F96A6, 0xFFFFFFFF, a);
+		int tw = Gfx.tw(label);
+		Gfx.text(c, label, x + (w - tw) / 2, y + 4, col);
+		if (a > 0.05F) {
+			c.fill(x + (w - tw) / 2, y + 14, x + (w + tw) / 2, y + 15, Gfx.withAlpha(TEAL & 0xFFFFFF, Math.round(200 * a)));
+		}
 		region(x, y, w, 16, run);
 	}
 

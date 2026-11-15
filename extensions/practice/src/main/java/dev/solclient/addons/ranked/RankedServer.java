@@ -593,6 +593,12 @@ public final class RankedServer {
 		if (m.team(p.getName().getString()) == null) {
 			return true;
 		}
+		// a Totem of Undying in a hand: let the game run its own totem (pop, 1 heart, the effects) instead of eliminating at once. Void and /kill
+		// ignore totems in vanilla too, so those still count as a death here.
+		if ((p.getMainHandStack().isOf(net.minecraft.item.Items.TOTEM_OF_UNDYING) || p.getOffHandStack().isOf(net.minecraft.item.Items.TOTEM_OF_UNDYING))
+				&& !src.isIn(net.minecraft.registry.tag.DamageTypeTags.BYPASSES_INVULNERABILITY)) {
+			return true;
+		}
 		p.setHealth(p.getMaxHealth());
 		if (phase == Phase.FIGHT) {
 			eliminate(p.getEntityWorld().getServer(), p);

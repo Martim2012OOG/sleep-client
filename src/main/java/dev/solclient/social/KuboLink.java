@@ -194,7 +194,7 @@ public final class KuboLink {
 		String s = "Lobby " + (Presence.connected() ? Presence.lobbyPlayers().size() + " online" : "OFF") + " | Server room "
 				+ (Presence.serverRoomOpen() ? Presence.serverPlayers().size() + " players" : "OFF") + " | sent " + ago(lastSentAt)
 				+ " | got " + (lastRecvNick.isEmpty() ? "nothing yet" : lastRecvNick + " " + ago(lastRecvAt));
-		s = s + " || " + SyncLink.diag();
+		s = s + " || " + SyncLink.diag() + " || " + dev.solclient.music.AudioStream.diag();
 		return Presence.problem == null ? s : s + " | " + Presence.problem;
 	}
 
