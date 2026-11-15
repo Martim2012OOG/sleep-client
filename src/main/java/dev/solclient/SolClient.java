@@ -257,6 +257,7 @@ public class SolClient implements ClientModInitializer {
 		dev.solclient.social.ServerShare.register();
 		dev.solclient.video.WatchPartyHooks.register();
 		dev.solclient.music.MusicShareHooks.register();
+		dev.solclient.gui.PauseMultiplayerButton.register();
 		dev.solclient.video.Panels.register();
 		dev.solclient.cosmetic.pet.Pets.init();
 		dev.solclient.fx.MaceFx.init();

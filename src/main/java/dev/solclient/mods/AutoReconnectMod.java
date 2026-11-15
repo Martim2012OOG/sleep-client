@@ -11,7 +11,7 @@ import net.minecraft.client.network.ServerInfo;
 public class AutoReconnectMod extends Mod {
 
 	public static AutoReconnectMod instance;
-	public final Option.Num delay = num("Delay", 5, 1, 30, 1, " s");
+	public final Option.Num delay = num("Reconnect Delay", 0, 0, 10000, 100, " ms"); // 0 = at once
 	public final Option.Num attempts = num("Max Attempts", 5, 1, 20, 1, "");
 
 	private static ServerInfo last;
@@ -27,7 +27,7 @@ public class AutoReconnectMod extends Mod {
 	}
 
 	public static long delayMs() {
-		return instance == null ? 5000L : Math.round(instance.delay.f() * 1000F);
+		return instance == null ? 0L : Math.round(instance.delay.f());
 	}
 
 	public static String serverName() {

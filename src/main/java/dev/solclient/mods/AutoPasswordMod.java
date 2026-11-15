@@ -24,7 +24,7 @@ public class AutoPasswordMod extends Mod {
 
 	private final Option.Text password = text("Password", "", 64, "your server password");
 	private final Option.Choice registerFormat = choice("Register Command", 0, "Detect from the server", "Password once", "Password twice");
-	private final Option.Num delay = num("Delay", 600, 0, 4000, 100, " ms");
+	private final Option.Num delay = num("Delay Before Sending", 0, 0, 4000, 50, " ms");
 	private final Option.Bool login = bool("Auto Login", true);
 	private final Option.Bool register = bool("Auto Register", true);
 	private final Option.Text perServer = text("Passwords Per Server", "", 200, "play.example.net=pass1; other.net=pass2");
