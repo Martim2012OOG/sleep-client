@@ -54,6 +54,6 @@ public class InGameHudMixin {
 	/** Pumpkin / spyglass / powder snow overlay opacity: renderOverlay(DrawContext, Identifier, float). */
 	@ModifyArgs(method = {"extractCameraOverlays", "extractRenderState"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;extractTextureOverlay(Lnet/minecraft/client/gui/GuiGraphicsExtractor;Lnet/minecraft/resources/Identifier;F)V"), require = 0)
 	private void sol$overlayOpacity(Args args) {
-		args.set(2, OverlayMod.overlayOpacity(String.valueOf(args.get(1)), (float) args.get(2)));
+		Object id = args.get(1); float op = args.<Float>get(2); args.set(2, OverlayMod.overlayOpacity(String.valueOf(id), op));
 	}
 }
