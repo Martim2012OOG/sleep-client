@@ -150,7 +150,7 @@ public final class AudioStream {
 		if (hosting() && want && startedFor != null && !startedFor.equals(src)) {
 			hostStop(); // the song now comes from another player: capture that one instead
 		}
-		if (want && !hosting() && !hostStarting) {
+		if (want && !hosting() && !hostStarting && System.currentTimeMillis() >= hostRetryAt) {
 			hostStarting = true;
 			startedFor = src;
 			Thread t = new Thread(AudioStream::hostStart, "Sleep audio start");
@@ -162,6 +162,9 @@ public final class AudioStream {
 	}
 
 	private static volatile String startedFor;
+
+	/** Do not start the capture again before this time: when macOS refuses (no permission) the helper exits at once and, without a pause, it was restarted every tick (a macOS dialog + a chat line each time). */
+	private static volatile long hostRetryAt;
 
 	/** Linux: the PulseAudio / PipeWire "sink input" of the music player (by name), so only its sound is sent. Null = not found. */
 	private static String linuxSinkInput(String source) {
@@ -256,6 +259,7 @@ public final class AudioStream {
 				p = new ProcessBuilder(cmd).redirectError(ProcessBuilder.Redirect.DISCARD).start();
 			}
 			proc = p;
+			hostRetryAt = System.currentTimeMillis() + 15_000L; // if the helper dies at once, wait before trying again
 			status = "starting";
 			Thread err = new Thread(() -> {
 				try (var r = new java.io.BufferedReader(new java.io.InputStreamReader(p.getErrorStream()))) {
@@ -264,6 +268,7 @@ public final class AudioStream {
 						if (l.startsWith("capturing")) {
 							status = "sending your sound";
 						} else if (l.startsWith("error")) {
+							hostRetryAt = System.currentTimeMillis() + 120_000L; // refused: ask again in 2 minutes, not every tick
 							status = l.toLowerCase(Locale.ROOT).contains("3801") || l.toLowerCase(Locale.ROOT).contains("declin") || l.toLowerCase(Locale.ROOT).contains("permission")
 									? "macOS has no permission yet: System Settings > Privacy & Security > Screen & System Audio Recording, turn it on for Java / Sleep, then try again"
 									: l;
