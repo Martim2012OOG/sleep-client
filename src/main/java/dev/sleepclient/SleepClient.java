@@ -89,6 +89,7 @@ public class SleepClient implements ClientModInitializer {
 		MODS.add(new CapePhysicsMod());
 		MODS.add(new NoHurtCamMod());
 		MODS.add(new PerformanceMod());
+		MODS.add(new dev.sleepclient.mods.SmoothFramesMod());
 		MODS.add(new OwnNametagMod());
 		MODS.add(new ChatSearchMod());
 		MODS.add(new ChatHistoryMod());

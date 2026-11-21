@@ -280,13 +280,7 @@ final class Season {
 		}
 		// snow piled up along the bottom
 		snowPile(c, w, h);
-		// presents in the bottom-left corner
-		String[] g = {"gift_red", "gift_green", "gift_blue", "gift_green", "gift_red"};
-		int[][] pos = {{10, 34, 30}, {38, 28, 24}, {62, 36, 32}, {22, 50, 22}, {90, 26, 22}};
-		for (int i = 0; i < GIFTS; i++) {
-			int sz = pos[i][2];
-			Gfx.tex(c, Gfx.id("textures/gui/season/" + g[i] + ".png"), pos[i][0], h - pos[i][1] - sz / 3, sz, sz, 16, 16, 0xFFFFFFFF);
-		}
+		// (the presents that used to pile up in the bottom-left corner are gone)
 	}
 
 	// ------------------------------------------------------------------ snow that piles up along the bottom

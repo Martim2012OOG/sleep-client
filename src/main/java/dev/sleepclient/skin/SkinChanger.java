@@ -187,6 +187,8 @@ public final class SkinChanger {
 
 
 	private static volatile RemoteTextures.Tex ownSkinTex;
+	/** Whose skin the cached address / picture below belong to. */
+	private static volatile UUID ownSkinFor;
 	/** The address of your account's skin (from Mojang's session server) and whether it has slim arms. Kept on disk too. */
 	private static volatile String ownSkinUrl;
 	private static volatile boolean ownSkinSlim;
@@ -273,8 +275,17 @@ public final class SkinChanger {
 				}
 				return cur;
 			}
-			loadOwnSkinFile();
 			UUID uuid = mc.getSession().getUuidOrNull();
+			if (uuid != null && !uuid.equals(ownSkinFor)) {
+				// another account was chosen (an offline one, say): forget the skin address / picture of the previous one
+				ownSkinFor = uuid;
+				ownSkinUrl = null;
+				ownSkinSlim = false;
+				ownSkinTex = null;
+				ownSkinTriedAt = 0L;
+				ownSkinLoaded = false;
+			}
+			loadOwnSkinFile();
 			if (ownSkinUrl == null && uuid != null) {
 				fetchOwnSkinUrl(uuid);
 			}

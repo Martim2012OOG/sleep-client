@@ -124,7 +124,6 @@ public class PrivateConnectionScreen extends UiScreen {
 			float a = anim("pcnav" + i, hov);
 			if (sel) {
 				Gfx.rrect(c, sx, ny, sW, 17, 5, 0xFF33363F);
-				Gfx.rrect(c, sx - 4, ny + 3, 2, 11, 1, 0xFFFFFFFF);
 			} else if (a > 0.01F) {
 				Gfx.rrect(c, sx, ny, sW, 17, 5, Gfx.withAlpha(0xFFFFFF, Math.round(0x0E * a)));
 			}
@@ -337,6 +336,8 @@ public class PrivateConnectionScreen extends UiScreen {
 			home = HOME_FALLBACK;
 		}
 		double[] dest = MapView.centre(!cc.isEmpty() ? cc : hoverCc);
+		map.homeLabel = home == null ? "" : dev.sleepclient.Lang.tr("You", "Tu") + (PrivateConnection.homeCountry == null || PrivateConnection.homeCountry.isEmpty() ? "" : " \u00b7 " + countryName(PrivateConnection.homeCountry));
+		map.destLabel = dest == null ? "" : countryName(!cc.isEmpty() ? cc : hoverCc);
 		map.draw(c, mx0, my0, mw, mh, home, dest, on && !cc.isEmpty());
 		Gfx.outline(c, mx0, my0, mw, mh, 0x14FFFFFF);
 		int mid = mx0 + mw / 2;

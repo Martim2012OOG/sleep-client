@@ -3315,3 +3315,12 @@ Height Limit	Limite de altura
 Horse Stats	Estatísticas do cavalo
 Floating Words Look	Aspeto de palavras flutuantes
 One click: the words hang in the world in front of you, one by one, each in its own colour, thick and glowing, and the top bar writes the line as it is sung. Turns the lyrics on by itself and replaces the lyrics options below while it is on.	Um clique: as palavras ficam penduradas no mundo à tua frente, uma a uma, cada uma com a sua cor, grossas e com brilho, e a barra de cima escreve a frase à medida que é cantada. Liga as letras sozinho e substitui as opções de letras abaixo enquanto está ligado.
+Smooth Frames	Imagem Fluida
+Keeps the screen clean and steady when the game lags, as if you played on the lightest settings.	Mantém o ecrã limpo e estável quando o jogo tem quebras, como se jogasses com as definições mais leves.
+Lighten Below	Aligeirar abaixo de
+When your FPS stays under this for a moment the screen is lightened. It goes back when the game is smooth again.	Quando os teus FPS ficam abaixo disto por um momento, o ecrã é aligeirado. Volta ao normal quando o jogo estiver fluido.
+Fewer Particles	Menos partículas
+No Entity Shadows	Sem sombras de entidades
+Hide Clouds	Esconder nuvens
+Draw Entities Closer	Desenhar entidades mais perto
+Players and mobs far away are not drawn while the game lags.	Jogadores e mobs distantes não são desenhados enquanto o jogo tem quebras.

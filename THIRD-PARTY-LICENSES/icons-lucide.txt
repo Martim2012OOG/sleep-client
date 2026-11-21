@@ -5,3 +5,4 @@ Source: https://lucide.dev (lucide-static 0.456.0). Used in assets/sleep_client/
 Also: layers (icon of 3D Skin Layers) -> assets/sleep_client/textures/gui/icon/skin_layers_3d.png
 Also: music-2 and headphones as icons of Music Share / Music Listeners (assets/sleep_client/textures/gui/icon/music_share.png, music_listeners.png)
 Also: moon, swords, feather as neutral icons of the importer (assets/sleep_client/textures/gui/icon/import_*.png)
+Also: gauge (icon of Smooth Frames) -> assets/sleep_client/textures/gui/icon/smooth_frames.png (redrawn from the Lucide path, lucide-static 0.468.0).

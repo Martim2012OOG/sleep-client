@@ -702,15 +702,17 @@ public final class PrivateConnection {
 	private static volatile long scanId;
 	/** Tests run on virtual threads (cheap while they wait for the network); this caps how many at the same time. */
 	private static final ExecutorService SCAN = Executors.newThreadPerTaskExecutor(Thread.ofVirtual().name("Sleep-PrivateConnection-Test", 0).factory());
-	private static final java.util.concurrent.Semaphore PARALLEL = new java.util.concurrent.Semaphore(96); // fewer tests at once: 384 flooded the network (game lag)
+	private static final java.util.concurrent.Semaphore PARALLEL = new java.util.concurrent.Semaphore(64); // fewer tests at once: 384 flooded the network (game lag)
 	/** How many servers of each country the background check may try (most free servers are dead)... */
-	private static final int SCAN_PER_COUNTRY = 200;
+	private static final int SCAN_PER_COUNTRY = 60;
 	/** ...it stops for a country once this many answered. */
-	private static final int SCAN_ENOUGH = 5;
+	private static final int SCAN_ENOUGH = 3;
 	/** At most this many servers kept per country (the huge lists are mostly the same few countries). */
-	private static final int MAX_PER_COUNTRY = 4000;
+	private static final int MAX_PER_COUNTRY = 1200;
+	/** How many lines of one public list are read (the lists have up to 500 000). */
+	private static final int MAX_LINES_PER_LIST = 3000;
 	/** A test gives up after this long (connect + handshake). */
-	private static final int TEST_MS = 6000;
+	private static final int TEST_MS = 4500;
 
 	/** {kind, list on GitHub (via jsDelivr), format}: csv = proxifly (has the country), txt = host:port per line (country from the IP). */
 	private static final String[][] LISTS = {
@@ -1005,7 +1007,11 @@ public final class PrivateConnection {
 							if (l[2].equals("txt")) {
 								loadGeo(); // these lists have no country: it comes from the address
 							}
+							int taken = 0;
 							for (String line : body.split("\\R")) {
+								if (taken++ >= MAX_LINES_PER_LIST) {
+									break; // the huge lists would flood the screen and the CPU: the first thousands are plenty
+								}
 								parseLine(fresh, l[0], line, l[2].equals("csv"));
 							}
 						} catch (Exception e) {
@@ -1136,11 +1142,11 @@ public final class PrivateConnection {
 	 */
 	private static void publish() {
 		long now = System.currentTimeMillis();
-		if (now - lastPublish < 1500) {
+		if (now - lastPublish < 2500) {
 			if (PUBLISH_LATER.compareAndSet(false, true)) {
 				POOL.execute(() -> {
 					try {
-						Thread.sleep(1500);
+						Thread.sleep(2500);
 					} catch (InterruptedException ignored) {
 						// publish now then
 					}

@@ -11,7 +11,7 @@ import net.minecraft.network.chat.Component;
 import org.joml.Quaternionf;
 
 /**
- * The "Now playing" card: when a song starts it first says WHAT is playing and by WHOM (label, title, artist, the player it comes from),
+ * The "NOW PLAYING" card: when a song starts it first says WHAT is playing and by WHOM (label, title, artist, the player it comes from),
  * floating in the real sky (3D, like the lyrics) or flat on the screen, and then it fades away so the lyrics can take over.
  * It reads {@link MusicHub}, so it works for any player: Spotify, YouTube / YouTube Music or SoundCloud in a browser, Apple Music...
  * When a player gives no artist (a plain browser video) we try "Artist - Title" in the title, then fall back to the player's name.

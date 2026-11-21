@@ -4755,6 +4755,12 @@ public class SolMenuScreen extends Screen {
 		} else {
 			Gfx.textClip(c, e.name(), x + 6, ny + 1, w - 12, Theme.TEXT);
 		}
+		if (hov) {
+			int vbw = 26, vbh = 18, vbx = x + (w - vbw) / 2, vby = y + 4 + areaH - vbh - 6;
+			boolean vh2 = in(mx, my, vbx, vby, vbw, vbh);
+			eyeButton(c, vbx, vby, vbw, vbh, vh2);
+			region(vbx, vby, vbw, vbh, () -> lockerSel = e.id()); // the big 3D preview of this emote opens on the right
+		}
 		region(x, y, w, h - 18, () -> {
 			lockerSel = e.id();
 			if (doubleClick("em" + e.id()) && canWear) {
@@ -4762,6 +4768,12 @@ public class SolMenuScreen extends Screen {
 			}
 		});
 		region(x, y + h - 18, w - 28, 18, () -> lockerSel = e.id());
+	}
+
+	/** The small black "preview" button that appears over a card on hover: an eye. */
+	private void eyeButton(DrawContext c, int x, int y, int w, int h, boolean hover) {
+		Gfx.rrectBorder(c, x, y, w, h, 6, hover ? 0xF2000000 : 0xDA000000, hover ? 0x70FFFFFF : 0x28FFFFFF);
+		Gfx.tex(c, Theme.icon2("nav_visual"), x + (w - 12) / 2, y + (h - 12) / 2, 12, 12, 64, 64, 0xFFFFFFFF);
 	}
 
 	/** Equip into the picked slot (or the first free one, or slot 1); equipping an equipped emote unequips it. */
@@ -4828,11 +4840,10 @@ public class SolMenuScreen extends Screen {
 			deathSel = null;
 		});
 		if (hov && Social.isKillEffect(it) && Gfx.mc().player != null) {
-			int vbw = Gfx.tw("View") + 16, vbx = x + (w - vbw) / 2, vby = y + 4 + (h - 24) - 20;
-			boolean vh2 = in(mx, my, vbx, vby, vbw, 16);
-			Gfx.rrect(c, vbx, vby, vbw, 16, 5, vh2 ? Theme.accentHover() : Theme.accent());
-			Gfx.textC(c, "View", vbx + vbw / 2, vby + 4, 0xFFFFFFFF);
-			region(vbx, vby, vbw, 16, () -> viewKillEffect(it));
+			int vbw = 26, vbh = 18, vbx = x + (w - vbw) / 2, vby = y + 4 + (h - 24) - vbh - 6;
+			boolean vh2 = in(mx, my, vbx, vby, vbw, vbh);
+			eyeButton(c, vbx, vby, vbw, vbh, vh2);
+			region(vbx, vby, vbw, vbh, () -> viewKillEffect(it));
 		}
 	}
 
@@ -5344,11 +5355,10 @@ public class SolMenuScreen extends Screen {
 			region(sxx - 2, ny - 2, 22, 14, () -> equipDeath(e));
 		}
 		if (hov && Gfx.mc().player != null) {
-			int vbw = Gfx.tw("View") + 16, vbx = x + (cw - vbw) / 2, vby = sty + sth - 20;
-			boolean vh2 = in(mx, my, vbx, vby, vbw, 16);
-			Gfx.rrect(c, vbx, vby, vbw, 16, 5, vh2 ? Theme.accentHover() : Theme.accent());
-			Gfx.textC(c, "View", vbx + vbw / 2, vby + 4, 0xFFFFFFFF);
-			region(vbx, vby, vbw, 16, () -> viewDeath(e));
+			int vbw = 26, vbh = 18, vbx = x + (cw - vbw) / 2, vby = sty + sth - vbh - 6;
+			boolean vh2 = in(mx, my, vbx, vby, vbw, vbh);
+			eyeButton(c, vbx, vby, vbw, vbh, vh2);
+			region(vbx, vby, vbw, vbh, () -> viewDeath(e));
 		}
 	}
 

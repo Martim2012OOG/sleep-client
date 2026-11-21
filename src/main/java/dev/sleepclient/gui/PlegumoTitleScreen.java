@@ -111,28 +111,67 @@ public class PlegumoTitleScreen extends UiScreen {
 	private String lastMsg;
 	private long msgAt;
 
+	// ---- the 3D skin on the right: drag to turn it, and a second after you let go it eases back to how it stood
+	private static final float SKIN_YAW = -25F;
+	private float skinYaw;
+	private double skinDragX = Double.NaN;
+	private long skinFrameAt, skinReleasedAt;
+	private boolean skinWasDragging;
+
+	/** Advances the turn: nothing while you hold it, then after 1 s it glides back the short way round. */
+	private void stepSkinSpin(boolean dragging) {
+		long now = System.currentTimeMillis();
+		float dt = skinFrameAt == 0 ? 0F : Math.min(0.05F, (now - skinFrameAt) / 1000F);
+		skinFrameAt = now;
+		if (dragging) {
+			skinReleasedAt = 0L;
+		} else if (skinWasDragging) {
+			skinReleasedAt = now;
+			skinDragX = Double.NaN;
+		}
+		skinWasDragging = dragging;
+		if (!dragging && skinReleasedAt > 0L && now - skinReleasedAt > 1000L) {
+			skinYaw = ((skinYaw + 180F) % 360F + 360F) % 360F - 180F;
+			skinYaw -= skinYaw * (1F - (float) Math.exp(-4.5 * dt));
+			if (Math.abs(skinYaw) < 0.05F) {
+				skinYaw = 0F;
+				skinReleasedAt = 0L;
+			}
+		}
+	}
+
 	private void drawAccount(DrawContext c, int slide) {
 		int pw = Math.min(150, width / 4);
 		int px = width - pw - 16;
-		float u = Math.max(3F, Math.min(6F, height / 72F)); // one skin pixel in GUI units
-		int bustH = Math.round(20 * u);
-		int top = height / 2 - bustH / 2 - 30 + slide;
+		float u = Math.max(3F, Math.min(5.5F, (height - 110F) / 48F)); // one skin pixel in GUI units: sized so the WHOLE body fits
+		int bodyH = Math.round(32 * u);
+		int top = Math.max(36, (height - (bodyH + 86)) / 2) + slide;
 		int cx = px + pw / 2;
 
+		int rx = cx - Math.round(14 * u), ry = top - 6, rw = Math.round(28 * u), rh = bodyH + 12;
+		boolean dragging = isDragging(rx, ry);
+		stepSkinSpin(dragging);
 		RemoteTextures.Tex t = SkinChanger.myPreview();
 		if (t != null) {
-			// real 3D model (whole hat layer, idle arms); cropped to the bust. Old 2D-projected one as fallback.
-			c.enableScissor(px - 20, top - Math.round(6 * u), px + pw + 20, top + bustH);
-			boolean ok = dev.sleepclient.cosmetic.SkinPreview.draw(c, t, dev.sleepclient.skin.SkinChanger.selfSlim(), cx * ui, (top + 32 * u) * ui, u * ui,
-					-25F, 8F, null);
-			c.disableScissor();
+			// the whole 3D model (hat layer, idle arms), not cropped
+			boolean ok = dev.sleepclient.cosmetic.SkinPreview.draw(c, t, dev.sleepclient.skin.SkinChanger.selfSlim(), cx * ui, (top + bodyH) * ui, u * ui,
+					SKIN_YAW + skinYaw, 6F, null);
 			if (!ok) {
 				SkinModel3D.draw(c, t, cx, top, u, 20, 30, 12);
 			}
 		}
+		if (hovered(rx, ry, rw, rh) && tooltip == null && !dragging) {
+			tooltip = "Drag to rotate";
+		}
+		regionDrag(rx, ry, rw, rh, mx2 -> {
+			if (!Double.isNaN(skinDragX)) {
+				skinYaw += (float) (mx2 - skinDragX) * 1.1F;
+			}
+			skinDragX = mx2;
+		});
 
 		// nick + account type, click = account manager
-		int ay = top + bustH + 14;
+		int ay = top + bodyH + 14;
 		String name = Accounts.current();
 		String type = Accounts.currentType();
 		boolean ms = type.equals("Microsoft");
@@ -211,7 +250,7 @@ public class PlegumoTitleScreen extends UiScreen {
 	// ------------------------------------------------------------------ bottom-right corner
 	private void drawCorner(DrawContext c) {
 		int season = Season.current();
-		boolean banner = dev.sleepclient.SleepClient.settings == null || dev.sleepclient.SleepClient.settings.homeShowcase.on();
+		boolean banner = false; // the shop preview in the corner is gone
 		int bw = 124, bh = 58, m = 10;
 		int bx = width - bw - m, by = height - bh - m;
 		if (banner) {

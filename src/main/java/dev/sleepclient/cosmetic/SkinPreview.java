@@ -126,7 +126,10 @@ public final class SkinPreview {
 			return false;
 		}
 		try {
-			Model m = cardModel(info.id(), false);
+			net.minecraft.client.network.ClientPlayerEntity me = net.minecraft.client.MinecraftClient.getInstance().player;
+			net.minecraft.util.Identifier own = me == null ? null : me.getSkin().body().texturePath();
+			boolean slimOwn = dev.sleepclient.skin.SkinChanger.selfSlim();
+			Model m = cardModel(info.id(), slimOwn);
 			m.wear = List.of();
 			m.head.resetTransform();
 			m.body.resetTransform();
@@ -158,8 +161,8 @@ public final class SkinPreview {
 			float cx = x + w / 2F, feetY = y + h - 6;
 			float centerY = feetY - 1.0625F * perBlock;
 			int half = Math.round(perBlock * 1.6F);
-			c.addPlayerSkin(m, greySkin(), perBlock, -4F, -28F, -1.0625F, Math.round(cx - half), Math.round(centerY - half), Math.round(cx + half),
-					Math.round(centerY + half));
+			c.addPlayerSkin(m, own != null ? own : greySkin(), perBlock, -4F, -28F, -1.0625F, Math.round(cx - half), Math.round(centerY - half),
+					Math.round(cx + half), Math.round(centerY + half));
 			return true;
 		} catch (Throwable e) {
 			broken = true;

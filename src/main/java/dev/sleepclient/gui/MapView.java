@@ -41,6 +41,9 @@ public final class MapView {
 	private static boolean started;
 
 	/** The view: centre (u, v in 0..1 of the texture) and how much of the width is visible. Eased towards the target. */
+	/** Short names shown next to the two points ("You - Portugal", the server's country). Set by the screen before draw(). */
+	public String homeLabel = "", destLabel = "";
+
 	private double cu = 0.47, cv = 0.3, span = 0.45;
 	private double tu = cu, tv = cv, tspan = span;
 	private long last = System.nanoTime();
@@ -94,7 +97,7 @@ public final class MapView {
 		t.start();
 	}
 
-	/** Land mask (equirectangular, white = land) -> Mercator texture: dark land, lighter coast, see-through sea. */
+	/** Land mask (equirectangular, white = land) -> Mercator texture: dark land with a soft, anti-aliased coast, see-through sea. */
 	private static NativeImage build(BufferedImage mask) {
 		int mw = mask.getWidth(), mh = mask.getHeight();
 		float[] m = new float[mw * mh];
@@ -103,7 +106,22 @@ public final class MapView {
 				m[y * mw + x] = (mask.getRGB(x, y) & 0xFF) / 255F;
 			}
 		}
-		boolean[] land = new boolean[TW * TH];
+		// the mask is only 720 x 360: blur it a little so the coast is a smooth line instead of a staircase when zoomed in
+		float[] blur = new float[m.length];
+		for (int y = 0; y < mh; y++) {
+			for (int x = 0; x < mw; x++) {
+				float sum = 0F, wsum = 0F;
+				for (int dy = -1; dy <= 1; dy++) {
+					for (int dx = -1; dx <= 1; dx++) {
+						float wt = (dx == 0 ? 2F : 1F) * (dy == 0 ? 2F : 1F);
+						sum += m[Math.max(0, Math.min(mh - 1, y + dy)) * mw + Math.floorMod(x + dx, mw)] * wt;
+						wsum += wt;
+					}
+				}
+				blur[y * mw + x] = sum / wsum;
+			}
+		}
+		float[] cov = new float[TW * TH];
 		for (int py = 0; py < TH; py++) {
 			double mv = M_TOP - (py + 0.5) / TH * (M_TOP - M_BOTTOM);
 			double lat = (2 * Math.atan(Math.exp(mv)) - Math.PI / 2) / RAD;
@@ -116,25 +134,26 @@ public final class MapView {
 				int x0 = (int) Math.floor(fx);
 				float tx = (float) (fx - x0);
 				int xa = Math.floorMod(x0, mw), xb = Math.floorMod(x0 + 1, mw);
-				float a = m[ya * mw + xa] * (1 - tx) + m[ya * mw + xb] * tx;
-				float b = m[yb * mw + xa] * (1 - tx) + m[yb * mw + xb] * tx;
-				land[py * TW + px] = a * (1 - ty) + b * ty > 0.5F;
+				float a = blur[ya * mw + xa] * (1 - tx) + blur[ya * mw + xb] * tx;
+				float b = blur[yb * mw + xa] * (1 - tx) + blur[yb * mw + xb] * tx;
+				float v = a * (1 - ty) + b * ty;
+				float t = Math.max(0F, Math.min(1F, (v - 0.36F) / 0.28F)); // smoothstep around the coast
+				cov[py * TW + px] = t * t * (3F - 2F * t);
 			}
 		}
 		NativeImage img = new NativeImage(TW, TH, true);
-		int landCol = 0xFF2B2E38, coastCol = 0xFF5A5F70;
+		int landR = 0x2B, landG = 0x2E, landB = 0x38, coastR = 0x5A, coastG = 0x5F, coastB = 0x70;
 		for (int py = 0; py < TH; py++) {
 			for (int px = 0; px < TW; px++) {
-				int col = 0;
-				if (land[py * TW + px]) {
-					boolean coast = false;
-					for (int d = 0; d < 4 && !coast; d++) {
-						int nx = Math.floorMod(px + (d == 0 ? 1 : d == 1 ? -1 : 0), TW), ny = py + (d == 2 ? 1 : d == 3 ? -1 : 0);
-						coast = ny >= 0 && ny < TH && !land[ny * TW + nx];
-					}
-					col = coast ? coastCol : landCol;
+				float a = cov[py * TW + px];
+				if (a <= 0.004F) {
+					img.setColorArgb(px, py, 0);
+					continue;
 				}
-				img.setColorArgb(px, py, col);
+				float rim = 1F - Math.abs(a * 2F - 1F); // brightest right on the coast line
+				float k = rim * 0.85F;
+				int r = Math.round(landR + (coastR - landR) * k), g = Math.round(landG + (coastG - landG) * k), bl = Math.round(landB + (coastB - landB) * k);
+				img.setColorArgb(px, py, (Math.round(a * 255F) << 24) | (r << 16) | (g << 8) | bl);
 			}
 		}
 		return img;
@@ -174,7 +193,7 @@ public final class MapView {
 		if (a != null) {
 			double ua = u(a[0]), va = v(a[1]), ub = u(b[0]), vb = v(b[1]);
 			double needW = Math.abs(ub - ua) * 1.7, needH = Math.abs(vb - va) * 1.9;
-			tspan = Math.max(0.11, Math.min(Math.min(1, 1 / aspect), Math.max(needW, needH / aspect)));
+			tspan = Math.max(0.2, Math.min(Math.min(1, 1 / aspect), Math.max(needW, needH / aspect)));
 			tu = (ua + ub) / 2;
 			tv = (va + vb) / 2 - tspan * aspect * 0.06; // a bit higher: the arc bends up
 		}
@@ -243,6 +262,22 @@ public final class MapView {
 			Gfx.circle(c, hx, hy, 3.6F, 0xFFEFF3F8);
 			Gfx.circle(c, hx, hy, 2.2F, purple);
 		}
+		if (dest != null && !destLabel.isEmpty()) {
+			chip(c, dx, dy - 12, destLabel, on ? 0xFF2DD4BF : 0xFF8C93A6, x, x + w, y, y + h);
+		}
+		if (home != null && !homeLabel.isEmpty()) {
+			chip(c, hx, hy + 14, homeLabel, purple, x, x + w, y, y + h);
+		}
 		c.disableScissor();
+	}
+
+	/** A small dark label with a coloured dot, kept inside the map. */
+	private static void chip(DrawContext c, float cx, float cy, String s, int dot, int minX, int maxX, int minY, int maxY) {
+		int tw = Gfx.tw(s), w = tw + 22, h = 16;
+		int x = Math.round(Math.max(minX + 4, Math.min(maxX - w - 4, cx - w / 2F)));
+		int y = Math.round(Math.max(minY + 4, Math.min(maxY - h - 4, cy - h / 2F)));
+		Gfx.rrectBorder(c, x, y, w, h, 5, 0xE0121319, 0x20FFFFFF);
+		Gfx.circle(c, x + 8, y + h / 2F, 2.2F, dot);
+		Gfx.text(c, s, x + 15, y + 4, 0xFFE8EBF2);
 	}
 }

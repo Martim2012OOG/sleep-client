@@ -17,7 +17,11 @@
   ],
   "entrypoints": {
     "client": [
-      "dev.sleepclient.SleepClient"
+      "dev.sleepclient.SleepClient",
+      "com.baom5.deathanimation.client.DeathanimationClient"
+    ],
+    "main": [
+      "com.baom5.deathanimation.Deathanimation"
     ]
   },
   "mixins": [
@@ -32,7 +36,11 @@
     "sleep_client_extra.mixins.json",
     "sleep_client_display.mixins.json",
     "sleep_client_font.mixins.json",
-    "sleep_client_perf.mixins.json"
+    "sleep_client_perf.mixins.json",
+    {
+      "config": "deathanimation.client.mixins.json",
+      "environment": "client"
+    }
   ],
   "depends": {
     "fabricloader": ">=0.18.1",
