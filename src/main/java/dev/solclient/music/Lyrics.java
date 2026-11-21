@@ -200,9 +200,9 @@ public final class Lyrics {
 	private static void run(int gen, String key) {
 		try {
 			// the player does not update title, artist and length in the same instant: let them settle
-			Thread.sleep(400);
-			for (int waited = 0; lastDur <= 0 && waited < 1500 && alive(gen); waited += 150) {
-				Thread.sleep(150);
+			Thread.sleep(100);
+			for (int waited = 0; lastDur <= 0 && waited < 1500 && alive(gen); waited += 50) {
+				Thread.sleep(50);
 			}
 			if (!alive(gen)) {
 				return;

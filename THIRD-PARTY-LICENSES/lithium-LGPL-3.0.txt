@@ -1,0 +1,4 @@
+Lithium (https://modrinth.com/mod/lithium) by CaffeineMC, licensed LGPL-3.0-only.
+Source: https://github.com/CaffeineMC/lithium-fabric
+It is shipped unmodified, as a separate jar inside the Sleep jar (jar-in-jar), so it can be replaced by the player.
+Full licence text: https://www.gnu.org/licenses/lgpl-3.0.txt

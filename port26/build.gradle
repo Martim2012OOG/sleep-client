@@ -70,6 +70,11 @@ dependencies {
 	// ImmediatelyFast was REMOVED: on Windows (Intel/AMD/NVIDIA drivers) its HUD/GUI batching made the normal GUI disappear
 	// (fine on Mac). Minecraft 1.21.11 already batches GUI drawing itself, so the FPS gain was small.
 	include "maven.modrinth:ferrite-core:${project.ferritecore_version}"
+	// Lithium (LGPL-3.0): only for the Minecraft versions it was checked on (a wrong build refuses to load); 26.1 runs without it.
+	def lithiumTable = ['26.2': 'mc26.2-0.25.3-fabric']
+	if (lithiumTable.containsKey(project.mc)) {
+		include "maven.modrinth:lithium:${lithiumTable[project.mc]}"
+	}
 	// MP3 decoder (JLayer, LGPL-2.1) for the seasonal menu music, shipped inside the Kubo jar
 	// Offline speech recognition (Vosk, Apache-2.0) for Clip Events "save by voice"; JNA comes with Minecraft
 	implementation('com.alphacephei:vosk:0.3.45') { exclude group: 'net.java.dev.jna' }

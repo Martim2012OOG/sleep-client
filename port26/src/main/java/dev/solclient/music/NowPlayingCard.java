@@ -174,7 +174,7 @@ public final class NowPlayingCard {
 	/** age in seconds; returns {alpha, rise (units), zoom, typed fraction} */
 	private static float[] anim(Cfg c, long now) {
 		float age = (now - shownAt) / 1000F;
-		float in = ease(age / 0.9F), out = ease((c.seconds - age) / 0.9F);
+		float in = ease(age / 0.3F), out = ease((c.seconds - age) / 0.9F);
 		float rise = c.anim == 2 ? (1F - in) * 10F : 0F;
 		rise += (1F - out) * 4F;
 		float zoom = c.anim == 3 ? 0.7F + 0.3F * in : 1F;
@@ -250,7 +250,7 @@ public final class NowPlayingCard {
 			sky(m, queue, tr, styled(typed(c.label, an[3]), c), tr.width(label), -17F - rise, labelSc, c.labelCol, a * 0.9F, c, 0, 0, layer, false);
 		}
 		if (c.lines) {
-			float lw = Math.max(60F, Math.min(190F, titleW * titleScale)) * 0.9F * ease(((now - shownAt) / 1000F) / 1.1F);
+			float lw = Math.max(60F, Math.min(190F, titleW * titleScale)) * 0.9F * ease(((now - shownAt) / 1000F) / 0.45F);
 			sky(m, queue, tr, Component.literal("—").setStyle(net.minecraft.network.chat.Style.EMPTY), tr.width("—"), -9F - rise, 1F, c.accent, a * 0.85F, c, 0, lw, layer, true);
 			sky(m, queue, tr, Component.literal("—").setStyle(net.minecraft.network.chat.Style.EMPTY), tr.width("—"), 9F - rise, 1F, c.accent, a * 0.85F, c, 0, lw, layer, true);
 		}
@@ -353,7 +353,7 @@ public final class NowPlayingCard {
 		String vt = c.upper ? vTitle.toUpperCase(java.util.Locale.ROOT) : vTitle;
 		String title = typed(vt, an[3]);
 		int tw = Gfx.tw(vt);
-		float lineW = Math.max(60F, Math.min(200F, tw * 1F)) * ease(((now - shownAt) / 1000F) / 1.1F);
+		float lineW = Math.max(60F, Math.min(200F, tw * 1F)) * ease(((now - shownAt) / 1000F) / 0.45F);
 
 		if (c.showLabel && !c.label.isBlank()) {
 			flat(dc, typed(c.label, an[3]), Gfx.tw(c.label), cx, cy - Math.round(18 * sc), sc * 0.62F * c.labelSize, c.labelCol, a * 0.9F);
