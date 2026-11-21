@@ -112,14 +112,11 @@ public class PlegumoTitleScreen extends UiScreen {
 	private long msgAt;
 
 	// ---- the 3D skin: drag to spin it (it keeps going with the force you gave it and slows down smoothly), a second after it stops it
-	// glides back to how it stood; right-drag moves it around the screen, double click puts it back
+	// glides back to how it stood
 	private static final float SKIN_YAW = -25F;
-	private static float panX, panY;
 	private float skinYaw, skinTarget, skinVel;
 	private double skinDragX = Double.NaN;
 	private long skinFrameAt, skinLastDragAt, skinIdleAt;
-	private int skinRx, skinRy, skinRw, skinRh;
-	private boolean panning;
 
 	private void stepSkinSpin(boolean held) {
 		long now = System.currentTimeMillis();
@@ -149,26 +146,15 @@ public class PlegumoTitleScreen extends UiScreen {
 		skinYaw += (skinTarget - skinYaw) * (1F - (float) Math.exp(-20.0 * dt)); // the model follows its target smoothly
 	}
 
-	private boolean overSkin(double x, double y) {
-		return x >= skinRx && x < skinRx + skinRw && y >= skinRy && y < skinRy + skinRh;
-	}
-
 	private void drawAccount(DrawContext c, int slide) {
 		int pw = Math.min(150, width / 4);
 		float u = Math.max(3F, Math.min(5.5F, (height - 110F) / 48F)); // one skin pixel in GUI units: sized so the WHOLE body fits
 		int bodyH = Math.round(32 * u);
-		// on the left, in the calm space beside the buttons (not on top of the tree); right-drag moves it
-		int baseX = Math.round(width * 0.19F), baseY = Math.max(36, (height - (bodyH + 86)) / 2) + slide;
-		int cx = Math.max(pw / 2 + 8, Math.min(width - pw / 2 - 8, baseX + Math.round(panX)));
-		int top = Math.max(8, Math.min(height - bodyH - 96, baseY + Math.round(panY)));
-		panX = cx - baseX;
-		panY = top - baseY;
+		// fixed on the right side of the screen, as it always was
+		int cx = width - pw / 2 - 16;
+		int top = Math.max(36, (height - (bodyH + 86)) / 2) + slide;
 
 		int rx = cx - Math.round(14 * u), ry = top - 6, rw = Math.round(28 * u), rh = bodyH + 12;
-		skinRx = rx;
-		skinRy = ry;
-		skinRw = rw;
-		skinRh = rh;
 		boolean dragging = isDragging(rx, ry);
 		stepSkinSpin(dragging);
 		RemoteTextures.Tex t = SkinChanger.myPreview();
@@ -364,42 +350,6 @@ public class PlegumoTitleScreen extends UiScreen {
 			}); // not linked yet
 			y += s + gap;
 		}
-	}
-
-	// ------------------------------------------------------------------ the skin: right-drag moves it, double click puts it back
-	@Override
-	public boolean mouseClicked(net.minecraft.client.gui.Click click, boolean doubled) {
-		if (click.button() == 1 && overSkin(click.x(), click.y())) {
-			panning = true;
-			return true;
-		}
-		if (click.button() == 0 && doubled && overSkin(click.x(), click.y())) {
-			panX = 0F;
-			panY = 0F;
-			skinTarget = 360F * Math.round(skinTarget / 360F);
-			skinVel = 0F;
-			return true;
-		}
-		return super.mouseClicked(click, doubled);
-	}
-
-	@Override
-	public boolean mouseDragged(net.minecraft.client.gui.Click click, double dx, double dy) {
-		if (panning) {
-			panX += (float) dx;
-			panY += (float) dy;
-			return true;
-		}
-		return super.mouseDragged(click, dx, dy);
-	}
-
-	@Override
-	public boolean mouseReleased(net.minecraft.client.gui.Click click) {
-		if (panning && click.button() == 1) {
-			panning = false;
-			return true;
-		}
-		return super.mouseReleased(click);
 	}
 
 	// ------------------------------------------------------------------ input

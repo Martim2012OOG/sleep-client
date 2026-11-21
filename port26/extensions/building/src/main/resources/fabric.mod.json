@@ -3,7 +3,7 @@
   "id": "kubo_ext_building",
   "version": "${version}",
   "name": "Sleep – Building",
-  "description": "Sleep Builder (schematics), Litematica Helper and Ruler.",
+  "description": "Schematic, Litematica Helper and Ruler.",
   "authors": [
     "Sleep"
   ],

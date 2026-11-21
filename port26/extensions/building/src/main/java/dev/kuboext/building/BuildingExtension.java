@@ -8,7 +8,7 @@ import dev.sleepclient.ext.KuboExtension;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.Minecraft;
 
-/** Sleep extension "Building": Sleep Builder (schematics), Litematica Helper and Ruler. */
+/** Sleep extension "Building": Schematic, Litematica Helper and Ruler. */
 public class BuildingExtension implements KuboExtension {
 
 	@Override
@@ -16,7 +16,7 @@ public class BuildingExtension implements KuboExtension {
 		api.addMod(new KuboBuilderMod());
 		api.addMod(new LitematicaHelperMod());
 		api.addMod(new RulerMod());
-		api.command("Sleep Builder", "Schematics: load, place, move, build", "kubo_builder",
+		api.command("Schematic", "Schematics: load, place, move, build", "kubo_builder",
 				() -> dev.sleepclient.compat.Mc.setScreen(Minecraft.getInstance(), new dev.sleepclient.gui.BuilderScreen(dev.sleepclient.compat.Mc.screen(Minecraft.getInstance()))));
 	}
 }

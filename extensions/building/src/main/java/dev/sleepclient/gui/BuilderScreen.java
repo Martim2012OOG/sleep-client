@@ -26,7 +26,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 
 /**
- * Sleep Builder menu: Schematics (your files, one click to load), Place (big buttons to move, turn, mirror, layers),
+ * Schematic menu: Schematics (your files, one click to load), Place (big buttons to move, turn, mirror, layers),
  * Materials (what you need / have / placed) and Find (search schematic websites; what you download there is
  * imported here by itself).
  */
@@ -53,7 +53,7 @@ public class BuilderScreen extends Screen {
 	private long filesAt;
 
 	public BuilderScreen(Screen parent) {
-		super(Text.literal("Sleep Builder"));
+		super(Text.literal("Schematic"));
 		this.parent = parent;
 	}
 
@@ -154,7 +154,7 @@ public class BuilderScreen extends Screen {
 		c.fill(0, 0, width, height, 0x88000000);
 		Gfx.rrectBorder(c, px, py, pw, ph, 12, 0xF4121318, Theme.PANEL_BORDER);
 		Gfx.tex(c, Theme.icon2("kubo_builder"), px + 10, py + 8, 16, 16, 64, 64, Theme.accent());
-		Gfx.text(c, "Sleep Builder", px + 31, py + 12, 0xFFFFFFFF);
+		Gfx.text(c, "Schematic", px + 31, py + 12, 0xFFFFFFFF);
 		// tabs
 		int tx = px + pw - 10;
 		for (int i = TABS.length - 1; i >= 0; i--) {
@@ -266,6 +266,19 @@ public class BuilderScreen extends Screen {
 		button(c, mx, my, gx + 3 * s + 10, gy, 60, s - 2, Lang.tr("Up", "Subir"), Theme.OFF_BG, () -> m.move(0, 1, 0));
 		button(c, mx, my, gx + 3 * s + 10, gy + 2 * s, 60, s - 2, Lang.tr("Down", "Descer"), Theme.OFF_BG, () -> m.move(0, -1, 0));
 		Gfx.textC(c, "Arrows / PgUp / PgDn in game too", gx + 2 * s, gy + 3 * s + 4, 0xFF6B7080);
+		// quick ways to put it where you want it
+		int qy = gy + 3 * s + 22, qw = 3 * s + 70;
+		button(c, mx, my, x + 20, qy, qw, 22, Lang.tr("Place on the block I look at", "Colocar no bloco para onde olho"), Theme.accent(), m::placeOnTarget);
+		qy += 28;
+		Gfx.textRaw(c, Lang.tr("Step", "Passo"), x + 20, qy + 6, Theme.DIM);
+		int[] steps = {1, 2, 4, 8, 16};
+		for (int i = 0; i < steps.length; i++) {
+			final int st = steps[i];
+			button(c, mx, my, x + 56 + i * 32, qy, 28, 20, String.valueOf(st), Math.round(m.moveStep.f()) == st ? Theme.accent() : Theme.OFF_BG, () -> m.moveStep.set((float) st));
+		}
+		qy += 26;
+		button(c, mx, my, x + 20, qy, qw, 22, m.autoPlace.on() ? Lang.tr("Auto Place: ON", "Auto-colocar: LIGADO") : Lang.tr("Auto Place: off", "Auto-colocar: desligado"),
+				m.autoPlace.on() ? 0xFF1F7A45 : Theme.OFF_BG, () -> m.autoPlace.set(!m.autoPlace.on()));
 		// right column: rotate, mirror, layers, show/hide
 		int rx = x + w / 2 + 10, rw = w / 2 - 10, ry = y + 34;
 		button(c, mx, my, rx, ry, rw / 2 - 3, 24, Lang.tr("Rotate", "Rodar") + " ↻", Theme.OFF_BG, m::rotate);

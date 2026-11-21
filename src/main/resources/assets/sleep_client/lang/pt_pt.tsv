@@ -764,7 +764,7 @@ Kills	Kills
 Kills, deaths, K/D, time, blocks and distance this session, with a summary card.	Kills, mortes, K/D, tempo, blocos e distância nesta sessão, com um cartão de resumo.
 Kit Editor	Editor de kits
 Kit name	Nome do kit
-Sleep Builder	Sleep Builder
+Schematic	Schematic
 Sleep Dark	Sleep Escuro
 Sleep Home Screen	Menu inicial Sleep
 Sleep Label	Etiqueta Sleep
@@ -1856,7 +1856,7 @@ Aura, Trails, Jump Circles, Fireflies, Cave Dust, Falling Leaves, Kill Effect an
 Streamer Mode (hide IP, coordinates, messages) and TikTok Live (chat, gifts, sounds).	Modo Streamer (esconde IP, coordenadas, mensagens) e TikTok Live (chat, presentes, sons).
 Baby Mode, Dynamic Island and Skin Totem.	Modo Bebé, Dynamic Island e Skin Totem.
 See terrain far beyond your render distance (like Distant Horizons). Uses more memory.	Vê terreno muito para lá da render distance (tipo Distant Horizons). Usa mais memória.
-Sleep Builder (schematics), Litematica Helper and Ruler.	Sleep Builder (schematics), Litematica Helper e Régua.
+Schematic, Litematica Helper and Ruler.	Schematic, Litematica Helper e Régua.
 Party HUD, Pings (mark places for friends) and Sonar.	Party HUD, Pings (marcar sítios para os amigos) e Sonar.
 Pop Chams (ghost on totem pop), TierTagger (MCTiers tiers on names) and Cobweb Tweaks.	Pop Chams (fantasma quando usam totem), TierTagger (tiers do MCTiers nos nomes) e Teias de Aranha.
 Info HUD	Info HUD
@@ -3324,3 +3324,10 @@ No Entity Shadows	Sem sombras de entidades
 Hide Clouds	Esconder nuvens
 Draw Entities Closer	Desenhar entidades mais perto
 Players and mobs far away are not drawn while the game lags.	Jogadores e mobs distantes não são desenhados enquanto o jogo tem quebras.
+Load schematics, move them with one click, build with Auto Place and without lag.	Carrega schematics, move-os com um clique, constrói com o Auto-colocar e sem lag.
+Move Step	Passo do movimento
+Place On Target Key	Tecla colocar no alvo
+Auto Place	Auto-colocar
+Places the missing blocks near you by itself (from your hotbar; in creative it picks them). Many servers forbid this: it does nothing on Hypixel.	Coloca sozinho os blocos em falta perto de ti (da tua hotbar; em criativo vai buscá-los). Muitos servidores proíbem isto: não faz nada no Hypixel.
+Auto Place Speed	Velocidade do auto-colocar
+Auto Place Key	Tecla auto-colocar

@@ -35,7 +35,7 @@ import net.minecraft.util.math.Vec3d;
 import org.joml.Matrix4f;
 
 /**
- * Sleep Builder: our own Litematica, made simple and light. Load a schematic, it appears where you stand as see-through
+ * Schematic: our own Litematica, made simple and light. Load a schematic, it appears where you stand as see-through
  * "ghost" blocks; move it with the arrows / Page Up / Page Down, turn it, mirror it, show one layer at a time, see the
  * materials you need and what is still missing or wrong. Only blocks near you are drawn, all in one batch, and the
  * world is checked a little every tick, so it stays smooth even with huge builds.
@@ -55,6 +55,11 @@ public class KuboBuilderMod extends HudMod {
 	public final Option.Num opacity = num("Ghost Opacity", 45, 15, 90, 5, "%");
 	public final Option.Bool showWrong = bool("Show Wrong Blocks", true);
 	public final Option.Bool smartPick = bool("Smart Pick (select the block you need)", true);
+	public final Option.Num moveStep = num("Move Step", 1, 1, 16, 1, " blocks");
+	public final Option.Key targetKey = key("Place On Target Key", Keys.withMods(71, true, false, false)); // Ctrl+G
+	public final Option.Bool autoPlace = bool("Auto Place", false).tip("Places the missing blocks near you by itself (from your hotbar; in creative it picks them). Many servers forbid this: it does nothing on Hypixel.");
+	public final Option.Num autoSpeed = num("Auto Place Speed", 6, 1, 20, 1, " blocks/s");
+	public final Option.Key autoKey = key("Auto Place Key", Keys.withMods(80, true, false, false)); // Ctrl+P
 
 	public Placement placement;
 	public boolean visible = true;
@@ -78,7 +83,7 @@ public class KuboBuilderMod extends HudMod {
 	private static boolean hooked;
 
 	public KuboBuilderMod() {
-		super("Sleep Builder", "kubo_builder", "Our own Litematica: load schematics, place them, move them easily and build without lag.", 0.01F, 0.6F);
+		super("Schematic", "kubo_builder", "Load schematics, move them with one click, build with Auto Place and without lag.", 0.01F, 0.6F);
 		instance = this;
 	}
 
@@ -294,6 +299,13 @@ public class KuboBuilderMod extends HudMod {
 		if (edge(3, hideKey.code())) {
 			visible = !visible;
 		}
+		if (edge(6, targetKey.code())) {
+			placeOnTarget();
+		}
+		if (edge(7, autoKey.code())) {
+			autoPlace.set(!autoPlace.on());
+			say(autoPlace.on() ? Lang.tr("Auto Place ON", "Auto-colocar LIGADO") : Lang.tr("Auto Place off", "Auto-colocar desligado"));
+		}
 		if (edge(4, layerUpKey.code())) {
 			if (layerMode == 0) {
 				layerMode = 1;
@@ -311,22 +323,22 @@ public class KuboBuilderMod extends HudMod {
 		if (arrows.on() && mc.currentScreen == null) {
 			// arrows move it relative to where you look; Page Up / Down move it up and down
 			if (edgeRaw(263)) {
-				moveRelative(0, -1, 0);
+				moveRelative(0, -step(), 0);
 			}
 			if (edgeRaw(262)) {
-				moveRelative(0, 1, 0);
+				moveRelative(0, step(), 0);
 			}
 			if (edgeRaw(265)) {
-				moveRelative(1, 0, 0);
+				moveRelative(step(), 0, 0);
 			}
 			if (edgeRaw(264)) {
-				moveRelative(-1, 0, 0);
+				moveRelative(-step(), 0, 0);
 			}
 			if (edgeRaw(266)) {
-				move(0, 1, 0);
+				move(0, step(), 0);
 			}
 			if (edgeRaw(267)) {
-				move(0, -1, 0);
+				move(0, -step(), 0);
 			}
 		}
 		if (!dim().equals(placement.dimension)) {
@@ -343,6 +355,7 @@ public class KuboBuilderMod extends HudMod {
 		if (smartPick.on()) {
 			smartPick();
 		}
+		autoPlaceTick();
 	}
 
 	private final Map<Integer, Boolean> rawPrev = new HashMap<>();
@@ -560,6 +573,167 @@ public class KuboBuilderMod extends HudMod {
 		}
 	}
 
+
+	// ------------------------------------------------------------------ auto place
+	private long lastAuto, autoMsgAt;
+	private int autoPlaced;
+
+	/** A block that is safe to click on (nothing opens, nothing is used instead of placing). */
+	private boolean plainSupport(BlockState s, BlockPos at) {
+		return !s.isAir() && !s.isReplaceable() && !s.hasBlockEntity() && s.isFullCube(mc.world, at)
+				&& !s.isOf(net.minecraft.block.Blocks.CRAFTING_TABLE) && !s.isOf(net.minecraft.block.Blocks.NOTE_BLOCK)
+				&& !s.isOf(net.minecraft.block.Blocks.CARTOGRAPHY_TABLE) && !s.isOf(net.minecraft.block.Blocks.SMITHING_TABLE)
+				&& !s.isOf(net.minecraft.block.Blocks.LOOM) && !s.isOf(net.minecraft.block.Blocks.DRAGON_EGG);
+	}
+
+	/**
+	 * Places the missing blocks near you, one after another, only where the game itself would produce EXACTLY the block the schematic wants
+	 * (it asks the block, with the click it would get, before clicking: stairs, slabs, logs... come out right or are left for your hand).
+	 * Needs the block in your hotbar (creative: it puts it there). Normal clicks on a neighbouring block, inside your reach, nothing else.
+	 */
+	private void autoPlaceTick() {
+		if (!autoPlace.on() || placement == null || nearCount == 0 || mc.player == null || mc.world == null || mc.interactionManager == null || mc.currentScreen != null) {
+			return;
+		}
+		if (dev.sleepclient.ServerRules.hypixel()) {
+			return; // many servers ban automatic placing
+		}
+		long now = System.currentTimeMillis();
+		if (now - lastAuto < 1000L / Math.max(1, autoSpeed.i())) {
+			return;
+		}
+		var player = mc.player;
+		double reach = Math.max(2.5, player.getBlockInteractionRange() - 0.6);
+		Vec3d eye = player.getEyePos();
+		BlockState[] pal = placement.palette();
+		// the 8 nearest missing blocks inside the reach
+		int[] cand = new int[8];
+		double[] dist = new double[8];
+		int cn = 0;
+		for (int i = 0; i < nearCount; i++) {
+			int b = i * 5;
+			if (near[b + 4] != 0) {
+				continue;
+			}
+			double d = eye.squaredDistanceTo(near[b] + 0.5, near[b + 1] + 0.5, near[b + 2] + 0.5);
+			if (d > reach * reach) {
+				continue;
+			}
+			int at = cn;
+			while (at > 0 && dist[at - 1] > d) {
+				at--;
+			}
+			if (at >= 8) {
+				continue;
+			}
+			int last = Math.min(cn, 7);
+			for (int k = last; k > at; k--) {
+				cand[k] = cand[k - 1];
+				dist[k] = dist[k - 1];
+			}
+			cand[at] = i;
+			dist[at] = d;
+			cn = Math.min(8, cn + 1);
+		}
+		BlockPos.Mutable pos = new BlockPos.Mutable();
+		for (int c = 0; c < cn; c++) {
+			int b = cand[c] * 5;
+			pos.set(near[b], near[b + 1], near[b + 2]);
+			if (tryPlace(pos.toImmutable(), pal[near[b + 3]])) {
+				lastAuto = now;
+				autoPlaced++;
+				return;
+			}
+		}
+		if (cn > 0 && now - autoMsgAt > 5000) {
+			autoMsgAt = now;
+			say(Lang.tr("Auto Place: nothing placeable right now (block not in your hotbar, or it needs your hand)",
+					"Auto-colocar: nada para colocar agora (bloco fora da hotbar, ou precisa da tua mão)"));
+		}
+	}
+
+	private static final double[] FACE_Y = {0.5, 0.25, 0.75};
+
+	private boolean tryPlace(BlockPos pos, BlockState want) {
+		var player = mc.player;
+		var item = want.getBlock().asItem();
+		if (item == net.minecraft.item.Items.AIR) {
+			return false;
+		}
+		var inv = player.getInventory();
+		int slot = -1;
+		for (int i = 0; i < 9; i++) {
+			var st = inv.getStack(i);
+			if (!st.isEmpty() && st.isOf(item)) {
+				slot = i;
+				break;
+			}
+		}
+		boolean creative = player.isCreative();
+		if (slot < 0) {
+			if (!creative) {
+				return false;
+			}
+			slot = inv.getSelectedSlot();
+		}
+		ItemStack stack = !inv.getStack(slot).isEmpty() && inv.getStack(slot).isOf(item) ? inv.getStack(slot) : new ItemStack(item);
+		for (Direction d : Direction.values()) {
+			BlockPos n = pos.offset(d);
+			BlockState ns = mc.world.getBlockState(n);
+			if (!plainSupport(ns, n)) {
+				continue;
+			}
+			Direction side = d.getOpposite(); // the face of the neighbour that looks at the empty spot
+			for (double fy : FACE_Y) {
+				Vec3d hv = new Vec3d(n.getX() + 0.5 + side.getOffsetX() * 0.5, n.getY() + 0.5 + side.getOffsetY() * 0.5, n.getZ() + 0.5 + side.getOffsetZ() * 0.5);
+				if (side.getAxis().isHorizontal()) {
+					hv = new Vec3d(hv.x, n.getY() + fy, hv.z);
+				}
+				var hit = new net.minecraft.util.hit.BlockHitResult(hv, side, n, false);
+				var ctx = new net.minecraft.item.ItemPlacementContext(player, net.minecraft.util.Hand.MAIN_HAND, stack, hit);
+				if (!ctx.canPlace()) {
+					continue;
+				}
+				BlockState result = want.getBlock().getPlacementState(ctx);
+				if (result != want || !result.canPlaceAt(mc.world, pos)) {
+					continue;
+				}
+				if (inv.getSelectedSlot() != slot) {
+					inv.setSelectedSlot(slot);
+				}
+				if (creative && !(!inv.getStack(slot).isEmpty() && inv.getStack(slot).isOf(item))) {
+					mc.interactionManager.clickCreativeStack(new ItemStack(item), 36 + slot);
+				}
+				var r = mc.interactionManager.interactBlock(player, net.minecraft.util.Hand.MAIN_HAND, hit);
+				if (r.isAccepted()) {
+					player.swingHand(net.minecraft.util.Hand.MAIN_HAND);
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	/** Puts the schematic (centred) on the block you are looking at: the quickest way to place a build. */
+	public void placeOnTarget() {
+		if (placement == null || mc.player == null) {
+			return;
+		}
+		if (mc.crosshairTarget instanceof net.minecraft.util.hit.BlockHitResult hit && hit.getType() == net.minecraft.util.hit.HitResult.Type.BLOCK) {
+			BlockPos t = hit.getBlockPos().offset(hit.getSide());
+			placement.origin = new BlockPos(t.getX() - placement.wx() / 2, t.getY(), t.getZ() - placement.wz() / 2);
+			layer = placement.origin.getY();
+			changed();
+			say(Lang.tr("Placed on the block you look at", "Colocado no bloco para onde olhas"));
+		} else {
+			say(Lang.tr("Look at a block first", "Olha primeiro para um bloco"));
+		}
+	}
+
+	private int step() {
+		return Math.max(1, Math.round(moveStep.f()));
+	}
+
 	// ------------------------------------------------------------------ rendering (one batch)
 	private final Map<BlockState, float[]> uvCache = new HashMap<>();
 	private final Map<BlockState, float[]> shapeCache = new HashMap<>();
@@ -696,7 +870,7 @@ public class KuboBuilderMod extends HudMod {
 		Gfx.rrectFree(c, 7, 17, w - 14, 4, 2, 0x44FFFFFF);
 		Gfx.rrectFree(c, 7, 17, Math.max(2, (w - 14) * done / (float) total), 4, 2, 0xFF4ADE80);
 		String line = (p == null ? "" : missing + Lang.tr(" missing", " em falta") + "  ·  " + wrong + Lang.tr(" wrong", " errados"))
-				+ (layerMode != 0 ? "  ·  y " + layer : "");
+				+ (layerMode != 0 ? "  ·  y " + layer : "") + (autoPlace.on() ? "  ·  AUTO" : "");
 		Gfx.textRaw(c, line, 7, 25, 0xFFB9BDC9);
 		if (lookingWant != null) {
 			ItemStack st = new ItemStack(lookingWant.getBlock().asItem());
