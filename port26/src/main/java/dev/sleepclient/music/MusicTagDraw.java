@@ -31,22 +31,23 @@ public final class MusicTagDraw {
 				String cover = MusicShare.coverFor(e.getUUID(), e instanceof net.minecraft.world.entity.player.Player pe2 ? pe2.getGameProfile().name() : null);
 				var tex = cover == null ? null : dev.sleepclient.social.RemoteTextures.get(cover);
 				if (tex != null && camera.orientation != null) {
-					// the album cover where the note was: a small square that faces you, at the left end of the line
-					float half = mc.font.width(tag) * 0.5F * 0.025F;
-					float size = 0.28F;
+					// the album cover where the note was: a small square that faces you, at the left end of the line.
+					// It uses EXACTLY the label's own transform (the game lifts the label 0.5 up in world space, turns it to the camera and
+					// scales it 0.025 per unit), so it stays glued to the text at any distance or angle, also when you look down on the player.
+					float tw = mc.font.width(tag);
+					final float size = 11F, x0 = -tw / 2F - 3F, y0 = y - 1F;
 					net.minecraft.resources.Identifier id = tex.id();
 					matrices.pushPose();
-					matrices.translate(pos.x, pos.y, pos.z);
+					matrices.translate(pos.x, pos.y + 0.5, pos.z);
 					matrices.mulPose(camera.orientation);
-					// the line's own offset is in the camera's axes (it turns with the view): the cover must use the same, or it slides when you look up / down
-					matrices.translate(-half - 0.08F, 0.27F - y * 0.025F, 0.0F); // inside the left end of the line, centred on the text
+					matrices.scale(0.025F, -0.025F, 0.025F);
 					queue.submitCustomGeometry(matrices, net.minecraft.client.renderer.rendertype.RenderTypes.entityCutout(id), (entry, vc) -> {
 						int light = net.minecraft.util.LightCoordsUtil.FULL_BRIGHT;
 						int ov = net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY;
-						vc.addVertex(entry, 0F, 0F, 0F).setColor(0xFFFFFFFF).setUv(0F, 1F).setOverlay(ov).setLight(light).setNormal(entry, 0F, 0F, 1F);
-						vc.addVertex(entry, size, 0F, 0F).setColor(0xFFFFFFFF).setUv(1F, 1F).setOverlay(ov).setLight(light).setNormal(entry, 0F, 0F, 1F);
-						vc.addVertex(entry, size, size, 0F).setColor(0xFFFFFFFF).setUv(1F, 0F).setOverlay(ov).setLight(light).setNormal(entry, 0F, 0F, 1F);
-						vc.addVertex(entry, 0F, size, 0F).setColor(0xFFFFFFFF).setUv(0F, 0F).setOverlay(ov).setLight(light).setNormal(entry, 0F, 0F, 1F);
+						vc.addVertex(entry, x0, y0, 0F).setColor(0xFFFFFFFF).setUv(0F, 0F).setOverlay(ov).setLight(light).setNormal(entry, 0F, 0F, 1F);
+						vc.addVertex(entry, x0 + size, y0, 0F).setColor(0xFFFFFFFF).setUv(1F, 0F).setOverlay(ov).setLight(light).setNormal(entry, 0F, 0F, 1F);
+						vc.addVertex(entry, x0 + size, y0 + size, 0F).setColor(0xFFFFFFFF).setUv(1F, 1F).setOverlay(ov).setLight(light).setNormal(entry, 0F, 0F, 1F);
+						vc.addVertex(entry, x0, y0 + size, 0F).setColor(0xFFFFFFFF).setUv(0F, 1F).setOverlay(ov).setLight(light).setNormal(entry, 0F, 0F, 1F);
 					});
 					matrices.popPose();
 				}

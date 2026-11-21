@@ -4771,7 +4771,7 @@ public class SolMenuScreen extends Screen {
 	}
 
 	/** The small black "preview" button that appears over a card on hover: an eye. */
-	private void eyeButton(DrawContext c, int x, int y, int w, int h, boolean hover) {
+	private void eyeButton(GuiGraphicsExtractor c, int x, int y, int w, int h, boolean hover) {
 		Gfx.rrectBorder(c, x, y, w, h, 6, hover ? 0xF2000000 : 0xDA000000, hover ? 0x70FFFFFF : 0x28FFFFFF);
 		Gfx.tex(c, Theme.icon2("nav_visual"), x + (w - 12) / 2, y + (h - 12) / 2, 12, 12, 64, 64, 0xFFFFFFFF);
 	}

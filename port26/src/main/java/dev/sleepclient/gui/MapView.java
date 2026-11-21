@@ -147,13 +147,13 @@ public final class MapView {
 			for (int px = 0; px < TW; px++) {
 				float a = cov[py * TW + px];
 				if (a <= 0.004F) {
-					img.setColorArgb(px, py, 0);
+					img.setPixel(px, py, 0);
 					continue;
 				}
 				float rim = 1F - Math.abs(a * 2F - 1F); // brightest right on the coast line
 				float k = rim * 0.85F;
 				int r = Math.round(landR + (coastR - landR) * k), g = Math.round(landG + (coastG - landG) * k), bl = Math.round(landB + (coastB - landB) * k);
-				img.setColorArgb(px, py, (Math.round(a * 255F) << 24) | (r << 16) | (g << 8) | bl);
+				img.setPixel(px, py, (Math.round(a * 255F) << 24) | (r << 16) | (g << 8) | bl);
 			}
 		}
 		return img;

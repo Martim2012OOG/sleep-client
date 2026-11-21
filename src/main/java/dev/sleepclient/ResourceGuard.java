@@ -18,6 +18,7 @@ import net.minecraft.client.MinecraftClient;
 public final class ResourceGuard {
 
 	private static boolean wasLoading;
+	private static long reloadStartedAt;
 	private static int checkIn = -1;
 	/** The packs that were on the last time the letters were fine. */
 	private static Set<String> lastGood;
@@ -32,9 +33,12 @@ public final class ResourceGuard {
 		boolean loading = mc.getOverlay() != null;
 		if (loading && !wasLoading) {
 			checkIn = -1; // a reload started: check again when it is done
+			reloadStartedAt = System.currentTimeMillis();
 		}
 		if (!loading && wasLoading) {
 			checkIn = 10; // half a second after the reload, when everything is in place
+			// how long the loading screen was up: tells a slow download (nothing here) from a slow reload (a big number here)
+			System.out.println("[Sleep] Resource reload took " + String.format(java.util.Locale.ROOT, "%.1f", (System.currentTimeMillis() - reloadStartedAt) / 1000F) + " s");
 		}
 		wasLoading = loading;
 		if (loading || mc.textRenderer == null) {

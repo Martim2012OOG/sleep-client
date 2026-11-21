@@ -283,65 +283,45 @@ final class Season {
 		// (the presents that used to pile up in the bottom-left corner are gone)
 	}
 
-	// ------------------------------------------------------------------ snow that piles up along the bottom
-	private static final int COL = 3;
-	private static float[] pile = new float[0];
-	private static boolean melting;
+	// ------------------------------------------------------------------ snow along the bottom
+	private static final int COL = 2;
+	/** How deep the snow is (grows very slowly, then simply stays: no sudden melting). */
+	private static float level = 6F;
 	private static long pileAt;
-	private static final float PILE_MAX = 26F, PILE_MIN = 2F;
+	private static final float LEVEL_MAX = 20F;
 
-	/** Snow that slowly builds up along the bottom (uneven, soft), then settles / melts away once it is deep, and starts again. */
+	/** A soft layer of snow with gentle dunes: bright crest, a pale body and a cool shade at the base, with a few glints. */
 	private static void snowPile(GuiGraphicsExtractor c, int w, int h) {
-		int n = w / COL + 2;
 		long now = System.currentTimeMillis();
 		float dt = pileAt == 0 ? 0F : Math.min(0.1F, (now - pileAt) / 1000F);
 		pileAt = now;
-		if (pile.length != n) {
-			pile = new float[n];
-			java.util.Arrays.fill(pile, PILE_MIN);
-		}
-		float sum = 0;
-		for (float v : pile) {
-			sum += v;
-		}
-		float avg = sum / n;
-		if (!melting && avg >= PILE_MAX * 0.78F) {
-			melting = true;
-		} else if (melting && avg <= PILE_MIN + 0.6F) {
-			melting = false;
-		}
-		if (melting) {
-			float k = dt * 2.6F; // it slides down / thaws
-			for (int i = 0; i < n; i++) {
-				pile[i] = Math.max(PILE_MIN, pile[i] - k * (0.6F + (pile[i] / PILE_MAX)));
-			}
-		} else {
-			int landings = Math.round(dt * 90F * (w / 640F)); // flakes landing this frame
-			for (int k = 0; k < landings; k++) {
-				int i = (int) (Math.random() * n);
-				float add = 0.22F * (1F - pile[i] / (PILE_MAX * 1.1F));
-				for (int d = -3; d <= 3; d++) { // a flake sits on the heap and spreads a little
-					int j = i + d;
-					if (j >= 0 && j < n) {
-						pile[j] += add * (1F - Math.abs(d) / 4F);
-					}
-				}
-			}
-		}
-		// smooth so it looks like soft drifts, not bars
-		float prev = pile[0];
-		for (int i = 1; i < n - 1; i++) {
-			float cur = pile[i];
-			pile[i] = cur * 0.6F + (prev + pile[i + 1]) * 0.2F;
-			prev = cur;
-		}
+		level = Math.min(LEVEL_MAX, level + dt * 0.12F);
+		double t = now / 1000.0;
+		int n = w / COL + 1;
 		for (int i = 0; i < n; i++) {
 			int x = i * COL;
-			int top = h - Math.round(Math.min(PILE_MAX, pile[i]));
-			c.fill(x, top, x + COL, h, 0xF2EEF4FF);
-			c.fill(x, top, x + COL, top + 1, 0xFFFFFFFF); // bright top edge
-			c.fill(x, top + 1, x + COL, top + 3, 0xF8F8FBFF);
-			c.fill(x, h - 5, x + COL, h, 0xF2D5E2F6); // a touch of blue shade at the very bottom
+			float hh = crest(x);
+			int ih = (int) hh;
+			float frac = hh - ih;
+			int top = h - ih - 1;
+			if (frac > 0.05F) {
+				c.fill(x, top - 1, x + COL, top, Gfx.withAlpha(0xFFFFFF, Math.round(frac * 235F))); // soft, anti-aliased edge
+			}
+			c.fill(x, top, x + COL, top + 2, 0xFFFFFFFF); // lit crest
+			c.fill(x, top + 2, x + COL, h - 6, 0xFFEDF3FC); // body
+			c.fill(x, h - 6, x + COL, h, 0xFFC9D8EE); // cool shade at the base
 		}
+		for (int k = 0; k < 6; k++) { // a few glints on the crest
+			int gx = (int) ((Math.sin(k * 91.7 + Math.floor(t * 0.6 + k)) * 0.5 + 0.5) * w);
+			float tw = (float) (0.5 + 0.5 * Math.sin(t * 3 + k * 1.7));
+			int gy = h - (int) crest(gx) - 2;
+			c.fill(gx, gy, gx + 1, gy + 1, Gfx.withAlpha(0xFFFFFF, Math.round(200F * tw)));
+		}
+	}
+
+	/** Height of the snow at a screen x: slow low-frequency dunes, never a flat bar. */
+	private static float crest(int x) {
+		double shape = 0.62 + 0.20 * Math.sin(x * 0.0105 + 1.3) + 0.12 * Math.sin(x * 0.0273 + 0.4) + 0.06 * Math.sin(x * 0.071 + 2.1);
+		return (float) (level * shape * 1.25);
 	}
 }

@@ -31,22 +31,23 @@ public final class MusicTagDraw {
 				String cover = MusicShare.coverFor(e.getUuid(), e instanceof net.minecraft.entity.player.PlayerEntity pe2 ? pe2.getGameProfile().name() : null);
 				var tex = cover == null ? null : dev.sleepclient.social.RemoteTextures.get(cover);
 				if (tex != null && camera.orientation != null) {
-					// the album cover where the note was: a small square that faces you, at the left end of the line
-					float half = mc.textRenderer.getWidth(tag) * 0.5F * 0.025F;
-					float size = 0.28F;
+					// the album cover where the note was: a small square that faces you, at the left end of the line.
+					// It uses EXACTLY the label's own transform (Minecraft lifts the label 0.5 up in world space, turns it to the camera and
+					// scales it 0.025 per unit), so it stays glued to the text at any distance or angle, also when you look down on the player.
+					float tw = mc.textRenderer.getWidth(tag);
+					final float size = 11F, x0 = -tw / 2F - 3F, y0 = y - 1F;
 					net.minecraft.util.Identifier id = tex.id();
 					matrices.push();
-					matrices.translate(pos.x, pos.y, pos.z);
+					matrices.translate(pos.x, pos.y + 0.5, pos.z);
 					matrices.multiply(camera.orientation);
-					// the line's own offset is in the camera's axes (it turns with the view): the cover must use the same, or it slides when you look up / down
-					matrices.translate(-half - 0.08F, 0.27F - y * 0.025F, 0.0F); // inside the left end of the line, centred on the text
+					matrices.scale(0.025F, -0.025F, 0.025F);
 					queue.submitCustom(matrices, net.minecraft.client.render.RenderLayers.entityCutoutNoCull(id), (entry, vc) -> {
 						int light = net.minecraft.client.render.LightmapTextureManager.MAX_LIGHT_COORDINATE;
 						int ov = net.minecraft.client.render.OverlayTexture.DEFAULT_UV;
-						vc.vertex(entry, 0F, 0F, 0F).color(0xFFFFFFFF).texture(0F, 1F).overlay(ov).light(light).normal(entry, 0F, 0F, 1F);
-						vc.vertex(entry, size, 0F, 0F).color(0xFFFFFFFF).texture(1F, 1F).overlay(ov).light(light).normal(entry, 0F, 0F, 1F);
-						vc.vertex(entry, size, size, 0F).color(0xFFFFFFFF).texture(1F, 0F).overlay(ov).light(light).normal(entry, 0F, 0F, 1F);
-						vc.vertex(entry, 0F, size, 0F).color(0xFFFFFFFF).texture(0F, 0F).overlay(ov).light(light).normal(entry, 0F, 0F, 1F);
+						vc.vertex(entry, x0, y0, 0F).color(0xFFFFFFFF).texture(0F, 0F).overlay(ov).light(light).normal(entry, 0F, 0F, 1F);
+						vc.vertex(entry, x0 + size, y0, 0F).color(0xFFFFFFFF).texture(1F, 0F).overlay(ov).light(light).normal(entry, 0F, 0F, 1F);
+						vc.vertex(entry, x0 + size, y0 + size, 0F).color(0xFFFFFFFF).texture(1F, 1F).overlay(ov).light(light).normal(entry, 0F, 0F, 1F);
+						vc.vertex(entry, x0, y0 + size, 0F).color(0xFFFFFFFF).texture(0F, 1F).overlay(ov).light(light).normal(entry, 0F, 0F, 1F);
 					});
 					matrices.pop();
 				}
