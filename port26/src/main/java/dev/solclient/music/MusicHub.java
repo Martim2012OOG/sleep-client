@@ -109,11 +109,11 @@ public final class MusicHub {
 
 	/**
 	 * How long to wait before asking the players again. Short (no delay for the title, the cover and the lyrics) when a song just changed or
-	 * is about to end; relaxed otherwise. Windows asks a PowerShell that stays open, so asking often costs nothing there.
+	 * is about to end; relaxed otherwise. Asking is not free (PowerShell on Windows, osascript on Mac), so it is never done more often than this.
 	 */
 	private static long nextWait() {
 		boolean mac = OS.contains("mac"), win = OS.contains("win");
-		long base = mac ? 1100 : win ? 200 : 700, fast = mac ? 350 : win ? 120 : 300;
+		long base = mac ? 1500 : win ? 500 : 1000, fast = mac ? 800 : win ? 400 : 700; // never faster: every ask costs CPU (PowerShell / osascript), and the game needs it
 		long now = System.currentTimeMillis();
 		if (now - lastChangeAt < 4000) {
 			return fast;

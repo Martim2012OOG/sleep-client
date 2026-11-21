@@ -98,7 +98,7 @@ final class WinMusic {
 			  }
 			  [Console]::Out.WriteLine('E')
 			  [Console]::Out.Flush()
-			  Start-Sleep -Milliseconds 200
+			  Start-Sleep -Milliseconds 1000
 			}
 			""";
 
