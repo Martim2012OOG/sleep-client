@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
 Makes the Sleep client's auras: the sprite sheet (textures/cosmetics/aura_atlas.png, original pixel art drawn here), one
-thumbnail per aura, the minimes (a small copy of the player, drawn by dev.solclient.cosmetic.Minimes: only a thumbnail and an
+thumbnail per aura, the minimes (a small copy of the player, drawn by dev.sleepclient.cosmetic.Minimes: only a thumbnail and an
 entry are needed), and their entries in cosmetics/index.json and cosmetics-catalogue.json. The motion of each aura is code
-(dev.solclient.cosmetic.Auras); the row of the sheet and the motion are picked by "anim": "aura:<style>".
+(dev.sleepclient.cosmetic.Auras); the row of the sheet and the motion are picked by "anim": "aura:<style>".
 
     python3 tools/gen_auras.py
 """
@@ -13,7 +13,7 @@ import os
 from PIL import Image
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-A = os.path.join(ROOT, "src", "main", "resources", "assets", "sol_client")
+A = os.path.join(ROOT, "src", "main", "resources", "assets", "sleep_client")
 
 # 8x8 sprites: '#' main colour, '+' light, '-' dark, '.' nothing
 SHAPES = {

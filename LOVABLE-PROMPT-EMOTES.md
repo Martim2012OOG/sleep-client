@@ -36,7 +36,7 @@ The client now ships 167 cosmetics. Create the shop items from `cosmetics-catalo
 - `category` is one of `Headwear`, `Wings`, `Tails`, `Bodywear`, `Pets`; keep these names (the Locker filters by them). Add `Tails` as a new category if it does not exist.
 - `price` and `rarity` are suggestions: change them freely.
 - `live_pet: true` means the pet walks and flies around the player (client side only, nothing to do on the site).
-- A picture is optional: the client draws its own 3D picture when `imageUrl` is empty. If you want pictures on the website, upload what you like (the files `src/main/resources/assets/sol_client/textures/cosmetics/thumb/<id>.png` of the client repo are ready-made 96x96 pictures with transparent background).
+- A picture is optional: the client draws its own 3D picture when `imageUrl` is empty. If you want pictures on the website, upload what you like (the files `src/main/resources/assets/sleep_client/textures/cosmetics/thumb/<id>.png` of the client repo are ready-made 96x96 pictures with transparent background).
 - When a player wears one, `GET /players/lookup` must return it in `cosmetics` by category as already done for the other wearable items (one item per category).
 
 ## 2b. Items with several colours (ONE item + colour picker)

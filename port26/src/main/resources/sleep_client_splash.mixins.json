@@ -1,0 +1,13 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "dev.sleepclient.mixin.splash",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "SplashOverlayMixin",
+    "ReloadMouseMixin",
+    "ReloadKeyboardMixin",
+    "ReloadInputMixin"
+  ],
+  "injectors": { "defaultRequire": 0 }
+}

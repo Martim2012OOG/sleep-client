@@ -6,15 +6,15 @@ Uso:  python3 tools/make_emote_props.py      (depois: ./gradlew build)
 Cada adereço é desenhado "em pé": o eixo y vai do punho (0,0) para a ponta, o eixo x vai para o lado dos dedos
 (a direção do antebraço). O script roda isso 45 graus (como os sprites de ferramentas do Minecraft) e transforma-o
 em cubinhos com a profundidade pedida. Sai:
-  assets/sol_client/textures/item/emote_props.png     (paleta)
-  assets/sol_client/models/item/prop_<nome>.json
-  assets/sol_client/items/prop_<nome>.json
-No jogo, o emote usa um item de pau com o componente item_model = sol_client:prop_<nome>.
+  assets/sleep_client/textures/item/emote_props.png     (paleta)
+  assets/sleep_client/models/item/prop_<nome>.json
+  assets/sleep_client/items/prop_<nome>.json
+No jogo, o emote usa um item de pau com o componente item_model = sleep_client:prop_<nome>.
 """
 import json, math, os
 
 root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-res = os.path.join(root, "src/main/resources/assets/sol_client")
+res = os.path.join(root, "src/main/resources/assets/sleep_client")
 
 COL = {
     "wood": "8b5a2b", "wood2": "a8743a", "darkwood": "4a2e17", "guitar": "c9772e", "straw": "e3c04a", "straw2": "c9a23a",
@@ -157,12 +157,12 @@ def build(name, rects):
                         "faces": {k: dict(f) for k in ("north", "south", "east", "west", "up", "down")}})
             if x is not None:
                 start = prev = x
-    model = {"textures": {"p": "sol_client:item/emote_props", "particle": "sol_client:item/emote_props"},
+    model = {"textures": {"p": "sleep_client:item/emote_props", "particle": "sleep_client:item/emote_props"},
              "elements": els, "display": DISPLAY}
     with open(f"{res}/models/item/prop_{name}.json", "w") as f:
         json.dump(model, f, separators=(",", ":"))
     with open(f"{res}/items/prop_{name}.json", "w") as f:
-        json.dump({"model": {"type": "minecraft:model", "model": f"sol_client:item/prop_{name}"}}, f)
+        json.dump({"model": {"type": "minecraft:model", "model": f"sleep_client:item/prop_{name}"}}, f)
     return len(els)
 
 

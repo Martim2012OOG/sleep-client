@@ -7,7 +7,7 @@ import glob, json, os, re, shutil, sys
 
 FIX = {"Machiine": "Machine", "Cleanfloor": "Clean Floor"}
 root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-res = os.path.join(root, "src/main/resources/assets/sol_client")
+res = os.path.join(root, "src/main/resources/assets/sleep_client")
 src = sys.argv[1]
 prefix = sys.argv[2] if len(sys.argv) > 2 else "SPE_"
 os.makedirs(res + "/emotes", exist_ok=True)

@@ -1,0 +1,19 @@
+{
+  "providers": [
+    {
+      "type": "ttf",
+      "file": "sleep_client:lf_chorus.ttf",
+      "size": 12,
+      "oversample": 8.0,
+      "shift": [
+        0.0,
+        0.0
+      ],
+      "skip": ""
+    },
+    {
+      "type": "reference",
+      "id": "sleep_client:ui"
+    }
+  ]
+}

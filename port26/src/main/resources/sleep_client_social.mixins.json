@@ -1,0 +1,38 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "dev.sleepclient.mixin.social",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "PlayerSkinMixin",
+    "HostedSkinMixin",
+    "NametagBadgeMixin",
+    "TntTimerMixin",
+    "TabBadgeMixin",
+    "SetScreenMixin",
+    "PauseClassicMixin",
+    "NotifyScreenMixin",
+    "ChatNickMixin",
+    "ChatSmoothMixin",
+    "OwnNametagMixin",
+    "BubbleStateMixin",
+    "ChatBubbleRenderMixin",
+    "ChatBubbleMessageMixin",
+    "ChatBubbleHudMixin",
+    "PlayerRendererSkinMixin",
+    "NametagHealthMixin",
+    "HostWorldConnectMixin",
+    "ServerAddressValidMixin",
+    "MultiplayerScreenAccessor",
+    "SmoothFishingLineMixin",
+    "TransparentPlayersMixin",
+    "MobHealthMixin",
+    "ScoreboardNickMixin",
+    "ScreenVeilMixin",
+    "MusicTagMixin",
+    "MusicTagFallbackMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 0
+  }
+}

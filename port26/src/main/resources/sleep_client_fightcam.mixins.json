@@ -1,0 +1,8 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "dev.sleepclient.mixin.fightcam",
+  "compatibilityLevel": "JAVA_21",
+  "client": ["CaptureMixin", "ReplayHideMixin", "ReplayBlockMixin"],
+  "injectors": { "defaultRequire": 0 }
+}

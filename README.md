@@ -1,12 +1,18 @@
 # Kubo – Fabric 1.21.11
 
+> **Código visível, não open source.** Podes ler tudo e confirmar que não há nada malicioso, mas a licença
+> ([PolyForm Strict 1.0.0](LICENSE)) **não permite copiar, redistribuir nem modificar** o código.
+> Falhas de segurança: reporta em privado (ver [SECURITY.md](SECURITY.md)).
+> *Source-available, not open source: you may read and audit it; copying, redistributing and modifying are not allowed.*
+
+
 Port do Plegumo para **Fabric 1.21.11** com a GUI nova (estilo Lunar, 2026).
 
 - **Right Shift** em jogo abre o menu; Right Shift outra vez (ou Esc) fecha.
 - **B** abre a Emote Wheel; B outra vez (ou Esc) fecha. A tecla muda-se em Plegumo > Settings > Emote Wheel Key.
 - **`** (acento grave) abre o ecrã de mover HUDs (arrastar = mover, scroll = redimensionar).
 - Todas as opções (sliders, color pickers HSV + opacidade, enums, keybinds, toggles) estão no ícone da engrenagem de cada mod.
-- Config guardada em `.minecraft/config/sol-client.json`.
+- Config guardada em `.minecraft/config/sleep-client.json`.
 
 - O menu ajusta-se sozinho ao tamanho do ecrã (e ao GUI scale). Se o quiseres maior/menor: Plegumo > Settings > **Menu Size**.
 
@@ -16,7 +22,7 @@ Precisas de JDK 21.
     gradle wrapper --gradle-version 8.14.3      (só se não houver gradlew)
     ./gradlew build                              (Windows: gradlew.bat build)
 
-O jar fica em `build/libs/sol-client-fabric-1.0.0.jar`  (NÃO uses o `-sources.jar`).
+O jar fica em `build/libs/sleep-client-fabric-1.0.0.jar`  (NÃO uses o `-sources.jar`).
 Mete-o em `.minecraft/mods` junto com o Fabric API.
 
 Este código foi escrito sem ser possível compilá-lo no sítio onde foi gerado. Se o Gradle
@@ -35,7 +41,7 @@ Visual: Particles, Time Changer (depende do 1.21.11 ainda ter `World#getTimeOfDa
 - Menu Blur: só a força do blur.
 - Tab List: lista própria com ping em barras/número; sem cabeças, header e footer.
 - Block Selection: contorno (cor, largura, ligar/desligar, Rainbow com velocidade); sem Fill, Depth, Persistent.
-- Overlay: Enchantment Glint (All/Items/Armor/None), Minimal View Bobbing, Fire Height (Overlay), Shield Height, Pumpkin/Spyglass/Frost opacidade, Hide Foliage, Show Ground Arrows, Hide Placed Skulls, Hide Endportals, Entity Shadows, Show Stuck Arrows, Headless Horse, Disable Damage Overlay, Disable Death Animation, Disable Fire Overlay. Só aparecem no menu (ainda sem efeito): Fire Height (Block), Clear Glass, Powdered Snow Outline, Colored String, Custom Fishing Line, Ore Outlines, Barrier Outlines, Custom XP Orb. Os mixins novos estão em sol_client_overlay.mixins.json (required=false): se um alvo mudar no 1.21.11, só essa opção deixa de funcionar, o jogo não crasha.
+- Overlay: Enchantment Glint (All/Items/Armor/None), Minimal View Bobbing, Fire Height (Overlay), Shield Height, Pumpkin/Spyglass/Frost opacidade, Hide Foliage, Show Ground Arrows, Hide Placed Skulls, Hide Endportals, Entity Shadows, Show Stuck Arrows, Headless Horse, Disable Damage Overlay, Disable Death Animation, Disable Fire Overlay. Só aparecem no menu (ainda sem efeito): Fire Height (Block), Clear Glass, Powdered Snow Outline, Colored String, Custom Fishing Line, Ore Outlines, Barrier Outlines, Custom XP Orb. Os mixins novos estão em sleep_client_overlay.mixins.json (required=false): se um alvo mudar no 1.21.11, só essa opção deixa de funcionar, o jogo não crasha.
 - Hit Colour: cor do overlay vermelho ao levar dano.
 - Timers: protocolo `badlion:timers`.
 
@@ -61,7 +67,7 @@ Right Shift → **Custom Sky** → clica no cartão → definições.
 - **Ambient**: cor por cima do ecrã + vinheta + força do parallax.
 - Código: `mods/CustomSkyMod.java`, `sky/SkyGen.java` (gradiente + sprites, Java puro), `sky/SkyFx.java` (simulação, Java puro), `sky/SkyBake.java`.
 - Limitações desta versão: as camadas são desenhadas no ecrã (HUD), não são partículas 3D no mundo; o céu gradiente é fixo (não roda com dia/noite); só no overworld.
-- Se uma versão futura mudar `SkyRendering`, os mixins estão em `sol_client_overlay.mixins.json` (required=false): o céu deixa de ter efeito, o jogo não crasha.
+- Se uma versão futura mudar `SkyRendering`, os mixins estão em `sleep_client_overlay.mixins.json` (required=false): o céu deixa de ter efeito, o jogo não crasha.
 
 ## Water Effects (água)
 Right Shift → **Water Effects** (Visual). Só partículas vanilla, só no teu cliente.
@@ -92,7 +98,7 @@ Já tinha o mod; agora tem ícone próprio (`litematica_helper.png`) no menu.
 
 ## Add-ons (barra esquerda do menu)
 
-Botão "Add-ons" no menu. Cada add-on é uma classe que implementa `dev.solclient.addons.Addon` e é registada em `Addons.init()`.
+Botão "Add-ons" no menu. Cada add-on é uma classe que implementa `dev.sleepclient.addons.Addon` e é registada em `Addons.init()`.
 
 - **PvP Practice** (`addons/pvp`): mundo singleplayer privado "Kubo PvP Practice" (sem server, sem ninguém), arena selada no céu,
   kits (`PracticeKit`) e bots Easy / Medium / Hard / Extreme (`BotDifficulty`, IA em `PracticeSession`).
@@ -167,10 +173,10 @@ Custom Sky tem agora 6 separadores: **Sky / Night / Effects / Particles / Ambien
 ## v72 – Português
 - Definições do Kubo > **Language**: English / Português. O menu inteiro (nomes dos mods, descrições, opções, botões, separadores) muda de uma vez; também os cartões (Clip guardado, Missão completa...), o Fight Recap, as Missões diárias e a Régua.
 - "Minecraft também em português": quando mudas o idioma, o próprio Minecraft passa para pt_pt (e volta para en_us).
-- As traduções estão em `src/main/resources/assets/sol_client/lang/pt_pt.tsv` (uma linha "English<TAB>Português"): podes corrigir ou acrescentar à vontade.
+- As traduções estão em `src/main/resources/assets/sleep_client/lang/pt_pt.tsv` (uma linha "English<TAB>Português"): podes corrigir ou acrescentar à vontade.
 
 ## v74 – Letras, chat com cabeças, Commander e Minijogos
-- **Letras (Settings > Font)**: 15 letras à escolha, cada uma mostrada com o próprio estilo: Poppins, Inter, Montserrat, Nunito, Rubik, Quicksand, Comfortaa, Fredoka, Outfit, Lexend, Baloo, JetBrains Mono, Press Start, Silkscreen e a do Minecraft. Muda o menu, o HUD e o chat do Kubo na hora. Todas são OFL (licenças em `assets/sol_client/font/licenses`).
+- **Letras (Settings > Font)**: 15 letras à escolha, cada uma mostrada com o próprio estilo: Poppins, Inter, Montserrat, Nunito, Rubik, Quicksand, Comfortaa, Fredoka, Outfit, Lexend, Baloo, JetBrains Mono, Press Start, Silkscreen e a do Minecraft. Muda o menu, o HUD e o chat do Kubo na hora. Todas são OFL (licenças em `assets/sleep_client/font/licenses`).
 - **Chat com amigos**: o chat fica no mesmo sítio e com o mesmo tamanho; só mudou o aspeto das mensagens. Cada grupo de mensagens tem a **cabeça** de quem a mandou (a tua também, à direita), um anel com o estado (online, no teu servidor), o nome com uma cor própria para cada amigo e balões com "ponta". Quando o amigo está no teu servidor, a cabeça é a skin que ele tem vestida nesse momento.
 - **Commander (Ctrl/⌘ + K)**: procura em todas as mods e ações. Usa as setas, Enter abre as definições e Ctrl/⌘+Enter liga ou desliga a mod. Tem atalhos para Edit HUD, Minijogos, Loja, Capas, Letra, Idioma, Clipa isto, Replay e Photo Mode.
 - **Minijogos** (menu > Minigames ou Commander): Snake, 2048, Kubo Bird, Breakout, Stack e Tetris, com recordes guardados em `config/kubo-minigames.json`. Teclas: P pausa e R recomeça.
@@ -280,8 +286,8 @@ Custom Sky tem agora 6 separadores: **Sky / Night / Effects / Particles / Ambien
 - **Loading screen**: o client já não crasha se o menu ou o logo falharem enquanto o jogo carrega (por exemplo, ao maximizar a janela). Esse frame é saltado.
 
 ### Como funciona uma extensão (para programar mais)
-- É um mod Fabric com `"entrypoints": { "kubo": ["...Extension"] }` e `"depends": { "sol_client": "*" }`.
-- A classe implementa `dev.solclient.ext.KuboExtension`. Em `register(KuboApi api)` chama:
+- É um mod Fabric com `"entrypoints": { "kubo": ["...Extension"] }` e `"depends": { "sleep_client": "*" }`.
+- A classe implementa `dev.sleepclient.ext.KuboExtension`. Em `register(KuboApi api)` chama:
   - `api.addMod(...)`;
   - os hooks que precisar: `onAttack`, `onHud`, `onHudLast`, `onF3Hud`, `nameDecorator`, `tabDecorator`, `hudFilter`, `entityScale`, `totemAnimation`, `hideToasts`, `onStatsChanged`, `onFriendPing`, `command`.
 - O núcleo **nunca** chama uma classe de uma extensão diretamente, só estes hooks.
@@ -483,7 +489,7 @@ Custom Sky tem agora 6 separadores: **Sky / Night / Effects / Particles / Ambien
 
 ## v101 – Som das notificações
 
-- Todas as notificações tocam o "pling" que mandaste (`assets/sol_client/sounds/notify.ogg`).
+- Todas as notificações tocam o "pling" que mandaste (`assets/sleep_client/sounds/notify.ogg`).
   - Foi convertido de mp3 para ogg, como o Minecraft pede, com o silêncio do início e do fim cortado.
   - Várias notificações seguidas tocam uma vez só.
 - Definições > Opções do HUD: "Som das notificações" (liga e desliga) e "Volume das notificações".
@@ -528,8 +534,8 @@ Custom Sky tem agora 6 separadores: **Sky / Night / Effects / Particles / Ambien
 
 ## v109 – Adereços próprios nos emotes
 - Os emotes deixam de usar itens do Minecraft como "substitutos" (pau a fazer de vassoura, besta a fazer de pistola, lã a fazer de luvas...). Agora têm modelos 3D próprios: vassoura, guarda-chuva, esfregona, bengala, muletas, guitarra, luvas de boxe, escova, frigideira, espátula, chave inglesa, garfo, colher, katana, faca, espada grande, motosserra, gadanha, lança, pistola, espingarda, gravador, jornal, cartaz, cartão, espelho, copo, tesoura, ferro de engomar, relógio, pasta e prenda.
-- São gerados por `tools/make_emote_props.py` (editar as formas lá e correr `python3 tools/make_emote_props.py`) e ficam em `assets/sol_client/models/item/prop_*.json`.
-- Em jogo, o emote põe um pau com o componente `item_model = sol_client:prop_<nome>` (ver `EmoteItems` / `EmoteManager.stack`).
+- São gerados por `tools/make_emote_props.py` (editar as formas lá e correr `python3 tools/make_emote_props.py`) e ficam em `assets/sleep_client/models/item/prop_*.json`.
+- Em jogo, o emote põe um pau com o componente `item_model = sleep_client:prop_<nome>` (ver `EmoteItems` / `EmoteManager.stack`).
 - Itens que já existem no Minecraft (espada, machado, pá, lanterna, papel, garrafa, pau) continuam a ser os do Minecraft.
 
 ## Sons de notificação e tamanho (v129)

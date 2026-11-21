@@ -1,6 +1,6 @@
 package dev.kuboext.far_horizons.mixin;
 
-import dev.solclient.mods.FarHorizonsMod;
+import dev.sleepclient.mods.FarHorizonsMod;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;

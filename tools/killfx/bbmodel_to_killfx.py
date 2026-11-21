@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
 Converts a Blockbench project (.bbmodel, "Generic Model" format) into a Kubo kill effect:
-  src/main/resources/assets/sol_client/killfx/<id>.json
-  src/main/resources/assets/sol_client/textures/killfx/<id>.png
+  src/main/resources/assets/sleep_client/killfx/<id>.json
+  src/main/resources/assets/sleep_client/textures/killfx/<id>.png
 
 Usage:  python3 tools/killfx/bbmodel_to_killfx.py my_effect.bbmodel [id] ["Display Name"]
 
@@ -23,7 +23,7 @@ Events (timeline scripts, one per line, units = model pixels, x/z are turned to 
 import base64, json, math, os, re, sys
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-RES = os.path.join(ROOT, "src", "main", "resources", "assets", "sol_client")
+RES = os.path.join(ROOT, "src", "main", "resources", "assets", "sleep_client")
 
 # corners of each face in texture order TL, TR, BR, BL (seen from outside), Minecraft / Blockbench convention
 def face_corners(f, a, b):

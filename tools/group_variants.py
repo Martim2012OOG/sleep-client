@@ -5,7 +5,7 @@ import os
 import re
 from PIL import Image
 
-A = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "src", "main", "resources", "assets", "sol_client")
+A = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "src", "main", "resources", "assets", "sleep_client")
 GROUPS = [("amongus_hat_", "amongus_hat", "Among Us Hat"), ("bucket_in_head_", "bucket_head", "Bucket Head"), ("halo_", "halo", "Halo"),
           ("short_hat_", "short_hat", "Short Hat"), ("mini_sus_", "mini_crewmate", "Mini Crewmate"), ("elven_wings_", "elven_wings", "Elven Ranger Wings")]
 SPECIAL = {"ram_horns": ("ram_horns", "Ram Horns", "I"), "ram_horns_ii": ("ram_horns", "Ram Horns", "II"), "ram_horns_iii": ("ram_horns", "Ram Horns", "III"),

@@ -1,0 +1,67 @@
+{
+  "music.silence": {
+    "sounds": [
+      {
+        "name": "sleep_client:music/silence",
+        "stream": true
+      }
+    ]
+  },
+  "notify": {
+    "sounds": [
+      {
+        "name": "sleep_client:notify"
+      }
+    ]
+  },
+  "crate_open": {
+    "sounds": [
+      {
+        "name": "sleep_client:crate_open"
+      }
+    ]
+  },
+  "crate_coins": {
+    "sounds": [
+      {
+        "name": "sleep_client:crate_coins"
+      }
+    ]
+  },
+  "crate_ching": {
+    "sounds": [
+      {
+        "name": "sleep_client:crate_ching"
+      }
+    ]
+  },
+  "patpat.pat": {
+    "sounds": [
+      {
+        "name": "sleep_client:patpat/pat"
+      },
+      {
+        "name": "sleep_client:patpat/pat1"
+      },
+      {
+        "name": "sleep_client:patpat/pat2"
+      }
+    ]
+  },
+  "patpat.lopi": {
+    "sounds": [
+      {
+        "name": "sleep_client:patpat/lopi"
+      },
+      {
+        "name": "sleep_client:patpat/lopi1"
+      },
+      {
+        "name": "sleep_client:patpat/lopi2"
+      },
+      {
+        "name": "sleep_client:patpat/lopi3"
+      }
+    ]
+  }
+}

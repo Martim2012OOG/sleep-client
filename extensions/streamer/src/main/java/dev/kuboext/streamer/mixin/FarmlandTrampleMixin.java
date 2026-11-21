@@ -1,6 +1,6 @@
 package dev.kuboext.streamer.mixin;
 
-import dev.solclient.parkour.ParkourLive;
+import dev.sleepclient.parkour.ParkourLive;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.FarmlandBlock;
 import net.minecraft.entity.Entity;

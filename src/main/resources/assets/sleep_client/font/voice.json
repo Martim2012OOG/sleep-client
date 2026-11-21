@@ -1,0 +1,49 @@
+{
+ "providers": [
+  {
+   "type": "bitmap",
+   "file": "sleep_client:voice/speaker.png",
+   "ascent": 7,
+   "height": 8,
+   "chars": [
+    "\ue010"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:voice/microphone_off.png",
+   "ascent": 7,
+   "height": 8,
+   "chars": [
+    "\ue011"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:voice/speaker_off.png",
+   "ascent": 7,
+   "height": 8,
+   "chars": [
+    "\ue012"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:voice/microphone.png",
+   "ascent": 7,
+   "height": 8,
+   "chars": [
+    "\ue013"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:voice/speaker_idle.png",
+   "ascent": 7,
+   "height": 8,
+   "chars": [
+    "\ue014"
+   ]
+  }
+ ]
+}

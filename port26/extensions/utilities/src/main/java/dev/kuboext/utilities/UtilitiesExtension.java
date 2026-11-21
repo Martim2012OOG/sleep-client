@@ -1,17 +1,17 @@
 package dev.kuboext.utilities;
 
-import dev.solclient.mods.QuickPhrasesMod;
-import dev.solclient.mods.SlotLockMod;
-import dev.solclient.mods.AutoRespawnMod;
-import dev.solclient.mods.SlowMouseMod;
-import dev.solclient.mods.HotkeysMod;
-import dev.solclient.mods.InventoryTweaksMod;
-import dev.solclient.mods.ContainerPreviewMod;
-import dev.solclient.mods.MonstersInTheClosetMod;
-import dev.solclient.mods.ToolsItemsOptimizerMod;
-import dev.solclient.mods.ChunkBordersMod;
-import dev.solclient.ext.KuboApi;
-import dev.solclient.ext.KuboExtension;
+import dev.sleepclient.mods.QuickPhrasesMod;
+import dev.sleepclient.mods.SlotLockMod;
+import dev.sleepclient.mods.AutoRespawnMod;
+import dev.sleepclient.mods.SlowMouseMod;
+import dev.sleepclient.mods.HotkeysMod;
+import dev.sleepclient.mods.InventoryTweaksMod;
+import dev.sleepclient.mods.ContainerPreviewMod;
+import dev.sleepclient.mods.MonstersInTheClosetMod;
+import dev.sleepclient.mods.ToolsItemsOptimizerMod;
+import dev.sleepclient.mods.ChunkBordersMod;
+import dev.sleepclient.ext.KuboApi;
+import dev.sleepclient.ext.KuboExtension;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 
 /** Sleep extension "Utilities": Quick Phrases, Slot Lock, Auto Respawn, Slow Mouse, Hotkeys, Inventory Tweaks, Container Preview, Monsters in the Closet, Tools Optimizer and Chunk Borders. */

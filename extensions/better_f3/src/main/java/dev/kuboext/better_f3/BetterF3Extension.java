@@ -1,8 +1,8 @@
 package dev.kuboext.better_f3;
 
-import dev.solclient.mods.BetterF3Mod;
-import dev.solclient.ext.KuboApi;
-import dev.solclient.ext.KuboExtension;
+import dev.sleepclient.mods.BetterF3Mod;
+import dev.sleepclient.ext.KuboApi;
+import dev.sleepclient.ext.KuboExtension;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.MinecraftClient;
 

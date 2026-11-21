@@ -1,0 +1,6 @@
+{
+  "providers": [
+    { "type": "ttf", "file": "sleep_client:f_quicksand.ttf", "size": 9.0, "oversample": 8.0, "shift": [0.0, 0.0], "skip": "" },
+    { "type": "reference", "id": "sleep_client:ui" }
+  ]
+}

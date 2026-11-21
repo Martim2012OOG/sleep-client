@@ -1,8 +1,8 @@
 package dev.kuboext.far_horizons;
 
-import dev.solclient.mods.FarHorizonsMod;
-import dev.solclient.ext.KuboApi;
-import dev.solclient.ext.KuboExtension;
+import dev.sleepclient.mods.FarHorizonsMod;
+import dev.sleepclient.ext.KuboApi;
+import dev.sleepclient.ext.KuboExtension;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.MinecraftClient;
 

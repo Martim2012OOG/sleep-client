@@ -1,11 +1,11 @@
 package dev.kuboext.hypixel;
 
-import dev.solclient.mods.QuickPlayMod;
-import dev.solclient.mods.HypixelAdditionsMod;
-import dev.solclient.mods.LevelHeadMod;
-import dev.solclient.mods.StatsOverlayMod;
-import dev.solclient.ext.KuboApi;
-import dev.solclient.ext.KuboExtension;
+import dev.sleepclient.mods.QuickPlayMod;
+import dev.sleepclient.mods.HypixelAdditionsMod;
+import dev.sleepclient.mods.LevelHeadMod;
+import dev.sleepclient.mods.StatsOverlayMod;
+import dev.sleepclient.ext.KuboApi;
+import dev.sleepclient.ext.KuboExtension;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.MinecraftClient;
 
@@ -19,6 +19,6 @@ public class HypixelExtension implements KuboExtension {
 		api.addMod(new LevelHeadMod());
 		api.addMod(new StatsOverlayMod());
 		api.nameDecorator((e, name) -> e instanceof net.minecraft.entity.player.PlayerEntity p ? LevelHeadMod.decorate(p, name) : name);
-		ClientTickEvents.END_CLIENT_TICK.register(c -> dev.solclient.social.HypixelApi.tick());
+		ClientTickEvents.END_CLIENT_TICK.register(c -> dev.sleepclient.social.HypixelApi.tick());
 	}
 }

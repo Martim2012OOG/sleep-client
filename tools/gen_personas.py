@@ -5,7 +5,7 @@ Run:  python3 tools/gen_personas.py
 import os
 from PIL import Image, ImageDraw
 
-A = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "src", "main", "resources", "assets", "sol_client", "textures")
+A = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "src", "main", "resources", "assets", "sleep_client", "textures")
 S = 4  # supersampling
 
 

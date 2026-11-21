@@ -1,0 +1,2317 @@
+{
+ "providers": [
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/ad.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue103"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/ae.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue104"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/af.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue105"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/ag.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue106"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/ai.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue108"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/al.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue10b"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/am.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue10c"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/ao.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue10e"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/aq.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue110"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/ar.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue111"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/as.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue112"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/at.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue113"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/au.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue114"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/aw.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue116"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/ax.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue117"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/az.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue119"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/ba.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue11a"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/bb.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue11b"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/bd.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue11d"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/be.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue11e"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/bf.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue11f"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/bg.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue120"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/bh.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue121"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/bi.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue122"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/bj.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue123"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/bl.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue125"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/bm.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue126"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/bn.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue127"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/bo.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue128"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/bq.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue12a"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/br.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue12b"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/bs.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue12c"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/bt.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue12d"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/bv.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue12f"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/bw.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue130"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/by.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue132"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/bz.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue133"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/ca.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue134"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/cc.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue136"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/cd.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue137"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/cf.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue139"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/cg.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue13a"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/ch.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue13b"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/ci.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue13c"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/ck.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue13e"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/cl.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue13f"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/cm.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue140"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/cn.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue141"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/co.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue142"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/cp.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue143"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/cr.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue145"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/cu.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue148"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/cv.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue149"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/cw.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue14a"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/cx.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue14b"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/cy.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue14c"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/cz.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue14d"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/de.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue152"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/dg.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue154"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/dj.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue157"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/dk.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue158"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/dm.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue15a"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/do.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue15c"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/dz.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue167"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/ec.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue16a"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/ee.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue16c"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/eg.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue16e"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/eh.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue16f"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/er.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue179"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/es.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue17a"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/et.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue17b"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/eu.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue17c"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/fi.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue18a"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/fj.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue18b"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/fk.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue18c"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/fm.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue18e"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/fo.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue190"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/fr.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue193"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/ga.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue19c"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/gb.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue19d"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/gd.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue19f"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/ge.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue1a0"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/gf.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue1a1"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/gg.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue1a2"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/gh.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue1a3"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/gi.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue1a4"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/gl.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue1a7"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/gm.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue1a8"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/gn.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue1a9"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/gp.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue1ab"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/gq.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue1ac"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/gr.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue1ad"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/gs.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue1ae"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/gt.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue1af"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/gu.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue1b0"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/gw.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue1b2"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/gy.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue1b4"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/hk.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue1c0"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/hm.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue1c2"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/hn.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue1c3"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/hr.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue1c7"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/ht.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue1c9"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/hu.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue1ca"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/ic.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue1d2"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/id.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue1d3"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/ie.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue1d4"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/il.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue1db"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/im.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue1dc"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/in.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue1dd"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/io.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue1de"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/iq.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue1e0"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/ir.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue1e1"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/is.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue1e2"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/it.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue1e3"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/je.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue1ee"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/jm.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue1f6"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/jo.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue1f8"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/jp.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue1f9"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/ke.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue208"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/kg.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue20a"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/kh.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue20b"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/ki.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue20c"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/km.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue210"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/kn.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue211"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/kp.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue213"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/kr.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue215"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/kw.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue21a"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/ky.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue21c"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/kz.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue21d"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/la.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue21e"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/lb.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue21f"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/lc.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue220"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/li.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue226"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/lk.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue228"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/lr.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue22f"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/ls.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue230"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/lt.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue231"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/lu.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue232"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/lv.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue233"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/ly.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue236"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/ma.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue238"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/mc.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue23a"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/md.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue23b"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/me.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue23c"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/mf.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue23d"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/mg.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue23e"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/mh.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue23f"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/mk.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue242"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/ml.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue243"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/mm.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue244"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/mn.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue245"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/mo.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue246"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/mp.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue247"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/mq.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue248"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/mr.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue249"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/ms.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue24a"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/mt.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue24b"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/mu.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue24c"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/mv.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue24d"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/mw.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue24e"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/mx.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue24f"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/my.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue250"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/mz.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue251"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/na.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue252"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/nc.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue254"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/ne.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue256"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/nf.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue257"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/ng.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue258"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/ni.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue25a"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/nl.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue25d"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/no.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue260"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/np.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue261"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/nr.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue263"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/nu.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue266"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/nz.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue26b"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/om.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue278"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/pa.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue286"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/pc.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue288"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/pe.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue28a"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/pf.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue28b"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/pg.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue28c"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/ph.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue28d"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/pk.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue290"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/pl.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue291"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/pm.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue292"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/pn.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue293"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/pr.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue297"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/ps.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue298"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/pt.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue299"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/pw.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue29c"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/py.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue29e"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/qa.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue2a0"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/re.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue2be"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/ro.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue2c8"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/rs.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue2cc"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/ru.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue2ce"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/rw.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue2d0"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/sa.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue2d4"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/sb.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue2d5"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/sc.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue2d6"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/sd.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue2d7"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/se.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue2d8"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/sg.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue2da"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/sh.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue2db"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/si.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue2dc"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/sj.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue2dd"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/sk.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue2de"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/sl.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue2df"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/sm.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue2e0"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/sn.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue2e1"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/so.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue2e2"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/sr.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue2e5"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/ss.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue2e6"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/st.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue2e7"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/sv.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue2e9"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/sx.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue2eb"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/sy.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue2ec"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/sz.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue2ed"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/tc.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue2f0"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/td.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue2f1"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/tf.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue2f3"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/tg.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue2f4"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/th.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue2f5"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/tj.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue2f7"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/tk.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue2f8"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/tl.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue2f9"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/tm.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue2fa"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/tn.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue2fb"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/to.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue2fc"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/tr.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue2ff"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/tt.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue301"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/tv.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue303"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/tw.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue304"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/tz.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue307"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/ua.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue308"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/ug.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue30e"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/um.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue314"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/un.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue315"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/us.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue31a"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/uy.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue320"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/uz.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue321"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/va.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue322"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/vc.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue324"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/ve.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue326"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/vg.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue328"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/vi.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue32a"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/vn.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue32f"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/vu.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue336"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/wf.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue341"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/ws.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue34e"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/xk.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue360"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/xx.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue36d"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/ye.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue374"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/yt.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue383"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/za.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue38a"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/zm.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue396"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "sleep_client:gui/flag/zw.png",
+   "ascent": 7,
+   "height": 7,
+   "chars": [
+    "\ue3a0"
+   ]
+  }
+ ]
+}

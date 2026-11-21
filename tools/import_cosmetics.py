@@ -2,8 +2,8 @@
 """Imports the bought cosmetic packs into Kubo.
 
 Reads Java item models (Oraxen / ItemsAdder / Nexo resource packs) and Blockbench .bbmodel files and writes:
-  - accessories -> assets/sol_client/cosmetics/<id>.bin + textures/cosmetics/<texture>.png + an entry in index.json
-  - pets        -> assets/sol_client/pets/<id>.json (a rig of bones the game animates) + its texture + index.json
+  - accessories -> assets/sleep_client/cosmetics/<id>.bin + textures/cosmetics/<texture>.png + an entry in index.json
+  - pets        -> assets/sleep_client/pets/<id>.json (a rig of bones the game animates) + its texture + index.json
 
 Hats are placed exactly like vanilla puts a helmet item on the head (HeadFeatureRenderer.translate + the model's
 display.head transform), so they sit where the pack author designed them. Back items (tails, wings) use the same
@@ -11,7 +11,7 @@ transform on the body, wings are split in a left and a right half so the game ca
 
 Run:  python3 tools/import_cosmetics.py "<folder with the zips>" [--preview <dir>]
 The packs are NOT stored in this repo (some licences forbid redistributing the source files); only the converted
-models end up in the jar. See assets/sol_client/cosmetics/CREDITS.md.
+models end up in the jar. See assets/sleep_client/cosmetics/CREDITS.md.
 """
 import base64
 import io
@@ -27,7 +27,7 @@ import zipfile
 from PIL import Image
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
-ASSETS = os.path.join(ROOT, "src", "main", "resources", "assets", "sol_client")
+ASSETS = os.path.join(ROOT, "src", "main", "resources", "assets", "sleep_client")
 HEAD, BODY, RIGHT_ARM, LEFT_ARM, RIGHT_LEG, LEFT_LEG, PET, WING_LEFT, WING_RIGHT = range(9)
 
 

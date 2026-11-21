@@ -22,13 +22,13 @@ in the hotbar and an identical potion became invisible until a slot was clicked.
 
 ## General
 - Fabric 1.21.11, yarn mappings. Check names against the yarn mappings before using them.
-- Every new mod needs an icon (`assets/sol_client/textures/gui/icon/<id>.png` + `.mcmeta`, and the id in `Theme.ICONS`)
-  and Portuguese (Portugal) translations in `assets/sol_client/lang/pt_pt.tsv`.
+- Every new mod needs an icon (`assets/sleep_client/textures/gui/icon/<id>.png` + `.mcmeta`, and the id in `Theme.ICONS`)
+  and Portuguese (Portugal) translations in `assets/sleep_client/lang/pt_pt.tsv`.
 - Do not remove features unless asked.
 
 ## Extensions (since v87)
 - Optional / heavy mods live in `extensions/<name>`. Their jars are nested inside the Kubo jar (`include project(...)` in build.gradle); nothing is downloaded. An extension does nothing until the player installs it in Mods > Extensions (installed ids: config/kubo-extensions.txt); installed ones show up as a folder in All Mods.
-- The core must **never** reference an extension class. Only use the hooks in `dev.solclient.ext.KuboApi`; add a new hook there if needed.
+- The core must **never** reference an extension class. Only use the hooks in `dev.sleepclient.ext.KuboApi`; add a new hook there if needed.
 - Extension mixins use their own package `dev.kuboext.<name>.mixin` and their own mixin json.
 
 ## Vanilla textures

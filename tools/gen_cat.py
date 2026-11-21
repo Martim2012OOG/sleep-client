@@ -1,10 +1,10 @@
 """Draws the click-counter cat pixel by pixel (own art, no screenshots): base, four paw frames and the outfits, all on ONE shared grid
-so everything lines up. Writes the PNG layers into src/main/resources/assets/sol_client/textures/gui/cat/ ."""
+so everything lines up. Writes the PNG layers into src/main/resources/assets/sleep_client/textures/gui/cat/ ."""
 import os, sys
 from PIL import Image
 
 W, H = 76, 58
-OUT = os.path.join(os.path.dirname(__file__), "..", "src/main/resources/assets/sol_client/textures/gui/cat")
+OUT = os.path.join(os.path.dirname(__file__), "..", "src/main/resources/assets/sleep_client/textures/gui/cat")
 LINE = (91, 68, 72, 255); WHITE = (255, 255, 255, 255); SHADE = (233, 228, 230, 255); PINK = (240, 160, 150, 255); BLUSH = (246, 201, 201, 255)
 BLACK = (50, 38, 42, 255)
 

@@ -1,10 +1,10 @@
 package dev.kuboext.building;
 
-import dev.solclient.mods.KuboBuilderMod;
-import dev.solclient.mods.LitematicaHelperMod;
-import dev.solclient.mods.RulerMod;
-import dev.solclient.ext.KuboApi;
-import dev.solclient.ext.KuboExtension;
+import dev.sleepclient.mods.KuboBuilderMod;
+import dev.sleepclient.mods.LitematicaHelperMod;
+import dev.sleepclient.mods.RulerMod;
+import dev.sleepclient.ext.KuboApi;
+import dev.sleepclient.ext.KuboExtension;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.Minecraft;
 
@@ -17,6 +17,6 @@ public class BuildingExtension implements KuboExtension {
 		api.addMod(new LitematicaHelperMod());
 		api.addMod(new RulerMod());
 		api.command("Sleep Builder", "Schematics: load, place, move, build", "kubo_builder",
-				() -> dev.solclient.compat.Mc.setScreen(Minecraft.getInstance(), new dev.solclient.gui.BuilderScreen(dev.solclient.compat.Mc.screen(Minecraft.getInstance()))));
+				() -> dev.sleepclient.compat.Mc.setScreen(Minecraft.getInstance(), new dev.sleepclient.gui.BuilderScreen(dev.sleepclient.compat.Mc.screen(Minecraft.getInstance()))));
 	}
 }

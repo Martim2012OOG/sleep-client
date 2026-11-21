@@ -1,0 +1,6 @@
+{
+  "providers": [
+    { "type": "ttf", "file": "sleep_client:f_outfit.ttf", "size": 9.2, "oversample": 8.0, "shift": [0.0, 0.0], "skip": "" },
+    { "type": "reference", "id": "sleep_client:ui" }
+  ]
+}

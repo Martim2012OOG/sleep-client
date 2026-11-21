@@ -1,6 +1,6 @@
 """Little 3D pictures of every bundled cosmetic for the Locker cards (textures/cosmetics/thumb/<id>.png, 96x96, transparent).
 
-Reads each model (assets/sol_client/cosmetics/<geometry>.bin) with its texture and draws it from the front (hats, pets) or from behind
+Reads each model (assets/sleep_client/cosmetics/<geometry>.bin) with its texture and draws it from the front (hats, pets) or from behind
 (wings, tails, body). Run:  python3 tools/gen_cosmetic_thumbs.py
 """
 import json
@@ -10,7 +10,7 @@ import struct
 
 from PIL import Image
 
-A = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "src", "main", "resources", "assets", "sol_client")
+A = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "src", "main", "resources", "assets", "sleep_client")
 SIZE = 96
 
 

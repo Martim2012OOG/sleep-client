@@ -1,0 +1,5 @@
+{
+  "providers": [
+    { "type": "bitmap", "file": "sleep_client:font/badge.png", "ascent": 9, "height": 11, "chars": [""] }
+  ]
+}

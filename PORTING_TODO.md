@@ -1,8 +1,8 @@
 # Mods que faltam portar (para fazeres com Claude Code, com o jogo a correr)
 
-Fonte original (1.8.9): `Sol-Client-main/game/src/main/java/me/mcblueparrot/client/mod/impl/...`
-Mods já feitas estão em `src/main/java/dev/solclient/mods`. Para criar uma mod nova:
-copia o padrão de `TimeChangerMod` (opções) ou `FpsMod` (HUD), regista-a em `SolClient.java`.
+Fonte original (1.8.9): `Sleep Client-main/game/src/main/java/me/mcblueparrot/client/mod/impl/...`
+Mods já feitas estão em `src/main/java/dev/sleepclient/mods`. Para criar uma mod nova:
+copia o padrão de `TimeChangerMod` (opções) ou `FpsMod` (HUD), regista-a em `SleepClient.java`.
 
 Já verificado contra a Yarn 1.21.11+build.4: todos os métodos de `DrawContext` usados
 (`fill`, `drawText`, `drawTexture` com 13 args, `drawGuiTexture`, `enableScissor`, `getMatrices` = Matrix3x2fStack).

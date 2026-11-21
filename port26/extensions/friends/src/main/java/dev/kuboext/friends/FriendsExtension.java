@@ -1,10 +1,10 @@
 package dev.kuboext.friends;
 
-import dev.solclient.mods.PartyHudMod;
-import dev.solclient.mods.FriendPingMod;
-import dev.solclient.mods.SonarMod;
-import dev.solclient.ext.KuboApi;
-import dev.solclient.ext.KuboExtension;
+import dev.sleepclient.mods.PartyHudMod;
+import dev.sleepclient.mods.FriendPingMod;
+import dev.sleepclient.mods.SonarMod;
+import dev.sleepclient.ext.KuboApi;
+import dev.sleepclient.ext.KuboExtension;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 
 /** Sleep extension "Friends": Party HUD, Pings (mark places for friends) and Sonar. */

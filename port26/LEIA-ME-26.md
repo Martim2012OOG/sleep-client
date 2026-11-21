@@ -10,7 +10,7 @@ Precisa de Java 25.
 ./gradlew build -Pmc=26.2
 ```
 Versoes (build.gradle): 26.1 = Fabric API 0.145.1+26.1, 26.2 = Fabric API 0.161.0+26.2. Loom `net.fabricmc.fabric-loom` 1.19-SNAPSHOT, loader 0.20.1, Gradle 9.8.2.
-Codigo por versao: `src/v26_1` e `src/v26_2` (classes `dev.solclient.compat.Mc` e `Gpu`, e variantes de ficheiros que mudaram demasiado).
+Codigo por versao: `src/v26_1` e `src/v26_2` (classes `dev.sleepclient.compat.Mc` e `Gpu`, e variantes de ficheiros que mudaram demasiado).
 
 ## Estado
 - 26.1: compila (nucleo + 16 extensoes). Arranca em modo dev ate ao menu principal com o Sleep ativo, sem erros de mixin no log. NAO testado dentro de um mundo.

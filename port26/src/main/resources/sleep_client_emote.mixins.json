@@ -1,0 +1,15 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "dev.sleepclient.mixin.emote",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "EntityRenderStateMixin",
+    "EntityRendererEmoteMixin",
+    "BipedEntityModelMixin",
+    "PlayerModelJointsMixin",
+    "HeldItemEmoteMixin",
+    "FirstPersonArmMixin"
+  ],
+  "injectors": { "defaultRequire": 0 }
+}

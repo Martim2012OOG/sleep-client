@@ -1,8 +1,8 @@
 package dev.kuboext.chat_translator;
 
-import dev.solclient.mods.ChatTranslatorMod;
-import dev.solclient.ext.KuboApi;
-import dev.solclient.ext.KuboExtension;
+import dev.sleepclient.mods.ChatTranslatorMod;
+import dev.sleepclient.ext.KuboApi;
+import dev.sleepclient.ext.KuboExtension;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 
 /** Sleep extension "Chat Translator": Translates chat from other languages, and lets you write in any language with !en. */

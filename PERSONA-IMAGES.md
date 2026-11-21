@@ -1,6 +1,6 @@
 # Imagens das vozes (Modificador de voz)
 
-Cada voz mostra a imagem `src/main/resources/assets/sol_client/textures/persona/<id>.png`.
+Cada voz mostra a imagem `src/main/resources/assets/sleep_client/textures/persona/<id>.png`.
 Se o ficheiro não existir, aparece um cartão colorido com as iniciais (ex.: **CR**).
 
 - Quadrada de preferência (ex.: 256x256 ou 512x512), PNG. O client corta o meio e arredonda os cantos sozinho.

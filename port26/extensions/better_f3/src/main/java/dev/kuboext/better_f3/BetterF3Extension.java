@@ -1,8 +1,8 @@
 package dev.kuboext.better_f3;
 
-import dev.solclient.mods.BetterF3Mod;
-import dev.solclient.ext.KuboApi;
-import dev.solclient.ext.KuboExtension;
+import dev.sleepclient.mods.BetterF3Mod;
+import dev.sleepclient.ext.KuboApi;
+import dev.sleepclient.ext.KuboExtension;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 
 /** Sleep extension "Better F3": A clean, readable F3 screen with only what matters. */

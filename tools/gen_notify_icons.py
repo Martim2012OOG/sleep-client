@@ -10,7 +10,7 @@ import zlib
 
 S = 64
 SS = 4
-OUT = os.path.join(os.path.dirname(__file__), "..", "src", "main", "resources", "assets", "sol_client", "textures", "gui", "notify")
+OUT = os.path.join(os.path.dirname(__file__), "..", "src", "main", "resources", "assets", "sleep_client", "textures", "gui", "notify")
 
 
 # ------------------------------------------------------------------ shapes: (x, y) -> inside?

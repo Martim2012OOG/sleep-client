@@ -7,14 +7,14 @@ Sources (data files only, nothing is executed):
   JustARoy/Emotecraft-Emotes (MIT)                    https://github.com/JustARoy/Emotecraft-Emotes
 
 Usage:  python3 tools/import_open_emotes.py <folder with kosmx/ and justaroy/>
-Writes: assets/sol_client/emotes/*.json + index.json + CREDITS.md, and emotes-catalogue.json (for the site).
+Writes: assets/sleep_client/emotes/*.json + index.json + CREDITS.md, and emotes-catalogue.json (for the site).
 Left out on purpose: files from the NSFW folder, Twerk, and the ones where the head comes off or the player dies
 (headspin, headyeet, headball, into_pieces, do_eternal_rest_and_respawn), plus server-specific / duplicate ones.
 """
 import glob, json, os, re, sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUT = os.path.join(ROOT, "src", "main", "resources", "assets", "sol_client", "emotes")
+OUT = os.path.join(ROOT, "src", "main", "resources", "assets", "sleep_client", "emotes")
 
 # source file, id, name, tag, price, rarity, free, license
 K, J = "CC0-1.0", "MIT"

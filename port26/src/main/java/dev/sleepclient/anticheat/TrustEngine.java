@@ -1,0 +1,328 @@
+package dev.sleepclient.anticheat;
+
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.UUID;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.PlayerInfo;
+import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.util.Mth;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
+
+/**
+ * Watches the other players your client can see and keeps a "suspicion" score for each one (and from it a trust %). Only what the
+ * client can observe is used: how they move, how far they hit, where they look when they hit, how fast they click. It is a guess,
+ * never proof: creative / spectator players, lag, knockback, ice, water, elytra, vehicles and teleports are ignored, the points fade
+ * with time, and the default strictness is the careful one.
+ */
+public final class TrustEngine {
+
+	public enum Check {
+		FLY("Flying", "Voo"), SPEED("Speed", "Velocidade"), REACH("Reach", "Alcance"), AIM("Aim / kill aura", "Mira / kill aura"), CLICK("Auto clicker", "Auto clicker");
+
+		public final String en, pt;
+
+		Check(String en, String pt) {
+			this.en = en;
+			this.pt = pt;
+		}
+	}
+
+	/** Everything we know about one player. Read from the render / command thread, written on the client tick. */
+	public static final class Profile {
+		public final UUID id;
+		public volatile String name;
+		/** 0..100 per check. */
+		public final double[] pts = new double[Check.values().length];
+		public volatile long firstSeenMs, lastSeenMs;
+		public volatile int ticks, ping, hits;
+		public volatile GameType mode;
+		public volatile boolean community;
+		public long lastReportMs;
+		public double lastReportScore;
+		// movement
+		double px, py, pz;
+		boolean havePos;
+		int hover, fast, rise, lastHurtAge = -100;
+		// swings
+		int lastSwingAge = -100;
+		final ArrayDeque<Integer> swings = new ArrayDeque<>();
+		float prevYaw, prevPitch, yawStep, pitchStep, bigTurnAge;
+
+		Profile(UUID id, String name) {
+			this.id = id;
+			this.name = name;
+		}
+
+		public double suspicion() {
+			double[] s = pts.clone();
+			java.util.Arrays.sort(s);
+			double v = 0, w = 1;
+			for (int i = s.length - 1; i >= 0; i--) { // the worst check counts fully, the others add less
+				v += s[i] * w;
+				w *= 0.5;
+			}
+			return Math.min(100, v);
+		}
+
+		public int trust() {
+			return (int) Math.round(100 - suspicion());
+		}
+
+		public double observedSeconds() {
+			return ticks / 20.0;
+		}
+
+		/** The checks that are clearly above zero, worst first. */
+		public List<Check> flagged() {
+			List<Check> out = new ArrayList<>();
+			for (Check c : Check.values()) {
+				if (pts[c.ordinal()] >= 25) {
+					out.add(c);
+				}
+			}
+			out.sort((a, b) -> Double.compare(pts[b.ordinal()], pts[a.ordinal()]));
+			return out;
+		}
+	}
+
+	private static final Map<UUID, Profile> PROFILES = new HashMap<>();
+	/** Multiplier of the points added (the Careful / Normal / Strict setting). */
+	public static volatile double strictness = 0.35;
+	private static final double[] DECAY = {0.9990, 0.9990, 0.9997, 0.9997, 0.9990};
+
+	private TrustEngine() {
+	}
+
+	public static synchronized List<Profile> all() {
+		return new ArrayList<>(PROFILES.values());
+	}
+
+	public static synchronized Profile byName(String name) {
+		if (name == null) {
+			return null;
+		}
+		for (Profile p : PROFILES.values()) {
+			if (p.name != null && p.name.equalsIgnoreCase(name)) {
+				return p;
+			}
+		}
+		return null;
+	}
+
+	public static synchronized void clear() {
+		PROFILES.clear();
+	}
+
+	private static void add(Profile f, Check c, double points) {
+		int i = c.ordinal();
+		f.pts[i] = Math.min(100, f.pts[i] + points * strictness);
+	}
+
+	// ------------------------------------------------------------------ every client tick
+	public static synchronized void tick(Minecraft mc) {
+		if (mc.level == null || mc.player == null || mc.getConnection() == null) {
+			PROFILES.clear();
+			return;
+		}
+		long now = System.currentTimeMillis();
+		List<AbstractClientPlayer> players = new ArrayList<>(mc.level.players());
+		for (AbstractClientPlayer p : players) {
+			if (p == mc.player || p.isRemoved()) {
+				continue;
+			}
+			Profile f = PROFILES.computeIfAbsent(p.getUUID(), k -> new Profile(k, p.getName().getString()));
+			if (f.firstSeenMs == 0) {
+				f.firstSeenMs = now;
+			}
+			f.lastSeenMs = now;
+			f.name = p.getName().getString();
+			update(mc, f, p, players);
+		}
+		PROFILES.values().removeIf(f -> now - f.lastSeenMs > 600_000L);
+		for (Profile f : PROFILES.values()) {
+			for (int i = 0; i < f.pts.length; i++) {
+				f.pts[i] *= DECAY[i];
+			}
+		}
+	}
+
+	private static void update(Minecraft mc, Profile f, AbstractClientPlayer p, List<AbstractClientPlayer> players) {
+		PlayerInfo le = mc.getConnection().getPlayerInfo(p.getUUID());
+		f.mode = le == null ? null : le.getGameMode();
+		f.ping = le == null ? 0 : le.getLatency();
+		f.ticks++;
+		boolean exempt = f.mode == GameType.CREATIVE || f.mode == GameType.SPECTATOR || p.isSpectator() || le == null;
+		if (p.hurtTime > 0) {
+			f.lastHurtAge = f.ticks;
+		}
+		boolean laggy = f.ping > 160;
+		double dx = p.getX() - f.px, dy = p.getY() - f.py, dz = p.getZ() - f.pz;
+		boolean moved = f.havePos;
+		if (f.havePos && Math.sqrt(dx * dx + dy * dy + dz * dz) > 8) {
+			moved = false; // teleport / respawn: start again
+			f.hover = f.fast = f.rise = 0;
+		}
+		f.px = p.getX();
+		f.py = p.getY();
+		f.pz = p.getZ();
+		boolean first = !f.havePos;
+		f.havePos = true;
+
+		// ---- yaw / pitch steps (for the aim check)
+		f.yawStep = Mth.wrapDegrees(p.getYRot() - f.prevYaw);
+		f.pitchStep = p.getXRot() - f.prevPitch;
+		f.prevYaw = p.getYRot();
+		f.prevPitch = p.getXRot();
+		if (Math.abs(f.yawStep) > 70 && !first) {
+			f.bigTurnAge = f.ticks;
+		}
+
+		boolean warm = f.ticks > 200; // the first 10 seconds only watch: respawns, joins and chunk loading look odd
+		if (!exempt && moved && !laggy && warm) {
+			double hs = Math.hypot(dx, dz);
+			boolean busy = p.isPassenger() || p.isFallFlying() || p.isSleeping() || p.onClimbable() || p.isInWater() || p.isInLava() || p.isAutoSpinAttack()
+					|| p.isInWall() || f.ticks - f.lastHurtAge < 24 || p.isRemoved();
+			boolean floaty = p.hasEffect(MobEffects.LEVITATION) || p.hasEffect(MobEffects.SLOW_FALLING) || p.hasEffect(MobEffects.JUMP_BOOST);
+			BlockState under = mc.level.getBlockState(p.getBlockPosBelowThatAffectsMyMovement());
+			boolean slippery = under.is(BlockTags.ICE) || under.is(net.minecraft.world.level.block.Blocks.SLIME_BLOCK) || under.is(net.minecraft.world.level.block.Blocks.HONEY_BLOCK)
+					|| under.is(net.minecraft.world.level.block.Blocks.SOUL_SAND) || under.is(net.minecraft.world.level.block.Blocks.SOUL_SOIL);
+			// ---- flying: hanging in the air without falling, or going up and up
+			boolean solidBelow = !mc.level.getBlockState(p.blockPosition().below()).isAir() || !mc.level.getBlockState(p.blockPosition()).isAir()
+					|| !mc.level.noCollision(p, p.getBoundingBox().move(0, -0.6, 0));
+			if (!busy && !floaty && !p.onGround() && !solidBelow) {
+				boolean still = Math.abs(dy) < 0.008;
+				f.hover = still && (hs > 0.08 || f.hover > 0) ? f.hover + 1 : still ? f.hover : 0;
+				f.rise = dy > 0.04 ? f.rise + 1 : 0;
+				if (f.hover >= 45) {
+					add(f, Check.FLY, Math.min(4, 0.6 + (f.hover - 45) * 0.15));
+				}
+				if (f.rise >= 40) {
+					add(f, Check.FLY, Math.min(4, 0.6 + (f.rise - 40) * 0.2));
+				}
+			} else {
+				f.hover = Math.max(0, f.hover - 2);
+				f.rise = 0;
+			}
+			// ---- speed: faster than sprint-jumping with their potion effect allows, for several ticks in a row
+			// the REAL speed attribute of that player (speed potion, items and enchants with attributes, soul speed, dolphin's grace,
+			// sprint...: everything the server gave them is in it), so only moving faster than that allows counts
+			double attr = p.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED);
+			double mult = Math.max(1.0, attr / 0.1);
+			if (p.hasEffect(MobEffects.SPEED) || p.hasEffect(MobEffects.DOLPHINS_GRACE)) {
+				mult = Math.max(mult, 1.0 + 0.2 * (p.hasEffect(MobEffects.SPEED) ? p.getEffect(MobEffects.SPEED).getAmplifier() + 1 : 1));
+			}
+			double limit = 0.72 * mult + 0.12;
+			if (!busy && !slippery && hs > limit) {
+				f.fast++;
+				if (f.fast >= 25) {
+					add(f, Check.SPEED, Math.min(5, 0.8 + (hs / limit - 1) * 10));
+				}
+			} else {
+				f.fast = Math.max(0, f.fast - 1);
+			}
+		} else if (exempt) {
+			f.hover = f.fast = f.rise = 0;
+		}
+
+		// ---- swings (clicking)
+		if (p.swinging && p.swingTime == 0) {
+			f.lastSwingAge = f.ticks;
+			f.swings.addLast(f.ticks);
+			while (f.swings.size() > 40) {
+				f.swings.pollFirst();
+			}
+			clicks(f);
+		}
+		// ---- somebody got hit: who hit them, from how far, looking where?
+		for (AbstractClientPlayer t : players) {
+			if (t.hurtDuration > 0 && t.hurtTime == t.hurtDuration) {
+				if (t == p || f.lastSwingAge < f.ticks - 3 || p.distanceToSqr(t) > 64) {
+					continue;
+				}
+				hit(mc, f, p, t, le, players);
+			}
+		}
+	}
+
+	private static void clicks(Profile f) {
+		// swings in the last second (20 ticks): people cannot reach 19-20 clicks a second
+		int cps = 0;
+		for (int s : f.swings) {
+			if (f.ticks - s < 20) {
+				cps++;
+			}
+		}
+		if (cps >= 26) {
+			add(f, Check.CLICK, 6);
+		} else if (cps >= 22) {
+			add(f, Check.CLICK, 0.8);
+		}
+		// a long run of identical gaps (a machine, not a hand)
+		if (f.swings.size() >= 30) {
+			Integer[] a = f.swings.toArray(new Integer[0]);
+			int same = 0, n = 0;
+			for (int i = a.length - 1; i > a.length - 30 && i > 0; i--, n++) {
+				if (a[i] - a[i - 1] == a[a.length - 1] - a[a.length - 2]) {
+					same++;
+				}
+			}
+			if (n > 0 && same >= n - 1 && a[a.length - 1] - a[a.length - 2] <= 3) {
+				add(f, Check.CLICK, 0.5);
+			}
+		}
+	}
+
+	private static void hit(Minecraft mc, Profile f, AbstractClientPlayer a, AbstractClientPlayer t, PlayerInfo le,
+			List<AbstractClientPlayer> players) {
+		// only the attacker who looks most at the target counts (somebody else may have swung at the same time)
+		Vec3 eye = a.getEyePosition();
+		AABB box = t.getBoundingBox();
+		Vec3 aim = box.getCenter().subtract(eye);
+		double len = aim.length();
+		if (len < 1e-3) {
+			return;
+		}
+		double angle = Math.toDegrees(Math.acos(Mth.clamp(a.getViewVector(1F).dot(aim.scale(1 / len)), -1, 1)));
+		for (AbstractClientPlayer o : players) {
+			if (o != a && o != t && o.swinging && o.swingTime <= 2 && o.distanceToSqr(t) < 64) {
+				Vec3 oa = box.getCenter().subtract(o.getEyePosition());
+				if (oa.length() > 1e-3 && Math.toDegrees(Math.acos(Mth.clamp(o.getViewVector(1F).dot(oa.normalize()), -1, 1))) < angle) {
+					return; // somebody else is the likely attacker
+				}
+			}
+		}
+		f.hits++;
+		boolean slow = f.ping > 110 || f.hits < 3; // lag and the first hits are not reliable
+		// distance from the eyes to the closest point of the target's box
+		double cx = Mth.clamp(eye.x, box.minX, box.maxX), cy = Mth.clamp(eye.y, box.minY, box.maxY), cz = Mth.clamp(eye.z, box.minZ, box.maxZ);
+		double reach = Math.sqrt((eye.x - cx) * (eye.x - cx) + (eye.y - cy) * (eye.y - cy) + (eye.z - cz) * (eye.z - cz));
+		if (!slow && reach > 4.1) {
+			add(f, Check.REACH, reach > 5.0 ? 22 : reach > 4.5 ? 12 : 5);
+		}
+		if (!slow && angle > 115 && reach > 1.6) {
+			add(f, Check.AIM, 8); // hit somebody who was not even in front of them
+		}
+		if (!slow && f.ticks - f.bigTurnAge <= 2 && angle < 3 && Math.abs(f.yawStep) < 4) {
+			add(f, Check.AIM, 2); // a big instant turn that lands exactly on the target
+		}
+	}
+
+	// ------------------------------------------------------------------ names for chat
+	public static String label(Check c, boolean pt) {
+		return pt ? c.pt : c.en;
+	}
+
+	public static String lower(String s) {
+		return s == null ? "" : s.toLowerCase(Locale.ROOT);
+	}
+}

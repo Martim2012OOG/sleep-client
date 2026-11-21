@@ -1,0 +1,254 @@
+[
+ {
+  "id": "take_the_l",
+  "name": "Take the L",
+  "icon": false,
+  "author": "Good Deeds Josh",
+  "loop": true
+ },
+ {
+  "id": "orange_justice",
+  "name": "Orange Justice",
+  "icon": false,
+  "author": "Good Deeds Josh",
+  "loop": false
+ },
+ {
+  "id": "floss",
+  "name": "The Floss",
+  "icon": false,
+  "author": "Good Deeds Josh",
+  "loop": false
+ },
+ {
+  "id": "floss_dance",
+  "name": "Floss Dance",
+  "icon": false,
+  "author": "iFeelHealU",
+  "loop": true
+ },
+ {
+  "id": "club_penguin",
+  "name": "Club Penguin Dance",
+  "icon": false,
+  "author": "Wah0o",
+  "loop": true
+ },
+ {
+  "id": "naruto",
+  "name": "Naruto",
+  "icon": false,
+  "author": "iMaterix",
+  "loop": true
+ },
+ {
+  "id": "grace",
+  "name": "Grace",
+  "icon": false,
+  "author": "iMaterix",
+  "loop": true
+ },
+ {
+  "id": "dab",
+  "name": "Dab",
+  "icon": false,
+  "author": "Kale Ko",
+  "loop": false
+ },
+ {
+  "id": "dab_hard",
+  "name": "Dab Hard",
+  "icon": false,
+  "author": "Good Deeds Josh",
+  "loop": false
+ },
+ {
+  "id": "jump",
+  "name": "Jump",
+  "icon": false,
+  "author": "Kale Ko",
+  "loop": true
+ },
+ {
+  "id": "tpose",
+  "name": "T-Pose",
+  "icon": false,
+  "author": "Helper",
+  "loop": true
+ },
+ {
+  "id": "nervous",
+  "name": "Nervous",
+  "icon": false,
+  "author": "Helper",
+  "loop": true
+ },
+ {
+  "id": "look_around",
+  "name": "Look Around",
+  "icon": false,
+  "author": "Kale Ko",
+  "loop": false
+ },
+ {
+  "id": "penguin",
+  "name": "Penguin",
+  "icon": false,
+  "author": "iMaterix",
+  "loop": true
+ },
+ {
+  "id": "head_shake",
+  "name": "Head Shake",
+  "icon": false,
+  "author": "iMaterix",
+  "loop": true
+ },
+ {
+  "id": "selfie",
+  "name": "Selfie",
+  "icon": false,
+  "author": "Kale Ko",
+  "loop": true
+ },
+ {
+  "id": "inspect",
+  "name": "Inspect",
+  "icon": false,
+  "author": "Overseer",
+  "loop": false
+ },
+ {
+  "id": "item_look",
+  "name": "Item Look",
+  "icon": false,
+  "author": "iMaterix",
+  "loop": false
+ },
+ {
+  "id": "jumping_jacks",
+  "name": "Jumping Jacks",
+  "icon": false,
+  "author": "Good Deeds Josh",
+  "loop": false
+ },
+ {
+  "id": "squats",
+  "name": "Squats",
+  "icon": false,
+  "author": "JustARoy",
+  "loop": true
+ },
+ {
+  "id": "kneel",
+  "name": "Kneel",
+  "icon": false,
+  "author": "JustARoy",
+  "loop": true
+ },
+ {
+  "id": "sit",
+  "name": "Sit",
+  "icon": false,
+  "author": "Kale Ko",
+  "loop": true
+ },
+ {
+  "id": "cool_sit",
+  "name": "Cool Sit",
+  "icon": false,
+  "author": "Wah0o",
+  "loop": true
+ },
+ {
+  "id": "ground_sit",
+  "name": "Ground Sit",
+  "icon": false,
+  "author": "iFeelHealU",
+  "loop": true
+ },
+ {
+  "id": "lay_down",
+  "name": "Lay Down",
+  "icon": false,
+  "author": "iFeelHealU",
+  "loop": true
+ },
+ {
+  "id": "lay_back",
+  "name": "Lay on Your Back",
+  "icon": false,
+  "author": "Mid",
+  "loop": true
+ },
+ {
+  "id": "meditation",
+  "name": "Meditation",
+  "icon": false,
+  "author": "iFeelHealU",
+  "loop": true
+ },
+ {
+  "id": "lean",
+  "name": "Lean",
+  "icon": false,
+  "author": "Wah0o",
+  "loop": true
+ },
+ {
+  "id": "hug",
+  "name": "Hug",
+  "icon": false,
+  "author": "KosmX",
+  "loop": true
+ },
+ {
+  "id": "hand_on_heart",
+  "name": "Hand on Heart",
+  "icon": false,
+  "author": "Milka",
+  "loop": true
+ },
+ {
+  "id": "heart_hands",
+  "name": "Heart Hands",
+  "icon": false,
+  "author": "iMaterix",
+  "loop": false
+ },
+ {
+  "id": "pay_respects",
+  "name": "Pay Respects",
+  "icon": false,
+  "author": "Milka",
+  "loop": false
+ },
+ {
+  "id": "bow",
+  "name": "Bow",
+  "icon": false,
+  "author": "Helper",
+  "loop": false
+ },
+ {
+  "id": "deep_bow",
+  "name": "Deep Bow",
+  "icon": false,
+  "author": "Helper",
+  "loop": false
+ },
+ {
+  "id": "hello",
+  "name": "Hello",
+  "icon": false,
+  "author": "iFeelHealU",
+  "loop": false
+ },
+ {
+  "id": "gestures",
+  "name": "Gestures",
+  "icon": false,
+  "author": "iMaterix",
+  "loop": true
+ }
+]
