@@ -234,10 +234,11 @@ public class ChatBubblesMod extends Mod {
 	// ------------------------------------------------------------------ rendering
 
 	private int[] colours() {
+		// {fill, (unused: the border is gone), text}: rounded soft bubbles, no hard outline
 		return switch (style.idx()) {
-			case 1 -> new int[] {0xB0000000, 0, 0xFFFFFFFF};
-			case 2 -> new int[] {0xF0323849, 0xFF0A0B10, 0xFFFFFFFF};
-			default -> new int[] {0xFFEFE6D2, 0xFF151515, 0xFF1E1E1E};
+			case 1 -> new int[] {0xC8141820, 0, 0xFFFFFFFF};
+			case 2 -> new int[] {0xF0272C3C, 0, 0xFFFFFFFF};
+			default -> new int[] {0xF4FBF7EE, 0, 0xFF22252B};
 		};
 	}
 
@@ -271,7 +272,7 @@ public class ChatBubblesMod extends Mod {
 		for (int i = bubbles.size() - 1; i >= 0; i--) {
 			Bubble b = bubbles.get(i);
 			if (b.wrapW != maxW || b.lines == null) {
-				b.lines = tr.wrapLines(StringVisitable.plain(b.text), maxW);
+				b.lines = tr.wrapLines(dev.solclient.Gfx.raw(b.text), maxW);
 				if (b.lines.size() > 4) {
 					b.lines = new ArrayList<>(b.lines.subList(0, 4));
 				}
@@ -287,8 +288,8 @@ public class ChatBubblesMod extends Mod {
 				continue;
 			}
 			boolean tail = i == bubbles.size() - 1;
-			int padX = 4, padY = 3;
-			float w = b.width + padX * 2, h = b.lines.size() * 9 + padY * 2 - 1;
+			int padX = 6, padY = 4;
+			float w = b.width + padX * 2, h = b.lines.size() * 10 + padY * 2 - 1;
 			float tailH = tail ? 4 : 0;
 			float bottom = y - tailH;
 			float top = bottom - h;
@@ -298,40 +299,32 @@ public class ChatBubblesMod extends Mod {
 			final boolean hasTail = tail;
 			queue.submitCustom(matrices, bgLayer, (entry, vc) -> {
 				float z = -0.15F, x2 = fx + fw, y2 = fy + fh; // behind the text (+z points at the viewer)
-				// body
-				rect(vc, entry, fx, fy, x2, y2, z, fill, light);
-				if (hasTail) {
+				roundBody(vc, entry, fx, fy, x2, y2, z, fill, light);
+				if (hasTail) { // a small triangle pointing at the player
 					rect(vc, entry, -3, y2, 3, y2 + 1, z, fill, light);
 					rect(vc, entry, -2, y2 + 1, 2, y2 + 2, z, fill, light);
 					rect(vc, entry, -1, y2 + 2, 1, y2 + 3, z, fill, light);
-				}
-				if ((edge >>> 24) != 0) {
-					// border strips (never overlapping the body, so depth order does not matter)
-					rect(vc, entry, fx - 1, fy - 1, x2 + 1, fy, z, edge, light);
-					rect(vc, entry, fx - 1, fy, fx, y2, z, edge, light);
-					rect(vc, entry, x2, fy, x2 + 1, y2, z, edge, light);
-					if (hasTail) {
-						rect(vc, entry, fx - 1, y2, -3, y2 + 1, z, edge, light);
-						rect(vc, entry, 3, y2, x2 + 1, y2 + 1, z, edge, light);
-						rect(vc, entry, -3, y2 + 1, -2, y2 + 2, z, edge, light);
-						rect(vc, entry, 2, y2 + 1, 3, y2 + 2, z, edge, light);
-						rect(vc, entry, -2, y2 + 2, -1, y2 + 3, z, edge, light);
-						rect(vc, entry, 1, y2 + 2, 2, y2 + 3, z, edge, light);
-						rect(vc, entry, -1, y2 + 3, 1, y2 + 4, z, edge, light);
-					} else {
-						rect(vc, entry, fx - 1, y2, x2 + 1, y2 + 1, z, edge, light);
-					}
 				}
 			});
 			float ty = top + padY;
 			for (OrderedText line : b.lines) {
 				float tx = -tr.getWidth(line) / 2F;
 				queue.submitText(matrices, tx, ty, line, false, layerType, light, text, 0, 0);
-				ty += 9;
+				ty += 10;
 			}
 			y = top - 4;
 		}
 		matrices.pop();
+	}
+
+	/** A rectangle with rounded corners (stair-stepped, 4 units), built from plain quads that never overlap. */
+	private static void roundBody(VertexConsumer vc, MatrixStack.Entry e, float x1, float y1, float x2, float y2, float z, int c, int light) {
+		final int[] inset = {3, 2, 1, 1};
+		for (int k = 0; k < inset.length; k++) {
+			rect(vc, e, x1 + inset[k], y1 + k, x2 - inset[k], y1 + k + 1, z, c, light);
+			rect(vc, e, x1 + inset[k], y2 - k - 1, x2 - inset[k], y2 - k, z, c, light);
+		}
+		rect(vc, e, x1, y1 + inset.length, x2, y2 - inset.length, z, c, light);
 	}
 
 	private static int mul(int argb, float a) {
