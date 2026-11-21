@@ -115,6 +115,11 @@ public class GhostItemFixMod extends Mod {
 
 	@Override
 	public void tick() {
+		if (dev.solclient.ServerRules.hypixel()) {
+			syncA = syncB = -1; // Hypixel: no non-vanilla inventory packets
+			cursorStuckSince = -1;
+			return;
+		}
 		PlayerEntity p = mc.player;
 		if (p == null || mc.world == null) {
 			syncA = syncB = -1;
