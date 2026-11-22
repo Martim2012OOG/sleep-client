@@ -58,6 +58,18 @@ public final class Replay {
 	public static final class Frame {
 		long tick;
 		Snap[] snaps;
+		Ent[] ents;
+	}
+
+	/** One non-player entity (mob, dropped item, arrow, TNT...) at one moment. */
+	public static final class Ent {
+		int id;
+		net.minecraft.world.entity.EntityType<?> type;
+		double x, y, z;
+		float yaw, pitch, headYaw, limbPos, limbSpeed, death;
+		int hurt, fuse;
+		ItemStack stack;
+		ItemStack[] eq;
 	}
 
 	public record BlockChange(long tick, BlockPos pos, BlockState before, BlockState after) {
@@ -246,9 +258,56 @@ public final class Replay {
 				ACTORS.put(id, new Actor(id, p.getName().getString(), p.getGameProfile()));
 			}
 		}
+		// everything else around you (mobs, creepers, dropped items, arrows, TNT)
+		List<Ent> ents = new ArrayList<>();
+		double er2 = Math.min(range, 64) * Math.min(range, 64);
+		for (net.minecraft.world.entity.Entity e : mc.level.entitiesForRendering()) {
+			if (ents.size() >= 160) {
+				break;
+			}
+			if (e instanceof net.minecraft.world.entity.player.Player || e.isRemoved() || e.getId() <= -1000 || !(e instanceof net.minecraft.world.entity.LivingEntity || e instanceof net.minecraft.world.entity.item.ItemEntity || e instanceof net.minecraft.world.entity.projectile.Projectile || e instanceof net.minecraft.world.entity.item.PrimedTnt)
+					|| e instanceof net.minecraft.world.entity.decoration.ArmorStand || e.distanceToSqr(mc.player) > er2) {
+				continue;
+			}
+			Ent n = new Ent();
+			n.id = e.getId();
+			n.type = e.getType();
+			n.x = e.getX();
+			n.y = e.getY();
+			n.z = e.getZ();
+			n.yaw = e.getYRot();
+			n.pitch = e.getXRot();
+			n.headYaw = n.yaw;
+			if (e instanceof net.minecraft.world.entity.LivingEntity le) {
+				n.yaw = le.yBodyRot;
+				n.headYaw = le.yHeadRot;
+				n.limbPos = le.walkAnimation.position();
+				n.limbSpeed = le.walkAnimation.speed();
+				n.hurt = le.hurtTime;
+				n.death = le.deathTime;
+				ItemStack[] eq = null;
+				for (int i = 0; i < 6; i++) {
+					ItemStack st = le.getItemBySlot(SLOTS[i]);
+					if (!st.isEmpty()) {
+						if (eq == null) {
+							eq = new ItemStack[6];
+							java.util.Arrays.fill(eq, ItemStack.EMPTY);
+						}
+						eq[i] = st.copy();
+					}
+				}
+				n.eq = eq;
+			} else if (e instanceof net.minecraft.world.entity.item.ItemEntity ie) {
+				n.stack = ie.getItem().copy();
+			} else if (e instanceof net.minecraft.world.entity.item.PrimedTnt tnt) {
+				n.fuse = tnt.getFuse();
+			}
+			ents.add(n);
+		}
 		Frame f = new Frame();
 		f.tick = tickNo;
 		f.snaps = snaps.toArray(new Snap[0]);
+		f.ents = ents.toArray(new Ent[0]);
 		FRAMES.addLast(f);
 		int max = sessionTick >= 0 ? Math.max(keepSeconds * 20, 20 * 900) : keepSeconds * 20;
 		while (FRAMES.size() > max) {
@@ -414,6 +473,8 @@ public final class Replay {
 		}
 		play = null;
 		playBlocks = null;
+		COPIES.clear();
+		SHOWN.clear();
 		BY_POS.clear();
 	}
 
@@ -724,6 +785,113 @@ public final class Replay {
 				arm.attackTime = s.swing;
 			}
 			erm.submit(st, cam, dx, dy, dz, matrices, queue);
+		}
+		renderEntities(matrices, queue, cam, erm, cp, f);
+	}
+
+	// ---------------------------------------------------------------- the other entities
+	private static final Map<Integer, net.minecraft.world.entity.Entity> COPIES = new HashMap<>();
+	private static final Map<Integer, ItemStack[]> SHOWN = new HashMap<>();
+	private static Object copiesWorld;
+
+	private static Ent entAt(Frame f, int id) {
+		if (f.ents != null) {
+			for (Ent e : f.ents) {
+				if (e.id == id) {
+					return e;
+				}
+			}
+		}
+		return null;
+	}
+
+	private static void renderEntities(PoseStack matrices, SubmitNodeCollector queue, CameraRenderState cam, EntityRenderDispatcher erm, Vec3 cp, Frame f) {
+		if (f.ents == null || f.ents.length == 0) {
+			return;
+		}
+		if (copiesWorld != mc.level) {
+			COPIES.clear();
+			SHOWN.clear();
+			copiesWorld = mc.level;
+		}
+		int i0 = (int) Math.floor(t);
+		Frame next = play[Math.max(0, Math.min(play.length - 1, i0 + 1))];
+		float k = (float) (t - i0);
+		for (Ent a : f.ents) {
+			Ent b = entAt(next, a.id);
+			Ent en = a;
+			double x = a.x, y = a.y, z = a.z;
+			if (b != null) {
+				x = a.x + (b.x - a.x) * k;
+				y = a.y + (b.y - a.y) * k;
+				z = a.z + (b.z - a.z) * k;
+			}
+			net.minecraft.world.entity.Entity e = COPIES.get(a.id);
+			if (e == null) {
+				try {
+					e = en.type.create(mc.level, net.minecraft.world.entity.EntitySpawnReason.LOAD);
+				} catch (RuntimeException ex) {
+					e = null;
+				}
+				if (e == null) {
+					COPIES.put(a.id, null);
+					continue;
+				}
+				e.setId(-20000 - (a.id & 0xFFFFF));
+				COPIES.put(a.id, e);
+			}
+			if (e == null) {
+				continue;
+			}
+			e.setPosRaw(x, y, z);
+		e.xo = x;
+		e.yo = y;
+		e.zo = z;
+			e.setYRot(en.yaw);
+		e.yRotO = en.yaw;
+		e.setXRot(en.pitch);
+		e.xRotO = en.pitch;
+			e.tickCount = (int) t;
+			if (e instanceof net.minecraft.world.entity.LivingEntity le) {
+				le.yBodyRot = en.yaw;
+			le.yBodyRotO = en.yaw;
+			le.yHeadRot = en.headYaw;
+			le.yHeadRotO = en.headYaw;
+				le.hurtTime = en.hurt;
+				le.deathTime = (int) en.death;
+				ItemStack[] shown = SHOWN.computeIfAbsent(a.id, q -> new ItemStack[6]);
+				for (int i = 0; i < 6; i++) {
+					ItemStack want = en.eq == null ? ItemStack.EMPTY : en.eq[i];
+					if (shown[i] != want) {
+						shown[i] = want;
+						le.setItemSlot(SLOTS[i], en.eq[i]);
+					}
+				}
+			} else if (e instanceof net.minecraft.world.entity.item.ItemEntity ie && en.stack != null) {
+				ie.setItem(en.stack);
+			} else if (e instanceof net.minecraft.world.entity.item.PrimedTnt tnt) {
+				tnt.setFuse(en.fuse);
+			}
+			try {
+				EntityRenderState st = erm.extractEntity(e, 1F);
+				st.x = x;
+				st.y = y;
+				st.z = z;
+				double dx = x - cp.x, dy = y - cp.y, dz = z - cp.z;
+				st.distanceToCameraSq = dx * dx + dy * dy + dz * dz;
+				if (st instanceof LivingEntityRenderState l) {
+					l.bodyRot = en.yaw;
+				l.yRot = Mth.wrapDegrees(en.headYaw - en.yaw);
+				l.xRot = en.pitch;
+				l.walkAnimationPos = en.limbPos;
+				l.walkAnimationSpeed = Math.min(1F, en.limbSpeed);
+				l.hasRedOverlay = en.hurt > 0;
+				l.deathTime = en.death;
+				}
+				erm.submit(st, cam, dx, dy, dz, matrices, queue);
+			} catch (RuntimeException ex) {
+				// one odd entity must not break the whole replay
+			}
 		}
 	}
 }

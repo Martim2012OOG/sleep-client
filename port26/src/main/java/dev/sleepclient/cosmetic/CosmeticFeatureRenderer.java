@@ -59,6 +59,10 @@ public class CosmeticFeatureRenderer extends RenderLayer<AvatarRenderState, Play
 		return sb.toString();
 	}
 
+	private static net.minecraft.world.entity.Entity mc0() {
+		return Minecraft.getInstance().player;
+	}
+
 	/** The account a rendered player belongs to (you: your session; others: only Sleep users), or null. */
 	public static UUID uuidOf(int entityId) {
 		Minecraft mc = Minecraft.getInstance();
@@ -117,6 +121,9 @@ public class CosmeticFeatureRenderer extends RenderLayer<AvatarRenderState, Play
 				}
 				RenderType layer = RenderTypes.entityCutout(d.textureId());
 				if (Auras.is(d)) {
+					if (!SleepClient.settings.othersAuras.on() && (mc0() == null || state.id != mc0().getId())) {
+						continue; // other players' auras are switched off
+					}
 					// sprites around the whole player (not tied to a body part); half of them when the player is not close
 					final CosmeticModels.Def ad = d;
 					final int al = light;

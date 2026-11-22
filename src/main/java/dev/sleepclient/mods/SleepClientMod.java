@@ -32,7 +32,7 @@ public class SleepClientMod extends Mod {
 	public final Option.Num screenSize;
 	public final Option.Num cornerRadius, buttonRoundness;
 	public final Option.Bool customButtons;
-	public final Option.Bool cosmetics;
+	public final Option.Bool cosmetics, othersAuras;
 	public final Option.Bool petSounds;
 	public final Option.Bool othersEmotes;
 	public final Option.Bool shareEmotes;
@@ -282,6 +282,8 @@ public class SleepClientMod extends Mod {
 		cosmetics = bool("Show 3D Cosmetics", true);
 		petSounds = bool("Pet Sounds", true).tip("Pets make a soft sound now and then and when you pet them. Turn off for silent pets.");
 		cosmetics.tip("3D accessories (hats, wings...) on players.");
+		othersAuras = bool("Show Other Players' Auras", true);
+		othersAuras.tip("The sparkle auras other players wear. Off: you only see your own (they can cover names and get in the way in a fight).");
 		action("3D cosmetics status", "Refresh", () -> { }, dev.sleepclient.cosmetic.CosmeticFeatureRenderer::status);
 		action("HUD status", "Reset", dev.sleepclient.SleepClient::hudDiagReset, dev.sleepclient.SleepClient::hudDiag)
 				.tip("What the in-game HUD is doing. \"frames\" must grow while you play. If it stays at 0 the HUD is not being drawn at all.");

@@ -126,12 +126,20 @@ public class ReplayScreen extends Screen {
 			if (!Replay.playing && FilmRender.frameDone()) {
 				filmFinishing = true;
 				final File saved = filmFile;
+				final long madeFrames = FilmRender.frames();
+				final int madeFps = FilmRender.fps();
 				FilmRender.finish(err -> {
 					if (err != null) {
 						ClipToast.show("Film failed", err, null, true);
 						mc.setScreen(null);
 					} else {
-						mc.setScreen(new FilmStudioScreen(saved)); // the finished film is selected, ready to watch
+						dev.sleepclient.fightcam.FilmEdit.Info made = dev.sleepclient.fightcam.FilmEdit.last;
+						if (made != null) {
+							made.file = saved;
+							made.fps = madeFps;
+							made.seconds = madeFrames / (double) madeFps;
+						}
+						mc.setScreen(new FilmEditorScreen()); // sound effects + AI voice, then Save
 					}
 				});
 			}
@@ -327,12 +335,13 @@ public class ReplayScreen extends Screen {
 	}
 
 	private void autoCamera() {
-		dev.sleepclient.fightcam.FightFilm.Fight f = dev.sleepclient.fightcam.FightFilm.analyze(Replay.playFrames(), 0);
+		dev.sleepclient.fightcam.FightFilm.Fight f = dev.sleepclient.fightcam.FightFilm.analyze(Replay.playFrames(), 0, false);
 		if (f == null) {
 			ClipToast.show("No fight found", "Nobody was hit in this replay", null, true);
 			return;
 		}
 		dev.sleepclient.fightcam.FightFilm.build(f, Replay.playFrames(), true);
+		dev.sleepclient.fightcam.FilmEdit.last = dev.sleepclient.fightcam.FightFilm.makeInfo(f);
 		Replay.camMode = Replay.PATH;
 		Replay.seek(f.start);
 		Replay.stopAt = f.end;
@@ -354,6 +363,12 @@ public class ReplayScreen extends Screen {
 		}
 		filmStarted = true;
 		filmStartT = Replay.time();
+		dev.sleepclient.fightcam.FilmEdit.Info known = dev.sleepclient.fightcam.FilmEdit.last;
+		if (known == null || known.file != null) { // a render you started yourself: no fight events, but it can still get sound effects
+			known = new dev.sleepclient.fightcam.FilmEdit.Info();
+			known.startFrame = (int) filmStartT;
+			dev.sleepclient.fightcam.FilmEdit.last = known;
+		}
 		if (Replay.stopAt < 0) {
 			Replay.stopAt = Replay.length() - 1;
 		}

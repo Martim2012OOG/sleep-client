@@ -62,7 +62,10 @@ public class FightCamMod extends Mod {
 	// replay
 	private Option.Bool replayBuffer;
 	private Option.Num replayLength, replayStart, replayRange;
-	private Option.Key replayKey, filmKey, studioKey;
+	private Option.Key replayKey, filmKey, studioKey, markKey;
+	private Option.Num fightRadius, fightQuiet;
+	private boolean prevMarkKey;
+	private long markStartTick = -1;
 	private Option.Bool filmOffer, filmSlow;
 	private Option.Choice look, sessionCam;
 	private Option.Text lutPath;
@@ -155,10 +158,16 @@ public class FightCamMod extends Mod {
 		header("Fight film (automatic)").showIf(rep);
 		filmKey = key("Fight Film Key", 74);
 		studioKey = key("Film Studio Key", 75);
+		markKey = key("Fight Start / Stop Key", -1);
+		markKey.tip("Press once when the fight starts and again when it ends: the film is made of exactly that stretch.");
+		fightRadius = num("Fight Radius", 40, 8, 200, 4, " blocks");
+		fightRadius.tip("The fight is over only when nobody is closer than this (arenas can be big).");
+		fightQuiet = num("Fight Over After No Hits", 10, 3, 60, 1, " s");
+		fightQuiet.tip("How long without any hit before the \"Fight over\" message.");
 		filmOffer = bool("Offer a film after each fight", true);
 		filmSlow = bool("Slow motion on the kill", true);
 		sessionCam = choice("Zero-lag recording camera", 0, "My view (first person)", "Chase (behind me)");
-		for (Option<?> o : new Option<?>[] {filmKey, studioKey, filmOffer, filmSlow, sessionCam}) {
+		for (Option<?> o : new Option<?>[] {filmKey, studioKey, markKey, fightRadius, fightQuiet, filmOffer, filmSlow, sessionCam}) {
 			o.visibleIf = () -> rep.getAsBoolean() && replayBuffer.on();
 		}
 		action("Film Studio", "Open", this::openStudio, () -> "start / stop, make a film, watch your videos")
@@ -428,10 +437,22 @@ public class FightCamMod extends Mod {
 			openStudio();
 		}
 		prevStudioKey = sk;
+		boolean mk = dev.sleepclient.compat.Mc.screen(mc) == null && Keys.down(markKey.code());
+		if (mk && !prevMarkKey && replayBuffer.on()) {
+			if (markStartTick < 0) {
+				markStartTick = Replay.currentTick();
+				ClipToast.show("Fight started", "Press the same key when it ends: the film is made of that stretch", null, false);
+			} else {
+				long st = markStartTick;
+				markStartTick = -1;
+				openFilmRange(st, Replay.currentTick());
+			}
+		}
+		prevMarkKey = mk;
 		if (filmOffer.on() && replayBuffer.on() && !Replay.active() && dev.sleepclient.compat.Mc.screen(mc) == null && ++offerTick % 40 == 0) {
 			Replay.Frame[] fr = Replay.framesCopy();
 			FightFilm.Fight f = FightFilm.analyze(fr, Math.max(0, fr.length - 400));
-			if (f != null && f.tick != offeredTick && FightFilm.finished(f, fr.length)) {
+			if (f != null && f.tick != offeredTick && markStartTick < 0 && FightFilm.finished(f, fr.length, fightQuiet.i() * 20) && !playersNear(fightRadius.f())) { // still next to somebody = still fighting
 				offeredTick = f.tick;
 				ClipToast.show("Fight over", "Press the Fight Film key (J): cinematic film of it, " + (int) f.seconds() + " s", null, false);
 			}
@@ -475,13 +496,14 @@ public class FightCamMod extends Mod {
 			return;
 		}
 		Replay.Frame[] fr = Replay.playFrames();
-		FightFilm.Fight f = FightFilm.analyze(fr, 0);
+		FightFilm.Fight f = FightFilm.analyze(fr, 0, false);
 		if (f == null) {
 			Replay.stop();
-			ClipToast.show("No fight found", "Nobody was hit in the last " + (int) Replay.seconds() + " s", null, true);
+			ClipToast.show("No fight found", "No hits and nobody close together in the last " + (int) Replay.seconds() + " s", null, true);
 			return;
 		}
 		FightFilm.build(f, fr, filmSlow.on());
+		dev.sleepclient.fightcam.FilmEdit.last = FightFilm.makeInfo(f);
 		Replay.camMode = Replay.PATH;
 		Replay.seek(f.start);
 		Replay.stopAt = f.end;
@@ -541,6 +563,10 @@ public class FightCamMod extends Mod {
 			ClipToast.show("Too short", "Record at least 2 seconds", null, true);
 			return;
 		}
+		dev.sleepclient.fightcam.FilmEdit.Info sessionInfo = new dev.sleepclient.fightcam.FilmEdit.Info();
+		sessionInfo.startFrame = from;
+		sessionInfo.seconds = (fr.length - 1 - from) / 20.0;
+		dev.sleepclient.fightcam.FilmEdit.last = sessionInfo;
 		java.util.UUID me = mc.player.getUUID();
 		if (sessionCam.idx() == 1) {
 			FightFilm.buildChase(fr, me, from, fr.length - 1);
@@ -565,6 +591,57 @@ public class FightCamMod extends Mod {
 	/** Starts the frame-exact film render into 'out' with the chosen quality and look. Returns an error text or null. */
 	public String startFilm(java.io.File out) {
 		return FilmRender.start(out, FPS[fps.idx()], HEIGHTS[resolution.idx()], FightLooks.chain);
+	}
+
+	/** Film of a stretch you marked with the start / stop key. */
+	public void openFilmRange(long startTick, long endTick) {
+		if (mc.level == null || Replay.active()) {
+			return;
+		}
+		if (!Ffmpeg.ready()) {
+			ClipToast.show("Set up the recorder first", "FightCam > Recording > Recorder", null, true);
+			return;
+		}
+		String err = Replay.start(0);
+		if (err != null) {
+			ClipToast.show("No film", err, null, true);
+			return;
+		}
+		Replay.Frame[] fr = Replay.playFrames();
+		int s = Replay.indexOfTick(fr, startTick), e = Replay.indexOfTick(fr, endTick);
+		if (e - s < 40) {
+			Replay.stop();
+			ClipToast.show("Too short", "The marked fight is shorter than 2 seconds", null, true);
+			return;
+		}
+		FightFilm.Fight f = FightFilm.analyze(fr, s, false);
+		if (f == null || f.hits == 0) {
+			f = FightFilm.manual(fr, s, e, mc.player.getUUID(), fightRadius.f());
+		}
+		if (f == null) {
+			Replay.stop();
+			ClipToast.show("No players", "Nobody was around in that stretch", null, true);
+			return;
+		}
+		f.start = s;
+		f.end = Math.min(fr.length - 1, e);
+		FightFilm.build(f, fr, filmSlow.on());
+		dev.sleepclient.fightcam.FilmEdit.last = FightFilm.makeInfo(f);
+		Replay.camMode = Replay.PATH;
+		Replay.seek(f.start);
+		Replay.stopAt = f.end;
+		Replay.playing = false;
+		dev.sleepclient.compat.Mc.setScreen(mc, new dev.sleepclient.gui.ReplayScreen(true));
+	}
+
+	/** Another player within r blocks of you right now. */
+	private boolean playersNear(double r) {
+		for (var p : mc.level.players()) {
+			if (p != mc.player && !p.isSpectator() && p.distanceToSqr(mc.player) < r * r) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public void openReplay() {

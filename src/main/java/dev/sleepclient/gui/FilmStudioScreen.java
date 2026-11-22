@@ -91,7 +91,7 @@ public final class FilmStudioScreen extends Screen {
 		FightCamMod fc = FightCamMod.instance;
 		boolean live = fc != null && fc.isRecording();
 		boolean session = fc != null && fc.sessionActive();
-		int by = py + 36, bh = 30, gap = 8, bw = (pw - 32 - gap * 3) / 4;
+		int by = py + 36, bh = 30, gap = 8, bw = (pw - 32 - gap * 4) / 5;
 		String sessionLabel = session ? "Stop + render " + (int) fc.sessionSeconds() + "s" : "Start (no lag)";
 		button(c, mx, my, px + 16, by, bw, bh, sessionLabel, session ? 0xFFC0392B : 0xFF2E8B57, () -> {
 			if (fc == null) {
@@ -115,7 +115,13 @@ public final class FilmStudioScreen extends Screen {
 				fc.toggleRecording();
 			}
 		});
-		button(c, mx, my, px + 16 + (bw + gap) * 3, by, bw, bh, "Open folder", 0xFF3A3F52, () -> net.minecraft.util.Util.getOperatingSystem().open(Capture.outputDir()));
+		button(c, mx, my, px + 16 + (bw + gap) * 3, by, bw, bh, "Edit last film", 0xFF7C5CD4, () -> {
+			var last = dev.sleepclient.fightcam.FilmEdit.last;
+			if (last != null && last.file != null && last.file.isFile()) {
+				mc.setScreen(new FilmEditorScreen());
+			}
+		});
+		button(c, mx, my, px + 16 + (bw + gap) * 4, by, bw, bh, "Open folder", 0xFF3A3F52, () -> net.minecraft.util.Util.getOperatingSystem().open(Capture.outputDir()));
 		Gfx.text(c, session ? "Recording with no lag: just play. Stop + render makes the .mp4 frame by frame."
 				: live ? "Live recording..." : "Start (no lag): nothing heavy runs while you play, the video is rendered after. Live record: classic recorder.",
 				px + 16, by + bh + 8, session || live ? 0xFFFF8A80 : 0x90FFFFFF);

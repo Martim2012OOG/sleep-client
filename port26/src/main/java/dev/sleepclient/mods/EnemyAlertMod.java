@@ -30,7 +30,7 @@ import net.minecraft.world.scores.PlayerTeam;
  */
 public class EnemyAlertMod extends HudMod {
 
-	private final Option.Num radius = num("Alert Radius", 24, 6, 64, 1, " blocks");
+	private final Option.Num radius = num("Alert Radius", 40, 6, 200, 2, " blocks");
 	private final Option.Bool unknown = bool("Warn About Unknown Players", true).tip("Players the client can not tell apart (no team, no colour): treated as enemies. Turn off to warn only about players it is sure about.");
 	private final Option.Bool friends = bool("Friends And Party Are Allies", true);
 	private final Option.Bool approachOnly = bool("Only When They Approach", false);
