@@ -49,6 +49,9 @@ public final class FilmEdit {
 		public final List<Ev> events = new ArrayList<>();
 		public final List<double[]> slows = new ArrayList<>();
 		public int startFrame;
+		/** the replay clock of every frame (so event times follow the real speed) */
+		public long[] ns = new long[0];
+		public int width, height;
 	}
 
 	/** The film that was just rendered (set by the film flow, read by the editor). */
@@ -66,10 +69,19 @@ public final class FilmEdit {
 				}
 			}
 			double dt = Math.min(step, frame - t);
+			sec += (nsAt(in, t + dt) - nsAt(in, t)) / 1e9 / f;
 			t += dt;
-			sec += dt / (20.0 * f);
 		}
 		return sec;
+	}
+
+	private static long nsAt(Info in, double t) {
+		if (in.ns.length == 0) {
+			return (long) (t * 50_000_000L);
+		}
+		int i = (int) Math.max(0, Math.min(in.ns.length - 1, Math.floor(t)));
+		long a = in.ns[i], b = in.ns[Math.min(in.ns.length - 1, i + 1)];
+		return a + (long) ((b - a) * (t - i));
 	}
 
 	// ------------------------------------------------------------------ settings
@@ -343,7 +355,7 @@ public final class FilmEdit {
 				}
 			}
 			if (clips.isEmpty()) {
-				throw new IOException("nothing to add: turn on a sound effect or the AI voice");
+				return in.file; // nothing to add: the film is already saved as it is
 			}
 			progress.accept("Mixing...");
 			File out = new File(in.file.getParentFile(), in.file.getName().replace(".mp4", "") + "_final.mp4");

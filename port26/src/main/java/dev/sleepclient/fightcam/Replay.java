@@ -57,6 +57,8 @@ public final class Replay {
 
 	public static final class Frame {
 		long tick;
+		/** real time of this frame (a clock that skips long freezes), so playback keeps the real speed even when the game ticked slowly */
+		long ns;
 		Snap[] snaps;
 		Ent[] ents;
 	}
@@ -99,6 +101,7 @@ public final class Replay {
 	/** latest real state of every block that changed (to put the world back after the replay) */
 	private static final Map<BlockPos, BlockState> LIVE = new HashMap<>();
 	private static long tickNo;
+	private static long virtualNs, lastWallNs;
 	private static int keepSeconds = 60;
 	private static double range = 96;
 	public static volatile boolean recordingEnabled;
@@ -129,6 +132,8 @@ public final class Replay {
 	public static double stopAt = -1;
 	/** game tick at which a zero-lag recording session started (-1 = none): while it runs the buffer keeps everything (up to 15 min) */
 	public static volatile long sessionTick = -1;
+	/** set when the buffer was thrown away because you changed map / server (a fight in it can no longer be filmed) */
+	public static volatile boolean lostBuffer;
 
 	public static long currentTick() {
 		return tickNo;
@@ -142,6 +147,44 @@ public final class Replay {
 			}
 		}
 		return Math.max(0, fr.length - 1);
+	}
+
+	/** Real time (ns of the replay clock) at a frame index that may have a fraction. */
+	static long nsAt(Frame[] fr, double t) {
+		int i = (int) Math.max(0, Math.min(fr.length - 1, Math.floor(t)));
+		Frame a = fr[i], b = fr[Math.min(fr.length - 1, i + 1)];
+		return a.ns + (long) ((b.ns - a.ns) * (t - i));
+	}
+
+	/** The frame index (with a fraction) that is at this replay time. */
+	static double frameAtNs(Frame[] fr, long ns) {
+		int lo = 0, hi = fr.length - 1;
+		if (ns >= fr[hi].ns) {
+			return hi;
+		}
+		while (lo < hi) {
+			int mid = (lo + hi + 1) >>> 1;
+			if (fr[mid].ns <= ns) {
+				lo = mid;
+			} else {
+				hi = mid - 1;
+			}
+		}
+		if (lo >= fr.length - 1) {
+			return lo;
+		}
+		double span = Math.max(1, fr[lo + 1].ns - fr[lo].ns);
+		return lo + Math.max(0, ns - fr[lo].ns) / span;
+	}
+
+	/** The clock of every frame of the open replay (for the film editor). */
+	public static long[] frameNs() {
+		Frame[] p = play;
+		long[] out = new long[p == null ? 0 : p.length];
+		for (int i = 0; i < out.length; i++) {
+			out[i] = p[i].ns;
+		}
+		return out;
 	}
 
 	/** The frames the open replay plays (null when closed). */
@@ -194,6 +237,7 @@ public final class Replay {
 
 	public static void clear() {
 		sessionTick = -1;
+		lastWallNs = 0;
 		FRAMES.clear();
 		BLOCKS.clear();
 		LAST.clear();
@@ -215,6 +259,9 @@ public final class Replay {
 			// new world / server: the old replay belongs to another world
 			if (active) {
 				stop();
+			}
+			if (FRAMES.size() >= 100) {
+				lostBuffer = true;
 			}
 			clear();
 			worldRef = mc.level;
@@ -304,8 +351,12 @@ public final class Replay {
 			}
 			ents.add(n);
 		}
+		long wall = System.nanoTime();
+		virtualNs += lastWallNs == 0 ? 50_000_000L : Math.min(wall - lastWallNs, 100_000_000L); // a freeze counts as 100 ms at most
+		lastWallNs = wall;
 		Frame f = new Frame();
 		f.tick = tickNo;
+		f.ns = virtualNs;
 		f.snaps = snaps.toArray(new Snap[0]);
 		f.ents = ents.toArray(new Ent[0]);
 		FRAMES.addLast(f);
@@ -524,7 +575,7 @@ public final class Replay {
 		}
 		if (playing) {
 			float stepDt = FilmRender.active() ? FilmRender.takeStep() : dt; // a film moves exactly one video frame at a time
-			t += stepDt * 20 * speed * slowFactor();
+			t = frameAtNs(play, nsAt(play, t) + (long) (stepDt * 1e9 * speed * slowFactor())); // real speed, whatever the tick rate was
 			double limit = stopAt >= 0 ? Math.min(stopAt, play.length - 1) : play.length - 1;
 			if (t >= limit) {
 				t = limit;

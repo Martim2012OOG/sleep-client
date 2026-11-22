@@ -115,7 +115,13 @@ public final class FightFilm {
 			}
 		}
 		if (hits.isEmpty()) {
-			return strict ? null : closeEncounter(fr, from);
+			if (strict) {
+				return null;
+			}
+			hits = swingHits(fr, from); // the game showed no hit (explosions...): players swinging at each other count
+			if (hits.size() < 3) {
+				return null;
+			}
 		}
 		// the last group of hits that follow each other (less than 10 s apart)
 		int gs = hits.size() - 1;
@@ -193,74 +199,33 @@ public final class FightFilm {
 		return f;
 	}
 
-	/** No hits seen: the last stretch (3 s or more) where two or more players were within 12 blocks of each other. */
-	private static Fight closeEncounter(Replay.Frame[] fr, int from) {
-		int runStart = -1, runEnd = -1, bestStart = -1, bestEnd = -1, gap = 0;
-		for (int i = Math.max(0, from); i < fr.length; i++) {
-			boolean close = false;
-			Replay.Snap[] sn = fr[i].snaps;
-			for (int a = 0; a < sn.length && !close; a++) {
-				for (int b = a + 1; b < sn.length && !close; b++) {
-					double dx = sn[a].x - sn[b].x, dy = sn[a].y - sn[b].y, dz = sn[a].z - sn[b].z;
-					close = dx * dx + dy * dy + dz * dz < 12.0 * 12.0;
+	/** Swings of a player who has another player within reach: a weak sign of a fight when no hit was ever shown. */
+	private static List<Hit> swingHits(Replay.Frame[] fr, int from) {
+		List<Hit> out = new ArrayList<>();
+		for (int i = Math.max(1, from); i < fr.length; i++) {
+			for (Replay.Snap s : fr[i].snaps) {
+				Replay.Snap p = find(fr[i - 1], s.id);
+				if (p == null || s.swing <= 0.02F || p.swing > 0.02F) {
+					continue;
 				}
-			}
-			if (close) {
-				if (runStart < 0) {
-					runStart = i;
-				}
-				runEnd = i;
-				gap = 0;
-			} else if (runStart >= 0 && ++gap > 40) {
-				if (runEnd - runStart >= 60) {
-					bestStart = runStart;
-					bestEnd = runEnd;
-				}
-				runStart = -1;
-			}
-		}
-		if (runStart >= 0 && runEnd - runStart >= 60) {
-			bestStart = runStart;
-			bestEnd = runEnd;
-		}
-		if (bestStart < 0) {
-			return null;
-		}
-		Fight f = new Fight();
-		int mid = (bestStart + bestEnd) / 2;
-		Replay.Snap[] sn = fr[mid].snaps;
-		for (int a = 0; a < sn.length; a++) {
-			for (int b = a + 1; b < sn.length; b++) {
-				double dx = sn[a].x - sn[b].x, dy = sn[a].y - sn[b].y, dz = sn[a].z - sn[b].z;
-				if (dx * dx + dy * dy + dz * dz < 12.0 * 12.0) {
-					if (!f.fighters.contains(sn[a].id)) {
-						f.fighters.add(sn[a].id);
+				UUID near = null;
+				double bd = 6.5 * 6.5;
+				for (Replay.Snap o : fr[i].snaps) {
+					if (o.id.equals(s.id)) {
+						continue;
 					}
-					if (!f.fighters.contains(sn[b].id)) {
-						f.fighters.add(sn[b].id);
+					double dx = o.x - s.x, dy = o.y - s.y, dz = o.z - s.z, d = dx * dx + dy * dy + dz * dz;
+					if (d < bd) {
+						bd = d;
+						near = o.id;
 					}
 				}
-			}
-		}
-		if (f.fighters.isEmpty()) {
-			return null;
-		}
-		for (int i = Math.max(1, bestStart); i <= Math.min(fr.length - 1, bestEnd + 60) && f.kill < 0; i++) {
-			for (UUID id : f.fighters) {
-				Replay.Snap s = find(fr[i], id), p = find(fr[i - 1], id);
-				if (s != null && p != null && s.death > 0 && p.death <= 0) {
-					f.kill = i;
-					f.victim = id;
+				if (near != null) {
+					out.add(new Hit(i, near, s.id));
 				}
 			}
 		}
-		f.tick = fr[bestStart].tick;
-		f.start = Math.max(0, bestStart - 20);
-		f.end = Math.min(fr.length - 1, Math.max(bestEnd, f.kill) + 40);
-		if (f.end - f.start < MIN_LEN) {
-			f.start = Math.max(0, f.end - MIN_LEN);
-		}
-		return f;
+		return out;
 	}
 
 	/** True when the fight is over: nobody hit anybody for 5 seconds (or the kill was at least 2 seconds ago). */
@@ -273,6 +238,7 @@ public final class FightFilm {
 	public static FilmEdit.Info makeInfo(Fight f) {
 		FilmEdit.Info in = new FilmEdit.Info();
 		in.startFrame = f.start;
+		in.ns = Replay.frameNs();
 		for (double[] r : Replay.SLOWS) {
 			in.slows.add(r.clone());
 		}

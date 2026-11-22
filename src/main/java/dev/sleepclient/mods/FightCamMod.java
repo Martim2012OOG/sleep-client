@@ -71,7 +71,8 @@ public class FightCamMod extends Mod {
 	private Option.Text lutPath;
 	private boolean prevFilmKey, prevStudioKey;
 	private int offerTick;
-	private long offeredTick = -1;
+	private long offeredTick = -1, lastFightTick = -1, filmedTick = -1;
+	private Option.Bool autoFilm;
 	// camera
 	private Option.Key camKey;
 	private Option.Choice mode;
@@ -165,9 +166,11 @@ public class FightCamMod extends Mod {
 		fightQuiet = num("Fight Over After No Hits", 10, 3, 60, 1, " s");
 		fightQuiet.tip("How long without any hit before the \"Fight over\" message.");
 		filmOffer = bool("Offer a film after each fight", true);
+		autoFilm = bool("Film fights by itself", true);
+		autoFilm.tip("When a fight ends the film is rendered at once, before you leave the map (a film needs the map it happened on).");
 		filmSlow = bool("Slow motion on the kill", true);
 		sessionCam = choice("Zero-lag recording camera", 0, "My view (first person)", "Chase (behind me)");
-		for (Option<?> o : new Option<?>[] {filmKey, studioKey, markKey, fightRadius, fightQuiet, filmOffer, filmSlow, sessionCam}) {
+		for (Option<?> o : new Option<?>[] {filmKey, studioKey, markKey, fightRadius, fightQuiet, autoFilm, filmOffer, filmSlow, sessionCam}) {
 			o.visibleIf = () -> rep.getAsBoolean() && replayBuffer.on();
 		}
 		action("Film Studio", "Open", this::openStudio, () -> "start / stop, make a film, watch your videos")
@@ -449,12 +452,26 @@ public class FightCamMod extends Mod {
 			}
 		}
 		prevMarkKey = mk;
-		if (filmOffer.on() && replayBuffer.on() && !Replay.active() && mc.currentScreen == null && ++offerTick % 40 == 0) {
+		if (Replay.lostBuffer) {
+			Replay.lostBuffer = false;
+			if (lastFightTick >= 0 && lastFightTick != filmedTick) {
+				ClipToast.show("Fight not filmed", "You changed map before it was rendered: a film needs the map it happened on", null, true);
+			}
+			lastFightTick = -1;
+		}
+		if ((filmOffer.on() || autoFilm.on()) && replayBuffer.on() && !Replay.active() && mc.currentScreen == null && ++offerTick % 40 == 0) {
 			Replay.Frame[] fr = Replay.framesCopy();
 			FightFilm.Fight f = FightFilm.analyze(fr, Math.max(0, fr.length - 400));
+			if (f != null) {
+				lastFightTick = f.tick;
+			}
 			if (f != null && f.tick != offeredTick && markStartTick < 0 && FightFilm.finished(f, fr.length, fightQuiet.i() * 20) && !playersNear(fightRadius.f())) { // still next to somebody = still fighting
 				offeredTick = f.tick;
-				ClipToast.show("Fight over", "Press the Fight Film key (J): cinematic film of it, " + (int) f.seconds() + " s", null, false);
+				if (autoFilm.on()) {
+					openFilm();
+				} else {
+					ClipToast.show("Fight over", "Press the Fight Film key (J): cinematic film of it, " + (int) f.seconds() + " s", null, false);
+				}
 			}
 		}
 		if (camOn && mc.options.getPerspective() == Perspective.FIRST_PERSON) {
@@ -502,6 +519,7 @@ public class FightCamMod extends Mod {
 			ClipToast.show("No fight found", "No hits and nobody close together in the last " + (int) Replay.seconds() + " s", null, true);
 			return;
 		}
+		filmedTick = f.tick;
 		FightFilm.build(f, fr, filmSlow.on());
 		dev.sleepclient.fightcam.FilmEdit.last = FightFilm.makeInfo(f);
 		Replay.camMode = Replay.PATH;

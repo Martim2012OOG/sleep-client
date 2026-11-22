@@ -104,6 +104,10 @@ public class ReplayScreen extends Screen {
 		float dt = lastNs == 0 ? 0 : Math.min(0.1F, (now - lastNs) / 1e9F);
 		lastNs = now;
 		if (!Replay.active()) {
+			if (filmStarted && !filmFinishing) {
+				FilmRender.abort();
+				ClipToast.show("Film cancelled", "The map changed while it was rendering", null, true);
+			}
 			dev.sleepclient.compat.Mc.setScreen(mc, null);
 			return;
 		}
@@ -128,6 +132,7 @@ public class ReplayScreen extends Screen {
 				final File saved = filmFile;
 				final long madeFrames = FilmRender.frames();
 				final int madeFps = FilmRender.fps();
+				final int madeW = FilmRender.width(), madeH = FilmRender.height();
 				FilmRender.finish(err -> {
 					if (err != null) {
 						ClipToast.show("Film failed", err, null, true);
@@ -137,6 +142,8 @@ public class ReplayScreen extends Screen {
 						if (made != null) {
 							made.file = saved;
 							made.fps = madeFps;
+							made.width = madeW;
+							made.height = madeH;
 							made.seconds = madeFrames / (double) madeFps;
 						}
 						dev.sleepclient.compat.Mc.setScreen(mc, new FilmEditorScreen()); // sound effects + AI voice, then Save

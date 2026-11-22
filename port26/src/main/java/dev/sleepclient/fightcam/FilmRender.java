@@ -49,6 +49,14 @@ public final class FilmRender {
 		return active;
 	}
 
+	public static int width() {
+		return capW;
+	}
+
+	public static int height() {
+		return capH;
+	}
+
 	public static int fps() {
 		return fps;
 	}
