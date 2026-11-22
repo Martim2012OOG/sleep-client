@@ -145,6 +145,24 @@ public final class SkinChanger {
 		return id == null ? Minecraft.getInstance().getUser().getName() : id.toString();
 	}
 
+	/** The PNG of the skin equipped in Sleep (for the 3D party lobby), or null. */
+	public static byte[] activePng() {
+		Skin a = active();
+		if (a == null) {
+			return null;
+		}
+		try {
+			return Files.readAllBytes(dir().resolve(a.file));
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	/** The address of the skin of your account, when it is known. */
+	public static String ownSkinAddress() {
+		return ownSkinUrl;
+	}
+
 	/** The skin equipped on the current account, or null (= the account's own skin). */
 	public static Skin active() {
 		load();

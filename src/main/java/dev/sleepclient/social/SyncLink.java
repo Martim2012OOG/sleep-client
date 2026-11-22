@@ -30,6 +30,8 @@ public final class SyncLink {
 
 	private static final class Conn {
 		final String room;
+		boolean party;
+		volatile long openedAt;
 		volatile WebSocket ws;
 		volatile boolean open, connecting;
 		volatile long retryAt, lastPing;
@@ -41,8 +43,8 @@ public final class SyncLink {
 		}
 	}
 
-	private static Conn lobby, server;
-	private static String serverKey;
+	private static Conn lobby, server, party;
+	private static String serverKey, partyRoom;
 
 	private SyncLink() {
 	}
@@ -50,6 +52,38 @@ public final class SyncLink {
 	public static boolean serverOpen() {
 		Conn c = server;
 		return c != null && c.open;
+	}
+
+	/** Makes sure the party room socket is connected to this room (Party.tick calls it every tick while in a party). */
+	public static void partyEnsure(String room) {
+		if (party == null || !room.equals(partyRoom)) {
+			Conn old = party;
+			party = new Conn(room);
+			party.party = true;
+			partyRoom = room;
+			close(old);
+		}
+	}
+
+	public static void partyLeave() {
+		Conn p = party;
+		party = null;
+		partyRoom = null;
+		close(p);
+	}
+
+	public static boolean partyOpen() {
+		Conn c = party;
+		return c != null && c.open;
+	}
+
+	public static long partyOpenedAt() {
+		Conn c = party;
+		return c == null ? 0L : c.openedAt;
+	}
+
+	public static boolean sendParty(JsonObject kx) {
+		return send(party, kx);
 	}
 
 	public static String diag() {
@@ -91,6 +125,9 @@ public final class SyncLink {
 		}
 		if (server != null) {
 			keep(server, mc, now);
+		}
+		if (party != null) {
+			keep(party, mc, now);
 		}
 	}
 
@@ -142,12 +179,15 @@ public final class SyncLink {
 	}
 
 	private static void closeAll() {
-		Conn l = lobby, s = server;
+		Conn l = lobby, s = server, p = party;
 		lobby = null;
 		server = null;
 		serverKey = null;
+		party = null;
+		partyRoom = null;
 		close(l);
 		close(s);
+		close(p);
 	}
 
 	private static boolean send(Conn c, JsonObject kx) {
@@ -220,10 +260,18 @@ public final class SyncLink {
 				c.backoff = 5_000L;
 				c.lastPing = System.currentTimeMillis();
 				problem = null;
-				KuboLink.resendNow(); // a fresh connection: send my badge / music again at once
+				if (c.party) {
+					c.openedAt = System.currentTimeMillis();
+				} else {
+					KuboLink.resendNow(); // a fresh connection: send my badge / music again at once
+				}
 			} else if (t.equals("kx") && o.has("u") && o.has("kx") && o.get("kx").isJsonObject()) {
 				String u = o.get("u").getAsString();
 				JsonObject kx = o.getAsJsonObject("kx");
+				if (c.party) {
+					MinecraftClient.getInstance().execute(() -> Party.onRemote(u, kx));
+					return;
+				}
 				lastRecv = System.currentTimeMillis();
 				lastRecvNick = kx.has("n") ? kx.get("n").getAsString() : u;
 				MinecraftClient.getInstance().execute(() -> KuboLink.onRemote(u, kx));

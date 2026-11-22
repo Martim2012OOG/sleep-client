@@ -1,6 +1,8 @@
 package dev.sleepclient.gui;
 
 import dev.sleepclient.Gfx;
+import dev.sleepclient.Lang;
+import dev.sleepclient.social.Party;
 import dev.sleepclient.account.Accounts;
 import dev.sleepclient.skin.SkinChanger;
 import dev.sleepclient.social.RemoteTextures;
@@ -37,8 +39,15 @@ public class PlegumoTitleScreen extends UiScreen {
 		return 1F - r * r * r;
 	}
 
+	private boolean lobbyRedirected;
+
 	@Override
 	protected void draw(DrawContext c, float delta) {
+		if (!lobbyRedirected && Party.active()) {
+			// in a party the main menu is the 3D lobby, until you leave the party
+			lobbyRedirected = true;
+			mc.execute(() -> mc.setScreen(new PartyLobbyScreen(this)));
+		}
 		if (openAt == 0) {
 			openAt = System.currentTimeMillis();
 		}
@@ -77,7 +86,26 @@ public class PlegumoTitleScreen extends UiScreen {
 		int o1 = Math.round((1F - intro(0.06F, 0.5F)) * 18F), o2 = Math.round((1F - intro(0.12F, 0.5F)) * 18F), o3 = Math.round((1F - intro(0.18F, 0.5F)) * 18F);
 		button(c, "sp", cx - bw / 2, by + o1, bw, bh, "Singleplayer", () -> mc.setScreen(new SelectWorldScreen(this)));
 		button(c, "mp", cx - bw / 2, by + bh + 6 + o2, bw, bh, "Multiplayer", () -> mc.setScreen(new MultiplayerScreen(this)));
-		int is = 20, ig = 6, iy = by + 2 * bh + 14 + o3;
+		// Party: create one (or open yours) and play with friends
+		int o4 = Math.round((1F - intro(0.15F, 0.5F)) * 18F);
+		Party.Invite firstInv = Party.INVITES.isEmpty() ? null : Party.INVITES.get(0);
+		String partyLabel = Party.active() ? Lang.tr("Party", "Party") + "  " + Party.size() + "/" + Party.MAX
+				: firstInv != null ? Lang.tr("Join ", "Entrar em ") + fit(firstInv.leaderNick + (Lang.pt() ? "" : "'s party"), bw - 60) : Lang.tr("Create Party", "Criar Party");
+		button(c, "party", cx - bw / 2, by + 2 * (bh + 6) + o4, bw, bh, partyLabel, () -> {
+			if (!Party.active() && firstInv != null) {
+				Party.accept(firstInv);
+			}
+			if (Party.active() || Party.create()) {
+				Party.openLobby(mc);
+			}
+		});
+		if (Party.pendingInvites() > 0) {
+			// red badge with the number of invites waiting
+			int bx2 = cx + bw / 2 - 9, by2 = by + 2 * (bh + 6) + o4 - 5;
+			Gfx.circle(c, bx2 + 7, by2 + 7, 8, 0xFFE5484D);
+			Gfx.textC(c, String.valueOf(Party.pendingInvites()), bx2 + 7, by2 + 3, 0xFFFFFFFF);
+		}
+		int is = 20, ig = 6, iy = by + 3 * bh + 20 + o3;
 		boolean mm = ModMenuLink.preferred();
 		int n = mm ? 5 : 4;
 		int ix = cx - (n * is + (n - 1) * ig) / 2;

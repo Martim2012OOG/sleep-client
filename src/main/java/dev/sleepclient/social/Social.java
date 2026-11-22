@@ -288,6 +288,7 @@ public final class Social {
 	private static final long startedAt = System.currentTimeMillis();
 	public static volatile boolean menuOpen;
 
+	private static final Pattern PARTY = Pattern.compile("\\[sleep-party\\|v1\\|([0-9a-f]{32})\\|([0-9a-f]{0,32})\\|([^|\\]]*)\\]");
 	private static final Pattern INVITE = Pattern.compile("\\[ghost-invite\\|v1\\|([^|\\]]*)\\|([^\\]]*)\\]");
 
 	private Social() {
@@ -394,6 +395,7 @@ public final class Social {
 	public static void tick(MinecraftClient mc) {
 		long now = System.currentTimeMillis();
 		Presence.tick(mc);
+		Party.tick(mc);
 		KuboLive.tick();
 		if (me != null) {
 			friendWatch(now);
@@ -1090,6 +1092,12 @@ public final class Social {
 				m.kind = "invite";
 			}
 		}
+		if (m.body != null) {
+			Matcher pm = PARTY.matcher(m.body);
+			if (pm.find()) {
+				m.body = (m.body.substring(0, pm.start()) + m.body.substring(pm.end())).trim();
+			}
+		}
 		if ("invite".equals(m.kind) && m.address == null) {
 			m.kind = "text";
 		}
@@ -1200,6 +1208,12 @@ public final class Social {
 		return true;
 	}
 
+	/** Party invite: a friend message with a hidden token (see Party). */
+	public static void sendPartyInvite(String userId, String partyId, String leaderUuid, String leaderNick) {
+		String n = leaderNick == null ? "" : leaderNick.replace("|", "").replace("]", "");
+		sendRaw(userId, "Join my party![sleep-party|v1|" + partyId + "|" + leaderUuid + "|" + n + "]", "Party invite");
+	}
+
 	/** Invite card for any address (used by Host World). */
 	public static void sendInviteTo(String userId, String name, String address) {
 		String n = (name == null || name.isBlank() ? address : name).replace("|", "/").replace("]", ")");
@@ -1299,6 +1313,13 @@ public final class Social {
 			if (u != null && u.id != null && lastId != null) {
 				LAST_MSG.put(u.id, lastId);
 			}
+			if (u != null && last != null) {
+				Matcher pm = PARTY.matcher(String.valueOf(Json.str(last, "body")));
+				if (pm.find()) {
+					boolean freshP = prevId == null || lastId == null || !lastId.equals(prevId);
+					Party.onInviteMessage(u, pm.group(1), pm.group(2), pm.group(3), Party.parseTime(Json.str(last, "createdAt", "created_at")), !first && freshP);
+				}
+			}
 			if (u != null && u.id != null && n > 0) {
 				map.put(u.id, (int) n);
 				// a new message from this friend: pop-up with their head, like Discord. Only the chat you are looking at right
@@ -1317,7 +1338,9 @@ public final class Social {
 					}
 					if (!Mutes.isMuted(u)) {
 						Matcher inv = INVITE.matcher(last == null ? "" : String.valueOf(Json.str(last, "body")));
-						if (inv.find()) {
+						if (last != null && PARTY.matcher(String.valueOf(Json.str(last, "body"))).find()) {
+							// a party invite: Party already showed its own card
+						} else if (inv.find()) {
 							// a server invite: "X invited you" with the server, and a click joins it
 							final String srv = inv.group(2);
 							dev.sleepclient.gui.Notify.clickable(dev.sleepclient.gui.Notify.Kind.MSG, u.display() + dev.sleepclient.Lang.tr(" invited you", " convidou-te"),
@@ -1375,6 +1398,10 @@ public final class Social {
 			Matcher mt = INVITE.matcher(detail);
 			if (mt.find()) {
 				detail = mt.group(1);
+			}
+			Matcher pm2 = PARTY.matcher(detail);
+			if (pm2.find()) {
+				detail = (detail.substring(0, pm2.start()) + detail.substring(pm2.end())).trim();
 			}
 		}
 		n.detail = detail;

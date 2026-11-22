@@ -53,6 +53,11 @@ public final class HtmlOverlay {
 		}
 	}
 
+	/** The browser itself (the party lobby forwards the mouse and keys to it and reads its address). */
+	public Mcef.Browser browser() {
+		return browser;
+	}
+
 	/** Runs JavaScript in the page. */
 	public void js(String code) {
 		try {
