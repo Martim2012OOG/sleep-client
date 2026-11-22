@@ -5,6 +5,9 @@ import dev.sleepclient.Keys;
 import dev.sleepclient.fightcam.Capture;
 import dev.sleepclient.fightcam.ClipToast;
 import dev.sleepclient.fightcam.Ffmpeg;
+import dev.sleepclient.fightcam.FightFilm;
+import dev.sleepclient.fightcam.FilmRender;
+import dev.sleepclient.fightcam.FightLooks;
 import dev.sleepclient.fightcam.Recorder;
 import dev.sleepclient.fightcam.Replay;
 import dev.sleepclient.option.Option;
@@ -59,7 +62,13 @@ public class FightCamMod extends Mod {
 	// replay
 	private Option.Bool replayBuffer;
 	private Option.Num replayLength, replayStart, replayRange;
-	private Option.Key replayKey;
+	private Option.Key replayKey, filmKey, studioKey;
+	private Option.Bool filmOffer, filmSlow;
+	private Option.Choice look, sessionCam;
+	private Option.Text lutPath;
+	private boolean prevFilmKey, prevStudioKey;
+	private int offerTick;
+	private long offeredTick = -1;
 	// camera
 	private Option.Key camKey;
 	private Option.Choice mode;
@@ -113,6 +122,12 @@ public class FightCamMod extends Mod {
 		for (Option<?> o : new Option<?>[] {resolution, fps, bitrate, encoderPick, source}) {
 			o.visibleIf = rec;
 		}
+		header("Look (shaders)").showIf(rec);
+		look = choice("Video Look", 0, FightLooks.NAMES);
+		look.tip("Applied after the video is saved, in a separate low-priority process: the game never lags and you do not need a shader pack.");
+		lutPath = text("Custom LUT (.cube)", "", 260, "path to a .cube file");
+		look.visibleIf = rec;
+		lutPath.visibleIf = () -> rec.getAsBoolean() && look.idx() == FightLooks.NAMES.length - 1;
 		audioDevice = text("Microphone", "", 120, "none");
 		audioDevice.visibleIf = rec;
 		action("Audio input", "Next", this::nextAudio, () -> audioDevice.get().isBlank() ? "No audio" : audioDevice.get()).showIf(rec);
@@ -137,6 +152,19 @@ public class FightCamMod extends Mod {
 		for (Option<?> o : new Option<?>[] {replayLength, replayStart, replayRange, replayKey}) {
 			o.visibleIf = () -> rep.getAsBoolean() && replayBuffer.on();
 		}
+		header("Fight film (automatic)").showIf(rep);
+		filmKey = key("Fight Film Key", 74);
+		studioKey = key("Film Studio Key", 75);
+		filmOffer = bool("Offer a film after each fight", true);
+		filmSlow = bool("Slow motion on the kill", true);
+		sessionCam = choice("Zero-lag recording camera", 0, "My view (first person)", "Chase (behind me)");
+		for (Option<?> o : new Option<?>[] {filmKey, studioKey, filmOffer, filmSlow, sessionCam}) {
+			o.visibleIf = () -> rep.getAsBoolean() && replayBuffer.on();
+		}
+		action("Film Studio", "Open", this::openStudio, () -> "start / stop, make a film, watch your videos")
+				.showIf(() -> rep.getAsBoolean() || rec.getAsBoolean());
+		action("Fight film", "Make film now", this::openFilm, () -> "last fight, cinematic camera, saved as .mp4")
+				.showIf(() -> rep.getAsBoolean() && replayBuffer.on());
 		action("Replay", "Open replay", this::openReplay, () -> String.format("%.0f s remembered", Replay.seconds()))
 				.showIf(() -> rep.getAsBoolean() && replayBuffer.on());
 
@@ -363,6 +391,7 @@ public class FightCamMod extends Mod {
 		Replay.configure(replayLength.i(), replayRange.f());
 		Replay.recordingEnabled = replayBuffer.on();
 		Replay.tick();
+		FightLooks.chain = FightLooks.chainFor(look.idx(), lutPath.get());
 		if (mc.player == null || mc.world == null) {
 			if (recording) {
 				stopRecording();
@@ -389,6 +418,24 @@ public class FightCamMod extends Mod {
 		prevRecKey = r;
 		prevCamKey = c;
 		prevReplayKey = rp;
+		boolean fk = mc.currentScreen == null && Keys.down(filmKey.code());
+		if (fk && !prevFilmKey && replayBuffer.on()) {
+			openFilm();
+		}
+		prevFilmKey = fk;
+		boolean sk = mc.currentScreen == null && Keys.down(studioKey.code());
+		if (sk && !prevStudioKey) {
+			openStudio();
+		}
+		prevStudioKey = sk;
+		if (filmOffer.on() && replayBuffer.on() && !Replay.active() && mc.currentScreen == null && ++offerTick % 40 == 0) {
+			Replay.Frame[] fr = Replay.framesCopy();
+			FightFilm.Fight f = FightFilm.analyze(fr, Math.max(0, fr.length - 400));
+			if (f != null && f.tick != offeredTick && FightFilm.finished(f, fr.length)) {
+				offeredTick = f.tick;
+				ClipToast.show("Fight over", "Press the Fight Film key (J): cinematic film of it, " + (int) f.seconds() + " s", null, false);
+			}
+		}
 		if (camOn && mc.options.getPerspective() == Perspective.FIRST_PERSON) {
 			mc.options.setPerspective(Perspective.THIRD_PERSON_BACK); // the camera needs to see you
 		}
@@ -408,6 +455,116 @@ public class FightCamMod extends Mod {
 		} else {
 			mc.options.setPerspective(previous);
 		}
+	}
+
+	/** Fight Film: finds the last fight in the buffer, writes a cinematic camera for it and records it to an .mp4 by itself. */
+	public void openFilm() {
+		if (mc.world == null || Replay.active()) {
+			return;
+		}
+		if (!Ffmpeg.ready()) {
+			ClipToast.show("Set up the recorder first", "FightCam > Recording > Recorder", null, true);
+			return;
+		}
+		if (camOn) {
+			setCam(false);
+		}
+		String err = Replay.start(0);
+		if (err != null) {
+			ClipToast.show("No film", err, null, true);
+			return;
+		}
+		Replay.Frame[] fr = Replay.playFrames();
+		FightFilm.Fight f = FightFilm.analyze(fr, 0);
+		if (f == null) {
+			Replay.stop();
+			ClipToast.show("No fight found", "Nobody was hit in the last " + (int) Replay.seconds() + " s", null, true);
+			return;
+		}
+		FightFilm.build(f, fr, filmSlow.on());
+		Replay.camMode = Replay.PATH;
+		Replay.seek(f.start);
+		Replay.stopAt = f.end;
+		Replay.playing = false;
+		mc.setScreen(new dev.sleepclient.gui.ReplayScreen(true));
+	}
+
+	/** The Film Studio: start / stop recording, make the fight film, watch the videos. */
+	public void openStudio() {
+		if (mc.world == null) {
+			return;
+		}
+		mc.setScreen(new dev.sleepclient.gui.FilmStudioScreen(null));
+	}
+
+	public boolean sessionActive() {
+		return Replay.sessionTick >= 0;
+	}
+
+	public double sessionSeconds() {
+		return Replay.sessionTick < 0 ? 0 : (Replay.currentTick() - Replay.sessionTick) / 20.0;
+	}
+
+	/** Zero-lag recording: only the replay data is kept while you play (it is already being remembered); the video is rendered after. */
+	public void startSession() {
+		if (mc.world == null) {
+			return;
+		}
+		if (!replayBuffer.on()) {
+			ClipToast.show("Turn on \"Remember for replays\"", "FightCam > Replay", null, true);
+			return;
+		}
+		Replay.sessionTick = Replay.currentTick();
+		ClipToast.show("Recording (no lag)", "Play normally. Stop it in the Film Studio and the video is rendered.", null, false);
+	}
+
+	/** Stops the session and renders it to an .mp4 frame by frame (smooth, nothing skipped). */
+	public void stopSession() {
+		long st = Replay.sessionTick;
+		Replay.sessionTick = -1;
+		if (st < 0 || mc.world == null || Replay.active()) {
+			return;
+		}
+		if (!Ffmpeg.ready()) {
+			ClipToast.show("Set up the recorder first", "FightCam > Recording > Recorder", null, true);
+			return;
+		}
+		String err = Replay.start(0);
+		if (err != null) {
+			ClipToast.show("Nothing to render", err, null, true);
+			return;
+		}
+		Replay.Frame[] fr = Replay.playFrames();
+		int from = Replay.indexOfTick(fr, st);
+		if (fr.length - from < 40) {
+			Replay.stop();
+			ClipToast.show("Too short", "Record at least 2 seconds", null, true);
+			return;
+		}
+		java.util.UUID me = mc.player.getUuid();
+		if (sessionCam.idx() == 1) {
+			FightFilm.buildChase(fr, me, from, fr.length - 1);
+		}
+		if (sessionCam.idx() == 1 && Replay.KEYS.size() >= 2) {
+			Replay.camMode = Replay.PATH;
+		} else {
+			Replay.KEYS.clear();
+			Replay.camMode = Replay.POV;
+			Replay.target = me;
+		}
+		Replay.seek(from);
+		Replay.stopAt = fr.length - 1;
+		Replay.playing = false;
+		mc.setScreen(new dev.sleepclient.gui.ReplayScreen(true));
+	}
+
+	public boolean isRecording() {
+		return recording || legacy != null;
+	}
+
+	/** Starts the frame-exact film render into 'out' with the chosen quality and look. Returns an error text or null. */
+	public String startFilm(java.io.File out) {
+		return FilmRender.start(out, FPS[fps.idx()], HEIGHTS[resolution.idx()], FightLooks.chain);
 	}
 
 	public void openReplay() {

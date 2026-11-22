@@ -360,6 +360,12 @@ public final class Capture {
 	 * (withHud = true: world + HUD + menus). Only the one matching the setting grabs the picture.
 	 */
 	public static void onFrame(boolean withHud) {
+		if (FilmRender.active()) { // a film is being rendered frame by frame: the normal recorder waits
+			if (!withHud) {
+				FilmRender.onWorldFrame();
+			}
+			return;
+		}
 		if (!running) {
 			return;
 		}
@@ -652,6 +658,9 @@ public final class Capture {
 								"-movflags", "+faststart", out.getAbsolutePath()), 120);
 					}
 					joined.delete();
+					if (err == null) {
+						FightLooks.apply(out); // the chosen look, in a separate low-priority process (the original stays if it fails)
+					}
 				}
 			} catch (Exception e) {
 				err = e.toString();

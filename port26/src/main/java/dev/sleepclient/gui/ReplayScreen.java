@@ -3,6 +3,7 @@ package dev.sleepclient.gui;
 import dev.sleepclient.Gfx;
 import dev.sleepclient.Keys;
 import dev.sleepclient.fightcam.Capture;
+import dev.sleepclient.fightcam.FilmRender;
 import dev.sleepclient.fightcam.ClipToast;
 import dev.sleepclient.fightcam.Replay;
 import dev.sleepclient.mods.FightCamMod;
@@ -44,6 +45,11 @@ public class ReplayScreen extends Screen {
 	private boolean draggingTimeline, looking;
 	private double lastMx, lastMy;
 	private boolean recordingHere, startedCapture;
+	private final boolean autoFilm;
+	private boolean filmStarted, filmFinishing;
+	private int autoFrames;
+	private double filmStartT;
+	private File filmFile;
 
 	private record Btn(int x, int y, int w, int h, Runnable run) {
 	}
@@ -52,7 +58,13 @@ public class ReplayScreen extends Screen {
 	private int barX, barY, barW;
 
 	public ReplayScreen() {
+		this(false);
+	}
+
+	/** autoFilm: the Fight Film plays the prepared camera and records it by itself, then closes. */
+	public ReplayScreen(boolean autoFilm) {
 		super(Component.literal("Replay"));
+		this.autoFilm = autoFilm;
 		oldHud = dev.sleepclient.compat.Mc.hideGui(mc);
 		oldPerspective = mc.options.getCameraType();
 	}
@@ -70,6 +82,7 @@ public class ReplayScreen extends Screen {
 
 	@Override
 	public void removed() {
+		FilmRender.abort(); // closing the screen cancels an unfinished film
 		if (recordingHere) {
 			stopRecording();
 		}
@@ -96,6 +109,33 @@ public class ReplayScreen extends Screen {
 		}
 		fly(dt);
 		Replay.advance();
+		if (autoFilm) {
+			hideUi = true;
+			if (!filmStarted && ++autoFrames >= 4 && !beginFilm()) {
+				return;
+			}
+		}
+		if (filmStarted && !filmFinishing) {
+			if (!FilmRender.alive() || FilmRender.error() != null || FilmRender.stalledMs() > 10_000) {
+				String why = FilmRender.error() != null ? FilmRender.error() : FilmRender.stalledMs() > 10_000 ? "the GPU picture never arrived (try a lower resolution)" : FilmRender.log();
+				FilmRender.abort();
+				ClipToast.show("Film failed", why == null || why.isEmpty() ? "the encoder stopped" : why, null, true);
+				dev.sleepclient.compat.Mc.setScreen(mc, null);
+				return;
+			}
+			if (!Replay.playing && FilmRender.frameDone()) {
+				filmFinishing = true;
+				final File saved = filmFile;
+				FilmRender.finish(err -> {
+					if (err != null) {
+						ClipToast.show("Film failed", err, null, true);
+						dev.sleepclient.compat.Mc.setScreen(mc, null);
+					} else {
+						dev.sleepclient.compat.Mc.setScreen(mc, new FilmStudioScreen(saved)); // the finished film is selected, ready to watch
+					}
+				});
+			}
+		}
 		if (recordingHere && !Replay.playing) {
 			stopRecording(); // reached the end
 		}
@@ -105,10 +145,13 @@ public class ReplayScreen extends Screen {
 		} else {
 			Gfx.text(c, "H: show controls", 6, 6, 0x80FFFFFF);
 		}
-		if (recordingHere) {
+		if (filmStarted) {
 			boolean blink = (System.currentTimeMillis() / 500) % 2 == 0;
 			Gfx.circle(c, width - 14, 12, 4, blink ? 0xFFE5484D : 0x60E5484D);
 			Gfx.text(c, "REC", width - 40, 8, 0xFFFFFFFF);
+		}
+		if (filmStarted) {
+			drawFilmProgress(c);
 		}
 		ClipToast.draw(c);
 	}
@@ -237,8 +280,10 @@ public class ReplayScreen extends Screen {
 		button(c, mx, my, rx, by, 40, bh, "Exit", false, () -> dev.sleepclient.compat.Mc.setScreen(mc, null));
 		rx -= 24;
 		button(c, mx, my, rx, by, 22, bh, "H", hideUi, () -> hideUi = !hideUi);
-		rx -= 64;
-		button(c, mx, my, rx, by, 62, bh, recordingHere ? "Stop rec" : "● Record", recordingHere, this::toggleRecording);
+		rx -= 88;
+		button(c, mx, my, rx, by, 86, bh, filmStarted ? "Stop + save" : "● Render film", filmStarted, this::toggleRecording);
+		rx -= 74;
+		button(c, mx, my, rx, by, 72, bh, "Auto camera", Replay.camMode == Replay.PATH && !Replay.SLOWS.isEmpty(), this::autoCamera);
 	}
 
 	// ------------------------------------------------------------------ actions
@@ -269,26 +314,63 @@ public class ReplayScreen extends Screen {
 		Replay.target = next;
 	}
 
-	private void toggleRecording() {
-		if (recordingHere) {
-			stopRecording();
+	/** One click: a cinematic camera for the fight in this replay (you can still add your own points afterwards). */
+	private void drawFilmProgress(GuiGraphicsExtractor c) {
+		double span = Math.max(1, Replay.stopAt - filmStartT);
+		double pct = filmFinishing ? 1 : Math.max(0, Math.min(1, (Replay.time() - filmStartT) / span));
+		int w = Math.min(320, width - 40), x = (width - w) / 2, y = height - 74;
+		Gfx.rrect(c, x, y, w, 52, 8, 0xE0101218);
+		Gfx.text(c, filmFinishing ? "Saving the film..." : "Rendering the film  " + Math.round(pct * 100) + "%", x + 12, y + 9, 0xFFFFFFFF);
+		Gfx.text(c, "frame " + FilmRender.frames() + "  -  every frame is rendered, so it is smooth even if this looks slow", x + 12, y + 22, 0x90FFFFFF);
+		Gfx.rrect(c, x + 12, y + 36, w - 24, 6, 3, 0xFF2A2E3A);
+		Gfx.rrect(c, x + 12, y + 36, Math.max(6, (int) ((w - 24) * pct)), 6, 3, Theme.accent());
+	}
+
+	private void autoCamera() {
+		dev.sleepclient.fightcam.FightFilm.Fight f = dev.sleepclient.fightcam.FightFilm.analyze(Replay.playFrames(), 0);
+		if (f == null) {
+			ClipToast.show("No fight found", "Nobody was hit in this replay", null, true);
 			return;
 		}
-		FightCamMod fc = FightCamMod.instance;
-		if (fc == null) {
-			return;
-		}
-		if (!Capture.running()) {
-			if (!fc.startCapture()) {
-				ClipToast.show("Can't record", "Set up the recorder in FightCam > Recording", null, true);
-				return;
-			}
-			startedCapture = true;
-		}
-		Capture.ReplayForceWorldOnly.on = true;
-		Capture.beginRecording();
-		recordingHere = true;
+		dev.sleepclient.fightcam.FightFilm.build(f, Replay.playFrames(), true);
+		Replay.camMode = Replay.PATH;
+		Replay.seek(f.start);
+		Replay.stopAt = f.end;
 		Replay.playing = true;
+		ClipToast.show("Auto camera", "Playing the fight with a cinematic camera - press Record to film it", null, false);
+	}
+
+	/** Starts the frame-exact film render from the current moment (true when it started; false = it could not and the screen closes). */
+	private boolean beginFilm() {
+		FightCamMod fc = FightCamMod.instance;
+		filmFile = new File(Capture.outputDir(), "Film_" + new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(new Date()) + ".mp4");
+		String err = fc == null ? "FightCam is off" : fc.startFilm(filmFile);
+		if (err != null) {
+			ClipToast.show("Can't render the film", err + " - set up the recorder in FightCam > Recording", null, true);
+			if (autoFilm) {
+				dev.sleepclient.compat.Mc.setScreen(mc, null);
+			}
+			return false;
+		}
+		filmStarted = true;
+		filmStartT = Replay.time();
+		if (Replay.stopAt < 0) {
+			Replay.stopAt = Replay.length() - 1;
+		}
+		Replay.playing = true;
+		return true;
+	}
+
+	/** The Record button: renders the replay from here to the end (or to the fight's end) frame by frame; press again to stop and save. */
+	private void toggleRecording() {
+		if (filmFinishing) {
+			return;
+		}
+		if (filmStarted) {
+			Replay.playing = false; // the picture of this moment is written, then the film is saved
+			return;
+		}
+		beginFilm();
 	}
 
 	private void stopRecording() {

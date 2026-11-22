@@ -111,6 +111,47 @@ public final class Replay {
 	public static final int FREE = 0, FOLLOW = 1, POV = 2, PATH = 3;
 	/** cinematic camera path: {frame, x, y, z, yaw, pitch}, sorted by frame */
 	public static final List<double[]> KEYS = new ArrayList<>();
+	/** slow motion ranges {fromFrame, toFrame, speedFactor} (Fight Film: the kill), eased in and out */
+	public static final List<double[]> SLOWS = new ArrayList<>();
+	/** the replay stops playing here (frame index); -1 = at the end */
+	public static double stopAt = -1;
+	/** game tick at which a zero-lag recording session started (-1 = none): while it runs the buffer keeps everything (up to 15 min) */
+	public static volatile long sessionTick = -1;
+
+	public static long currentTick() {
+		return tickNo;
+	}
+
+	/** Index of the first frame at or after the game tick (0 if it is older than the buffer). */
+	public static int indexOfTick(Frame[] fr, long tick) {
+		for (int i = 0; i < fr.length; i++) {
+			if (fr[i].tick >= tick) {
+				return i;
+			}
+		}
+		return Math.max(0, fr.length - 1);
+	}
+
+	/** The frames the open replay plays (null when closed). */
+	public static Frame[] playFrames() {
+		return play;
+	}
+
+	/** The frames remembered right now (a copy of the list, not of the frames). */
+	public static Frame[] framesCopy() {
+		return FRAMES.toArray(new Frame[0]);
+	}
+
+	private static double slowFactor() {
+		double f = 1;
+		for (double[] r : SLOWS) {
+			if (t >= r[0] && t <= r[1]) {
+				double k = Math.max(0, Math.min(1, Math.min(t - r[0], r[1] - t) / 10.0));
+				f = Math.min(f, 1 + (r[2] - 1) * k);
+			}
+		}
+		return f;
+	}
 	public static int camMode = FREE;
 	public static UUID target;
 	public static double camX, camY, camZ;
@@ -140,6 +181,7 @@ public final class Replay {
 	}
 
 	public static void clear() {
+		sessionTick = -1;
 		FRAMES.clear();
 		BLOCKS.clear();
 		LAST.clear();
@@ -208,7 +250,7 @@ public final class Replay {
 		f.tick = tickNo;
 		f.snaps = snaps.toArray(new Snap[0]);
 		FRAMES.addLast(f);
-		int max = keepSeconds * 20;
+		int max = sessionTick >= 0 ? Math.max(keepSeconds * 20, 20 * 900) : keepSeconds * 20;
 		while (FRAMES.size() > max) {
 			FRAMES.removeFirst();
 		}
@@ -232,7 +274,7 @@ public final class Replay {
 			return;
 		}
 		BLOCKS.addLast(new BlockChange(tickNo, p, before, after));
-		if (BLOCKS.size() > 20000) {
+		if (BLOCKS.size() > (sessionTick >= 0 ? 80000 : 20000)) {
 			BLOCKS.removeFirst();
 		}
 	}
@@ -272,6 +314,8 @@ public final class Replay {
 		syaw = camYaw;
 		spitch = camPitch;
 		KEYS.clear();
+		SLOWS.clear();
+		stopAt = -1;
 		hook();
 		return null;
 	}
@@ -314,6 +358,16 @@ public final class Replay {
 			i++;
 		}
 		double[] a = KEYS.get(Math.max(0, i - 1)), b = KEYS.get(i), c = KEYS.get(i + 1), d = KEYS.get(Math.min(n - 1, i + 2));
+		if (c[0] - b[0] <= 1.5) { // two points one frame apart = a hard cut: hold the first until the second
+			setPose(b[1], b[2], b[3], (float) b[4], (float) b[5]);
+			return true;
+		}
+		if (b[0] - a[0] <= 1.5) {
+			a = b; // do not curve towards the other side of a cut
+		}
+		if (d[0] - c[0] <= 1.5) {
+			d = c;
+		}
 		double u = (t - b[0]) / Math.max(1e-6, c[0] - b[0]);
 		u = u * u * (3 - 2 * u) * 0.35 + u * 0.65; // a little ease in / out at every point
 		// angles: unwrap so the camera never spins the long way round
@@ -337,6 +391,8 @@ public final class Replay {
 			return;
 		}
 		active = false;
+		SLOWS.clear();
+		stopAt = -1;
 		// put every block back to how the server says it is now
 		if (mc.world != null) {
 			applying = true;
@@ -406,9 +462,11 @@ public final class Replay {
 			return;
 		}
 		if (playing) {
-			t += dt * 20 * speed;
-			if (t >= play.length - 1) {
-				t = play.length - 1;
+			float stepDt = FilmRender.active() ? FilmRender.takeStep() : dt; // a film moves exactly one video frame at a time
+			t += stepDt * 20 * speed * slowFactor();
+			double limit = stopAt >= 0 ? Math.min(stopAt, play.length - 1) : play.length - 1;
+			if (t >= limit) {
+				t = limit;
 				playing = false;
 			}
 		}

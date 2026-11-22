@@ -47,7 +47,7 @@ public final class NameInject {
 			if (FAST.size() > 512) {
 				FAST.clear();
 			}
-			FAST.put(in, new Object[] {now + 1500L, out});
+			FAST.put(in, new Object[] {now + ttl(1500L), out});
 		}
 		return out;
 	}
@@ -61,7 +61,7 @@ public final class NameInject {
 		try {
 			var st = SleepClient.settings;
 			Minecraft mc = Minecraft.getInstance();
-			if (st == null || !st.nameBadge.on() || mc.level == null || mc.getConnection() == null) {
+			if (st == null || !st.nameBadge.on() && !dev.sleepclient.mods.NametagHealthMod.onPlates() || mc.level == null || mc.getConnection() == null) {
 				return in;
 			}
 			String s = in.getString();
@@ -70,7 +70,7 @@ public final class NameInject {
 			}
 			long now = System.currentTimeMillis();
 			Hit h = CACHE.get(s);
-			if (h != null && now - h.at() < 2000L) {
+			if (h != null && now - h.at() < ttl(2000L)) {
 				return h.out() == null ? in : h.out();
 			}
 			Component out = build(in, s, mc);
@@ -88,6 +88,44 @@ public final class NameInject {
 		}
 	}
 
+	/** How long an answer is remembered: short when the life line is on (it changes while you fight). */
+	private static long ttl(long normal) {
+		return dev.sleepclient.mods.NametagHealthMod.onPlates() ? 300L : normal;
+	}
+
+	private static boolean containsWord(String s, String n) {
+		int from = 0, at;
+		while ((at = s.indexOf(n, from)) >= 0) {
+			if ((at == 0 || !nameChar(s.charAt(at - 1))) && (at + n.length() >= s.length() || !nameChar(s.charAt(at + n.length())))) {
+				return true;
+			}
+			from = at + 1;
+		}
+		return false;
+	}
+
+	/** The life line for the player whose nick is in this plate (null: the mod is off, the server already shows life, or no player matches). */
+	private static Component healthFor(String s, Minecraft mc) {
+		if (!dev.sleepclient.mods.NametagHealthMod.onPlates() || mc.level == null) {
+			return null;
+		}
+		String low = s.toLowerCase(java.util.Locale.ROOT);
+		if (s.indexOf('\u2764') >= 0 || s.indexOf('\u2665') >= 0 || s.indexOf('\u2661') >= 0 || low.contains("hp") || low.contains("health")) {
+			return null; // the server already shows the life: not twice
+		}
+		for (var pl : mc.level.players()) {
+			String n = pl.getName().getString();
+			if (n.length() >= 3 && containsWord(s, n)) {
+				return dev.sleepclient.mods.NametagHealthMod.line(pl);
+			}
+		}
+		return null;
+	}
+
+	private static Component withHealth(Component base, Component health) {
+		return Component.empty().copy().append(base).append(Component.literal("\n")).append(health);
+	}
+
 	private static boolean nameChar(char c) {
 		return c == '_' || Character.isLetterOrDigit(c);
 	}
@@ -95,6 +133,7 @@ public final class NameInject {
 	private static Component build(Component in, String s, Minecraft mc) {
 		Component logo = SolarBadge.decorate(Component.empty()); // logo + a space
 		String logoStr = logo.getString().trim();
+		boolean badges = SleepClient.settings != null && SleepClient.settings.nameBadge.on();
 		boolean logoFree = !logoStr.isEmpty() && !s.contains(logoStr);
 		// the first nick (of a client user, or of someone with a profile badge) that appears as a whole word
 		int best = -1;
@@ -119,7 +158,7 @@ public final class NameInject {
 			while ((at = s.indexOf(n, from)) >= 0) {
 				boolean ok = (at == 0 || !nameChar(s.charAt(at - 1))) && (at + n.length() >= s.length() || !nameChar(s.charAt(at + n.length())));
 				if (ok) {
-					if ((best < 0 || at < best) && (SolarBadge.uses(ids.get(i), n) || badgeOf(ids.get(i), n) != null)) {
+					if ((best < 0 || at < best) && badges && (SolarBadge.uses(ids.get(i), n) || badgeOf(ids.get(i), n) != null)) {
 						best = at;
 						bestNick = n;
 						bestId = ids.get(i);
@@ -129,8 +168,9 @@ public final class NameInject {
 				from = at + 1;
 			}
 		}
+		Component life = healthFor(s, mc);
 		if (best < 0) {
-			return null;
+			return life == null ? null : withHealth(in, life);
 		}
 		java.util.TreeMap<Integer, Component> ins = new java.util.TreeMap<>();
 		if (logoFree && SolarBadge.uses(bestId, bestNick)) {
@@ -141,7 +181,7 @@ public final class NameInject {
 			ins.merge(best + bestNick.length(), badge, (x, y) -> x);
 		}
 		if (ins.isEmpty()) {
-			return null;
+			return life == null ? null : withHealth(in, life);
 		}
 		List<Object[]> segs = new ArrayList<>();
 		in.<Object>visit((Style style, String str) -> {
@@ -171,7 +211,13 @@ public final class NameInject {
 			}
 			pos += str.length();
 		}
-		return used.isEmpty() ? null : out;
+		if (used.isEmpty()) {
+			return life == null ? null : withHealth(in, life);
+		}
+		if (life != null) {
+			out.append(Component.literal("\n")).append(life);
+		}
+		return out;
 	}
 
 	/** The profile badge (with a space before it) of this player, or null when they have none. */

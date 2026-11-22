@@ -19,6 +19,7 @@ public class NametagHealthMod extends Mod {
 	private final Option.Bool absorption = bool("Show Absorption", true);
 	private final Option.Bool colourByHealth = bool("Colour By Health", false);
 	private final Option.Bool keepServer = bool("Keep The Server's Own Line", true);
+	private final Option.Bool plates = bool("Show On Server Nametags", true).tip("Servers that draw their own nametag (text display above the head): the life is added as a line of it, unless the server already shows life.");
 	private final Option.Header mobsHeader = header("Mobs");
 	private final Option.Bool mobs = bool("Show On Mobs Too", true);
 	private final Option.Bool onlyHurt = bool("Only Hurt Mobs", false);
@@ -29,6 +30,11 @@ public class NametagHealthMod extends Mod {
 		instance = this;
 		onlyHurt.showIf(mobs::on);
 		mobRange.showIf(mobs::on);
+	}
+
+	/** The life line is added to the nametags servers draw themselves (text displays). */
+	public static boolean onPlates() {
+		return instance != null && instance.enabled && instance.plates.on();
 	}
 
 	public static boolean on() {
