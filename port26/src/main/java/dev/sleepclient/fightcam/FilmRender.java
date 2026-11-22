@@ -36,7 +36,7 @@ public final class FilmRender {
 	private static Process proc;
 	private static Thread writer;
 	private static ArrayBlockingQueue<byte[]> free, queue;
-	private static GpuBuffer buf;
+	private static volatile long hookCalls, copies, done;
 	private static TextureTarget small;
 	private static File outFile;
 	private static volatile String error, logText = "";
@@ -113,23 +113,23 @@ public final class FilmRender {
 		capW = srcW;
 		capH = srcH;
 		small = null;
-		if (wantH < srcH) {
-			try {
-				capW = Math.max(2, Math.round((float) srcW * wantH / srcH) & ~1);
-				capH = wantH;
-				small = dev.sleepclient.compat.Gpu.newTarget("Sleep film", capW, capH, false);
-			} catch (RuntimeException e) {
-				small = null;
-				capW = srcW;
-				capH = srcH;
-			}
+		// always render through a picture of a FIXED size: if the window changes size (it can, when the replay opens) the film keeps going
+		try {
+			int tw = Math.max(2, Math.round((float) srcW * wantH / srcH) & ~1);
+			small = dev.sleepclient.compat.Gpu.newTarget("Sleep film", tw, wantH, false);
+			capW = tw;
+			capH = wantH;
+		} catch (RuntimeException e) {
+			small = null;
+			capW = srcW;
+			capH = srcH;
 		}
 		frameBytes = capW * capH * 4;
 		out.getParentFile().mkdirs();
 		List<String> cmd = new ArrayList<>(List.of(Ffmpeg.path, "-hide_banner", "-loglevel", "error", "-y", "-f", "rawvideo", "-pix_fmt", "rgba", "-s",
 				capW + "x" + capH, "-framerate", Integer.toString(fps), "-i", "-"));
 		String look = lookChain == null || lookChain.isEmpty() ? "" : "," + lookChain;
-		cmd.addAll(List.of("-vf", "vflip,scale=trunc(iw/2)*2:trunc(ih/2)*2" + look + ",format=nv12", "-r", Integer.toString(fps)));
+		cmd.addAll(List.of("-vf", "scale=trunc(iw/2)*2:trunc(ih/2)*2" + look + ",format=nv12", "-r", Integer.toString(fps)));
 		cmd.addAll(Ffmpeg.encoder.args());
 		cmd.addAll(List.of("-movflags", "+faststart", out.getAbsolutePath()));
 		if (!Ffmpeg.WINDOWS) {
@@ -148,7 +148,7 @@ public final class FilmRender {
 		for (int i = 0; i < 5; i++) {
 			free.add(new byte[frameBytes]);
 		}
-		buf = RenderSystem.getDevice().createBuffer(() -> "Sleep film", 9, (long) frameBytes);
+		hookCalls = copies = done = 0;
 		outFile = out;
 		error = null;
 		logText = "";
@@ -200,13 +200,19 @@ public final class FilmRender {
 		}
 	}
 
+	/** What the render is doing (shown when the first picture takes long). */
+	public static String debug() {
+		return "hook " + hookCalls + "  copies " + copies + "  done " + done + "  state " + state;
+	}
+
 	/** Right after the world was drawn (render thread): takes the picture when the replay is showing a new moment. */
 	public static void onWorldFrame() {
+		hookCalls++;
 		if (!active || state != 0) {
 			return;
 		}
 		RenderTarget fb = dev.sleepclient.compat.Mc.mainTarget(mc);
-		if (fb.width != srcW || fb.height != srcH) {
+		if ((fb.width != srcW || fb.height != srcH) && small == null) {
 			error = "the window was resized while rendering";
 			state = 2; // lets the screen notice and stop
 			return;
@@ -215,27 +221,52 @@ public final class FilmRender {
 		if (dst == null) {
 			return; // the encoder is behind: wait, the replay does not move on, nothing is skipped
 		}
-		GpuTexture tex = fb.getColorTexture();
-		try {
-			if (small != null) {
+		RenderTarget src = fb;
+		if (small != null) {
+			try {
 				dev.sleepclient.compat.Gpu.shrink(fb, small);
-				tex = small.getColorTexture();
+				src = small;
+			} catch (RuntimeException e) {
+				error = "could not scale the picture: " + e;
+				free.offer(dst);
+				state = 2;
+				return;
 			}
-			state = 1;
-			stateAt = System.currentTimeMillis();
-			final byte[] d = dst;
-			CommandEncoder enc = RenderSystem.getDevice().createCommandEncoder();
-			enc.copyTextureToBuffer(tex, buf, 0L, () -> {
+		}
+		state = 1;
+		stateAt = System.currentTimeMillis();
+		copies++;
+		final byte[] d = dst;
+		final int fw = capW, fh = capH;
+		try {
+			// the same way the game takes its own screenshots (F2): proven to work on every system
+			net.minecraft.client.Screenshot.takeScreenshot(src, img -> {
 				try {
-					dev.sleepclient.compat.Gpu.read(buf, d);
-					queue.put(d);
-					frames++;
+					if (img.getWidth() != fw || img.getHeight() != fh) {
+						error = "unexpected picture size " + img.getWidth() + "x" + img.getHeight();
+						free.offer(d);
+					} else {
+						int o = 0;
+						for (int y = 0; y < fh; y++) {
+							for (int x = 0; x < fw; x++) {
+								int p = img.getPixel(x, y);
+								d[o++] = (byte) (p >> 16);
+								d[o++] = (byte) (p >> 8);
+								d[o++] = (byte) p;
+								d[o++] = (byte) 255;
+							}
+						}
+						queue.put(d);
+						frames++;
+					}
 				} catch (RuntimeException | InterruptedException e) {
 					error = String.valueOf(e);
 				} finally {
+					img.close();
+					done++;
 					state = 2;
 				}
-			}, 0);
+			});
 		} catch (RuntimeException e) {
 			error = String.valueOf(e);
 			free.offer(dst);
@@ -319,10 +350,6 @@ public final class FilmRender {
 				// already gone
 			}
 			small = null;
-		}
-		if (buf != null && state != 1) {
-			buf.close();
-			buf = null;
 		}
 	}
 }

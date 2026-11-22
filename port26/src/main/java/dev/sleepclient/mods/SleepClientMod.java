@@ -30,7 +30,8 @@ public class SleepClientMod extends Mod {
 	public final Option.Choice buttonStyle;
 	public final Option.Bool buttonAnimations;
 	public final Option.Num screenSize;
-	public final Option.Num cornerRadius;
+	public final Option.Num cornerRadius, buttonRoundness;
+	public final Option.Bool customButtons;
 	public final Option.Bool cosmetics;
 	public final Option.Bool petSounds;
 	public final Option.Bool othersEmotes;
@@ -233,6 +234,11 @@ public class SleepClientMod extends Mod {
 		screenSize = num("Home & Pause Menu Size", 100, 60, 150, 5, "%");
 		cornerRadius = num("Corner Radius", 3, 0, 12, 1, "");
 		cornerRadius.tip("How round the corners of Sleep's menus are.");
+		buttonRoundness = num("Button Roundness", 3, 0, 20, 1, " px");
+		buttonRoundness.tip("How round the corners of the buttons are: 0 = square, 20 = pill.");
+		customButtons = bool("Use My Own Button Design", false);
+		customButtons.tip("Every button gets the picture you drew in the button editor.");
+		action("Draw Your Own Buttons", "Open Editor", () -> dev.sleepclient.compat.Mc.setScreen(net.minecraft.client.Minecraft.getInstance(), new dev.sleepclient.gui.ButtonEditorScreen(dev.sleepclient.compat.Mc.screen(net.minecraft.client.Minecraft.getInstance()))), () -> customButtons.on() ? "In use" : "Off");
 
 		// ------------------------------------------------------------------ HUD & notifications
 		header("HUD & Notifications");

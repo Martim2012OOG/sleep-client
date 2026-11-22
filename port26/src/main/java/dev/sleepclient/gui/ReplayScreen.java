@@ -117,7 +117,7 @@ public class ReplayScreen extends Screen {
 		}
 		if (filmStarted && !filmFinishing) {
 			if (!FilmRender.alive() || FilmRender.error() != null || FilmRender.stalledMs() > 10_000) {
-				String why = FilmRender.error() != null ? FilmRender.error() : FilmRender.stalledMs() > 10_000 ? "the GPU picture never arrived (try a lower resolution)" : FilmRender.log();
+				String why = FilmRender.error() != null ? FilmRender.error() : FilmRender.stalledMs() > 10_000 ? "no picture arrived (" + FilmRender.debug() + ")" : FilmRender.log();
 				FilmRender.abort();
 				ClipToast.show("Film failed", why == null || why.isEmpty() ? "the encoder stopped" : why, null, true);
 				dev.sleepclient.compat.Mc.setScreen(mc, null);
@@ -321,7 +321,7 @@ public class ReplayScreen extends Screen {
 		int w = Math.min(320, width - 40), x = (width - w) / 2, y = height - 74;
 		Gfx.rrect(c, x, y, w, 52, 8, 0xE0101218);
 		Gfx.text(c, filmFinishing ? "Saving the film..." : "Rendering the film  " + Math.round(pct * 100) + "%", x + 12, y + 9, 0xFFFFFFFF);
-		Gfx.text(c, "frame " + FilmRender.frames() + "  -  every frame is rendered, so it is smooth even if this looks slow", x + 12, y + 22, 0x90FFFFFF);
+		Gfx.text(c, FilmRender.frames() < 3 ? FilmRender.debug() : "frame " + FilmRender.frames() + "  -  every frame is rendered, so it is smooth even if this looks slow", x + 12, y + 22, 0x90FFFFFF);
 		Gfx.rrect(c, x + 12, y + 36, w - 24, 6, 3, 0xFF2A2E3A);
 		Gfx.rrect(c, x + 12, y + 36, Math.max(6, (int) ((w - 24) * pct)), 6, 3, Theme.accent());
 	}

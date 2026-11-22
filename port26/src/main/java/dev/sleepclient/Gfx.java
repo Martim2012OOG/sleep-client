@@ -615,18 +615,29 @@ public final class Gfx {
 		buttonBody(c, x, y, w, h, pressed ? BTN_PRESSED : hover ? BTN_HOVER : BTN_BODY, pressed);
 	}
 
+	/** Corner radius of the buttons (Settings > Menus > Button Roundness). */
+	public static float btnRadius() {
+		var st = dev.sleepclient.SleepClient.settings;
+		return st == null ? 3F : st.buttonRoundness.f();
+	}
+
 	public static void buttonBody(GuiGraphicsExtractor c, int x, int y, int w, int h, int body, boolean pressed) {
 		if (w < 4 || h < 4) {
 			return;
 		}
+		if (dev.sleepclient.gui.CustomButton.active()) { // the button you drew yourself
+			dev.sleepclient.gui.CustomButton.draw(c, x, y, w, h, body == BTN_HOVER, pressed);
+			return;
+		}
+		float r = btnRadius(), ri = Math.max(0F, r - 1F);
 		// the launcher's button: dark outline, light top edge, a darker lip underneath that disappears when pressed
-		rrect(c, x, y, w, h, 3, BTN_EDGE);
+		rrectFree(c, x, y, w, h, r, BTN_EDGE);
 		if (pressed) {
-			rrect(c, x + 1, y + 2, w - 2, h - 3, 2, body);
+			rrectFree(c, x + 1, y + 2, w - 2, h - 3, ri, body);
 			c.fill(x + 3, y + 2, x + w - 3, y + 3, 0x22000000);
 		} else {
-			rrect(c, x + 1, y + 1, w - 2, h - 2, 2, blend(body, 0xFF000000, 0.4F));
-			rrect(c, x + 1, y + 1, w - 2, h - 5, 2, body);
+			rrectFree(c, x + 1, y + 1, w - 2, h - 2, ri, blend(body, 0xFF000000, 0.4F));
+			rrectFree(c, x + 1, y + 1, w - 2, h - 5, ri, body);
 			c.fill(x + 3, y + 1, x + w - 3, y + 3, 0x30FFFFFF);
 		}
 	}
@@ -649,10 +660,11 @@ public final class Gfx {
 		if (w < 6 || h < 6) {
 			return;
 		}
-		rrect(c, x, y, w, h, 3, 0xFF07080F);
+		float r = btnRadius(), ri = Math.max(0F, r - 1F);
+		rrectFree(c, x, y, w, h, r, 0xFF07080F);
 		int dy = pressed ? 2 : 0;
-		rrect(c, x + 1, y + 1 + dy, w - 2, h - 2 - dy, 2, lip);
-		rrect(c, x + 1, y + 1 + dy, w - 2, h - 2 - dy - (pressed ? 1 : 3), 2, body);
+		rrectFree(c, x + 1, y + 1 + dy, w - 2, h - 2 - dy, ri, lip);
+		rrectFree(c, x + 1, y + 1 + dy, w - 2, h - 2 - dy - (pressed ? 1 : 3), ri, body);
 		c.fill(x + 3, y + 1 + dy, x + w - 3, y + 2 + dy, shine);
 	}
 

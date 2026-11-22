@@ -48,6 +48,7 @@ public class SleepClient implements ClientModInitializer {
 		MODS.add(new CpsMod());
 		MODS.add(new dev.sleepclient.mods.ClickCounterMod());
 		MODS.add(new dev.sleepclient.mods.DangerDetectionMod());
+		MODS.add(new dev.sleepclient.mods.EnemyAlertMod());
 		MODS.add(new PingMod());
 		MODS.add(new CoordinatesMod());
 		MODS.add(new KeystrokesMod());
