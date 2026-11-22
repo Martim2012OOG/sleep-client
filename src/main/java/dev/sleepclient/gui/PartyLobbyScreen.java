@@ -85,7 +85,7 @@ public final class PartyLobbyScreen extends Screen {
 			return;
 		}
 		try {
-			page = HtmlOverlay.open(pageUrl());
+			page = HtmlOverlay.open(pageUrl(), true);
 		} catch (Throwable t) {
 			System.err.println("[Sleep] 3D lobby: " + t);
 		}
@@ -150,7 +150,16 @@ public final class PartyLobbyScreen extends Screen {
 	}
 
 	// ------------------------------------------------------------------ page -> game
+	private long lastPoll, lastHeavy, nextEmoteTry;
+	private String lastEmoteSig = "", lastPeopleSig = "";
+	private boolean emotesComplete;
+
 	private void poll() {
+		long pn = System.currentTimeMillis();
+		if (pn - lastPoll < 40L) {
+			return;
+		}
+		lastPoll = pn;
 		String url;
 		try {
 			url = page.browser().url();
@@ -166,6 +175,8 @@ public final class PartyLobbyScreen extends Screen {
 			if (!jsReady) {
 				jsReady = true;
 				lastFriends = lastEmotes = lastSkin = "";
+				lastPeopleSig = lastEmoteSig = "";
+				emotesComplete = false;
 				roleSent = serversSent = nameSent = false;
 			}
 			return;
@@ -223,9 +234,10 @@ public final class PartyLobbyScreen extends Screen {
 				Party.leave();
 				leave();
 			}
-			case "play" -> {
+			case "servers" -> {
+				// the real server list of the game: when the leader joins one, the party follows
 				if (Party.isLeader()) {
-					Party.playTogether(str(o, "name"), str(o, "ip"));
+					MinecraftClient.getInstance().setScreen(new net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen(this));
 				}
 			}
 			case "cancelJoin" -> {
@@ -281,20 +293,35 @@ public final class PartyLobbyScreen extends Screen {
 			lastSkin = skin;
 			js("OneMenu.setSkin(" + GSON.toJson(skin) + ")");
 		}
-		String fr = LobbyData.people().toString();
-		if (!fr.equals(lastFriends)) {
-			lastFriends = fr;
-			js("OneMenu.setFriends(" + fr + ")");
-		}
-		JsonArray wheel = LobbyData.wheel();
-		String we = wheel.toString();
-		if (!we.equals(lastEmotes) && wheel.size() > 0) {
-			lastEmotes = we;
-			js("OneMenu.setEmotes(" + we + ")");
-		}
-		if (!serversSent) {
-			serversSent = true;
-			js("OneMenu.setServers(" + servers() + ")");
+		long now = System.currentTimeMillis();
+		if (now - lastHeavy > 1000L) {
+			lastHeavy = now;
+			JsonArray people = LobbyData.people();
+			StringBuilder sig = new StringBuilder();
+			for (JsonElement pe : people) {
+				JsonObject po = pe.getAsJsonObject();
+				sig.append(po.get("name").getAsString()).append('|').append(po.get("online").getAsBoolean()).append('|').append(po.get("state").getAsString()).append('|')
+						.append(po.has("skin") ? po.get("skin").getAsString().hashCode() : 0).append(';');
+			}
+			if (!sig.toString().equals(lastPeopleSig)) {
+				lastPeopleSig = sig.toString();
+				js("OneMenu.setFriends(" + people + ")");
+			}
+			java.util.List<dev.sleepclient.emote.EmoteLibrary.Info> infos = LobbyData.wheelInfos();
+			StringBuilder es = new StringBuilder();
+			for (var i : infos) {
+				es.append(i.id()).append(';');
+			}
+			boolean changed = !es.toString().equals(lastEmoteSig);
+			if (!infos.isEmpty() && (changed || !emotesComplete && now >= nextEmoteTry)) {
+				boolean done = LobbyData.wheelComplete(infos);
+				nextEmoteTry = now + 2000L;
+				if (done || changed && lastEmoteSig.isEmpty() && now - openedAt > 15_000L || now - openedAt > 25_000L) {
+					lastEmoteSig = es.toString();
+					emotesComplete = done;
+					js("OneMenu.setEmotes(" + LobbyData.wheel(infos) + ")");
+				}
+			}
 		}
 		// emotes the others played
 		String[] em;
@@ -357,12 +384,12 @@ public final class PartyLobbyScreen extends Screen {
 	// ------------------------------------------------------------------ input -> page
 	private int px(double v) {
 		var w = client.getWindow();
-		return (int) Math.round(v * w.getFramebufferWidth() / (double) Math.max(1, w.getScaledWidth()));
+		return (int) Math.round(v * (page == null ? 1 : page.pageW()) / (double) Math.max(1, w.getScaledWidth()));
 	}
 
 	private int py(double v) {
 		var w = client.getWindow();
-		return (int) Math.round(v * w.getFramebufferHeight() / (double) Math.max(1, w.getScaledHeight()));
+		return (int) Math.round(v * (page == null ? 1 : page.pageH()) / (double) Math.max(1, w.getScaledHeight()));
 	}
 
 	private static int awt(int glfwButton) {

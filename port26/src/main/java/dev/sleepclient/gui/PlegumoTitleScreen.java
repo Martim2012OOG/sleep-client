@@ -39,6 +39,76 @@ public class PlegumoTitleScreen extends UiScreen {
 		return 1F - r * r * r;
 	}
 
+	@Override
+	public boolean mouseClicked(net.minecraft.client.input.MouseButtonEvent click, boolean doubled) {
+		if (click.button() == 0 && Season.snowGrab(sx(click.x()), sx(click.y()))) {
+			return true; // picked up a snowflake
+		}
+		if (click.button() == 0) {
+			double cmx = sx(click.x()), cmy = sx(click.y());
+			pressInSkin = cmx >= skinX && cmx < skinX + skinW && cmy >= skinY && cmy < skinY + skinH;
+			pressX = cmx;
+			pressY = cmy;
+		}
+		return super.mouseClicked(click, doubled);
+	}
+
+	@Override
+	public boolean mouseDragged(net.minecraft.client.input.MouseButtonEvent click, double dx, double dy) {
+		if (Season.snowHeld()) {
+			Season.snowDrag(sx(click.x()), sx(click.y()));
+			return true;
+		}
+		return super.mouseDragged(click, dx, dy);
+	}
+
+	@Override
+	public boolean mouseReleased(net.minecraft.client.input.MouseButtonEvent click) {
+		if (Season.snowHeld()) {
+			Season.snowRelease();
+			return true;
+		}
+		if (click.button() == 0 && pressInSkin) {
+			pressInSkin = false;
+			if (Math.hypot(sx(click.x()) - pressX, sx(click.y()) - pressY) < 5) {
+				toggleSkinEmote(); // a click, not a drag
+			}
+		}
+		return super.mouseReleased(click);
+	}
+
+	private int skinX, skinY, skinW, skinH;
+	private boolean pressInSkin;
+	private double pressX, pressY;
+	private int lastEmote = -1;
+
+	/** Click on your skin: a random emote you own plays; click again and it stops. */
+	private void toggleSkinEmote() {
+		if (dev.sleepclient.cosmetic.SkinPreview.menuEmotePlaying()) {
+			dev.sleepclient.cosmetic.SkinPreview.menuEmote(null);
+			return;
+		}
+		java.util.List<dev.sleepclient.emote.EmoteLibrary.Info> l = new java.util.ArrayList<>(dev.sleepclient.emote.EmoteLibrary.mine());
+		if (l.isEmpty()) {
+			return;
+		}
+		java.util.Collections.shuffle(l);
+		for (dev.sleepclient.emote.EmoteLibrary.Info e : l) {
+			int h = e.id().hashCode();
+			if ((h != lastEmote || l.size() == 1) && dev.sleepclient.emote.EmoteLibrary.animation(e) != null) {
+				lastEmote = h;
+				dev.sleepclient.cosmetic.SkinPreview.menuEmote(e);
+				return;
+			}
+		}
+	}
+
+	@Override
+	public void removed() {
+		dev.sleepclient.cosmetic.SkinPreview.menuEmote(null);
+		super.removed();
+	}
+
 	private boolean lobbyRedirected;
 
 	@Override
@@ -87,11 +157,12 @@ public class PlegumoTitleScreen extends UiScreen {
 		button(c, "sp", cx - bw / 2, by + o1, bw, bh, "Singleplayer", () -> dev.sleepclient.compat.Mc.setScreen(mc, new SelectWorldScreen(this)));
 		button(c, "mp", cx - bw / 2, by + bh + 6 + o2, bw, bh, "Multiplayer", () -> dev.sleepclient.compat.Mc.setScreen(mc, new JoinMultiplayerScreen(this)));
 		// Party: create one (or open yours) and play with friends
-		int o4 = Math.round((1F - intro(0.15F, 0.5F)) * 18F);
-		Party.Invite firstInv = Party.INVITES.isEmpty() ? null : Party.INVITES.get(0);
+				Party.Invite firstInv = Party.INVITES.isEmpty() ? null : Party.INVITES.get(0);
 		String partyLabel = Party.active() ? Lang.tr("Party", "Party") + "  " + Party.size() + "/" + Party.MAX
 				: firstInv != null ? Lang.tr("Join ", "Entrar em ") + fit(firstInv.leaderNick + (Lang.pt() ? "" : "'s party"), bw - 60) : Lang.tr("Create Party", "Criar Party");
-		button(c, "party", cx - bw / 2, by + 2 * (bh + 6) + o4, bw, bh, partyLabel, () -> {
+		// tucked away in the top-left corner, small, not in front of the main buttons
+		int px = 6, py = 6;
+		iconButton(c, "party", px, py, 20, "party_hud", partyLabel, () -> {
 			if (!Party.active() && firstInv != null) {
 				Party.accept(firstInv);
 			}
@@ -101,11 +172,10 @@ public class PlegumoTitleScreen extends UiScreen {
 		});
 		if (Party.pendingInvites() > 0) {
 			// red badge with the number of invites waiting
-			int bx2 = cx + bw / 2 - 9, by2 = by + 2 * (bh + 6) + o4 - 5;
-			Gfx.circle(c, bx2 + 7, by2 + 7, 8, 0xFFE5484D);
-			Gfx.textC(c, String.valueOf(Party.pendingInvites()), bx2 + 7, by2 + 3, 0xFFFFFFFF);
+			Gfx.circle(c, px + 18, py + 2, 8, 0xFFE5484D);
+			Gfx.textC(c, String.valueOf(Party.pendingInvites()), px + 18, py - 2, 0xFFFFFFFF);
 		}
-		int is = 20, ig = 6, iy = by + 3 * bh + 20 + o3;
+		int is = 20, ig = 6, iy = by + 2 * bh + 20 + o3;
 		boolean mm = ModMenuLink.preferred();
 		int n = mm ? 5 : 4;
 		int ix = cx - (n * is + (n - 1) * ig) / 2;
@@ -126,7 +196,7 @@ public class PlegumoTitleScreen extends UiScreen {
 		drawSocials(c);
 
 		// Christmas snow on top of everything
-		Season.snow(c, width, height);
+		Season.snow(c, width, height, mouseX, mouseY);
 
 		// soft fade in from black when the screen opens
 		int fade = Math.round((1F - intro(0F, 0.4F)) * 255F);
@@ -183,6 +253,10 @@ public class PlegumoTitleScreen extends UiScreen {
 		int top = Math.max(36, (height - (bodyH + 86)) / 2) + slide;
 
 		int rx = cx - Math.round(14 * u), ry = top - 6, rw = Math.round(28 * u), rh = bodyH + 12;
+		skinX = rx;
+		skinY = ry;
+		skinW = rw;
+		skinH = rh;
 		boolean dragging = isDragging(rx, ry);
 		stepSkinSpin(dragging);
 		RemoteTextures.Tex t = SkinChanger.myPreview();

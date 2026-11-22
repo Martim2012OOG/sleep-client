@@ -57,37 +57,151 @@ final class Season {
 		}
 	}
 
-	/** Falling snow over the whole screen (Christmas only). */
+	/** Falling snow without mouse interaction (other screens). */
 	static void snow(GuiGraphicsExtractor c, int w, int h) {
+		snow(c, w, h, -9999, -9999);
+	}
+
+	// ---- the snow on the main menu: every flake has a position and a speed; the mouse blows them away, a drag grabs one (throw it,
+	// or pull it out of the window, and it is gone for a while); the ones that land make the pile on the floor grow
+	private static final float[] PX = new float[FLAKES], PY = new float[FLAKES], VX = new float[FLAKES], VY = new float[FLAKES], DEAD = new float[FLAKES];
+	private static int sw, sh, grab = -1;
+	private static float gvx, gvy;
+	private static final java.util.Random RNG = new java.util.Random();
+
+	private static void respawn(int i, int w) {
+		PX[i] = RNG.nextFloat() * w;
+		PY[i] = -10F - RNG.nextFloat() * 20F;
+		VX[i] = 0F;
+		VY[i] = 0F;
+		DEAD[i] = -1F;
+	}
+
+	/** Pressing on a flake picks it up. True when one was taken. */
+	static boolean snowGrab(double mx, double my) {
+		if (current() != CHRISTMAS || !seeded) {
+			return false;
+		}
+		int best = -1;
+		float bd = Float.MAX_VALUE;
+		for (int i = 0; i < FLAKES; i++) {
+			if (DEAD[i] >= 0F) {
+				continue;
+			}
+			float cx = PX[i] + FS[i] / 2F, cy = PY[i] + FS[i] / 2F;
+			float d = (float) Math.hypot(cx - mx, cy - my);
+			if (d < Math.max(9F, FS[i] + 4F) && d < bd) {
+				bd = d;
+				best = i;
+			}
+		}
+		if (best < 0) {
+			return false;
+		}
+		grab = best;
+		gvx = 0F;
+		gvy = 0F;
+		return true;
+	}
+
+	static boolean snowHeld() {
+		return grab >= 0;
+	}
+
+	/** The mouse moved while holding a flake: outside the window it is deleted. */
+	static void snowDrag(double mx, double my) {
+		if (grab < 0) {
+			return;
+		}
+		if (mx < 1 || my < 1 || mx > sw - 1 || my > sh - 1) {
+			DEAD[grab] = 25F; // pulled off the screen: deleted (a new one falls in much later)
+			grab = -1;
+		}
+	}
+
+	static void snowRelease() {
+		if (grab >= 0) {
+			VX[grab] = Math.max(-1600F, Math.min(1600F, gvx));
+			VY[grab] = Math.max(-1600F, Math.min(1600F, gvy));
+			grab = -1;
+		}
+	}
+
+	static void snow(GuiGraphicsExtractor c, int w, int h, int mx, int my) {
 		if (current() != CHRISTMAS) {
 			return;
 		}
 		long now = System.currentTimeMillis();
-		float dt = last == 0 ? 0F : Math.min(0.1F, (now - last) / 1000F);
+		float dt = last == 0 ? 0F : Math.min(0.05F, (now - last) / 1000F);
 		last = now;
 		if (!seeded) {
-			Random r = new Random();
 			for (int i = 0; i < FLAKES; i++) {
-				FX[i] = r.nextFloat();
-				FY[i] = r.nextFloat();
-				FS[i] = 3F + r.nextFloat() * 5F;
-				FV[i] = 0.04F + r.nextFloat() * 0.07F;
-				FP[i] = r.nextFloat() * 6.28F;
+				FS[i] = 3F + RNG.nextFloat() * 5F;
+				FV[i] = 0.04F + RNG.nextFloat() * 0.07F;
+				FP[i] = RNG.nextFloat() * 6.28F;
+				respawn(i, w);
+				PY[i] = RNG.nextFloat() * h;
 			}
 			seeded = true;
 		}
-		double t = now / 1000.0;
-		for (int i = 0; i < FLAKES; i++) {
-			FY[i] += FV[i] * dt * (0.6F + FS[i] / 8F);
-			if (FY[i] > 1.05F) {
-				FY[i] = -0.05F;
-				FX[i] = (float) Math.random();
+		if (sw != w || sh != h) {
+			if (sw > 0 && sh > 0) {
+				for (int i = 0; i < FLAKES; i++) {
+					PX[i] *= (float) w / sw;
+					PY[i] *= (float) h / sh;
+				}
 			}
-			float x = FX[i] * w + (float) Math.sin(t * 0.8 + FP[i]) * 10F;
-			float y = FY[i] * h;
-			int s = Math.round(FS[i]);
-			int a = 0x60 + Math.round(FS[i] * 16);
-			Gfx.tex(c, Gfx.id("textures/gui/season/snowflake.png"), Math.round(x), Math.round(y), s, s, 16, 16, (Math.min(255, a) << 24) | 0xFFFFFF);
+			sw = w;
+			sh = h;
+		}
+		double t = now / 1000.0;
+		float relax = 1F - (float) Math.exp(-dt * 2.2F);
+		for (int i = 0; i < FLAKES; i++) {
+			if (DEAD[i] >= 0F) {
+				DEAD[i] -= dt;
+				if (DEAD[i] < 0F) {
+					respawn(i, w);
+				}
+				continue;
+			}
+			if (i == grab) {
+				float k = 1F - (float) Math.exp(-dt * 40F);
+				float nx = PX[i] + (mx - FS[i] / 2F - PX[i]) * k, ny = PY[i] + (my - FS[i] / 2F - PY[i]) * k;
+				if (dt > 0F) {
+					gvx += ((nx - PX[i]) / dt - gvx) * 0.35F;
+					gvy += ((ny - PY[i]) / dt - gvy) * 0.35F;
+				}
+				PX[i] = nx;
+				PY[i] = ny;
+				continue;
+			}
+			float fall = FV[i] * h * (0.6F + FS[i] / 8F);
+			float tvx = (float) Math.sin(t * 0.8 + FP[i]) * 12F;
+			VX[i] += (tvx - VX[i]) * relax;
+			VY[i] += (fall - VY[i]) * relax;
+			float dx = PX[i] + FS[i] / 2F - mx, dy = PY[i] + FS[i] / 2F - my;
+			float d2 = dx * dx + dy * dy;
+			if (grab < 0 && d2 < 2500F && d2 > 0.01F) { // the mouse blows flakes away
+				float d = (float) Math.sqrt(d2), f = (1F - d / 50F) * 1400F * dt / d;
+				VX[i] += dx * f;
+				VY[i] += dy * f;
+			}
+			PX[i] += VX[i] * dt;
+			PY[i] += VY[i] * dt;
+			if (PY[i] >= h - crest((int) Math.max(0F, Math.min(w - 1F, PX[i]))) - 1F) { // landed: the pile grows
+				level = Math.min(LEVEL_MAX, level + 0.012F);
+				respawn(i, w);
+			} else if (PX[i] < -24F || PX[i] > w + 24F || PY[i] < -60F) { // thrown off the screen: deleted
+				DEAD[i] = 25F;
+			}
+		}
+		for (int i = 0; i < FLAKES; i++) {
+			if (DEAD[i] >= 0F) {
+				continue;
+			}
+			int s = Math.round(FS[i]) + (i == grab ? 2 : 0);
+			int a = i == grab ? 255 : 0x60 + Math.round(FS[i] * 16);
+			Gfx.tex(c, Gfx.id("textures/gui/season/snowflake.png"), Math.round(PX[i]), Math.round(PY[i]), s, s, 16, 16, (Math.min(255, a) << 24) | 0xFFFFFF);
 		}
 	}
 
@@ -295,7 +409,7 @@ final class Season {
 		long now = System.currentTimeMillis();
 		float dt = pileAt == 0 ? 0F : Math.min(0.1F, (now - pileAt) / 1000F);
 		pileAt = now;
-		level = Math.min(LEVEL_MAX, level + dt * 0.12F);
+		
 		double t = now / 1000.0;
 		int n = w / COL + 1;
 		for (int i = 0; i < n; i++) {

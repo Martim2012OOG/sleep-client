@@ -17,6 +17,7 @@ public final class HtmlOverlay {
 	private final Identifier id = Identifier.fromNamespaceAndPath("sleep_client", "html_overlay_" + (counter++));
 	private boolean registered;
 	private int w, h;
+	private boolean scaled;
 
 	private HtmlOverlay(Mcef.Browser b, int w, int h) {
 		this.browser = b;
@@ -35,18 +36,36 @@ public final class HtmlOverlay {
 
 	/** Opens a page (http(s):// or file://) at the window's pixel size; null when MCEF is not ready. */
 	public static HtmlOverlay open(String url) {
+		return open(url, false);
+	}
+
+	/** Page size in pixels: the window size, or (scaled) a smaller one so a heavy 3D page runs smoothly and its text is bigger. */
+	static int[] sizeFor(boolean scaled, int fw, int fh) {
+		if (!scaled || fw <= 960) {
+			return new int[] {Math.max(320, fw), Math.max(180, fh)};
+		}
+		int tw = Math.max(960, Math.min(1280, Math.round(fw * 0.6F)));
+		int th = Math.max(180, Math.round(tw * (float) fh / fw));
+		return new int[] {tw, th};
+	}
+
+	/** Like {@link #open(String)}; scaled = rendered at a reduced size (the 3D party lobby). */
+	public static HtmlOverlay open(String url, boolean scaled) {
 		if (!available()) {
 			return null;
 		}
 		var win = Minecraft.getInstance().getWindow();
-		int w = Math.max(320, win.getWidth()), h = Math.max(180, win.getHeight());
+		int[] sz = sizeFor(scaled, win.getWidth(), win.getHeight());
+		int w = sz[0], h = sz[1];
 		try {
 			Mcef.Browser b = Mcef.create(url, w, h);
 			if (b == null) {
 				return null;
 			}
 			b.frameRate(60);
-			return new HtmlOverlay(b, w, h);
+			HtmlOverlay o = new HtmlOverlay(b, w, h);
+			o.scaled = scaled;
+			return o;
 		} catch (Throwable t) {
 			System.err.println("[Sleep] html overlay: " + t);
 			return null;
@@ -56,6 +75,15 @@ public final class HtmlOverlay {
 	/** The browser itself (the party lobby forwards the mouse and keys to it and reads its address). */
 	public Mcef.Browser browser() {
 		return browser;
+	}
+
+	/** The page size in pixels (mouse positions must be given in it). */
+	public int pageW() {
+		return w;
+	}
+
+	public int pageH() {
+		return h;
 	}
 
 	/** Runs JavaScript in the page. */
@@ -85,9 +113,10 @@ public final class HtmlOverlay {
 	public void draw(GuiGraphicsExtractor c) {
 		var win = Minecraft.getInstance().getWindow();
 		int fw = win.getWidth(), fh = win.getHeight();
-		if (fw != w || fh != h) {
-			w = fw;
-			h = fh;
+		int[] sz = sizeFor(scaled, fw, fh);
+		if (sz[0] != w || sz[1] != h) {
+			w = sz[0];
+			h = sz[1];
 			browser.resize(w, h);
 		}
 		if (!ready()) {

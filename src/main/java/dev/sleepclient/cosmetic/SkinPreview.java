@@ -114,6 +114,39 @@ public final class SkinPreview {
 				k -> new Model(TexturedModelData.of(PlayerEntityModel.getTexturedModelData(Dilation.NONE, slimArms), 64, 64).createModel(), slimArms));
 	}
 
+	private static volatile dev.sleepclient.emote.EmoteLibrary.Info menuEmote;
+	private static long menuEmoteStart;
+
+	/** The skin on the main menu plays this emote until it ends (loops until stopped); null stops it. */
+	public static void menuEmote(dev.sleepclient.emote.EmoteLibrary.Info e) {
+		menuEmote = e;
+		menuEmoteStart = System.currentTimeMillis();
+	}
+
+	public static boolean menuEmotePlaying() {
+		return menuEmote != null;
+	}
+
+	private static void applyMenuEmote(Model m) {
+		dev.sleepclient.emote.EmoteLibrary.Info e = menuEmote;
+		if (e == null) {
+			return;
+		}
+		dev.sleepclient.emote.Animation anim = dev.sleepclient.emote.EmoteLibrary.animation(e);
+		if (anim == null) {
+			return;
+		}
+		float len = Math.max(1, anim.lengthTicks());
+		float ticks = (System.currentTimeMillis() - menuEmoteStart) / 50F;
+		if (anim.loop) {
+			ticks %= len;
+		} else if (ticks > len + 6F) {
+			menuEmote = null; // it ended
+			return;
+		}
+		dev.sleepclient.emote.EmoteRig.apply(anim, anim.animTime(Math.min(ticks, len)), 1F, m.head, m.body, m.rightArm, m.leftArm, m.rightLeg, m.leftLeg);
+	}
+
 	private static long cardHoverStart;
 	private static dev.sleepclient.emote.EmoteLibrary.Info cardHover;
 
@@ -128,6 +161,10 @@ public final class SkinPreview {
 		try {
 			net.minecraft.client.network.ClientPlayerEntity me = net.minecraft.client.MinecraftClient.getInstance().player;
 			net.minecraft.util.Identifier own = me == null ? null : me.getSkin().body().texturePath();
+			if (own == null) { // in the menu there is no player: your own skin, not the grey one
+				RemoteTextures.Tex mt = dev.sleepclient.skin.SkinChanger.myPreview();
+				own = mt == null ? null : mt.id();
+			}
 			boolean slimOwn = dev.sleepclient.skin.SkinChanger.selfSlim();
 			Model m = cardModel(info.id(), slimOwn);
 			m.wear = List.of();
@@ -355,6 +392,8 @@ public final class SkinPreview {
 			m.leftArm.pitch = -pitchA;
 			if (pr != null) { // the Locker shows the selected emote
 				dev.sleepclient.emote.EmoteManager.applyPreview(pr, m.head, m.body, m.rightArm, m.leftArm, m.rightLeg, m.leftLeg);
+			} else if (menuEmote != null) {
+				applyMenuEmote(m);
 			}
 			float perBlock = px * 16F;
 			// the model is centred on the point 1.0625 blocks above the feet

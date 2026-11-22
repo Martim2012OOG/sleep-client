@@ -4734,8 +4734,9 @@ public class SolMenuScreen extends Screen {
 		}
 		if (slot >= 0) {
 			String sn = String.valueOf(slot + 1);
-			Gfx.rrect(c, x + w - 18, y + 7, 12, 12, 3, 0xFF248A52);
-			Gfx.textRaw(c, sn, x + w - 12 - Gfx.twRaw(sn) / 2, y + 9, 0xFFFFFFFF);
+			int bwid = Math.max(16, Gfx.twRaw(sn) + 10), bx = x + w - bwid - 8, by = y + 8;
+			Gfx.rrectBorder(c, bx, by, bwid, 16, 8, 0xE60F1A14, 0xFF2FA866); // a round dark badge with a green rim
+			Gfx.textRaw(c, sn, bx + (bwid - Gfx.twRaw(sn)) / 2, by + 4, 0xFFE9FFF2);
 		}
 		int ny = y + h - 15;
 		Social.Item si = lockerShop ? Social.emoteItem(e.id(), e.name()) : null;

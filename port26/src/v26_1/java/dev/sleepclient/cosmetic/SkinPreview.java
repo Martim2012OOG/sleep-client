@@ -101,6 +101,11 @@ public final class SkinPreview {
 		return greySkin;
 	}
 
+	private static net.minecraft.resources.Identifier ownOrGrey() {
+		RemoteTextures.Tex mt = dev.sleepclient.skin.SkinChanger.myPreview();
+		return mt == null ? greySkin() : mt.id();
+	}
+
 	/** One model per emote card: the screen draws later in the frame, so cards must not share a model (they would all show the last pose). */
 	private static final java.util.LinkedHashMap<String, Model> CARD_MODELS = new java.util.LinkedHashMap<>(64, 0.75F, true) {
 		@Override
@@ -112,6 +117,39 @@ public final class SkinPreview {
 	private static Model cardModel(String id, boolean slimArms) {
 		return CARD_MODELS.computeIfAbsent(id + (slimArms ? "|s" : "|w"),
 				k -> new Model(LayerDefinition.create(PlayerModel.createMesh(CubeDeformation.NONE, slimArms), 64, 64).bakeRoot(), slimArms));
+	}
+
+	private static volatile dev.sleepclient.emote.EmoteLibrary.Info menuEmote;
+	private static long menuEmoteStart;
+
+	/** The skin on the main menu plays this emote until it ends (loops until stopped); null stops it. */
+	public static void menuEmote(dev.sleepclient.emote.EmoteLibrary.Info e) {
+		menuEmote = e;
+		menuEmoteStart = System.currentTimeMillis();
+	}
+
+	public static boolean menuEmotePlaying() {
+		return menuEmote != null;
+	}
+
+	private static void applyMenuEmote(Model m) {
+		dev.sleepclient.emote.EmoteLibrary.Info e = menuEmote;
+		if (e == null) {
+			return;
+		}
+		dev.sleepclient.emote.Animation anim = dev.sleepclient.emote.EmoteLibrary.animation(e);
+		if (anim == null) {
+			return;
+		}
+		float len = Math.max(1, anim.lengthTicks());
+		float ticks = (System.currentTimeMillis() - menuEmoteStart) / 50F;
+		if (anim.loop) {
+			ticks %= len;
+		} else if (ticks > len + 6F) {
+			menuEmote = null; // it ended
+			return;
+		}
+		dev.sleepclient.emote.EmoteRig.apply(anim, anim.animTime(Math.min(ticks, len)), 1F, m.head, m.body, m.rightArm, m.leftArm, m.rightLeg, m.leftLeg);
 	}
 
 	private static long cardHoverStart;
@@ -158,7 +196,7 @@ public final class SkinPreview {
 			float cx = x + w / 2F, feetY = y + h - 6;
 			float centerY = feetY - 1.0625F * perBlock;
 			int half = Math.round(perBlock * 1.6F);
-			c.skin(m, greySkin(), perBlock, -4F, -28F, -1.0625F, Math.round(cx - half), Math.round(centerY - half), Math.round(cx + half),
+			c.skin(m, ownOrGrey(), perBlock, -4F, -28F, -1.0625F, Math.round(cx - half), Math.round(centerY - half), Math.round(cx + half),
 					Math.round(centerY + half));
 			return true;
 		} catch (Throwable e) {
@@ -352,6 +390,8 @@ public final class SkinPreview {
 			m.leftArm.xRot = -pitchA;
 			if (pr != null) { // the Locker shows the selected emote
 				dev.sleepclient.emote.EmoteManager.applyPreview(pr, m.head, m.body, m.rightArm, m.leftArm, m.rightLeg, m.leftLeg);
+			} else if (menuEmote != null) {
+				applyMenuEmote(m);
 			}
 			float perBlock = px * 16F;
 			// the model is centred on the point 1.0625 blocks above the feet

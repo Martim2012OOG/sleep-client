@@ -15,6 +15,13 @@ public final class SkinPreview {
 
 	public static volatile Object provider;
 
+	public static void menuEmote(dev.sleepclient.emote.EmoteLibrary.Info e) {
+	}
+
+	public static boolean menuEmotePlaying() {
+		return false;
+	}
+
 	public static boolean drawEmoteCard(GuiGraphicsExtractor c, dev.sleepclient.emote.EmoteLibrary.Info info, boolean play, int x, int y, int w, int h) {
 		return false;
 	}

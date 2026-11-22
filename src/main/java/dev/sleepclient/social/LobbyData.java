@@ -176,14 +176,46 @@ public final class LobbyData {
 	}
 
 	// ------------------------------------------------------------------ emotes
-	/** The emotes in your wheel (the ones you bought): id, name, icon and animation. Empty = the page keeps its emoji wheel. */
-	public static JsonArray wheel() {
-		JsonArray out = new JsonArray();
+	/** The emotes the lobby wheel shows: the ones in your wheel slots, else the ones you own (the client's dance emotes), max 8. */
+	public static List<EmoteLibrary.Info> wheelInfos() {
+		List<EmoteLibrary.Info> l = new ArrayList<>();
 		for (int i = 0; i < EmoteSlots.SLOTS; i++) {
 			EmoteLibrary.Info info = EmoteSlots.get(i);
-			if (info == null) {
-				continue;
+			if (info != null) {
+				l.add(info);
 			}
+		}
+		if (l.isEmpty()) {
+			for (EmoteLibrary.Info info : EmoteLibrary.mine()) {
+				if (l.size() < 8) {
+					l.add(info);
+				}
+			}
+		}
+		if (l.isEmpty()) {
+			for (EmoteLibrary.Info info : EmoteLibrary.all()) {
+				if (l.size() < 8) {
+					l.add(info);
+				}
+			}
+		}
+		return l;
+	}
+
+	/** True when every emote of the wheel already has its animation (shop emotes download in the background). */
+	public static boolean wheelComplete(List<EmoteLibrary.Info> infos) {
+		for (EmoteLibrary.Info i : infos) {
+			if (anim(i) == null) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/** The wheel emotes: id, name, icon and animation. */
+	public static JsonArray wheel(List<EmoteLibrary.Info> infos) {
+		JsonArray out = new JsonArray();
+		for (EmoteLibrary.Info info : infos) {
 			JsonObject o = new JsonObject();
 			o.addProperty("id", info.id());
 			o.addProperty("n", info.name());
