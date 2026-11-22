@@ -89,6 +89,16 @@ public final class FightFilm {
 		return best;
 	}
 
+	/** When set, only fights this player is part of count (the "only my fights" option). */
+	public static UUID onlyMe;
+
+	private static void mineOnly(List<Hit> hits) {
+		UUID me = onlyMe;
+		if (me != null) {
+			hits.removeIf(h -> !me.equals(h.victim()) && !me.equals(h.attacker()));
+		}
+	}
+
 	public static Fight analyze(Replay.Frame[] fr, int from) {
 		return analyze(fr, from, true);
 	}
@@ -114,11 +124,13 @@ public final class FightFilm {
 				}
 			}
 		}
+		mineOnly(hits);
 		if (hits.isEmpty()) {
 			if (strict) {
 				return null;
 			}
 			hits = swingHits(fr, from); // the game showed no hit (explosions...): players swinging at each other count
+			mineOnly(hits);
 			if (hits.size() < 3) {
 				return null;
 			}

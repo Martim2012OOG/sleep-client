@@ -108,6 +108,133 @@ public final class Replay {
 	/** true while WE change blocks (so we do not record our own changes) */
 	private static boolean applying;
 	private static Object worldRef;
+	private static Object playerRef;
+
+	/** A fight you left behind: the map it happened on is kept in memory so the film can still be rendered. */
+	public static final class Saved {
+		public Object world, player;
+		Frame[] frames;
+		BlockChange[] blocks;
+		Map<BlockPos, BlockState> live;
+		Map<UUID, Actor> actors;
+		long tickNo, virtualNs;
+		public final long at = System.currentTimeMillis();
+	}
+
+	public static volatile Saved saved;
+	/** set when a fight was kept because you changed map (the toast is shown once) */
+	public static volatile boolean justSaved;
+	private static boolean ghost;
+	private static Object realWorld, realPlayer, realCam;
+
+	public static boolean ghost() {
+		return ghost;
+	}
+
+	private static void stash() {
+		if (ghost || worldRef == null || FRAMES.size() < 100 || !dev.sleepclient.mods.FightCamMod.pendingFight()) {
+			return;
+		}
+		Saved sv = new Saved();
+		sv.world = worldRef;
+		sv.player = playerRef;
+		sv.frames = FRAMES.toArray(new Frame[0]);
+		sv.blocks = BLOCKS.toArray(new BlockChange[0]);
+		sv.live = new HashMap<>(LIVE);
+		sv.actors = new HashMap<>(ACTORS);
+		sv.tickNo = tickNo;
+		sv.virtualNs = virtualNs;
+		saved = sv;
+		justSaved = true;
+	}
+
+	/** Shows the kept map again (the old world and player are put back in the game for the length of the film). Returns false if it cannot. */
+	public static boolean enterGhost() {
+		Saved sv = saved;
+		if (sv == null || ghost || active || sv.world == null || sv.player == null || mc.level == null || mc.gameMode == null || sv.world == mc.level) {
+			return false;
+		}
+		try {
+			realWorld = mc.level;
+			realPlayer = mc.player;
+			realCam = mc.getCameraEntity();
+			FRAMES.clear();
+			BLOCKS.clear();
+			LIVE.clear();
+			ACTORS.clear();
+			LAST.clear();
+			FRAMES.addAll(java.util.Arrays.asList(sv.frames));
+			BLOCKS.addAll(java.util.Arrays.asList(sv.blocks));
+			LIVE.putAll(sv.live);
+			ACTORS.putAll(sv.actors);
+			tickNo = sv.tickNo;
+			virtualNs = sv.virtualNs;
+			lastWallNs = 0;
+			mc.level = (net.minecraft.client.multiplayer.ClientLevel) sv.world;
+			mc.player = (net.minecraft.client.player.LocalPlayer) sv.player;
+			mc.setCameraEntity(mc.player);
+			rendererLevel(sv.world);
+			mc.particleEngine.setLevel((net.minecraft.client.multiplayer.ClientLevel) sv.world);
+			worldRef = sv.world;
+			playerRef = sv.player;
+			ghost = true;
+			return true;
+		} catch (Throwable t) {
+			System.err.println("[Sleep] could not show the saved map: " + t);
+			try {
+				restoreReal();
+			} catch (Throwable ignored) {
+			}
+			return false;
+		}
+	}
+
+	/** Tells the world renderer which world to draw (the method is called differently in the newest version). */
+	private static void rendererLevel(Object lvl) {
+		try {
+			mc.levelRenderer.getClass().getMethod("setLevel", net.minecraft.client.multiplayer.ClientLevel.class).invoke(mc.levelRenderer, lvl);
+			return;
+		} catch (NoSuchMethodException e) {
+			// newer version: the renderer reads the world from the game
+		} catch (Throwable t) {
+			System.err.println("[Sleep] renderer level: " + t);
+		}
+		try {
+			mc.levelRenderer.getClass().getMethod("resetLevelRenderData").invoke(mc.levelRenderer);
+		} catch (Throwable ignored) {
+		}
+	}
+
+	private static void restoreReal() {
+		if (realWorld == null) {
+			return;
+		}
+		mc.level = (net.minecraft.client.multiplayer.ClientLevel) realWorld;
+		mc.player = (net.minecraft.client.player.LocalPlayer) realPlayer;
+		mc.setCameraEntity(realCam == null ? mc.player : (net.minecraft.world.entity.Entity) realCam);
+		rendererLevel(realWorld);
+		mc.particleEngine.setLevel((net.minecraft.client.multiplayer.ClientLevel) realWorld);
+		worldRef = realWorld;
+		playerRef = realPlayer;
+		realWorld = null;
+		realPlayer = null;
+		realCam = null;
+	}
+
+	/** Puts the real world back after the film of the kept map. */
+	public static void leaveGhost() {
+		if (!ghost) {
+			return;
+		}
+		ghost = false;
+		saved = null;
+		try {
+			restoreReal();
+		} catch (Throwable t) {
+			System.err.println("[Sleep] could not go back to the map: " + t);
+		}
+		clear();
+	}
 
 	// ---------------------------------------------------------------- playback
 	private static boolean active;
@@ -248,24 +375,44 @@ public final class Replay {
 	/** Every client tick (only while the FightCam mod is on). */
 	public static void tick() {
 		if (mc.level == null || mc.player == null) {
+			if (ghost) {
+				ghost = false;
+				saved = null;
+				realWorld = realPlayer = realCam = null;
+			} else {
+				stash();
+			}
 			if (active) {
 				stop();
 			}
 			clear();
 			worldRef = null;
+			playerRef = null;
 			return;
 		}
+		if (ghost) {
+			if (mc.level == worldRef) {
+				return; // showing the kept map: nothing is recorded
+			}
+			ghost = false; // the game moved on to another map while the film was running: let go
+			saved = null;
+			realWorld = realPlayer = realCam = null;
+		}
 		if (worldRef != mc.level) {
-			// new world / server: the old replay belongs to another world
+			// new world / server: the old replay belongs to another world, but a fight that was not filmed yet is kept
+			if (worldRef != null) {
+				stash();
+			}
 			if (active) {
 				stop();
 			}
-			if (FRAMES.size() >= 100) {
+			if (FRAMES.size() >= 100 && saved == null) {
 				lostBuffer = true;
 			}
 			clear();
 			worldRef = mc.level;
 		}
+		playerRef = mc.player;
 		if (!recordingEnabled) {
 			return;
 		}
@@ -504,7 +651,7 @@ public final class Replay {
 		SLOWS.clear();
 		stopAt = -1;
 		// put every block back to how the server says it is now
-		if (mc.level != null) {
+		if (mc.level != null && mc.level == worldRef) {
 			applying = true;
 			try {
 				for (BlockPos p : BY_POS.keySet()) {
@@ -527,6 +674,7 @@ public final class Replay {
 		COPIES.clear();
 		SHOWN.clear();
 		BY_POS.clear();
+		leaveGhost();
 	}
 
 	// ---------------------------------------------------------------- timeline

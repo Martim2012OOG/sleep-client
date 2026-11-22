@@ -44,6 +44,87 @@ public class PerformanceMod extends Mod {
 	private final Option.Action worldResStatus = action("World Resolution Now", "Refresh", () -> {
 	}, () -> dev.sleepclient.render.WorldScale.status);
 
+	public final Option.Num targetFps = num("Adaptive Target FPS", 120, 30, 360, 10, "")
+			.tip("World Resolution Auto keeps your FPS near this number: when the game is slower the 3D world is drawn a bit smaller (menus and text stay sharp), when there is room it goes back to full sharpness.");
+	public final Option.Bool farEntities = bool("Hide Far Entities (more FPS)", true)
+			.tip("Mobs, armor stands, boats and other things farther than this are not drawn. Players are never hidden by this.");
+	public final Option.Num farDistance = num("Far Entities Distance", 56, 24, 128, 4, " blocks");
+	@SuppressWarnings("unused")
+	private final Option.Action turboNow = action("Turbo Mode (best FPS settings)", "Apply", PerformanceMod::turbo,
+			() -> "Fewer particles, no clouds, no entity shadows, no VSync, uncapped FPS, nearer entities. Keeps your render distance.");
+
+	/** Adaptive resolution state: the scale follows the measured FPS (checked twice a second, steps of 5%). */
+	private static float adScale = -1F;
+	private static long adAt;
+	private static int adFrames;
+
+	private static float adaptive(net.minecraft.client.MinecraftClient mc, boolean retina, int cap) {
+		float min = retina ? 0.5F : 0.7F;
+		if (adScale < 0F) {
+			adScale = retina ? 0.6F : 1F;
+		}
+		PerformanceMod m = instance;
+		long now = System.nanoTime();
+		adFrames++;
+		if (adAt == 0) {
+			adAt = now;
+		}
+		long el = now - adAt;
+		if (el >= 500_000_000L) {
+			float fps = adFrames * 1e9F / el;
+			adFrames = 0;
+			adAt = now;
+			float target = m == null ? 120F : m.targetFps.f();
+			if (cap < 250) {
+				target = Math.min(target, cap * 0.96F);
+			}
+			if (fps >= 20F) { // below that the game is loading or in the background
+				if (fps < target * 0.92F) {
+					adScale = Math.max(min, adScale - 0.05F);
+				} else if (fps > target * 1.12F) {
+					adScale = Math.min(1F, adScale + 0.05F);
+				}
+			}
+		}
+		return Math.max(min, Math.min(1F, adScale));
+	}
+
+	private static Boolean turboChecked;
+
+	/** First start only: applies the fast video settings once (you can change them afterwards, they are not forced again). */
+	private static void autoTurbo() {
+		if (turboChecked != null) {
+			return;
+		}
+		turboChecked = true;
+		try {
+			java.nio.file.Path f = net.fabricmc.loader.api.FabricLoader.getInstance().getConfigDir().resolve("sleep-turbo-v1.txt");
+			if (!java.nio.file.Files.exists(f)) {
+				turbo();
+				java.nio.file.Files.writeString(f, "applied");
+			}
+		} catch (Throwable ignored) {
+		}
+	}
+
+	public static void turbo() {
+		try {
+			net.minecraft.client.MinecraftClient mc = net.minecraft.client.MinecraftClient.getInstance();
+			var o = mc.options;
+			o.getParticles().setValue(net.minecraft.particle.ParticlesMode.DECREASED);
+			o.getCloudRenderMode().setValue(net.minecraft.client.option.CloudRenderMode.OFF);
+			o.getEntityShadows().setValue(false);
+			o.getEnableVsync().setValue(false);
+			o.getMaxFps().setValue(260);
+			o.getEntityDistanceScaling().setValue(Math.min(o.getEntityDistanceScaling().getValue(), 0.75D));
+			o.getSimulationDistance().setValue(Math.min(o.getSimulationDistance().getValue(), 10));
+			o.write();
+			System.out.println("[Sleep] Turbo mode applied");
+		} catch (Throwable t) {
+			System.err.println("[Sleep] turbo mode: " + t);
+		}
+	}
+
 	/** How big the world is drawn compared to the screen (1 = full). */
 	public static float worldScale(net.minecraft.client.MinecraftClient mc) {
 		PerformanceMod m = instance;
@@ -54,7 +135,11 @@ public class PerformanceMod extends Mod {
 			case 1 -> 1F;
 			case 2 -> 0.75F;
 			case 3 -> 0.5F;
-			default -> mc.getWindow().getFramebufferWidth() >= mc.getWindow().getWidth() * 1.5F && !reading(mc) ? 0.5F : 1F; // Retina: half, full when reading
+			default -> {
+				boolean retina = mc.getWindow().getFramebufferWidth() >= mc.getWindow().getWidth() * 1.5F;
+				float a = adaptive(mc, retina, mc.options.getMaxFps().getValue());
+				yield reading(mc) ? 1F : a;
+			}
 		};
 	}
 
@@ -181,6 +266,7 @@ public class PerformanceMod extends Mod {
 		MinecraftClient mc = MinecraftClient.getInstance();
 		var p = mc.player;
 		saveRetina();
+		autoTurbo();
 		crowd(mc);
 		if (p == null) {
 			lastActive = System.currentTimeMillis();
@@ -285,10 +371,16 @@ public class PerformanceMod extends Mod {
 			return;
 		}
 		Bucket items = new Bucket(), orbs = new Bucket(), players = new Bucket(), npcs = new Bucket();
+		Set<Integer> far = new HashSet<>();
+		double farSq = farEntities.on() ? farDistance.f() * farDistance.f() : Double.MAX_VALUE;
 		var net = mc.getNetworkHandler();
 		Entity self = mc.player, cam = mc.getCameraEntity(), target = mc.targetedEntity;
 		for (Entity e : mc.world.getEntities()) {
 			if (e == self || e == cam || e == target) {
+				continue;
+			}
+			if (!(e instanceof PlayerEntity) && !(e instanceof ItemEntity) && e.squaredDistanceTo(self) > farSq) {
+				far.add(e.getId()); // far away: not drawn
 				continue;
 			}
 			if (e instanceof ItemEntity) {
@@ -307,7 +399,7 @@ public class PerformanceMod extends Mod {
 				npcs.add(e.squaredDistanceTo(self), e.getId()); // armor stands / holograms / villagers / animals
 			}
 		}
-		Set<Integer> out = new HashSet<>();
+		Set<Integer> out = far;
 		double id = itemDistance.f(), pd = playerDistance.f();
 		pick(items, Math.round(maxItems.f()), id * id, 4, out);
 		pick(orbs, Math.round(maxXp.f()), id * id, 4, out);

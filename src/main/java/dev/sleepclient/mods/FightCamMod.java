@@ -73,6 +73,7 @@ public class FightCamMod extends Mod {
 	private int offerTick;
 	private long offeredTick = -1, lastFightTick = -1, filmedTick = -1;
 	private Option.Bool autoFilm;
+	private Option.Bool onlyMine;
 	// camera
 	private Option.Key camKey;
 	private Option.Choice mode;
@@ -167,10 +168,11 @@ public class FightCamMod extends Mod {
 		fightQuiet.tip("How long without any hit before the \"Fight over\" message.");
 		filmOffer = bool("Offer a film after each fight", true);
 		autoFilm = bool("Film fights by itself", true);
-		autoFilm.tip("When a fight ends the film is rendered at once, before you leave the map (a film needs the map it happened on).");
+		onlyMine = bool("Only my fights (not other people's)", true).tip("Films and offers only the fights you are in. Fights between other players around you are ignored.");
+		autoFilm.tip("When a fight ends the film is rendered at once. If you already left the map, it is rendered from a saved copy of that map (blocks, items and all).");
 		filmSlow = bool("Slow motion on the kill", true);
 		sessionCam = choice("Zero-lag recording camera", 0, "My view (first person)", "Chase (behind me)");
-		for (Option<?> o : new Option<?>[] {filmKey, studioKey, markKey, fightRadius, fightQuiet, autoFilm, filmOffer, filmSlow, sessionCam}) {
+		for (Option<?> o : new Option<?>[] {filmKey, studioKey, markKey, fightRadius, fightQuiet, onlyMine, autoFilm, filmOffer, filmSlow, sessionCam}) {
 			o.visibleIf = () -> rep.getAsBoolean() && replayBuffer.on();
 		}
 		action("Film Studio", "Open", this::openStudio, () -> "start / stop, make a film, watch your videos")
@@ -402,6 +404,7 @@ public class FightCamMod extends Mod {
 		tickNs = System.nanoTime();
 		Replay.configure(replayLength.i(), replayRange.f());
 		Replay.recordingEnabled = replayBuffer.on();
+		FightFilm.onlyMe = onlyMine != null && onlyMine.on() && mc.player != null ? mc.player.getUuid() : null;
 		Replay.tick();
 		FightLooks.chain = FightLooks.chainFor(look.idx(), lutPath.get());
 		if (mc.player == null || mc.world == null) {
@@ -452,6 +455,20 @@ public class FightCamMod extends Mod {
 			}
 		}
 		prevMarkKey = mk;
+		if (Replay.justSaved) {
+			Replay.justSaved = false;
+			lastFightTick = -1;
+			ClipToast.show("Fight saved", "You changed map: the film is made from the saved map", null, false);
+		}
+		Replay.Saved sv = Replay.saved;
+		if (sv != null && !Replay.ghost()) {
+			if (System.currentTimeMillis() - sv.at > 20 * 60_000L) {
+				Replay.saved = null; // too old, let the memory go
+			} else if (autoFilm.on() && !Replay.active() && mc.currentScreen == null && mc.interactionManager != null && ++savedWait >= 60) {
+				savedWait = 0;
+				openSavedFilm();
+			}
+		}
 		if (Replay.lostBuffer) {
 			Replay.lostBuffer = false;
 			if (lastFightTick >= 0 && lastFightTick != filmedTick) {
@@ -495,9 +512,38 @@ public class FightCamMod extends Mod {
 		}
 	}
 
+	/** True when a fight was seen that has not been filmed yet (or its film was cut short): it is kept if you change map. */
+	public static boolean pendingFight() {
+		FightCamMod m = instance;
+		return m != null && m.lastFightTick >= 0 && (m.lastFightTick != m.filmedTick || dev.sleepclient.fightcam.FilmRender.alive());
+	}
+
+	private int savedWait;
+
+	/** Renders the fight of a map you already left, from the map copy that was kept. */
+	public void openSavedFilm() {
+		if (!Ffmpeg.ready()) {
+			ClipToast.show("Set up the recorder first", "FightCam > Recording > Recorder", null, true);
+			return;
+		}
+		if (!Replay.enterGhost()) {
+			ClipToast.show("Cannot render the saved fight yet", "Join a server or a world first, then try again", null, true);
+			return;
+		}
+		openFilm();
+		if (!Replay.active()) {
+			Replay.leaveGhost();
+		}
+	}
+
 	/** Fight Film: finds the last fight in the buffer, writes a cinematic camera for it and records it to an .mp4 by itself. */
 	public void openFilm() {
 		if (mc.world == null || Replay.active()) {
+			return;
+		}
+		Replay.Saved sv = Replay.saved;
+		if (sv != null && !Replay.ghost() && sv.world != mc.world) {
+			openSavedFilm();
 			return;
 		}
 		if (!Ffmpeg.ready()) {
