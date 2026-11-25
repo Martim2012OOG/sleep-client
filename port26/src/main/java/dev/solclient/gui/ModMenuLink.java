@@ -6,8 +6,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 
 /**
- * Link to the original Mod Menu (by reflection: Sleep does not depend on it). Settings > Menus > "Mods Screen" decides if
- * the mods list opens Sleep's own tab or the original Mod Menu screen.
+ * Link to the original Mod Menu (by reflection: Caos does not depend on it). Settings > Menus > "Mods Screen" decides if
+ * the mods list opens Caos's own tab or the original Mod Menu screen.
  */
 public final class ModMenuLink {
 
@@ -43,7 +43,7 @@ public final class ModMenuLink {
 				return true;
 			}
 		} catch (Throwable t) {
-			System.err.println("[Sleep] Could not open Mod Menu: " + t);
+			System.err.println("[Caos] Could not open Mod Menu: " + t);
 		}
 		return false;
 	}

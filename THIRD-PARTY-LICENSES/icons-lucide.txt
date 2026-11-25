@@ -1,8 +1,7 @@
 Lucide icons (music-2, headphones) - ISC License
 Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2022 as part of Feather (MIT). All other copyright (c) for Lucide are held by Lucide Contributors 2022.
 Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted, provided that the above copyright notice and this permission notice appear in all copies.
-Source: https://lucide.dev (lucide-static 0.456.0). Used in assets/sleep_client/textures/font/music_icons.png (Music Share tags).
-Also: layers (icon of 3D Skin Layers) -> assets/sleep_client/textures/gui/icon/skin_layers_3d.png
-Also: music-2 and headphones as icons of Music Share / Music Listeners (assets/sleep_client/textures/gui/icon/music_share.png, music_listeners.png)
-Also: moon, swords, feather as neutral icons of the importer (assets/sleep_client/textures/gui/icon/import_*.png)
-Also: gauge (icon of Smooth Frames) -> assets/sleep_client/textures/gui/icon/smooth_frames.png (redrawn from the Lucide path, lucide-static 0.468.0).
+Source: https://lucide.dev (lucide-static 0.456.0). Used in assets/sol_client/textures/font/music_icons.png (Music Share tags).
+Also: layers (icon of 3D Skin Layers) -> assets/sol_client/textures/gui/icon/skin_layers_3d.png
+Also: music-2 and headphones as icons of Music Share / Music Listeners (assets/sol_client/textures/gui/icon/music_share.png, music_listeners.png)
+Also: moon, swords, feather as neutral icons of the importer (assets/sol_client/textures/gui/icon/import_*.png)

@@ -17,7 +17,7 @@ import net.minecraft.text.TextCodecs;
 import net.minecraft.util.Identifier;
 
 /**
- * Profile badges you can equip (Sleep menu > button left of your name). The equipped badge is drawn at the RIGHT of your
+ * Profile badges you can equip (Caos menu > button left of your name). The equipped badge is drawn at the RIGHT of your
  * name (nametag and tab list). Rules: offline / cracked accounts can only use the pirate badge, Microsoft (original)
  * accounts only the Minecraft one, and the crown is only for the owner's original account (Marzox_x).
  */
@@ -161,7 +161,7 @@ public final class ProfileBadges {
 		}
 	}
 
-	// ---- badges of the other Sleep players on your server (sent through the presence room)
+	// ---- badges of the other Caos players on your server (sent through the presence room)
 	/** How long the badge / name style of another player stays after his last message (he repeats it every 10-12 s). */
 	private static final long FRESH_MS = 300_000L;
 	private static final Map<String, Badge> REMOTE = new java.util.concurrent.ConcurrentHashMap<>();
@@ -326,7 +326,7 @@ public final class ProfileBadges {
 		return allowed(Badge.VIP);
 	}
 
-	// ---- coloured name of the creator badges: everybody who uses Sleep sees it (the badge id is already sent to them)
+	// ---- coloured name of the creator badges: everybody who uses Caos sees it (the badge id is already sent to them)
 	private static final java.util.Set<String> NO_COLOUR = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
 	public static void onRemoteColour(String nick, boolean on) {
@@ -441,7 +441,7 @@ public final class ProfileBadges {
 					}
 				}
 			} catch (java.io.IOException | RuntimeException e) {
-				System.err.println("[Sleep] Could not read badge config: " + e);
+				System.err.println("[Caos] Could not read badge config: " + e);
 			}
 		}
 		return saved;
@@ -483,7 +483,7 @@ public final class ProfileBadges {
 		try {
 			Files.writeString(file(), GSON.toJson(data()));
 		} catch (java.io.IOException e) {
-			System.err.println("[Sleep] Could not save badge config: " + e);
+			System.err.println("[Caos] Could not save badge config: " + e);
 		}
 	}
 
@@ -566,7 +566,7 @@ public final class ProfileBadges {
 		return cc != null && cc.matches("[A-Za-z]{2}") ? cc.toLowerCase(Locale.ROOT) : "";
 	}
 
-	/** What the other Sleep players are told ("" = no flag). */
+	/** What the other Caos players are told ("" = no flag). */
 	public static String myFlagCode() {
 		return myFlagOn() ? myCountry() : "";
 	}
@@ -608,7 +608,7 @@ public final class ProfileBadges {
 	}
 
 	/** {@code name} followed (to the right) by the badge and, when turned on, the country flag. */
-	/** Account uuid (no dashes) -> nick of the Sleep players we heard from (fills in for servers whose tab rows are not real players). */
+	/** Account uuid (no dashes) -> nick of the Caos players we heard from (fills in for servers whose tab rows are not real players). */
 	private static final Map<String, String> NICK_BY_UUID = new java.util.concurrent.ConcurrentHashMap<>();
 
 	/** Called for every profile message: remember whose account this is. */
@@ -627,7 +627,7 @@ public final class ProfileBadges {
 	}
 
 	/**
-	 * Which Sleep player a name belongs to. Many servers (tab plugins, BungeeCord / Velocity lobbies) fill the tab list with
+	 * Which Caos player a name belongs to. Many servers (tab plugins, BungeeCord / Velocity lobbies) fill the tab list with
 	 * fake rows: the profile name is something like "!a01" and the real nick is only in the text shown. Then the badge, name
 	 * style and flag were never found and only YOU saw your crown. Tries the profile nick, then the account uuid, then a nick
 	 * written in the shown text.
@@ -695,7 +695,7 @@ public final class ProfileBadges {
 		if (!me) {
 			var look = remoteLook(nick);
 			if (look != null) {
-				name = dev.solclient.mods.NameColourMod.applyTo(name, nick, look); // Owner / Team style, seen by every Sleep player
+				name = dev.solclient.mods.NameColourMod.applyTo(name, nick, look); // Owner / Team style, seen by every Caos player
 			}
 		}
 		Badge b = me ? equipped() : remote(nick);

@@ -51,7 +51,7 @@ public class CobwebTweaksMod extends Mod {
 				}
 			});
 		} catch (Throwable t) {
-			System.err.println("[Sleep] Cobweb Tweaks outline unavailable: " + t);
+			System.err.println("[Caos] Cobweb Tweaks outline unavailable: " + t);
 		}
 	}
 

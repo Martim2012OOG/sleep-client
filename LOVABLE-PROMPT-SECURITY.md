@@ -1,6 +1,6 @@
 # Prompt for Lovable: close the free-coins hole, make the server the only authority, store anti-cheat reports
 
-Paste everything below the line into Lovable, in the project that hosts the Sleep client API (`/api/public/gc`).
+Paste everything below the line into Lovable, in the project that hosts the Caos client API (`/api/public/gc`).
 
 ---
 

@@ -6,7 +6,7 @@ import java.util.Map;
 import net.minecraft.client.gui.DrawContext;
 
 /**
- * The slider used everywhere in Sleep (like the shadcn / Radix one): a rounded track, a filled range and a round thumb
+ * The slider used everywhere in Caos (like the shadcn / Radix one): a rounded track, a filled range and a round thumb
  * with a little cube as the thumb. It slides smoothly: while you drag, the thumb follows the mouse exactly (no jumping from step to step),
  * and when the value changes any other way it glides there. A small bubble shows the value while dragging.
  */

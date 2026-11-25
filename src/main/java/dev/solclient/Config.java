@@ -52,11 +52,11 @@ public final class Config {
 				if (o.has("options")) {
 					JsonObject opts = o.getAsJsonObject("options");
 					for (Option<?> opt : mod.options) {
-						// options renamed from "Plegumo ..." / "Nimbo ..." to "Sleep ..." keep their saved value
-						// o nome Kubo passou a Sleep: as definições guardadas com o nome antigo continuam a valer
+						// options renamed from "Plegumo ..." / "Nimbo ..." to "Caos ..." keep their saved value
+						// o nome Kubo passou a Caos: as definições guardadas com o nome antigo continuam a valer
 						String k = opts.has(opt.key) ? opt.key
-								: opts.has(opt.key.replace("sleep", "kubo")) ? opt.key.replace("sleep", "kubo")
-								: opts.has(opt.key.replace("sleep", "nimbo")) ? opt.key.replace("sleep", "nimbo") : opt.key.replace("sleep", "plegumo");
+								: opts.has(opt.key.replace("caos", "kubo")) ? opt.key.replace("caos", "kubo")
+								: opts.has(opt.key.replace("caos", "nimbo")) ? opt.key.replace("caos", "nimbo") : opt.key.replace("caos", "plegumo");
 						if (opts.has(k)) {
 							try {
 								opt.load(opts.get(k));
@@ -84,7 +84,7 @@ public final class Config {
 				SolClient.settings.notifySize.set(55F);
 			}
 		} catch (IOException | RuntimeException e) {
-			System.err.println("[Sleep] Could not read config: " + e);
+			System.err.println("[Caos] Could not read config: " + e);
 		}
 	}
 
@@ -124,7 +124,7 @@ public final class Config {
 			Files.createDirectories(target.getParent());
 			Files.writeString(target, GSON.toJson(root));
 		} catch (IOException e) {
-			System.err.println("[Sleep] Could not save config: " + e);
+			System.err.println("[Caos] Could not save config: " + e);
 		}
 	}
 }

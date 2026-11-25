@@ -1,5 +1,5 @@
 #!/bin/bash
-# Builds src/main/resources/kubo/audio-helper (Sleep > Music Share: sends the sound of this Mac to the friends who listen along)
+# Builds src/main/resources/kubo/audio-helper (Caos > Music Share: sends the sound of this Mac to the friends who listen along)
 # as a universal macOS binary (ScreenCaptureKit, macOS 13+). Same trick as build_speech_helper.sh.
 set -e
 cd "$(dirname "$0")"

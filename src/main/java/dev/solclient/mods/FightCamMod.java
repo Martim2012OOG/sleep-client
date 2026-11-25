@@ -224,7 +224,7 @@ public class FightCamMod extends Mod {
 			} finally {
 				detecting = false;
 			}
-		}, "Sleep-Ffmpeg-Detect");
+		}, "Caos-Ffmpeg-Detect");
 		t.setDaemon(true);
 		t.start();
 	}
@@ -246,7 +246,7 @@ public class FightCamMod extends Mod {
 			} else {
 				ClipToast.show("ffmpeg not installed", Ffmpeg.status, null, true);
 			}
-		}, "Sleep-Ffmpeg-Install");
+		}, "Caos-Ffmpeg-Install");
 		t.setDaemon(true);
 		t.start();
 	}
@@ -605,7 +605,7 @@ public class FightCamMod extends Mod {
 					r.error() != null);
 		};
 		if (async) {
-			Thread t = new Thread(work, "Sleep-FightCam-Stop");
+			Thread t = new Thread(work, "Caos-FightCam-Stop");
 			t.setDaemon(true);
 			t.start();
 		} else {

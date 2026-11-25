@@ -8,14 +8,14 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.particle.ParticlesMode;
 
 /**
- * The choices of the first-time setup, so the same thing happens when they are changed later in Sleep Settings
+ * The choices of the first-time setup, so the same thing happens when they are changed later in Caos Settings
  * (Setup: Performance Preset, HUD Preset; Theme & Colours: Theme, UI Transparency).
  */
 public final class Presets {
 
 	public static final String[] PERF = {"Performance", "Balanced", "Quality"};
 	public static final String[] HUD = {"Minimal", "PvP", "Everything"};
-	public static final String[] THEMES = {"Sleep (Original)", "Eclipse", "Graphite", "AMOLED"};
+	public static final String[] THEMES = {"Caos (Original)", "Eclipse", "Graphite", "AMOLED"};
 
 	/** accent, background, card, border, field, text, dim text, toggle on, toggle on highlight, toggle off, danger, button */
 	private static final int[][] THEME_COLOURS = {
@@ -108,7 +108,7 @@ public final class Presets {
 				o.getEntityDistanceScaling().setValue(0.75D);
 				o.write();
 			} catch (Throwable t) {
-				System.err.println("[Sleep] performance preset (video settings): " + t);
+				System.err.println("[Caos] performance preset (video settings): " + t);
 			}
 		}
 		Config.save();

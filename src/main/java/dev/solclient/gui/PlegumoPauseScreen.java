@@ -49,7 +49,7 @@ public class PlegumoPauseScreen extends UiScreen {
 		int icons = 3 + (host ? 1 : 0) + (mm ? 1 : 0);
 		int ix = cx - (icons * is + (icons - 1) * ig) / 2;
 		iconButton(c, "set", ix, iy, is, "settings", "Settings", () -> mc.setScreen(new OptionsScreen(this, mc.options)));
-		iconButton(c, "mods", ix + is + ig, iy, is, "sol_client", "Sleep menu (Right Shift)", () -> mc.setScreen(SolMenuScreen.open(SolMenuScreen.VIEW_MODS)));
+		iconButton(c, "mods", ix + is + ig, iy, is, "sol_client", "Caos menu (Right Shift)", () -> mc.setScreen(SolMenuScreen.open(SolMenuScreen.VIEW_MODS)));
 		iconButton(c, "shop", ix + 2 * (is + ig), iy, is, "shop", "Shop", () -> mc.setScreen(SolMenuScreen.open(SolMenuScreen.VIEW_SHOP)));
 		int nx = 3;
 		if (mm) {
@@ -69,7 +69,7 @@ public class PlegumoPauseScreen extends UiScreen {
 		Gfx.textC(c, fit(where, bw), cx, iy + is + 12, Theme.DIM);
 
 		// bottom-right: client logo and name
-		brand(c, width - Gfx.tw("SLEEP") - 30, height - 24);
+		brand(c, width - Gfx.tw("CAOS") - 30, height - 24);
 	}
 
 	private void leave() {

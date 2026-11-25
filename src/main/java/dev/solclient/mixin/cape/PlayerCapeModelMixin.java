@@ -30,7 +30,7 @@ public abstract class PlayerCapeModelMixin {
 		try {
 			cir.setReturnValue(CapePhysicsMod.modelData());
 		} catch (Throwable t) {
-			System.err.println("[Sleep] cape physics model failed, using the vanilla cape: " + t);
+			System.err.println("[Caos] cape physics model failed, using the vanilla cape: " + t);
 		}
 	}
 

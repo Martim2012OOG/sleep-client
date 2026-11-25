@@ -18,7 +18,7 @@ public abstract class HostedSkinMixin {
 	public abstract GameProfile getProfile();
 
 	@Inject(method = "getSkin", at = @At("HEAD"), cancellable = true, require = 0)
-	private void sleep$hostedSkin(CallbackInfoReturnable<PlayerSkin> cir) {
+	private void caos$hostedSkin(CallbackInfoReturnable<PlayerSkin> cir) {
 		PlayerSkin t = HostedSkins.lookup(getProfile());
 		if (t != null) {
 			cir.setReturnValue(t);

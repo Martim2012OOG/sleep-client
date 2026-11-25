@@ -6,8 +6,8 @@ import net.minecraft.util.Util;
 
 /**
  * Better Search: smarter search bars (creative tab, recipe book, chat commands...). It is the real "Better Search" mod
- * by rivalzin (MIT licence), shipped inside the Sleep jar (jar-in-jar) - this card only switches it on and off, by
- * reflection, so Sleep has no hard dependency on its classes.
+ * by rivalzin (MIT licence), shipped inside the Caos jar (jar-in-jar) - this card only switches it on and off, by
+ * reflection, so Caos has no hard dependency on its classes.
  */
 public class BetterSearchMod extends Mod {
 

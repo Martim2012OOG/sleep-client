@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 public abstract class ReloadKeyboardMixin {
 
 	@Redirect(method = "charTyped", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;getOverlay()Lnet/minecraft/client/gui/screens/Overlay;"), require = 0)
-	private Overlay sleep$overlay(Minecraft mc) {
+	private Overlay caos$overlay(Minecraft mc) {
 		return FastReload.passive() ? null : dev.solclient.compat.Mc.overlay(mc);
 	}
 }

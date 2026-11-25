@@ -90,14 +90,14 @@ public class HudLayoutsMod extends Mod {
 			try (GZIPOutputStream gz = new GZIPOutputStream(bo)) {
 				gz.write(snapshot().toString().getBytes(StandardCharsets.UTF_8));
 			}
-			return "SLEEPHUD1:" + Base64.getEncoder().encodeToString(bo.toByteArray());
+			return "CAOSHUD1:" + Base64.getEncoder().encodeToString(bo.toByteArray());
 		} catch (Exception e) {
 			return "";
 		}
 	}
 
 	public static boolean apply(String code) {
-		if (code == null || !(code.trim().startsWith("SLEEPHUD1:") || code.trim().startsWith("KUBOHUD1:"))) {
+		if (code == null || !(code.trim().startsWith("CAOSHUD1:") || code.trim().startsWith("KUBOHUD1:"))) {
 			return false; // KUBOHUD1: = codes made before the rename
 		}
 		try {

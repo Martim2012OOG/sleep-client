@@ -112,7 +112,7 @@ public final class Accounts {
 				}
 			}
 		} catch (Exception e) {
-			System.err.println("[Sleep] Could not read accounts: " + e);
+			System.err.println("[Caos] Could not read accounts: " + e);
 		}
 	}
 
@@ -134,7 +134,7 @@ public final class Accounts {
 		try {
 			Files.writeString(file(), GSON.toJson(o));
 		} catch (Exception e) {
-			System.err.println("[Sleep] Could not save accounts: " + e);
+			System.err.println("[Caos] Could not save accounts: " + e);
 		}
 	}
 
@@ -277,7 +277,7 @@ public final class Accounts {
 						say(e.getMessage() == null ? e.toString() : e.getMessage(), true);
 						busy = false;
 					}
-				}, "Sleep account switch");
+				}, "Caos account switch");
 				t.setDaemon(true);
 				t.start();
 			}
@@ -351,7 +351,7 @@ public final class Accounts {
 			dev.solclient.social.Social.accountChanged();
 			return true;
 		} catch (ReflectiveOperationException | RuntimeException e) {
-			System.err.println("[Sleep] Could not switch account: " + e);
+			System.err.println("[Caos] Could not switch account: " + e);
 			say("Could not switch account", true);
 		}
 		return false;
@@ -411,7 +411,7 @@ public final class Accounts {
 				keysField.set(mc, net.minecraft.client.multiplayer.ProfileKeyPairManager.create((com.mojang.authlib.minecraft.UserApiService) userApi, s, mc.gameDirectory.toPath()));
 			}
 		} catch (Throwable e) {
-			System.err.println("[Sleep] account switch: could not refresh chat keys (" + e + ")");
+			System.err.println("[Caos] account switch: could not refresh chat keys (" + e + ")");
 		}
 	}
 }

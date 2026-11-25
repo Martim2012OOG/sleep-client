@@ -67,7 +67,7 @@ public class WavesMod extends Mod {
 			try {
 				m.handler.render(ctx.matrices(), ctx.commandQueue(), ctx.worldState().cameraRenderState.pos, 0F);
 			} catch (Throwable t) {
-				System.err.println("[Sleep] waves render: " + t);
+				System.err.println("[Caos] waves render: " + t);
 				m.enabled = false; // never spam errors every frame
 				m.handler = null;
 			}
@@ -123,7 +123,7 @@ public class WavesMod extends Mod {
 				handler.waves.remove(0);
 			}
 		} catch (Throwable t) {
-			System.err.println("[Sleep] waves tick: " + t);
+			System.err.println("[Caos] waves tick: " + t);
 			handler = null;
 			handlerWorld = null;
 			enabled = false;

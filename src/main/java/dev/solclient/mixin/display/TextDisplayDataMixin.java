@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
- * Text display nametags (rank + name + flag that servers put over the head): the Sleep logo goes before the nick of a
+ * Text display nametags (rank + name + flag that servers put over the head): the Caos logo goes before the nick of a
  * client user. Isolated in its own mixin config on purpose: it targets the text display's data record by name, so if the
  * name is different in this Minecraft version only this feature is skipped (see latest.log), nothing else breaks.
  */

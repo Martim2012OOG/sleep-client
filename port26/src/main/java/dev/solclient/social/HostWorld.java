@@ -23,7 +23,7 @@ import net.minecraft.world.level.GameType;
 /**
  * Host World: opens the singleplayer world (vanilla "Open to LAN"), opens the port on the router with UPnP so friends
  * from other houses can join, and keeps out anyone who is not allowed (Invite Only / Friends Only / Public) or when
- * the world is full. Invites go through the Sleep chat as a card with a Join button.
+ * the world is full. Invites go through the Caos chat as a card with a Join button.
  */
 public final class HostWorld {
 
@@ -70,14 +70,14 @@ public final class HostWorld {
 	public static String address() {
 		String r = KuboRelay.hostAddress();
 		if (r != null && (KuboRelay.hostConnected() || !routerOk)) {
-			// works from any house, for friends with Sleep. Even while the relay is still connecting this is the address
+			// works from any house, for friends with Caos. Even while the relay is still connecting this is the address
 			// to give: the home-network one (192.168...) only works on your own Wi-Fi and left friends "connecting" forever
 			return r;
 		}
 		return ipAddress();
 	}
 
-	/** Plain IP address (also for friends without Sleep, when the router port is open). */
+	/** Plain IP address (also for friends without Caos, when the router port is open). */
 	public static String ipAddress() {
 		if (publicIp != null && routerOk) {
 			return publicIp + ":" + port;
@@ -201,11 +201,11 @@ public final class HostWorld {
 		}
 		if (KuboRelay.hostAddress() != null) {
 			if (KuboRelay.hostConnected()) {
-				return Lang.tr("Ready! Friends with Sleep can join from anywhere.", "Pronto! Amigos com Sleep podem entrar de qualquer lado.")
+				return Lang.tr("Ready! Friends with Caos can join from anywhere.", "Pronto! Amigos com Caos podem entrar de qualquer lado.")
 						+ (routerOk ? Lang.tr(" Others: use the IP.", " Outros: usem o IP.") : "");
 			}
 			String err = KuboRelay.hostError();
-			return Lang.tr("Connecting to the Sleep relay...", "A ligar ao relay do Sleep...") + (err != null ? " (" + err + ")" : "");
+			return Lang.tr("Connecting to the Caos relay...", "A ligar ao relay do Caos...") + (err != null ? " (" + err + ")" : "");
 		}
 		return status;
 	}
@@ -237,7 +237,7 @@ public final class HostWorld {
 				Upnp.Gateway g = Upnp.discover(3500);
 				if (g != null) {
 					localIp = g.localAddress.getHostAddress();
-					if (Upnp.addMapping(g, p, "Sleep Host World")) {
+					if (Upnp.addMapping(g, p, "Caos Host World")) {
 						gateway = g;
 						String ext = Upnp.externalIp(g);
 						if (ext == null) {
@@ -484,7 +484,7 @@ public final class HostWorld {
 				if (!allowed) {
 					sp.connection.disconnect(Component.literal(shut ? "The host stopped hosting this world."
 							: bans.contains(n) ? "You are banned from this world."
-							: pr == 1 ? "This world is for the host's Sleep friends only." : "You are not on this world's whitelist. Ask the host to add you!"));
+							: pr == 1 ? "This world is for the host's Caos friends only." : "You are not on this world's whitelist. Ask the host to add you!"));
 					continue;
 				}
 				if (++count > slots) {

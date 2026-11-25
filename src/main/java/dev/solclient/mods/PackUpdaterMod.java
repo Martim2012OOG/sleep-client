@@ -11,7 +11,7 @@ import net.minecraft.text.Text;
 
 /**
  * Pack Updater: adds an "Update to current version" button to the resource packs screen. It opens a list of your packs;
- * pick one and Sleep finds the textures that Minecraft moved or renamed since the pack was made, fixes the pack format and
+ * pick one and Caos finds the textures that Minecraft moved or renamed since the pack was made, fixes the pack format and
  * writes a new, updated copy (the original is never touched). Written from scratch, no third-party code.
  */
 public class PackUpdaterMod extends Mod {
@@ -52,7 +52,7 @@ public class PackUpdaterMod extends Mod {
 								b -> client.setScreen(new PackUpdaterScreen(screen)))
 						.dimensions(6, 6, bw, 20).build());
 			} catch (Throwable t) {
-				System.err.println("[Sleep] Pack Updater button failed: " + t);
+				System.err.println("[Caos] Pack Updater button failed: " + t);
 			}
 		});
 	}

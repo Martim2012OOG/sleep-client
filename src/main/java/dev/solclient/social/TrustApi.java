@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-/** Talks to the Sleep site about suspicious players: sends reports and asks what the community thinks. Never blocks the game. */
+/** Talks to the Caos site about suspicious players: sends reports and asks what the community thinks. Never blocks the game. */
 public final class TrustApi {
 
 	/** What the community knows about a player. {@code trust} is -1 when nobody reported him. */
@@ -64,7 +64,7 @@ public final class TrustApi {
 							System.currentTimeMillis()));
 				}
 			}
-		}, "Sleep-Trust-Lookup");
+		}, "Caos-Trust-Lookup");
 		t.setDaemon(true);
 		t.start();
 	}
@@ -86,7 +86,7 @@ public final class TrustApi {
 		body.addProperty("ping", ping);
 		body.addProperty("server", server == null ? "" : server);
 		body.addProperty("clientVersion", version == null ? "" : version);
-		Thread t = new Thread(() -> SolarApi.post("/anticheat/report", body), "Sleep-Trust-Report");
+		Thread t = new Thread(() -> SolarApi.post("/anticheat/report", body), "Caos-Trust-Report");
 		t.setDaemon(true);
 		t.start();
 	}

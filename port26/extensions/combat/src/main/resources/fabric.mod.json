@@ -2,12 +2,12 @@
   "schemaVersion": 1,
   "id": "kubo_ext_combat",
   "version": "${version}",
-  "name": "Sleep – Combat Extras",
+  "name": "Caos – Combat Extras",
   "description": "Target Marker, Target HUD, Damage Numbers, Damage Tint, Low Health, Hit Sounds, Kill Sounds, Attack Cooldown, Item Cooldowns, Trajectories and Trident Assist.",
   "authors": [
-    "Sleep"
+    "Caos"
   ],
-  "license": "PolyForm-Strict-1.0.0",
+  "license": "GPL-3.0-only",
   "environment": "client",
   "entrypoints": {
     "kubo": [
@@ -15,7 +15,7 @@
     ]
   },
   "depends": {
-    "sleep_client": "*",
+    "sol_client": "*",
     "minecraft": ">=26.1 <26.3",
     "fabricloader": ">=0.20.1"
   },

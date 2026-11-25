@@ -93,7 +93,7 @@ public final class MusicHub {
 			} catch (Throwable t) {
 				status = "Could not read the player";
 			}
-			long wait = nextWait();
+			long wait = OS.contains("mac") ? 1500 : 1000;
 			synchronized (LOCK) {
 				try {
 					LOCK.wait(wait);
@@ -102,26 +102,6 @@ public final class MusicHub {
 				}
 			}
 		}
-	}
-
-	/** When the song last changed: for a few seconds after it the players are asked much more often. */
-	private static volatile long lastChangeAt;
-
-	/**
-	 * How long to wait before asking the players again. Short (no delay for the title, the cover and the lyrics) when a song just changed or
-	 * is about to end; relaxed otherwise. Asking is not free (PowerShell on Windows, osascript on Mac), so it is never done more often than this.
-	 */
-	private static long nextWait() {
-		boolean mac = OS.contains("mac"), win = OS.contains("win");
-		long base = mac ? 1500 : win ? 500 : 1000, fast = mac ? 800 : win ? 400 : 700; // never faster: every ask costs CPU (PowerShell / osascript), and the game needs it
-		long now = System.currentTimeMillis();
-		if (now - lastChangeAt < 4000) {
-			return fast;
-		}
-		if (hasTrack && playing && durationMs > 0 && durationMs - (progressMs + (now - fetchedAt)) < 3000) {
-			return fast; // the song is about to end: catch the next one at once
-		}
-		return base;
 	}
 
 	private static void round() {
@@ -205,7 +185,6 @@ public final class MusicHub {
 		}
 		String lastIdBefore = lastId;
 		if (!pick.id().equals(lastId)) {
-			lastChangeAt = System.currentTimeMillis();
 			CoverFinder.error = "";
 		}
 		playerArtError = pick.artError() == null ? "" : pick.artError();

@@ -12,12 +12,12 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 public abstract class ReloadInputMixin {
 
 	@Redirect(method = "tick", at = @At(value = "FIELD", target = "Lnet/minecraft/client/MinecraftClient;overlay:Lnet/minecraft/client/gui/screen/Overlay;", ordinal = 2), require = 0)
-	private Overlay sleep$tickInput(MinecraftClient mc) {
+	private Overlay caos$tickInput(MinecraftClient mc) {
 		return FastReload.passive() ? null : mc.getOverlay();
 	}
 
 	@Redirect(method = "handleInputEvents", at = @At(value = "FIELD", target = "Lnet/minecraft/client/MinecraftClient;overlay:Lnet/minecraft/client/gui/screen/Overlay;"), require = 0)
-	private Overlay sleep$keys(MinecraftClient mc) {
+	private Overlay caos$keys(MinecraftClient mc) {
 		return FastReload.passive() ? null : mc.getOverlay();
 	}
 }

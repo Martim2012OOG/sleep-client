@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/** Minecraft's own sliders (field of view, volume...) drawn like the Sleep buttons: flat track, coloured fill, raised knob. */
+/** Minecraft's own sliders (field of view, volume...) drawn like the Caos buttons: flat track, coloured fill, raised knob. */
 @Mixin(AbstractSliderButton.class)
 public abstract class VanillaSliderStyleMixin {
 
@@ -20,7 +20,7 @@ public abstract class VanillaSliderStyleMixin {
 	protected double value;
 
 	@Inject(method = "extractWidgetRenderState", at = @At("HEAD"), cancellable = true, require = 0)
-	private void sleep$style(GuiGraphicsExtractor c, int mouseX, int mouseY, float delta, CallbackInfo ci) {
+	private void caos$style(GuiGraphicsExtractor c, int mouseX, int mouseY, float delta, CallbackInfo ci) {
 		if (!dev.solclient.gui.VanillaStyle.on() || SolClient.settings == null || !SolClient.settings.restyleButtons.on()) {
 			return;
 		}

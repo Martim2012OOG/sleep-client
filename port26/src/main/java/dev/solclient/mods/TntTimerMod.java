@@ -17,7 +17,7 @@ public class TntTimerMod extends Mod {
 
 	public static TntTimerMod instance;
 
-	public final Option.Choice style = choice("Style", 0, "Sleep Label", "Nametag");
+	public final Option.Choice style = choice("Style", 0, "Caos Label", "Nametag");
 	public final Option.Choice format = choice("Format", 0, "2.05", "2.1s", "3s");
 	public final Option.Bool colourByTime = bool("Colour By Time", true);
 	public final Option.Bool bar = bool("Fuse Bar", true);
@@ -78,7 +78,7 @@ public class TntTimerMod extends Mod {
 		return Component.literal(s).withStyle(st -> st.withColor(rgb));
 	}
 
-	/** Sleep Label style: drawn on the HUD, exactly over each TNT. */
+	/** Caos Label style: drawn on the HUD, exactly over each TNT. */
 	public void draw(GuiGraphicsExtractor c) {
 		if (style.idx() != 0 || mc.level == null || mc.player == null || !Project.begin()) {
 			return;

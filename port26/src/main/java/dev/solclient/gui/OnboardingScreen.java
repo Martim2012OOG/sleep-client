@@ -13,7 +13,7 @@ import net.minecraft.client.input.KeyEvent;
 /**
  * First start: a short setup in the Right Shift menu's look (same panel, cards, buttons and checkboxes).
  * 1 language, 2 performance (Performance / Balanced / Quality), 3 theme + transparency, 4 HUD (Minimal / PvP / Everything),
- * 5 extras. The theme shows live; the rest changes on "Finish". Every choice is also in Sleep Settings afterwards
+ * 5 extras. The theme shows live; the rest changes on "Finish". Every choice is also in Caos Settings afterwards
  * (Setup, Theme & Colours, Menus, Players), and the whole setup can be run again from there.
  */
 public class OnboardingScreen extends UiScreen {
@@ -21,14 +21,14 @@ public class OnboardingScreen extends UiScreen {
 	private final Screen next;
 	private int step;
 	private int lang = Lang.idx(), perf = 1, hud = 1, theme, glass;
-	/** ESC menu: 0 Sleep (simple), 1 Classic + Sleep, 2 Minecraft's own. Mods screen: 0 Sleep, 1 Mod Menu. */
+	/** ESC menu: 0 Caos (simple), 1 Classic + Caos, 2 Minecraft's own. Mods screen: 0 Caos, 1 Mod Menu. */
 	private int pause = 0, modsScr;
 	private boolean intro, seasonal, music, animatedCapes, badge;
 	private static final int STEPS = 6;
 	private static final int[] GLASS = {0, 20, 40, 60};
 
 	public OnboardingScreen(Screen next) {
-		super("Sleep setup");
+		super("Caos setup");
 		this.next = next;
 		var s = SolClient.settings;
 		intro = CinematicIntroMod.instance != null && CinematicIntroMod.instance.enabled;
@@ -96,7 +96,7 @@ public class OnboardingScreen extends UiScreen {
 		int sw = 128, sx = px + 8, sy = py + 8;
 		Gfx.rrect(c, sx, sy, sw, ph - 16, 8, Theme.SUB);
 		Gfx.tex(c, Theme.icon2("sol_client"), sx + 10, sy + 10, 14, 14, 64, 64, 0xFFFFFFFF);
-		Gfx.text(c, tr("Sleep setup", "Configurar o Sleep"), sx + 30, sy + 13, Theme.TEXT);
+		Gfx.text(c, tr("Caos setup", "Configurar o Caos"), sx + 30, sy + 13, Theme.TEXT);
 		String[] steps = {tr("Language", "Língua"), tr("Performance", "Desempenho"), tr("Theme", "Tema"), "HUD", tr("Menus", "Menus"), tr("Extras", "Extras")};
 		String[] icons = {"language", "performance", "colour_saturation", "hud", "screen_tweaks", "settings_small"};
 		for (int i = 0; i < STEPS; i++) {
@@ -199,7 +199,7 @@ public class OnboardingScreen extends UiScreen {
 
 	/** Themes as rows (3 colour squares on the right), then the transparency as 4 segments. Applied right away. */
 	private void themeStep(GuiGraphicsExtractor c, int x, int y, int w) {
-		String[] names = {"Sleep (Original)", "Eclipse", "Graphite", "AMOLED"};
+		String[] names = {"Caos (Original)", "Eclipse", "Graphite", "AMOLED"};
 		String[] notes = {"", tr("see-through, grey", "transparente, cinzento"), tr("warm grey", "cinzento quente"), tr("pure black", "preto puro")};
 		for (int i = 0; i < names.length; i++) {
 			int ry = y + i * 28;
@@ -262,7 +262,7 @@ public class OnboardingScreen extends UiScreen {
 
 	/** Esc menu (3 looks) and, if Mod Menu is installed, which mods screen the mods list opens. */
 	private void menusStep(GuiGraphicsExtractor c, int x, int y, int w) {
-		String[] names = {"Sleep", tr("Classic + Sleep", "Clássico + Sleep"), tr("Minecraft's own", "O do Minecraft")};
+		String[] names = {"Caos", tr("Classic + Caos", "Clássico + Caos"), tr("Minecraft's own", "O do Minecraft")};
 		String[] notes = {tr("simple, centred", "simples, ao centro"), tr("your player + Essential / Mod Menu buttons", "o teu jogador + botões do Essential / Mod Menu"),
 				tr("no changes", "sem alterações")};
 		for (int i = 0; i < names.length; i++) {
@@ -272,7 +272,7 @@ public class OnboardingScreen extends UiScreen {
 		if (ModMenuLink.present()) {
 			int my = y + names.length * 24 + 8;
 			Gfx.textRaw(c, tr("Mods list", "Lista de mods"), x + 4, my, Theme.DIM);
-			String[] mn = {tr("Sleep's own", "A do Sleep"), "Mod Menu"};
+			String[] mn = {tr("Caos's own", "A do Caos"), "Mod Menu"};
 			String[] mt = {tr("on/off switches, settings", "ligar/desligar, definições"), tr("the original one", "o original")};
 			for (int i = 0; i < mn.length; i++) {
 				final int idx = i;
@@ -287,7 +287,7 @@ public class OnboardingScreen extends UiScreen {
 				{tr("Christmas / Halloween decorations", "Decorações de Natal / Halloween"), "seasonal"},
 				{tr("Menu music", "Música no menu"), "music"},
 				{tr("Animated capes (GIFs / videos)", "Capas animadas (GIFs / vídeos)"), "capes"},
-				{tr("Show the Sleep logo next to names", "Mostrar o logo do Sleep ao lado dos nomes"), "badge"}};
+				{tr("Show the Caos logo next to names", "Mostrar o logo do Caos ao lado dos nomes"), "badge"}};
 		int x = x0, w = w0, yy = y;
 		for (String[] r : rows) {
 			boolean on = switch (r[1]) {

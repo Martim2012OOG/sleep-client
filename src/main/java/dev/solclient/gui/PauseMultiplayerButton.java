@@ -41,7 +41,7 @@ public final class PauseMultiplayerButton {
 		});
 	}
 
-	/** Adds the button once per screen (the Sleep pause menu calls it first, the event is the fallback). Returns true when it is there. */
+	/** Adds the button once per screen (the Caos pause menu calls it first, the event is the fallback). Returns true when it is there. */
 	public static boolean insert(Screen screen, List<? extends Element> children, Consumer<ButtonWidget> add) {
 		MinecraftClient mc = MinecraftClient.getInstance();
 		if (mc.getCurrentServerEntry() == null) {
@@ -90,7 +90,7 @@ public final class PauseMultiplayerButton {
 			DONE.put(screen, Boolean.TRUE);
 			return true;
 		} catch (Throwable t) {
-			System.err.println("[Sleep] pause menu Multiplayer button failed: " + t);
+			System.err.println("[Caos] pause menu Multiplayer button failed: " + t);
 			return false;
 		}
 	}

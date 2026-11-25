@@ -2,12 +2,12 @@
   "schemaVersion": 1,
   "id": "kubo_ext_friends",
   "version": "${version}",
-  "name": "Sleep – Friends",
+  "name": "Caos – Friends",
   "description": "Party HUD, Pings (mark places for friends) and Sonar.",
   "authors": [
-    "Sleep"
+    "Caos"
   ],
-  "license": "PolyForm-Strict-1.0.0",
+  "license": "GPL-3.0-only",
   "environment": "client",
   "entrypoints": {
     "kubo": [
@@ -15,7 +15,7 @@
     ]
   },
   "depends": {
-    "sleep_client": "*",
+    "sol_client": "*",
     "minecraft": "~1.21.11",
     "fabricloader": ">=0.18.1"
   },

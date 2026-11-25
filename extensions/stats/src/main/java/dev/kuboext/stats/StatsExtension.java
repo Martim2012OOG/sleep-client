@@ -1,15 +1,15 @@
 package dev.kuboext.stats;
 
-import dev.sleepclient.mods.SessionStatsMod;
-import dev.sleepclient.mods.DailyQuestsMod;
-import dev.sleepclient.mods.AchievementsMod;
-import dev.sleepclient.mods.FightRecapMod;
-import dev.sleepclient.ext.KuboApi;
-import dev.sleepclient.ext.KuboExtension;
+import dev.solclient.mods.SessionStatsMod;
+import dev.solclient.mods.DailyQuestsMod;
+import dev.solclient.mods.AchievementsMod;
+import dev.solclient.mods.FightRecapMod;
+import dev.solclient.ext.KuboApi;
+import dev.solclient.ext.KuboExtension;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.MinecraftClient;
 
-/** Sleep extension "Stats & Missions": Session Stats, Daily Quests, Achievements and Fight Recap. */
+/** Caos extension "Stats & Missions": Session Stats, Daily Quests, Achievements and Fight Recap. */
 public class StatsExtension implements KuboExtension {
 
 	@Override
@@ -24,7 +24,7 @@ public class StatsExtension implements KuboExtension {
 			if (FightRecapMod.instance != null && FightRecapMod.instance.enabled) FightRecapMod.instance.onAttack(e);
 		});
 		api.onStatsChanged(AchievementsMod::check);
-		api.command("Achievements", "Your Sleep medals", "achievements",
-				() -> MinecraftClient.getInstance().setScreen(new dev.sleepclient.gui.AchievementsScreen(MinecraftClient.getInstance().currentScreen)));
+		api.command("Achievements", "Your Caos medals", "achievements",
+				() -> MinecraftClient.getInstance().setScreen(new dev.solclient.gui.AchievementsScreen(MinecraftClient.getInstance().currentScreen)));
 	}
 }

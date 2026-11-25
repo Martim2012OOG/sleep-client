@@ -30,7 +30,7 @@ import net.minecraft.text.Text;
  */
 public class KeybindsScreen extends Screen {
 
-	/** One thing a key can do: a Sleep mod key or a Minecraft control. */
+	/** One thing a key can do: a Caos mod key or a Minecraft control. */
 	static final class Action {
 		final String label, group;
 		final Option.Key opt;
@@ -144,7 +144,7 @@ public class KeybindsScreen extends Screen {
 		for (Mod m : SolClient.MODS) {
 			for (Option<?> o : m.options) {
 				if (o instanceof Option.Key key) {
-					actions.add(new Action(Lang.t(key.name), m == SolClient.settings ? "Sleep" : Lang.t(m.name), key, null));
+					actions.add(new Action(Lang.t(key.name), m == SolClient.settings ? "Caos" : Lang.t(m.name), key, null));
 				}
 			}
 		}

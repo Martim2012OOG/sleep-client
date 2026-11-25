@@ -21,7 +21,7 @@ public final class AdMusic implements AutoCloseable {
 	private volatile boolean fadeOut;
 
 	public void start() {
-		Thread t = new Thread(this::play, "Sleep ad music");
+		Thread t = new Thread(this::play, "Caos ad music");
 		t.setDaemon(true);
 		t.start();
 	}

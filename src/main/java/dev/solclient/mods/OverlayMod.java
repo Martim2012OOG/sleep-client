@@ -114,7 +114,7 @@ public class OverlayMod extends Mod {
 				((WorldRendererInvoker) (Object) mc.worldRenderer).sol$reload();
 			}
 		} catch (Throwable t) {
-			System.err.println("[Sleep] Hide Foliage: could not reload chunks: " + t);
+			System.err.println("[Caos] Hide Foliage: could not reload chunks: " + t);
 		}
 	}
 

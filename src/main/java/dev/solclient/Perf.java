@@ -81,7 +81,7 @@ public final class Perf {
 				total += e.getValue();
 			}
 			float fps = frames / secs;
-			System.out.println(String.format("[Sleep] Perf: %.0f fps (%.1f ms per frame), Sleep %.2f ms: %s", fps, 1000F / Math.max(1F, fps), total,
+			System.out.println(String.format("[Caos] Perf: %.0f fps (%.1f ms per frame), Caos %.2f ms: %s", fps, 1000F / Math.max(1F, fps), total,
 					topText(8).isEmpty() ? "nothing above 0.05 ms" : topText(8)));
 		}
 	}

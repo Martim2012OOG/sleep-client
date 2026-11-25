@@ -31,7 +31,7 @@ public class ItemPhysicsMod extends Mod {
 	public static void broken(Throwable t) {
 		if (!broken) {
 			broken = true;
-			System.err.println("[Sleep] Item Physics turned off: " + t);
+			System.err.println("[Caos] Item Physics turned off: " + t);
 		}
 	}
 

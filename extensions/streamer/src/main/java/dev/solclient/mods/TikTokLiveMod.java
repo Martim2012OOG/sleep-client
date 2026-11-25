@@ -483,12 +483,12 @@ public class TikTokLiveMod extends HudMod {
 	private void showSeen() {
 		var lines = client.summary();
 		if (lines.isEmpty()) {
-			addChat("Sleep", "Nothing arrived yet (" + client.status() + ")", 0xFF7FB3F5);
+			addChat("Caos", "Nothing arrived yet (" + client.status() + ")", 0xFF7FB3F5);
 			return;
 		}
-		addChat("Sleep", "Events that arrived:", 0xFF7FB3F5);
+		addChat("Caos", "Events that arrived:", 0xFF7FB3F5);
 		for (String s : lines) {
-			addChat("Sleep", s, 0xFF7FB3F5);
+			addChat("Caos", s, 0xFF7FB3F5);
 		}
 	}
 
@@ -565,7 +565,7 @@ public class TikTokLiveMod extends HudMod {
 				try {
 					dev.solclient.parkour.ParkourLive.onGift(e);
 				} catch (Throwable t) {
-					System.err.println("[Sleep] Parkour Live: " + t);
+					System.err.println("[Caos] Parkour Live: " + t);
 				}
 				onGift(e);
 			}
@@ -828,9 +828,9 @@ public class TikTokLiveMod extends HudMod {
 			"2) Video: Base (canvas) 1080x1920, Output 1080x1920 (vertical, made for phones), FPS 30 (or 60 on fast internet).",
 			"3) Output > Streaming: Encoder 'Apple VT H264 Hardware Encoder' (uses the Mac's media engine, not the GPU the game needs), Rate control CBR, Bitrate 4500 kbps (3000 on weak Wi-Fi, 6000 max), Keyframe interval 2 s, Profile high.",
 			"4) Audio: 128 kbps, 48 kHz.",
-			"5) Capture the game with 'macOS Screen Capture' > Window, pick Minecraft. Put the game in the middle of the vertical canvas (or use the Vertical Clips mod layout), the TikTok chat / viewer counter of Sleep are already in the game picture.",
+			"5) Capture the game with 'macOS Screen Capture' > Window, pick Minecraft. Put the game in the middle of the vertical canvas (or use the Vertical Clips mod layout), the TikTok chat / viewer counter of Caos are already in the game picture.",
 			"6) Advanced > Process priority: Above normal. Use a cable instead of Wi-Fi if you can (5 Mbps upload or more).",
-			"7) In Sleep: TikTok Live > Smooth stream: Keep Full FPS While Live ON, Lock FPS 60. If OBS says 'encoding overloaded' or 'rendering lag', lower Minecraft's render distance or turn off the Mac's sharp Retina (Performance).");
+			"7) In Caos: TikTok Live > Smooth stream: Keep Full FPS While Live ON, Lock FPS 60. If OBS says 'encoding overloaded' or 'rendering lag', lower Minecraft's render distance or turn off the Mac's sharp Retina (Performance).");
 
 	private void copyObsGuide() {
 		try {
@@ -918,7 +918,7 @@ public class TikTokLiveMod extends HudMod {
 				Path readme = root().resolve("README.txt");
 				if (!Files.exists(readme)) {
 					Files.writeString(readme, """
-							Sleep - TikTok Live sounds
+							Caos - TikTok Live sounds
 							=========================
 							Put your own sounds here (.mp3, .ogg or .wav):
 							  donate.mp3  -> plays for every gift
@@ -926,7 +926,7 @@ public class TikTokLiveMod extends HudMod {
 							  follow.mp3  -> plays when someone follows
 							  gifts/Rose.mp3, gifts/Lion.mp3 ... -> a different sound for each gift (file name = gift name)
 							You can also pick the files with the buttons in the mod settings,
-							or drag a sound onto the Sleep menu while the TikTok Live settings are open.
+							or drag a sound onto the Caos menu while the TikTok Live settings are open.
 							Short sounds (1-5 seconds) work best. Only use sounds you are allowed to use on stream.
 							""");
 				}
@@ -981,7 +981,7 @@ public class TikTokLiveMod extends HudMod {
 		t.start();
 	}
 
-	/** Called when a file is dropped onto the Sleep menu while this mod's settings are open (becomes the donation sound). */
+	/** Called when a file is dropped onto the Caos menu while this mod's settings are open (becomes the donation sound). */
 	@Override
 	public boolean onFileDropped(Path file) {
 		dropFile(file);

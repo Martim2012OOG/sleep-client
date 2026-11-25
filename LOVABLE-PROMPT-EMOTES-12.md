@@ -1,10 +1,10 @@
 # Lovable prompt: ONLY these 12 emotes in the shop (replace the old emote list)
 
-Paste everything below the line into Lovable, in the project that hosts the Sleep API (`https://pal-connect-plaza.lovable.app`, base `/api/public/gc`). The data is also in `emotes-catalogue.json` (attach it).
+Paste everything below the line into Lovable, in the project that hosts the Caos API (`https://pal-connect-plaza.lovable.app`, base `/api/public/gc`). The data is also in `emotes-catalogue.json` (attach it).
 
 ---
 
-The Sleep client now ships **only 12 emotes** (the old 758 were removed). Please change the shop so that category `Emotes` contains **exactly** these items and nothing else:
+The Caos client now ships **only 12 emotes** (the old 758 were removed). Please change the shop so that category `Emotes` contains **exactly** these items and nothing else:
 
 | id (= modelId) | name | tags | price (coins) | rarity | free | loop |
 | --- | --- | --- | --- | --- | --- | --- |

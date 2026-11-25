@@ -1,13 +1,13 @@
 package dev.kuboext.fun;
 
-import dev.sleepclient.mods.BabyModeMod;
-import dev.sleepclient.mods.DynamicIslandMod;
-import dev.sleepclient.mods.SkinTotemMod;
-import dev.sleepclient.ext.KuboApi;
-import dev.sleepclient.ext.KuboExtension;
+import dev.solclient.mods.BabyModeMod;
+import dev.solclient.mods.DynamicIslandMod;
+import dev.solclient.mods.SkinTotemMod;
+import dev.solclient.ext.KuboApi;
+import dev.solclient.ext.KuboExtension;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 
-/** Sleep extension "Fun": Baby Mode, Dynamic Island and Skin Totem. */
+/** Caos extension "Fun": Baby Mode, Dynamic Island and Skin Totem. */
 public class FunExtension implements KuboExtension {
 
 	@Override

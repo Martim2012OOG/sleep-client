@@ -63,7 +63,7 @@ public class TrajectoriesMod extends Mod {
 				}
 			});
 		} catch (Throwable t) {
-			System.err.println("[Sleep] Trajectories unavailable: " + t);
+			System.err.println("[Caos] Trajectories unavailable: " + t);
 		}
 	}
 

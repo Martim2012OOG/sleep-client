@@ -413,7 +413,7 @@ public class CustomSkyMod extends Mod {
 					m.addCost(System.nanoTime() - t0);
 				} catch (RuntimeException e) {
 					if (renderError.isEmpty()) {
-						System.err.println("[Sleep] Custom Sky particles: " + e);
+						System.err.println("[Caos] Custom Sky particles: " + e);
 						e.printStackTrace();
 					}
 					renderError = String.valueOf(e);
@@ -423,7 +423,7 @@ public class CustomSkyMod extends Mod {
 			}
 		});
 		} catch (Throwable t) {
-			System.err.println("[Sleep] Custom Sky: world particles unavailable: " + t);
+			System.err.println("[Caos] Custom Sky: world particles unavailable: " + t);
 		}
 	}
 
@@ -701,7 +701,7 @@ public class CustomSkyMod extends Mod {
 				bakeNow();
 			} catch (Throwable e) {
 				status = "Error: " + e.getClass().getSimpleName();
-				System.err.println("[Sleep] Custom Sky: could not load " + file + ": " + e);
+				System.err.println("[Caos] Custom Sky: could not load " + file + ": " + e);
 			} finally {
 				busy = false;
 			}
@@ -735,7 +735,7 @@ public class CustomSkyMod extends Mod {
 				}
 			} catch (Throwable e) {
 				l.status = "Error: " + e.getClass().getSimpleName();
-				System.err.println("[Sleep] Custom Sky: could not load layer texture " + file + ": " + e);
+				System.err.println("[Caos] Custom Sky: could not load layer texture " + file + ": " + e);
 			}
 		});
 	}
@@ -839,7 +839,7 @@ public class CustomSkyMod extends Mod {
 			status = "Active";
 		} catch (Throwable e) {
 			status = "Error: " + e.getClass().getSimpleName();
-			System.err.println("[Sleep] Custom Sky: upload failed: " + e);
+			System.err.println("[Caos] Custom Sky: upload failed: " + e);
 		}
 	}
 
@@ -890,7 +890,7 @@ public class CustomSkyMod extends Mod {
 		}
 		bb.flip();
 		// usage 32 = GpuBuffer.USAGE_VERTEX
-		buffer = RenderSystem.getDevice().createBuffer(() -> "Sleep custom sky", 32, bb);
+		buffer = RenderSystem.getDevice().createBuffer(() -> "Caos custom sky", 32, bb);
 		bufferBrightness = percent;
 		bufferFace = fc;
 	}
@@ -1313,7 +1313,7 @@ public class CustomSkyMod extends Mod {
 	}
 
 	// ------------------------------------------------------- share codes
-	private static final String CODE_PREFIX = "SLEEPSKY1:";
+	private static final String CODE_PREFIX = "CAOSSKY1:";
 	/** Sky codes made before the rename. */
 	private static final String OLD_PREFIX = "KUBOSKY1:";
 

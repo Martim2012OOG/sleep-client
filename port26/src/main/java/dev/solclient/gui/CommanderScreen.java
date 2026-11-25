@@ -69,7 +69,7 @@ public class CommanderScreen extends Screen {
 		Minecraft mc = Minecraft.getInstance();
 		l.add(new Entry("Mods", "Open the mods menu", Theme.icon2("mods"), null, () -> dev.solclient.compat.Mc.setScreen(mc, new SolMenuScreen())));
 		l.add(new Entry("Edit HUD", "Move and resize the HUD", Theme.icon2("hud"), null, () -> dev.solclient.compat.Mc.setScreen(mc, new MoveHudsScreen(false))));
-		l.add(new Entry("Minigames", "Snake, 2048, Sleep Bird, Breakout, Stack and Tetris", Theme.icon2("minigames"), null,
+		l.add(new Entry("Minigames", "Snake, 2048, Caos Bird, Breakout, Stack and Tetris", Theme.icon2("minigames"), null,
 				() -> dev.solclient.compat.Mc.setScreen(mc, new MinigamesScreen(parent))));
 		l.add(new Entry("Friends & Chat", "Talk with your friends", Theme.icon2("chat"), null, () -> dev.solclient.compat.Mc.setScreen(mc, SolMenuScreen.open(SolMenuScreen.VIEW_MODS))));
 		l.add(new Entry("Shop", "Capes, emotes and cosmetics", Theme.icon2("shop"), null, () -> dev.solclient.compat.Mc.setScreen(mc, SolMenuScreen.open(SolMenuScreen.VIEW_SHOP))));
@@ -111,7 +111,7 @@ public class CommanderScreen extends Screen {
 		}));
 		for (Mod m : SolClient.MODS) {
 			if (m == SolClient.settings) {
-				l.add(new Entry("Sleep Settings", "Theme, font, language, keys", Theme.icon2("settings"), m, null));
+				l.add(new Entry("Caos Settings", "Theme, font, language, keys", Theme.icon2("settings"), m, null));
 				continue;
 			}
 			Identifier ic = Theme.icon(m.id);

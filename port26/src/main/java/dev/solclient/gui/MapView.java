@@ -81,15 +81,15 @@ public final class MapView {
 				}
 			}
 		} catch (Exception e) {
-			System.err.println("[Sleep] map centroids: " + e);
+			System.err.println("[Caos] map centroids: " + e);
 		}
 		Thread t = new Thread(() -> {
 			try (InputStream in = rm.getResource(Gfx.id("globe_land.png")).orElseThrow().open()) {
 				pending = build(ImageIO.read(in));
 			} catch (Exception e) {
-				System.err.println("[Sleep] map: " + e);
+				System.err.println("[Caos] map: " + e);
 			}
-		}, "Sleep-Map");
+		}, "Caos-Map");
 		t.setDaemon(true);
 		t.start();
 	}

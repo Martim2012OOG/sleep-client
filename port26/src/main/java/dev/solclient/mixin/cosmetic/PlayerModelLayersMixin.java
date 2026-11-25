@@ -14,8 +14,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class PlayerModelLayersMixin {
 
 	@Inject(method = "setupAnim(Lnet/minecraft/client/renderer/entity/state/AvatarRenderState;)V", at = @At("TAIL"), require = 0)
-	private void sleep$hideFlat(AvatarRenderState state, CallbackInfo ci) {
-		int mask = ((LayerMask) state).sleep$getMask();
+	private void caos$hideFlat(AvatarRenderState state, CallbackInfo ci) {
+		int mask = ((LayerMask) state).caos$getMask();
 		if (mask == 0) {
 			return;
 		}

@@ -168,7 +168,7 @@ public final class XmasChoices {
 
 	/**
 	 * Turns the chosen Christmas packs on (on top of yours) while Christmas World is on, and turns off again the ones
-	 * Sleep turned on when it is off. Packs you turned on yourself are never touched. Reloads only when something changed.
+	 * Caos turned on when it is off. Packs you turned on yourself are never touched. Reloads only when something changed.
 	 */
 	public static void apply(boolean modOn) {
 		MinecraftClient mc = MinecraftClient.getInstance();

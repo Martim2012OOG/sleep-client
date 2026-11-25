@@ -54,7 +54,7 @@ public class RulerMod extends HudMod {
 				}
 			});
 		} catch (Throwable t) {
-			System.err.println("[Sleep] Ruler unavailable: " + t);
+			System.err.println("[Caos] Ruler unavailable: " + t);
 		}
 	}
 

@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Resource packs of the Sleep site (GET /resource-packs). This class has no Minecraft code at all, so it can be unit
+ * Resource packs of the Caos site (GET /resource-packs). This class has no Minecraft code at all, so it can be unit
  * tested: file names, SHA-1, install state and what a social link does (open in the browser or copy).
  */
 public final class KuboPackLogic {

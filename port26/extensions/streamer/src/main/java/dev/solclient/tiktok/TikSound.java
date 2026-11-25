@@ -73,7 +73,7 @@ public final class TikSound {
 				CACHE.put(key, p);
 				READY.add(new Play(p, volume, key));
 			} catch (Throwable t) {
-				System.err.println("[Sleep TikTok] could not play " + file.getFileName() + ": " + t);
+				System.err.println("[Caos TikTok] could not play " + file.getFileName() + ": " + t);
 			} finally {
 				LOADING.remove(key);
 			}

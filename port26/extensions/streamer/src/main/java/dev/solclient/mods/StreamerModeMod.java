@@ -10,7 +10,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 /**
  * Streamer Mode: for when you record or go live. Hides the server address and coordinates HUDs, private messages,
- * the text of Sleep message notifications, and turns Nick Hider on. A small "LIVE" tag shows it is on.
+ * the text of Caos message notifications, and turns Nick Hider on. A small "LIVE" tag shows it is on.
  */
 public class StreamerModeMod extends Mod {
 

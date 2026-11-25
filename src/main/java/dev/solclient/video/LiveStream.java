@@ -117,7 +117,7 @@ public final class LiveStream {
 			}
 			if (!hex.toString().equals(want)) {
 				Files.deleteIfExists(tmp);
-				System.err.println("[Sleep] yt-dlp download did not match its published checksum, not using it");
+				System.err.println("[Caos] yt-dlp download did not match its published checksum, not using it");
 				return false;
 			}
 			Files.move(tmp, bundled(), StandardCopyOption.REPLACE_EXISTING);
@@ -130,7 +130,7 @@ public final class LiveStream {
 			}
 			return true;
 		} catch (Exception e) {
-			System.err.println("[Sleep] yt-dlp install: " + e);
+			System.err.println("[Caos] yt-dlp install: " + e);
 			return false;
 		}
 	}
@@ -195,7 +195,7 @@ public final class LiveStream {
 			} catch (Exception e) {
 				return false;
 			}
-			Thread t = new Thread(this::pump, "Sleep live sound");
+			Thread t = new Thread(this::pump, "Caos live sound");
 			t.setDaemon(true);
 			t.start();
 			return true;

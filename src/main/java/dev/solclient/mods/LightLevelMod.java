@@ -68,7 +68,7 @@ public class LightLevelMod extends Mod {
 				}
 			});
 		} catch (Throwable t) {
-			System.err.println("[Sleep] Light Level unavailable: " + t);
+			System.err.println("[Caos] Light Level unavailable: " + t);
 		}
 	}
 

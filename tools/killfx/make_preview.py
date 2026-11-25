@@ -4,7 +4,7 @@ Usage: python3 tools/killfx/make_preview.py out.html [id ...]"""
 import base64, json, os, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-RES = os.path.join(HERE, "..", "..", "src", "main", "resources", "assets", "sleep_client")
+RES = os.path.join(HERE, "..", "..", "src", "main", "resources", "assets", "sol_client")
 
 
 def main(out, ids):

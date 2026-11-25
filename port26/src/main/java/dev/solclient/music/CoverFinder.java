@@ -99,7 +99,7 @@ public final class CoverFinder {
 			why = why.substring(0, why.length() - 1);
 		}
 		error = why;
-		System.err.println("[Sleep] music cover for \"" + title + "\" - \"" + artist + "\": " + why);
+		System.err.println("[Caos] music cover for \"" + title + "\" - \"" + artist + "\": " + why);
 		String key = title + "\u0001" + artist;
 		if (!key.equals(notifiedFor)) {
 			notifiedFor = key;
@@ -183,7 +183,7 @@ public final class CoverFinder {
 			}
 			return best;
 		} catch (Throwable t) {
-			System.err.println("[Sleep] music cover (iTunes): " + t);
+			System.err.println("[Caos] music cover (iTunes): " + t);
 			return null;
 		}
 	}
@@ -213,7 +213,7 @@ public final class CoverFinder {
 			}
 			return best;
 		} catch (Throwable t) {
-			System.err.println("[Sleep] music cover (Deezer): " + t);
+			System.err.println("[Caos] music cover (Deezer): " + t);
 			return null;
 		}
 	}

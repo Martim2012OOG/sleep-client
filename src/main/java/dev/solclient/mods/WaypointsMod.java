@@ -238,7 +238,7 @@ public class WaypointsMod extends Mod {
 		save();
 	}
 
-	/** A waypoint a friend sent in the Sleep chat: [name, x, y, z, dimension, server]. False if you are not in that world. */
+	/** A waypoint a friend sent in the Caos chat: [name, x, y, z, dimension, server]. False if you are not in that world. */
 	public boolean addShared(String[] d) {
 		if (mc.world == null || d.length < 5) {
 			return false;

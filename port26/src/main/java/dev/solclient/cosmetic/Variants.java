@@ -37,7 +37,7 @@ public final class Variants {
 				}
 			}
 		} catch (IOException | RuntimeException e) {
-			System.err.println("[Sleep] cosmetic colours: " + e);
+			System.err.println("[Caos] cosmetic colours: " + e);
 		}
 	}
 
@@ -65,7 +65,7 @@ public final class Variants {
 			CHOICE.forEach(o::addProperty);
 			Files.writeString(file(), GSON.toJson(o));
 		} catch (IOException | RuntimeException e) {
-			System.err.println("[Sleep] could not save the colour: " + e);
+			System.err.println("[Caos] could not save the colour: " + e);
 		}
 	}
 

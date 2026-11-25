@@ -7,7 +7,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/** Notification cards (gui.Notify) also show on top of menus: the title screen, the Sleep menu, chat... */
+/** Notification cards (gui.Notify) also show on top of menus: the title screen, the Caos menu, chat... */
 @Mixin(Screen.class)
 public abstract class NotifyScreenMixin {
 

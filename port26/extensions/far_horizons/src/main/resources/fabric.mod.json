@@ -2,12 +2,12 @@
   "schemaVersion": 1,
   "id": "kubo_ext_far_horizons",
   "version": "${version}",
-  "name": "Sleep – Far Horizons",
+  "name": "Caos – Far Horizons",
   "description": "See terrain far beyond your render distance (like Distant Horizons). Uses more memory.",
   "authors": [
-    "Sleep"
+    "Caos"
   ],
-  "license": "PolyForm-Strict-1.0.0",
+  "license": "GPL-3.0-only",
   "environment": "client",
   "entrypoints": {
     "kubo": [
@@ -15,7 +15,7 @@
     ]
   },
   "depends": {
-    "sleep_client": "*",
+    "sol_client": "*",
     "minecraft": ">=26.1 <26.3",
     "fabricloader": ">=0.20.1"
   },

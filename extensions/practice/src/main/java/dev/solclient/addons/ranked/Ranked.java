@@ -14,9 +14,9 @@ import java.util.Set;
 import net.minecraft.client.MinecraftClient;
 
 /**
- * Ranked PvP (like the tier lists of PvP servers: HT1 ... LT5) and duels with friends, 1v1 or 2v2, in the Sleep arena map.
+ * Ranked PvP (like the tier lists of PvP servers: HT1 ... LT5) and duels with friends, 1v1 or 2v2, in the Caos arena map.
  *
- * The Sleep site is the referee: it keeps the queue, makes the matches, picks the host (the first player who queued),
+ * The Caos site is the referee: it keeps the queue, makes the matches, picks the host (the first player who queued),
  * keeps the ELO / tiers and the rankings. The host's game opens the arena world and hosts it (Host World + relay); the
  * others join it. During a match the host cannot kick, ban or use commands; if the host leaves, the host's team loses
  * (the site stops getting the host's heartbeat). The fight itself runs in {@link RankedServer} on the host's game.
@@ -54,7 +54,7 @@ public final class Ranked {
 					}
 				}
 			} catch (Exception e) {
-				System.err.println("[Sleep] kit " + k + ": " + e);
+				System.err.println("[Caos] kit " + k + ": " + e);
 			}
 			return out;
 		});
@@ -69,7 +69,7 @@ public final class Ranked {
 		return KITS.get(0);
 	}
 
-	public static final String WORLD = "Sleep Ranked Arenas";
+	public static final String WORLD = "Caos Ranked Arenas";
 
 	// ---------------------------------------------------------------- state from the site
 	public record Player(String userId, String name, String mcUsername, String mcUuid, int elo, String tier) {
@@ -375,7 +375,7 @@ public final class Ranked {
 			if (mc.world != null) {
 				quit(mc, false); // leave the world / server you were in
 			}
-			var info = new net.minecraft.client.network.ServerInfo("Sleep " + (m.ranked ? "Ranked" : "Duel"), addr, net.minecraft.client.network.ServerInfo.ServerType.OTHER);
+			var info = new net.minecraft.client.network.ServerInfo("Caos " + (m.ranked ? "Ranked" : "Duel"), addr, net.minecraft.client.network.ServerInfo.ServerType.OTHER);
 			net.minecraft.client.gui.screen.multiplayer.ConnectScreen.connect(new net.minecraft.client.gui.screen.TitleScreen(), mc,
 					net.minecraft.client.network.ServerAddress.parse(addr), info, false, null);
 		});
@@ -403,7 +403,7 @@ public final class Ranked {
 				quit(mc, true);
 			}
 			if (mc.player != null) {
-				mc.inGameHud.getChatHud().addMessage(net.minecraft.text.Text.literal("[Sleep] You left the match."));
+				mc.inGameHud.getChatHud().addMessage(net.minecraft.text.Text.literal("[Caos] You left the match."));
 			}
 		});
 	}
@@ -554,7 +554,7 @@ public final class Ranked {
 			} catch (Throwable e) {
 				status = String.valueOf(e.getMessage());
 			}
-		}, "sleep-ranked");
+		}, "caos-ranked");
 		t.setDaemon(true);
 		t.start();
 	}
@@ -562,7 +562,7 @@ public final class Ranked {
 	private static void fail(SolarApi.Res r, String what) {
 		if (r.status() == 404) {
 			siteMissing = true;
-			Social.say(Lang.tr("Ranked PvP is not on the Sleep site yet.", "O Ranked PvP ainda não está no site do Sleep."), true);
+			Social.say(Lang.tr("Ranked PvP is not on the Caos site yet.", "O Ranked PvP ainda não está no site do Caos."), true);
 			return;
 		}
 		String err = r.error();

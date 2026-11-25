@@ -12,7 +12,7 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import net.minecraft.client.Minecraft;
 
-/** Settings in the cloud: your whole Sleep config saved on your Sleep account (needs the site endpoint /me/config). */
+/** Settings in the cloud: your whole Caos config saved on your Caos account (needs the site endpoint /me/config). */
 public final class CloudSync {
 
 	public static volatile String status = "";
@@ -23,7 +23,7 @@ public final class CloudSync {
 
 	public static void upload() {
 		if (Social.me == null) {
-			status = "Log in to Sleep first";
+			status = "Log in to Caos first";
 			return;
 		}
 		status = "Uploading...";
@@ -57,7 +57,7 @@ public final class CloudSync {
 
 	public static void download() {
 		if (Social.me == null) {
-			status = "Log in to Sleep first";
+			status = "Log in to Caos first";
 			return;
 		}
 		status = "Downloading...";

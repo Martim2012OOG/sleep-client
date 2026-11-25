@@ -10,7 +10,7 @@ import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 
-/** All Sleep achievements: unlocked ones shine (bronze / silver / gold), locked ones show how close you are. */
+/** All Caos achievements: unlocked ones shine (bronze / silver / gold), locked ones show how close you are. */
 public class AchievementsScreen extends Screen {
 
 	private static final int[] TIER = {0xFFCD7F32, 0xFFC0C8D8, 0xFFFFC94A};

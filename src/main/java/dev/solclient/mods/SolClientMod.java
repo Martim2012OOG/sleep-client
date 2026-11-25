@@ -7,7 +7,7 @@ import dev.solclient.option.Option;
 import java.util.ArrayList;
 import java.util.List;
 
-/** The "Sleep" settings card. */
+/** The "Caos" settings card. */
 public class SolClientMod extends Mod {
 
 	public final Option.Col uiColour;
@@ -19,12 +19,12 @@ public class SolClientMod extends Mod {
 
 	public final Option.Bool customTitle;
 	public final Option.Bool customPause;
-	/** 0 = Sleep's own simple pause screen, 1 = Minecraft's pause screen (Essential / Mod Menu buttons stay) with Sleep's buttons + your player. */
+	/** 0 = Caos's own simple pause screen, 1 = Minecraft's pause screen (Essential / Mod Menu buttons stay) with Caos's buttons + your player. */
 	public final Option.Choice pauseStyle;
-	/** With Essential installed: its pause menu (and its player preview) instead of Sleep's. */
+	/** With Essential installed: its pause menu (and its player preview) instead of Caos's. */
 	public final Option.Bool pauseEssential;
 	public final Option.Bool pausePlayer;
-	/** 0 = Sleep's "Mods" tab, 1 = the original Mod Menu screen. */
+	/** 0 = Caos's "Mods" tab, 1 = the original Mod Menu screen. */
 	public final Option.Choice modsScreen;
 	public final Option.Choice seasonal;
 	public final Option.Choice buttonStyle;
@@ -55,7 +55,7 @@ public class SolClientMod extends Mod {
 	public final Option.Num notifyVolume;
 	/** How big the notification cards are (percent of the original size). */
 	public final Option.Num notifySize;
-	// the sound of each kind of notification ("" = the Sleep pling, "silent" = none, or a picked sound)
+	// the sound of each kind of notification ("" = the Caos pling, "silent" = none, or a picked sound)
 	private Option.Text soundMessage, soundFriend, soundInvite, soundClip, soundError, soundOther;
 	public final Option.Bool splashLogo;
 	public final Option.Bool splashOnReload;
@@ -83,7 +83,7 @@ public class SolClientMod extends Mod {
 	private String codeMsg = "";
 
 	public SolClientMod() {
-		super("Sleep", "sol_client", "Settings for Sleep.", Category.NONE);
+		super("Caos", "sol_client", "Settings for Caos.", Category.NONE);
 		locked = true;
 		enabled = true;
 
@@ -93,7 +93,7 @@ public class SolClientMod extends Mod {
 		// ------------------------------------------------------------------ Language
 		header("Language");
 		language = choice("Language", 0, dev.solclient.Lang.NAMES);
-		language.tip("The language of Sleep's menus.");
+		language.tip("The language of Caos's menus.");
 		mcLanguage = bool("Minecraft in this language too", true);
 		mcLanguage.showIf(() -> language.idx() != 0);
 		action("Automatic translation", "Translate Again", () -> {
@@ -111,7 +111,7 @@ public class SolClientMod extends Mod {
 		// ------------------------------------------------------------------ Font
 		header("Font");
 		font = choice("Font", 0, dev.solclient.Gfx.FONT_NAMES);
-		font.tip("The font of all Sleep menus and HUD text.");
+		font.tip("The font of all Caos menus and HUD text.");
 		gameFont = choice("Whole Game Font", 0, dev.solclient.GameFont.NAMES);
 		gameFont.tip("Changes the font of the ENTIRE game too: chat, inventory, tooltips, signs, names, scoreboard. Instant, no reload. Off = normal Minecraft font.");
 		action("Your own font (.ttf)", "Open Folder", dev.solclient.CustomFont::openFolder, dev.solclient.CustomFont::statusText)
@@ -130,7 +130,7 @@ public class SolClientMod extends Mod {
 		uiTransparency = num("UI Transparency", 0, 0, 80, 5, "%");
 		uiTransparency.tip("Makes every menu see-through.");
 		menuOpacity = num("Menu Opacity", 100, 25, 100, 5, "%");
-		menuOpacity.tip("How solid the Sleep window is (lower = see the game behind it).");
+		menuOpacity.tip("How solid the Caos window is (lower = see the game behind it).");
 
 		// ------------------------------------------------------------------ Custom colours
 		header("Custom Colours");
@@ -198,20 +198,20 @@ public class SolClientMod extends Mod {
 		header("Menus");
 		menuSize = num("Menu Size", 1F, 0.5F, 1.6F, 0.05F, "x");
 		menuSize.tip("Makes this whole menu bigger or smaller.");
-		customTitle = bool("Sleep Home Screen", true);
-		customTitle.tip("Replaces Minecraft's title screen with Sleep's.");
-		customPause = bool("Sleep Pause Menu", true);
-		customPause.tip("Replaces the pause menu (Esc) with Sleep's.");
+		customTitle = bool("Caos Home Screen", true);
+		customTitle.tip("Replaces Minecraft's title screen with Caos's.");
+		customPause = bool("Caos Pause Menu", true);
+		customPause.tip("Replaces the pause menu (Esc) with Caos's.");
 		// (new name: everyone starts on the simple one; the old option defaulted to Classic)
-		pauseStyle = choice("Pause Menu Look", 0, "Sleep (simple)", "Classic + Sleep");
-		pauseStyle.tip("Simple = Sleep's small pause menu. Classic = Minecraft's own pause menu with Sleep's buttons and your player.");
+		pauseStyle = choice("Pause Menu Look", 0, "Caos (simple)", "Classic + Caos");
+		pauseStyle.tip("Simple = Caos's small pause menu. Classic = Minecraft's own pause menu with Caos's buttons and your player.");
 		pauseEssential = bool("Essential's Pause Menu When Installed", true);
 		pauseEssential.showIf(() -> customPause.on() && dev.solclient.gui.ModMenuLink.essentialPresent());
-		pauseEssential.tip("With Essential installed, its own pause menu and player preview are used; Sleep only adds its small row of buttons.");
+		pauseEssential.tip("With Essential installed, its own pause menu and player preview are used; Caos only adds its small row of buttons.");
 		pauseStyle.showIf(() -> customPause.on() && !(dev.solclient.gui.ModMenuLink.essentialPresent() && pauseEssential.on()));
 		pausePlayer = bool("Your Player In The Pause Menu", true);
 		pausePlayer.showIf(() -> customPause.on() && pauseStyle.idx() == 1 && !dev.solclient.gui.ModMenuLink.essentialPresent());
-		modsScreen = choice("Mods Screen", 0, "Sleep", "Mod Menu (original)");
+		modsScreen = choice("Mods Screen", 0, "Caos", "Mod Menu (original)");
 		modsScreen.showIf(dev.solclient.gui.ModMenuLink::present);
 		seasonal = choice("Seasonal Decorations", 0, "Automatic", "Off", "Halloween", "Christmas");
 		seasonal.tip("Halloween / Christmas decorations on the home screen.");
@@ -222,17 +222,17 @@ public class SolClientMod extends Mod {
 			net.minecraft.util.Util.getOperatingSystem().open(f);
 		}, dev.solclient.gui.SeasonMusic::trackName);
 		seasonalBackground = bool("Seasonal Home Background", true);
-		restyleMenus = bool("Sleep Style For Minecraft Menus", true);
-		restyleMenus.tip("Gives Minecraft's own menus (options, worlds, servers) Sleep's look.");
-		restyleButtons = bool("Sleep Look For Menu Buttons", true);
-		restyleButtons.tip("On: the buttons in Minecraft's own menus get the same look as Sleep's menus. Off: they stay the normal Minecraft ones.");
+		restyleMenus = bool("Caos Style For Minecraft Menus", true);
+		restyleMenus.tip("Gives Minecraft's own menus (options, worlds, servers) Caos's look.");
+		restyleButtons = bool("Caos Look For Menu Buttons", true);
+		restyleButtons.tip("On: the buttons in Minecraft's own menus get the same look as Caos's menus. Off: they stay the normal Minecraft ones.");
 		homeShowcase = bool("Shop Banner On Home Screen", true);
 		buttonStyle = choice("Button Style", 0, "Classic", "Rounded", "Outline", "Minimal");
 		buttonAnimations = bool("Button Animations", false);
 		buttonAnimations.tip("Smooth hover animations on buttons (a little heavier).");
 		screenSize = num("Home & Pause Menu Size", 100, 60, 150, 5, "%");
 		cornerRadius = num("Corner Radius", 3, 0, 12, 1, "");
-		cornerRadius.tip("How round the corners of Sleep's menus are.");
+		cornerRadius.tip("How round the corners of Caos's menus are.");
 
 		// ------------------------------------------------------------------ HUD & notifications
 		header("HUD & Notifications");
@@ -263,16 +263,16 @@ public class SolClientMod extends Mod {
 		// ------------------------------------------------------------------ Players
 		header("Players");
 		othersEmotes = bool("Show Others' Emotes", true);
-		othersEmotes.tip("See the emotes other Sleep players do.");
+		othersEmotes.tip("See the emotes other Caos players do.");
 		shareServer = bool("Friends Can See And Join My Server", true);
-		shareServer.tip("Your Sleep friends see which server you are on and can join you.");
+		shareServer.tip("Your Caos friends see which server you are on and can join you.");
 		shareEmotes = bool("Share My Emotes", true);
-		shareEmotes.tip("Other Sleep players see the emotes you do.");
+		shareEmotes.tip("Other Caos players see the emotes you do.");
 		solarCapes = bool("Show Solar Capes & Skins", true);
-		solarCapes.tip("See the capes and skins that other Sleep players picked.");
+		solarCapes.tip("See the capes and skins that other Caos players picked.");
 		animatedCapes = bool("Animated Capes (video)", true);
 		nameBadge = bool("Logo On Nametags", true);
-		nameBadge.tip("A small Sleep logo next to the name of Sleep players.");
+		nameBadge.tip("A small Caos logo next to the name of Caos players.");
 		cosmetics = bool("Show 3D Cosmetics", true);
 		petSounds = bool("Pet Sounds", true).tip("Pets make a soft sound now and then and when you pet them. Turn off for silent pets.");
 		cosmetics.tip("3D accessories (hats, wings...) on players.");
@@ -307,11 +307,11 @@ public class SolClientMod extends Mod {
 
 		// ------------------------------------------------------------------ Loading screen
 		header("Loading Screen");
-		splashLogo = bool("Sleep Logo On Loading Screen", true);
+		splashLogo = bool("Caos Logo On Loading Screen", true);
 		splashOnReload = bool("Also When Reloading Resource Packs", false);
 		hideReloadScreen = bool("Instant Pack Reload", true);
 		hideReloadScreen.tip("Adding or removing a resource pack no longer shows the red loading screen (no fade, no 1 s minimum): you keep seeing the game with a thin progress bar on top.");
-		hideHudWhileLoading = bool("Hide Sleep HUD While Loading", true);
+		hideHudWhileLoading = bool("Hide Caos HUD While Loading", true);
 
 		// ------------------------------------------------------------------ Setup & reset
 		header("Setup & Reset");
@@ -336,7 +336,7 @@ public class SolClientMod extends Mod {
 
 	}
 
-	/** A font file dragged onto the window while the Sleep settings are open: becomes the "Custom" font. */
+	/** A font file dragged onto the window while the Caos settings are open: becomes the "Custom" font. */
 	@Override
 	public boolean onFileDropped(java.nio.file.Path file) {
 		String n = file.getFileName() == null ? "" : file.getFileName().toString().toLowerCase(java.util.Locale.ROOT);
@@ -364,7 +364,7 @@ public class SolClientMod extends Mod {
 		a.showIf(() -> notifySound.on());
 	}
 
-	/** The sound picked for this kind of notification: "" = the Sleep pling, "silent" = no sound. */
+	/** The sound picked for this kind of notification: "" = the Caos pling, "silent" = no sound. */
 	public String notifySoundFor(dev.solclient.gui.Notify.Kind k) {
 		Option.Text t = switch (k) {
 			case MSG -> soundMessage;
@@ -418,11 +418,11 @@ public class SolClientMod extends Mod {
 			mc.options.write();
 			mc.reloadResources();
 		} catch (RuntimeException e) {
-			System.err.println("[Sleep] could not change the Minecraft language: " + e);
+			System.err.println("[Caos] could not change the Minecraft language: " + e);
 		}
 	}
 
-	/** Minecraft's own pause screen is used (Classic, or Essential's menu): Sleep only adds to it. */
+	/** Minecraft's own pause screen is used (Classic, or Essential's menu): Caos only adds to it. */
 	public boolean classicPause() {
 		return pauseStyle.idx() == 1 || (pauseEssential.on() && dev.solclient.gui.ModMenuLink.essentialPresent());
 	}

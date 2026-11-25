@@ -2,12 +2,12 @@
   "schemaVersion": 1,
   "id": "kubo_ext_hud_extras",
   "version": "${version}",
-  "name": "Sleep – HUD Extras",
+  "name": "Caos – HUD Extras",
   "description": "Speedometer, Stopwatch, Inventory HUD, Pickup Notifications, New Item Mark, Death Point, Minimap, Compass Bar and Auto-hide HUD.",
   "authors": [
-    "Sleep"
+    "Caos"
   ],
-  "license": "PolyForm-Strict-1.0.0",
+  "license": "GPL-3.0-only",
   "environment": "client",
   "entrypoints": {
     "kubo": [
@@ -15,7 +15,7 @@
     ]
   },
   "depends": {
-    "sleep_client": "*",
+    "sol_client": "*",
     "minecraft": ">=26.1 <26.3",
     "fabricloader": ">=0.20.1"
   },

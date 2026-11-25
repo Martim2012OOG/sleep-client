@@ -1,8 +1,8 @@
-// sleep-sync: a small Cloudflare Worker that carries ONE thing: the profile data of the Sleep players (badge, name style, flag, cosmetics,
+// sleep-sync: a small Cloudflare Worker that carries ONE thing: the profile data of the Caos players (badge, name style, flag, cosmetics,
 // the music above the head). One Durable Object room per Minecraft server (and one global lobby). Nothing else passes through here.
 //
 // Protocol (WebSocket at /ws/<room: 16-64 hex>):
-//   client -> {"t":"hello","token":<Sleep API session token>,"uuid":...,"nick":...}   the first message; the token is checked against the Sleep site
+//   client -> {"t":"hello","token":<Caos API session token>,"uuid":...,"nick":...}   the first message; the token is checked against the Caos site
 //   server -> {"t":"list","players":[{"uuid","nick"}...]}  then the last data of everybody already there: {"t":"kx","u":uuid,"kx":{...}}
 //   client -> {"t":"kx","kx":{...}}                         (at most 8 per 5 s, 6 KB)   server -> the others: {"t":"kx","u":uuid,"kx":{...,"n":nick}}
 //   "ping" -> "pong" (answered by Cloudflare itself, without waking the room)
@@ -138,7 +138,7 @@ export class Room {
 }
 
 
-// who is this? The Sleep API tells us (the token is the player's session); the client only says its uuid / nick for offline accounts
+// who is this? The Caos API tells us (the token is the player's session); the client only says its uuid / nick for offline accounts
 async function identifyUser(env, verified, o) {
   const token = typeof o.token === "string" ? o.token : "";
   if (token.length < 10 || token.length > 4096) return null;

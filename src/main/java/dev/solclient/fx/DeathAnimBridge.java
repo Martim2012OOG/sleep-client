@@ -8,7 +8,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.item.Item;
 
 /**
- * The Locker's "Death Animations" section talks to the death animation engine that ships inside Sleep through this class
+ * The Locker's "Death Animations" section talks to the death animation engine that ships inside Caos through this class
  * (so the old stand-alone screen is never needed). Everything is looked up by name once and every call is guarded: if the
  * engine is missing or changed, the section just shows nothing instead of crashing the menu.
  */
@@ -89,7 +89,7 @@ public final class DeathAnimBridge {
 			label = animCls.getField("label");
 			ok = true;
 		} catch (Throwable t) {
-			System.err.println("[Sleep] death animations engine not available: " + t);
+			System.err.println("[Caos] death animations engine not available: " + t);
 			ok = false;
 		}
 		return ok;
@@ -162,7 +162,7 @@ public final class DeathAnimBridge {
 				out.add(new Entry(a, id, title, desc, accent, icon));
 			}
 		} catch (Throwable t) {
-			System.err.println("[Sleep] death animations list: " + t);
+			System.err.println("[Caos] death animations list: " + t);
 		}
 		cache = out;
 		return out;
@@ -293,7 +293,7 @@ public final class DeathAnimBridge {
 				return true;
 			}
 		} catch (Throwable t) {
-			System.err.println("[Sleep] death animation view: " + t);
+			System.err.println("[Caos] death animation view: " + t);
 		}
 		return false;
 	}

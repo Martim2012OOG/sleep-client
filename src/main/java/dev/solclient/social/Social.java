@@ -504,7 +504,7 @@ public final class Social {
 			try {
 				r.run();
 			} catch (Throwable e) {
-				System.err.println("[Sleep] social job " + name + " failed: " + e);
+				System.err.println("[Caos] social job " + name + " failed: " + e);
 			} finally {
 				running.remove(name);
 			}
@@ -1415,7 +1415,7 @@ public final class Social {
 		if (!notifSeeded) {
 			notifSeeded = true;
 			if (unread > 0) {
-				SocialToast.show("Sleep", "You have " + unread + " unread notification" + (unread == 1 ? "" : "s"));
+				SocialToast.show("Caos", "You have " + unread + " unread notification" + (unread == 1 ? "" : "s"));
 			}
 		} else if (newest != null) {
 			SocialToast.show(newest.title, fresh > 1 ? "+" + (fresh - 1) + " more" : newest.detail);
@@ -1665,7 +1665,7 @@ public final class Social {
 				}
 			}
 		} catch (Exception e) {
-			System.err.println("[Sleep] built-in cosmetics: " + e);
+			System.err.println("[Caos] built-in cosmetics: " + e);
 		}
 	}
 
@@ -1682,7 +1682,7 @@ public final class Social {
 			java.nio.file.Files.createDirectories(f.getParent());
 			java.nio.file.Files.write(f, lines);
 		} catch (Exception e) {
-			System.err.println("[Sleep] built-in cosmetics: " + e);
+			System.err.println("[Caos] built-in cosmetics: " + e);
 		}
 	}
 
@@ -1885,7 +1885,7 @@ public final class Social {
 		try {
 			r.run();
 		} catch (Throwable e) {
-			System.err.println("[Sleep] social: " + e);
+			System.err.println("[Caos] social: " + e);
 		}
 	}
 
@@ -2578,7 +2578,7 @@ public final class Social {
 		try {
 			java.nio.file.Files.writeString(localKillFile(), id == null ? "" : id);
 		} catch (Exception e) {
-			System.err.println("[Sleep] could not save the kill effect: " + e);
+			System.err.println("[Caos] could not save the kill effect: " + e);
 		}
 	}
 

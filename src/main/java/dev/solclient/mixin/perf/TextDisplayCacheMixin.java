@@ -22,29 +22,29 @@ public abstract class TextDisplayCacheMixin {
 	@Shadow
 	private DisplayEntity.TextDisplayEntity.TextLines textLines;
 
-	@Unique private DisplayEntity.TextDisplayEntity.TextLines sleep$keep;
-	@Unique private Text sleep$text;
-	@Unique private int sleep$width = -1;
-	@Unique private Object sleep$font;
+	@Unique private DisplayEntity.TextDisplayEntity.TextLines caos$keep;
+	@Unique private Text caos$text;
+	@Unique private int caos$width = -1;
+	@Unique private Object caos$font;
 
 	@Inject(method = "refreshData", at = @At("HEAD"), require = 0)
-	private void sleep$before(boolean lerp, float progress, CallbackInfo ci) {
-		this.sleep$keep = this.textLines;
+	private void caos$before(boolean lerp, float progress, CallbackInfo ci) {
+		this.caos$keep = this.textLines;
 	}
 
 	@Inject(method = "refreshData", at = @At("TAIL"), require = 0)
-	private void sleep$after(boolean lerp, float progress, CallbackInfo ci) {
+	private void caos$after(boolean lerp, float progress, CallbackInfo ci) {
 		DisplayEntity.TextDisplayEntity self = (DisplayEntity.TextDisplayEntity) (Object) this;
 		Text t = self.getText();
 		int w = self.getLineWidth();
 		Object font = GameFont.target;
-		if (this.sleep$keep != null && w == this.sleep$width && font == this.sleep$font && t != null && t == this.sleep$text) {
-			this.textLines = this.sleep$keep; // same text, same width, same font: reuse
+		if (this.caos$keep != null && w == this.caos$width && font == this.caos$font && t != null && t == this.caos$text) {
+			this.textLines = this.caos$keep; // same text, same width, same font: reuse
 		} else {
-			this.sleep$text = t;
-			this.sleep$width = w;
-			this.sleep$font = font;
+			this.caos$text = t;
+			this.caos$width = w;
+			this.caos$font = font;
 		}
-		this.sleep$keep = null;
+		this.caos$keep = null;
 	}
 }

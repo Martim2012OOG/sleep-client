@@ -134,7 +134,7 @@ public final class BridgeSession {
 		loadBest();
 		PROPS.setProperty(key(m, l), String.format(Locale.ROOT, "%.3f", seconds));
 		try (OutputStream out = Files.newOutputStream(file())) {
-			PROPS.store(out, "Sleep bridge practice best times (seconds)");
+			PROPS.store(out, "Caos bridge practice best times (seconds)");
 		} catch (IOException ignored) {
 			// not fatal
 		}

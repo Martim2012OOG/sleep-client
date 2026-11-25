@@ -37,14 +37,14 @@ Give **every file in full**. No "…", no "rest stays the same".
 3. `extensions/<name>/src/main/resources/fabric.mod.json`: the template in §3.
 4. The Java sources:
    - in package `dev.kuboext.<name>`;
-   - one entrypoint class `<CamelName>Extension implements dev.sleepclient.ext.KuboExtension`;
+   - one entrypoint class `<CamelName>Extension implements dev.solclient.ext.KuboExtension`;
    - one class per mod.
 5. Translations:
    - Path: `extensions/<name>/src/main/resources/assets/kubo_ext_<name>/pt_pt.tsv`.
    - One line per string: the English text, a TAB, then the Portuguese (Portugal, not Brazil) text.
    - Cover every user-visible string: mod name, description, every option name, choice labels, button labels, HUD text.
 6. Menu icons, one per mod. For each icon, give:
-   - the PNG at `src/main/resources/assets/sleep_client/textures/gui/icon/<modId>.png`, 64×64, a **white glyph on a transparent background**, simple and thick, like Font Awesome solid;
+   - the PNG at `src/main/resources/assets/sol_client/textures/gui/icon/<modId>.png`, 64×64, a **white glyph on a transparent background**, simple and thick, like Font Awesome solid;
    - a `.mcmeta` next to it containing exactly `{"texture":{"blur":true}}`.
 
    If you can't output a binary PNG, give a short Python (Pillow) script that draws it into the right path.
@@ -69,7 +69,7 @@ Give **every file in full**. No "…", no "rest stays the same".
 
 - **Client only.** `"environment": "client"`. Nothing may run on a server.
 - **Only use the public Kubo API** in §4, plus Minecraft, yarn and Fabric API classes.
-  - Never use other `dev.sleepclient.*` classes. Their internals change between versions.
+  - Never use other `dev.solclient.*` classes. Their internals change between versions.
   - The core never knows about your extension, so don't ask for core changes.
 - **Prefer no mixins.**
   - A jar without mixins installs and uninstalls live.
@@ -155,7 +155,7 @@ java {
   "license": "GPL-3.0-only",
   "environment": "client",
   "entrypoints": { "kubo": ["dev.kuboext.<name>.<CamelName>Extension"] },
-  "depends": { "sleep_client": "*", "minecraft": "~1.21.11", "fabricloader": ">=0.18.1" },
+  "depends": { "sol_client": "*", "minecraft": "~1.21.11", "fabricloader": ">=0.18.1" },
   "custom": { "kubo:extension": true }
 }
 ```
@@ -164,7 +164,7 @@ Use the `kubo` entrypoint only. **Don't** add `client` or `main` entrypoints: th
 
 ## 4. The Kubo API (everything you may use)
 
-### `dev.sleepclient.ext.KuboExtension`
+### `dev.solclient.ext.KuboExtension`
 ```java
 public interface KuboExtension {
 	void register(KuboApi api);   // at start-up, before settings load (or right after a live install)
@@ -172,10 +172,10 @@ public interface KuboExtension {
 }
 ```
 
-### `dev.sleepclient.ext.KuboApi`, received in `register`
+### `dev.solclient.ext.KuboApi`, received in `register`
 ```java
 void addMod(Mod mod);                         // adds a mod to the Right Shift menu (settings saved automatically)
-void addIcon(String modId);                   // registers assets/sleep_client/textures/gui/icon/<modId>.png from your jar
+void addIcon(String modId);                   // registers assets/sol_client/textures/gui/icon/<modId>.png from your jar
 void addTranslations(InputStream tsv);        // "English<TAB>Português" lines
 void command(String title, String sub, String iconId, Runnable run);  // entry in the Kubo command palette
 
@@ -199,7 +199,7 @@ void replacesF3(BooleanSupplier s);                     // true = your mod draws
 void screenFilter(UnaryOperator<Screen> f);             // swap a screen before it opens (return it unchanged otherwise)
 ```
 
-### `dev.sleepclient.mods.Mod` (extend it for a normal mod)
+### `dev.solclient.mods.Mod` (extend it for a normal mod)
 ```java
 protected Mod(String name, String id, String description, Category category); // Category.HUD / UTILITY / VISUAL
 public final String id, name, description;
@@ -225,7 +225,7 @@ protected Option.Action action(String name, String button, Runnable run, Supplie
 ```
 - Option names are the setting keys. Never rename them after release.
 
-### `dev.sleepclient.mods.HudMod` (extends Mod, for something drawn on screen and movable in the HUD editor)
+### `dev.solclient.mods.HudMod` (extends Mod, for something drawn on screen and movable in the HUD editor)
 ```java
 protected HudMod(String name, String id, String description, float defaultX, float defaultY); // 0..1 of the screen
 public abstract int width();      // in unscaled pixels
@@ -235,12 +235,12 @@ protected abstract void renderHud(DrawContext c, boolean edit);  // draw at (0,0
 public final Option.Num scale;    // already added for you
 ```
 
-### `dev.sleepclient.gui.Notify` (Kubo-style notification, bottom-left, with sound)
+### `dev.solclient.gui.Notify` (Kubo-style notification, bottom-left, with sound)
 ```java
 Notify.show(Notify.Kind.INFO, "Title", "Second line");   // Kind: INFO, DONE, ERROR, DOWNLOAD, KUBO, FRIEND, MSG, CLIP
 ```
 
-### `dev.sleepclient.Lang`
+### `dev.solclient.Lang`
 ```java
 Lang.tr("English", "Português")   // returns the right one for the player's language
 ```
@@ -250,8 +250,8 @@ Lang.tr("English", "Português")   // returns the right one for the player's lan
 ```java
 package dev.kuboext.kill_effects;
 
-import dev.sleepclient.ext.KuboApi;
-import dev.sleepclient.ext.KuboExtension;
+import dev.solclient.ext.KuboApi;
+import dev.solclient.ext.KuboExtension;
 
 public class KillEffectsExtension implements KuboExtension {
 	static volatile boolean active;
@@ -276,8 +276,8 @@ public class KillEffectsExtension implements KuboExtension {
 ```java
 package dev.kuboext.kill_effects;
 
-import dev.sleepclient.mods.HudMod;
-import dev.sleepclient.option.Option;
+import dev.solclient.mods.HudMod;
+import dev.solclient.option.Option;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;

@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The skin to draw as a player's face, by Minecraft name. Order: your own skin (equipped / Sleep) -> the skin that
- * friend uploaded to Sleep (cracked names have no Mojang skin) -> the official skin through several mirrors, with a
+ * The skin to draw as a player's face, by Minecraft name. Order: your own skin (equipped / Caos) -> the skin that
+ * friend uploaded to Caos (cracked names have no Mojang skin) -> the official skin through several mirrors, with a
  * copy kept on disk so faces don't vanish when one site is slow or down. Never blocks: null until a picture is ready.
  */
 public final class FaceSkins {

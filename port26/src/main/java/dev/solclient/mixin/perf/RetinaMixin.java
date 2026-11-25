@@ -22,10 +22,10 @@ public class RetinaMixin {
 			}
 			if (!dev.solclient.mods.PerformanceMod.sharpRetinaSaved()) {
 				GLFW.glfwWindowHint(GLFW.GLFW_COCOA_RETINA_FRAMEBUFFER, GLFW.GLFW_FALSE);
-				System.out.println("[Sleep] Mac: drawing at screen resolution (Sharp Retina Resolution is off)");
+				System.out.println("[Caos] Mac: drawing at screen resolution (Sharp Retina Resolution is off)");
 			}
 		} catch (Throwable t) {
-			System.err.println("[Sleep] retina hint: " + t);
+			System.err.println("[Caos] retina hint: " + t);
 		}
 	}
 }

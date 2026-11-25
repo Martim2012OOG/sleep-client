@@ -23,7 +23,7 @@ import net.fabricmc.loader.api.FabricLoader;
  */
 public final class ShaderInstaller {
 
-	private static final String UA = "Sleep-Client/1.0 (Minecraft client mod)";
+	private static final String UA = "Caos-Client/1.0 (Minecraft client mod)";
 	private static final HttpClient HTTP = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.NORMAL).connectTimeout(Duration.ofSeconds(15)).build();
 	public static final String[] PROJECTS = {"complementary-reimagined", "photon-shader", "bsl-shaders"};
 

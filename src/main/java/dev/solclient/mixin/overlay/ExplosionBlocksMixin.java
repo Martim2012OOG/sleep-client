@@ -19,7 +19,7 @@ public abstract class ExplosionBlocksMixin {
 	private ServerWorld world;
 
 	@Inject(method = "getBlocksToDestroy", at = @At("RETURN"), require = 0)
-	private void sleep$guard(CallbackInfoReturnable<List<BlockPos>> cir) {
+	private void caos$guard(CallbackInfoReturnable<List<BlockPos>> cir) {
 		var g = ExplosionGuard.allow;
 		if (g == null) {
 			return;

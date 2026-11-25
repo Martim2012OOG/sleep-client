@@ -157,7 +157,7 @@ public class WatchPartyScreen extends Screen {
 		String now = VideoScreens.nowPlaying();
 		c.drawCenteredTextWithShadow(textRenderer, now == null ? WatchPartyText.t("No video yet") : WatchPartyText.t("Now: " + now), cx, y - 18, 0xFF9AA3B5);
 		if (!Mcef.installed()) {
-			c.drawCenteredTextWithShadow(textRenderer, WatchPartyText.t("Video engine missing (rebuild Sleep with MCEF included)"), cx, y + 166, 0xFFFF8A8A);
+			c.drawCenteredTextWithShadow(textRenderer, WatchPartyText.t("Video engine missing (rebuild Caos with MCEF included)"), cx, y + 166, 0xFFFF8A8A);
 		} else if (!Mcef.ready()) {
 			c.drawCenteredTextWithShadow(textRenderer, WatchPartyText.t("Video engine: " + Mcef.status()), cx, y + 166, 0xFFFFD27A);
 		}

@@ -43,7 +43,7 @@ public class KuboPlayerListSafeMixin {
 				return;
 			}
 		} catch (Throwable t) {
-			System.err.println("[Sleep] player-list thread-safety patch not applied: " + t);
+			System.err.println("[Caos] player-list thread-safety patch not applied: " + t);
 		}
 	}
 }

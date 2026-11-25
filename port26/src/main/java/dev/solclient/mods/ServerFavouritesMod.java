@@ -100,10 +100,10 @@ public class ServerFavouritesMod extends Mod {
 					markFavourites(ms, ctx);
 				});
 			} catch (Throwable t) {
-				System.err.println("[Sleep] Server Favourites button failed: " + t);
+				System.err.println("[Caos] Server Favourites button failed: " + t);
 			}
 		});
-		System.out.println("[Sleep] Server Favourites: star button ready");
+		System.out.println("[Caos] Server Favourites: star button ready");
 	}
 
 	/** A gold star to the left of every favourite server in the list (only the favourites get one). */
@@ -214,7 +214,7 @@ public class ServerFavouritesMod extends Mod {
 				((MultiplayerScreenAccessor) (Object) screen).kubo$serverListWidget().updateOnlineServers(sl);
 			}
 		} catch (Throwable e) {
-			System.err.println("[Sleep] server favourites: " + e);
+			System.err.println("[Caos] server favourites: " + e);
 		}
 	}
 }

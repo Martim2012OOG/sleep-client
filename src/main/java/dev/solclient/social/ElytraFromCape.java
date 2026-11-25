@@ -68,7 +68,7 @@ public final class ElytraFromCape {
 				}
 			}
 		} catch (Throwable t) {
-			System.err.println("[Sleep] vanilla elytra texture: " + t);
+			System.err.println("[Caos] vanilla elytra texture: " + t);
 		}
 		vanillaFailed = vanilla == null;
 		return vanilla;

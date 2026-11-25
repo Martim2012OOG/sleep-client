@@ -41,7 +41,7 @@ public final class EmoteSlots {
 				ok = true;
 			}
 		} catch (Exception e) {
-			System.err.println("[Sleep] could not read the emote wheel: " + e);
+			System.err.println("[Caos] could not read the emote wheel: " + e);
 		}
 		if (ok) {
 			// emotes that no longer exist (the library was replaced) leave the wheel
@@ -91,7 +91,7 @@ public final class EmoteSlots {
 			Files.createDirectories(file().getParent());
 			Files.writeString(file(), o.toString(), StandardCharsets.UTF_8);
 		} catch (Exception e) {
-			System.err.println("[Sleep] could not save the emote wheel: " + e);
+			System.err.println("[Caos] could not save the emote wheel: " + e);
 		}
 	}
 

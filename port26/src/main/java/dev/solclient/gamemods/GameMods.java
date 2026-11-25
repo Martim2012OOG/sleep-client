@@ -252,7 +252,7 @@ public final class GameMods {
 	}
 
 	/** Opens the settings screen the mod gave to Mod Menu; {@code parent} is where Esc / Done goes back to. */
-	/** The Mod Menu settings screen of a mod, not opened (the Sleep menu shows it inside its own window). */
+	/** The Mod Menu settings screen of a mod, not opened (the Caos menu shows it inside its own window). */
 	public static Screen createConfig(String modId, Screen parent) {
 		Object f = factories().get(modId);
 		if (f == null) {
@@ -263,7 +263,7 @@ public final class GameMods {
 			Object screen = iface.getMethod("create", Screen.class).invoke(f, parent);
 			return screen instanceof Screen sc ? sc : null;
 		} catch (Throwable t) {
-			System.err.println("[Sleep] Could not create the settings of " + modId + ": " + t);
+			System.err.println("[Caos] Could not create the settings of " + modId + ": " + t);
 			return null;
 		}
 	}
@@ -281,7 +281,7 @@ public final class GameMods {
 				return true;
 			}
 		} catch (Throwable t) {
-			System.err.println("[Sleep] Could not open the settings of " + modId + ": " + t);
+			System.err.println("[Caos] Could not open the settings of " + modId + ": " + t);
 		}
 		return false;
 	}

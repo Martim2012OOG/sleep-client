@@ -140,7 +140,7 @@ public final class SeasonMusic {
 			Files.writeString(marker, "bundled songs installed");
 			queue = new ArrayList<>(); // pick up the new files
 		} catch (Throwable t) {
-			System.err.println("[Sleep] could not install the bundled songs: " + t);
+			System.err.println("[Caos] could not install the bundled songs: " + t);
 		}
 	}
 
@@ -242,7 +242,7 @@ public final class SeasonMusic {
 					CUES.put(name, decodeMp3(in, name, "cue"));
 				}
 			} catch (Throwable t) {
-				System.err.println("[Sleep] could not load the cue " + name + ": " + t);
+				System.err.println("[Caos] could not load the cue " + name + ": " + t);
 			} finally {
 				CUE_LOADING.remove(name);
 			}
@@ -339,7 +339,7 @@ public final class SeasonMusic {
 			try {
 				ready = decode(next, s);
 			} catch (Throwable t) {
-				System.err.println("[Sleep] could not play " + next.getFileName() + ": " + t);
+				System.err.println("[Caos] could not play " + next.getFileName() + ": " + t);
 				nextAt = System.currentTimeMillis() + 1000L;
 			} finally {
 				loading = false;
@@ -390,7 +390,7 @@ public final class SeasonMusic {
 		}
 	}
 
-	/** MP3 through JLayer (pure Java, shipped inside the Sleep jar). */
+	/** MP3 through JLayer (pure Java, shipped inside the Caos jar). */
 	private static Decoded decodeMp3(Path file, String name, String season) throws Exception {
 		try (java.io.InputStream in = Files.newInputStream(file)) {
 			return decodeMp3(in, name, season);

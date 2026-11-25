@@ -64,7 +64,7 @@ public final class PersonaHook {
 			run(device, f[0], sb, count, p);
 		} catch (Throwable t) {
 			active = null; // never break somebody's microphone: switch off and say why once
-			System.err.println("[Sleep] personas: switched off after an error: " + t);
+			System.err.println("[Caos] personas: switched off after an error: " + t);
 		}
 	}
 

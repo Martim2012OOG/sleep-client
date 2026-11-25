@@ -15,7 +15,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-/** Pure logic of the Sleep resource packs (no Minecraft needed). What needs the game is listed in PACKS-TESTING.md. */
+/** Pure logic of the Caos resource packs (no Minecraft needed). What needs the game is listed in PACKS-TESTING.md. */
 class KuboPackLogicTest {
 
 	// SHA-1 of the ASCII text "abc"
@@ -114,7 +114,7 @@ class KuboPackLogicTest {
 		assertFalse(at.opens());
 		assertEquals("@kubo", at.copy());
 		assertFalse(KuboPackLogic.link("twitter", "@kubo").opens());
-		assertFalse(KuboPackLogic.link("discord", "Sleep Fan#1234").opens());
+		assertFalse(KuboPackLogic.link("discord", "Caos Fan#1234").opens());
 	}
 
 	@Test

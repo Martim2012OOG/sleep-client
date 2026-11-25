@@ -21,7 +21,7 @@ import net.minecraft.client.input.KeyInput;
 import net.minecraft.text.Text;
 
 /**
- * Minigames (like LabyMod's): Snake, 2048, Sleep Bird, Breakout, Stack and Tetris, playable from the menus while you
+ * Minigames (like LabyMod's): Snake, 2048, Caos Bird, Breakout, Stack and Tetris, playable from the menus while you
  * wait in a queue. Best scores are kept in config/kubo-minigames.json.
  */
 public class MinigamesScreen extends Screen {
@@ -48,7 +48,7 @@ public class MinigamesScreen extends Screen {
 				}
 			}
 		} catch (Exception e) {
-			System.err.println("[Sleep] minigames scores: " + e);
+			System.err.println("[Caos] minigames scores: " + e);
 		}
 	}
 
@@ -60,7 +60,7 @@ public class MinigamesScreen extends Screen {
 			Files.createDirectories(f.getParent());
 			Files.writeString(f, o.toString(), StandardCharsets.UTF_8);
 		} catch (Exception e) {
-			System.err.println("[Sleep] minigames scores: " + e);
+			System.err.println("[Caos] minigames scores: " + e);
 		}
 	}
 
@@ -477,7 +477,7 @@ public class MinigamesScreen extends Screen {
 		float spawnIn;
 
 		Bird() {
-			super("bird", "Sleep Bird", "Flap through the pipes", 0xFF7DD3FC);
+			super("bird", "Caos Bird", "Flap through the pipes", 0xFF7DD3FC);
 		}
 
 		int gw() {
@@ -568,7 +568,7 @@ public class MinigamesScreen extends Screen {
 			}
 			c.fill(x, y + H - 10, x + W, y + H, 0xFFB45309);
 			c.fill(x, y + H - 10, x + W, y + H - 8, 0xFF65A30D);
-			// bird: a little Sleep cube that tilts with speed
+			// bird: a little Caos cube that tilts with speed
 			float ang = Math.max(-0.5F, Math.min(1.2F, vy / 300F));
 			var m = c.getMatrices();
 			m.pushMatrix();

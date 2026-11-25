@@ -29,7 +29,7 @@ public final class Menus {
 		}
 		if (s.getClass() == GameMenuScreen.class && SolClient.settings.customPause.on()) {
 			if (SolClient.settings.classicPause()) {
-				return s; // "Classic + Sleep": the real Minecraft screen (so Essential / Mod Menu add their buttons); PauseClassicMixin adds Sleep's
+				return s; // "Classic + Caos": the real Minecraft screen (so Essential / Mod Menu add their buttons); PauseClassicMixin adds Caos's
 			}
 			if (PlegumoPauseScreen.allowVanilla) {
 				PlegumoPauseScreen.allowVanilla = false;

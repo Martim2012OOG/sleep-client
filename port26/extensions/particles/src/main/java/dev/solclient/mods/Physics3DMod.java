@@ -26,7 +26,7 @@ import org.joml.Matrix3x2f;
  * low), so there is no lag.
  * <p>
  * Screens: the inventory, crafting table, furnaces and the other workstations lean towards your cursor like a thick
- * 3D slab with a shadow. Never the Sleep menu, the pause menu, or chests: only the screens listed below. The tilt is
+ * 3D slab with a shadow. Never the Caos menu, the pause menu, or chests: only the screens listed below. The tilt is
  * always pivoted on the cursor, so what you see under the cursor is exactly what you click.
  */
 public class Physics3DMod extends Mod {
@@ -48,7 +48,7 @@ public class Physics3DMod extends Mod {
 
 	// ---- screens
 	private final Option.Header hGui = header("3D Screens (Beta)");
-	private final Option.Bool gui = bool("3D Screens", true).tip("BETA, it does not always look right. Inventory, crafting table, furnace and the other workstations lean towards your cursor like a 3D slab. Never the Sleep menu, the pause menu or chests.");
+	private final Option.Bool gui = bool("3D Screens", true).tip("BETA, it does not always look right. Inventory, crafting table, furnace and the other workstations lean towards your cursor like a 3D slab. Never the Caos menu, the pause menu or chests.");
 	private final Option.Bool gInv = bool("Inventory", true);
 	private final Option.Bool gCraft = bool("Crafting Table", true);
 	private final Option.Bool gFurnace = bool("Furnaces", true);

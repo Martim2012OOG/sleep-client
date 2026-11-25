@@ -74,7 +74,7 @@ public final class WorldScale {
 		int w = Math.max(16, Math.round(main.textureWidth * s)), h = Math.max(16, Math.round(main.textureHeight * s));
 		try {
 			if (small == null) {
-				small = new SimpleFramebuffer("Sleep world (scaled)", w, h, true);
+				small = new SimpleFramebuffer("Caos world (scaled)", w, h, true);
 			} else if (small.textureWidth != w || small.textureHeight != h) {
 				small.resize(w, h);
 			}
@@ -93,7 +93,7 @@ public final class WorldScale {
 		active = false;
 		MinecraftClient mc = MinecraftClient.getInstance();
 		Framebuffer main = mc.getFramebuffer();
-		try (RenderPass pass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Sleep world upscale", main.getColorAttachmentView(),
+		try (RenderPass pass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Caos world upscale", main.getColorAttachmentView(),
 				OptionalInt.empty())) {
 			pass.setPipeline(UPSCALE);
 			RenderSystem.bindDefaultUniforms(pass);

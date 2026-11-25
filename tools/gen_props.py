@@ -8,7 +8,7 @@ import json
 import math
 import os
 
-A = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "src", "main", "resources", "assets", "sleep_client", "models", "item")
+A = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "src", "main", "resources", "assets", "sol_client", "models", "item")
 C = dict(wood=(0, 0), lwood=(1, 0), dwood=(2, 0), orange=(3, 0), gold=(4, 0), dgold=(5, 0), wood2=(6, 0), steel=(7, 0), lsteel=(8, 0), psteel=(9, 0),
          white=(10, 0), charcoal=(11, 0), dgrey=(12, 0), black=(13, 0), red=(14, 0), dred=(15, 0), blue=(0, 1), dblue=(1, 1), white2=(2, 1),
          yellow=(3, 1), purple=(4, 1), dpurple=(5, 1), cream=(6, 1), dcream=(7, 1), orange2=(8, 1), mgrey=(9, 1), grey=(10, 1), lgrey=(11, 1),

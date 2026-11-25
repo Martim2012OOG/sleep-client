@@ -85,7 +85,7 @@ final class Sh {
 	static String get(String url) {
 		try {
 			HttpRequest r = HttpRequest.newBuilder(URI.create(url)).timeout(Duration.ofSeconds(6))
-					.header("User-Agent", "Sleep-Client/1.0").GET().build();
+					.header("User-Agent", "Caos-Client/1.0").GET().build();
 			HttpResponse<String> res = HTTP.send(r, HttpResponse.BodyHandlers.ofString());
 			return res.statusCode() / 100 == 2 ? res.body() : null;
 		} catch (Exception e) {

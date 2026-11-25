@@ -73,7 +73,7 @@ public class ParkourAddon implements Addon {
 				WorldTransfer.unpack(tmp, saves, WORLD);
 				mc.execute(() -> start(mc, parent));
 			} catch (Throwable e) {
-				System.err.println("[Sleep] Parkour Paradise 3 install failed: " + e);
+				System.err.println("[Caos] Parkour Paradise 3 install failed: " + e);
 				mc.execute(() -> SystemToast.show(mc.getToastManager(), SystemToast.Type.PERIODIC_NOTIFICATION, Text.literal("Parkour Paradise 3"),
 						Text.literal(Lang.tr("Could not install the map", "Não deu para instalar o mapa"))));
 			} finally {

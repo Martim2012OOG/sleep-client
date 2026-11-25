@@ -73,7 +73,7 @@ public final class Upnp {
 				}
 			}
 		} catch (Exception e) {
-			System.err.println("[Sleep] UPnP discovery: " + e);
+			System.err.println("[Caos] UPnP discovery: " + e);
 		}
 		return null;
 	}
@@ -111,7 +111,7 @@ public final class Upnp {
 				}
 			}
 		} catch (Exception e) {
-			System.err.println("[Sleep] UPnP describe: " + e);
+			System.err.println("[Caos] UPnP describe: " + e);
 		}
 		return null;
 	}

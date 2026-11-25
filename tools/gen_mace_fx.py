@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """Generates the textures of the new Mace Effects (slash arcs, star flares, energy rings, cracks, streaks, shards, dust, glow).
 All are grey-scale + alpha, so the client can tint them with the chosen colour. Run: python3 tools/gen_mace_fx.py
-Output: src/main/resources/assets/sleep_client/textures/particle/mfx_*.png and particles/mfx_*.json"""
+Output: src/main/resources/assets/sol_client/textures/particle/mfx_*.png and particles/mfx_*.json"""
 import json, math, os, random
 import numpy as np
 from PIL import Image, ImageDraw, ImageFilter
 
 N = 256
-ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "src", "main", "resources", "assets", "sleep_client")
+ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "src", "main", "resources", "assets", "sol_client")
 TEX = os.path.join(ROOT, "textures", "particle")
 PART = os.path.join(ROOT, "particles")
 os.makedirs(TEX, exist_ok=True)
@@ -42,7 +42,7 @@ def save(name, lum, alpha):
 
 def particle(name, frames):
     with open(os.path.join(PART, name + ".json"), "w") as f:
-        json.dump({"textures": ["sleep_client:%s_%d" % (name, i) for i in range(frames)]}, f)
+        json.dump({"textures": ["sol_client:%s_%d" % (name, i) for i in range(frames)]}, f)
 
 
 # ------------------------------------------------------------------ slash arc (crescent that is drawn, then dissolves)

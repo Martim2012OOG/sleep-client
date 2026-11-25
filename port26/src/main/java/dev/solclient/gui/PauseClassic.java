@@ -17,9 +17,9 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
 /**
- * "Classic + Sleep" pause menu (Settings > Menus > Pause Menu Style). It is Minecraft's real pause screen, so everything
- * other mods add to it (Essential's Invite / Social / Wardrobe..., Mod Menu's button) is still there, drawn in the Sleep
- * style. Sleep adds on top: your 3D player on the left (with a Locker button), a column of Sleep buttons on the right
+ * "Classic + Caos" pause menu (Settings > Menus > Pause Menu Style). It is Minecraft's real pause screen, so everything
+ * other mods add to it (Essential's Invite / Social / Wardrobe..., Mod Menu's button) is still there, drawn in the Caos
+ * style. Caos adds on top: your 3D player on the left (with a Locker button), a column of Caos buttons on the right
  * (or a row of icon buttons under the menu when Essential already uses the right side) and the logo in the corner.
  */
 public final class PauseClassic {
@@ -35,7 +35,7 @@ public final class PauseClassic {
 			Consumer<Button> addButton, Consumer<Renderable> addDrawable) {
 		Minecraft mc = Minecraft.getInstance();
 		var st = SolClient.settings;
-		// the Multiplayer button goes in first (above Mods): everything below it moves down one row before the Sleep icons are placed
+		// the Multiplayer button goes in first (above Mods): everything below it moves down one row before the Caos icons are placed
 		PauseMultiplayerButton.insert(screen, children, addButton);
 		if (st == null || !st.customPause.on() || !st.classicPause() || mc.level == null) {
 			return;
@@ -55,7 +55,7 @@ public final class PauseClassic {
 
 		boolean sp = mc.isLocalServer();
 		List<Item> items = new ArrayList<>();
-		items.add(new Item(Lang.tr("Sleep Menu", "Menu Sleep"), "sol_client", () -> dev.solclient.compat.Mc.setScreen(mc, SolMenuScreen.open(SolMenuScreen.VIEW_MODS))));
+		items.add(new Item(Lang.tr("Caos Menu", "Menu Caos"), "sol_client", () -> dev.solclient.compat.Mc.setScreen(mc, SolMenuScreen.open(SolMenuScreen.VIEW_MODS))));
 		items.add(new Item(Lang.tr("Shop", "Loja"), "shop", () -> dev.solclient.compat.Mc.setScreen(mc, SolMenuScreen.open(SolMenuScreen.VIEW_SHOP))));
 		items.add(new Item(Lang.tr("Capes & Skins", "Capas e Skins"), "skin_editor", () -> dev.solclient.compat.Mc.setScreen(mc, SolMenuScreen.open(SolMenuScreen.VIEW_CAPES))));
 		if (sp && dev.solclient.mods.HostWorldMod.on()) {
@@ -79,7 +79,7 @@ public final class PauseClassic {
 			addDrawable.accept((GuiGraphicsExtractor c, int mx, int my, float delta) -> {
 				Gfx.rrectBorder(c, cardX, cardY, cardW, cardH, 8, panel, Theme.PANEL_BORDER);
 				Gfx.tex(c, Theme.icon2("sol_client"), cardX + 9, cardY + 6, 12, 12, 64, 64, 0xFFFFFFFF);
-				Gfx.text(c, "SLEEP", cardX + 25, cardY + 9, Theme.TEXT);
+				Gfx.text(c, "CAOS", cardX + 25, cardY + 9, Theme.TEXT);
 				c.fill(cardX + 8, cardY + 22, cardX + cardW - 8, cardY + 23, 0x1CFFFFFF);
 			});
 			for (int i = 0; i < items.size(); i++) {
@@ -111,19 +111,19 @@ public final class PauseClassic {
 			}
 			// logo + name, bottom-right
 			float ts = 1.9F;
-			int logo = 28, tw = Math.round(Gfx.tw("SLEEP") * ts), bx = width - tw - logo - 22, by = height - logo - 10;
+			int logo = 28, tw = Math.round(Gfx.tw("CAOS") * ts), bx = width - tw - logo - 22, by = height - logo - 10;
 			Gfx.tex(c, Theme.icon2("sol_client"), bx, by, logo, logo, 64, 64, 0xFFFFFFFF);
 			var mm = c.pose();
 			mm.pushMatrix();
 			mm.translate(bx + logo + 6, by + (logo - 8 * ts) / 2F + 1);
 			mm.scale(ts, ts);
-			Gfx.text(c, "SLEEP", 0, 0, Theme.TEXT);
+			Gfx.text(c, "CAOS", 0, 0, Theme.TEXT);
 			mm.popMatrix();
 		});
 
 		// your player on the left, in a card, with the Locker button inside it
 		int leftFree = minX - 12;
-		if (st.pausePlayer.on() && leftFree >= 70 && !essential) { // with Essential the sides belong to Essential: Sleep only adds its icon row
+		if (st.pausePlayer.on() && leftFree >= 70 && !essential) { // with Essential the sides belong to Essential: Caos only adds its icon row
 			int pw = Math.min(90, leftFree - 20), px = Math.max(10, minX / 2 - pw / 2 - 6);
 			int top = Math.max(46, minY + 14), feet = Math.min(height - 70, top + Math.min(190, Math.round((height - top - 90) * 0.9F)));
 			if (feet - top >= 70) {
@@ -153,7 +153,7 @@ public final class PauseClassic {
 		return t + "...";
 	}
 
-	/** Mod Menu already put its own button in this screen (its "icon" / "below buttons" style): then Sleep doesn't add a second one. */
+	/** Mod Menu already put its own button in this screen (its "icon" / "below buttons" style): then Caos doesn't add a second one. */
 	private static boolean modMenuButtonExists(List<? extends GuiEventListener> children) {
 		for (Object o : children) {
 			if (o.getClass().getName().startsWith("com.terraformersmc.modmenu")) {

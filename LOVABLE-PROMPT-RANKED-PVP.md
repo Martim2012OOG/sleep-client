@@ -1,10 +1,10 @@
-# Prompt for Lovable: Sleep Ranked PvP (tiers HT1–LT5, ranked 1v1 / 2v2, duels, rankings)
+# Prompt for Lovable: Caos Ranked PvP (tiers HT1–LT5, ranked 1v1 / 2v2, duels, rankings)
 
-Paste everything below the line into Lovable, in the project that hosts the Sleep client API (same base `/api/public/gc`, same auth as `/messages` and `/friends`). Upload `duel-intro.html` from this zip too (see section 6).
+Paste everything below the line into Lovable, in the project that hosts the Caos client API (same base `/api/public/gc`, same auth as `/messages` and `/friends`). Upload `duel-intro.html` from this zip too (see section 6).
 
 ---
 
-Add **Ranked PvP** to the Sleep API and website. The Minecraft client already has the menu, the matches and the arenas; the site is the **referee**: it keeps the queue, makes the matches, picks who hosts, keeps ELO / tiers and shows the rankings. Keep every existing endpoint working.
+Add **Ranked PvP** to the Caos API and website. The Minecraft client already has the menu, the matches and the arenas; the site is the **referee**: it keeps the queue, makes the matches, picks who hosts, keeps ELO / tiers and shows the rankings. Keep every existing endpoint working.
 
 ## 1. Kits, modes, tiers
 
@@ -68,7 +68,7 @@ All return JSON and use the logged-in user. Errors: `{ "error": "…" }` with 40
 ## 5. Website: rankings that look amazing
 
 - A **Ranked PvP** page with a tier-list look (dark background, like the client): an **Overall** tab first, then one tab per kit with its icon (all 19 kits, in the order of section 1; icons: draw simple original SVG icons — sword, axe, mace, potion, helmet, golden apple, lava bucket, pearl, chestplate, emerald, crystal, anchor, TNT cart, minecart, creeper face, bow, spear, elytra — never Mojang textures) and a 1v1 / 2v2 toggle; a podium for the top 3 (gold / silver / bronze glow, player heads from `https://mc-heads.net/avatar/<mcUuid>/64`), then rows with position, head, name, **tier badge** (colours: HT1 `#FFD23C`, LT1 `#FFB347`, HT2 `#F2F4F8`, LT2 `#C2C7D0`, HT3 `#E0904F`, LT3 `#B06A3B`, HT4 `#5DADE2`, LT4 `#3A7BBF`, HT5 `#9AA0AA`, LT5 `#6E737C`), ELO, wins / losses. Smooth animations (rows sliding in, badge shine).
-- The **Overall** tab: rank by tier points (section 1), and each row shows a small strip of tier badges, one per kit the player is ranked in (kit icon + badge). Do NOT copy the look of other tier-list sites: use the Sleep style (dark glass cards, accent glow, smooth motion).
+- The **Overall** tab: rank by tier points (section 1), and each row shows a small strip of tier badges, one per kit the player is ranked in (kit icon + badge). Do NOT copy the look of other tier-list sites: use the Caos style (dark glass cards, accent glow, smooth motion).
 - On each player's profile: their tiers per kit and mode.
 - A "Live now" strip with matches that are `live` (players, kit, arena).
 

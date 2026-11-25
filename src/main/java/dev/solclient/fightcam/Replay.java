@@ -580,7 +580,7 @@ public final class Replay {
 					render(ctx.matrices(), ctx.commandQueue(), ctx.worldState().cameraRenderState);
 				} catch (RuntimeException e) {
 					if (renderError.isEmpty()) {
-						System.err.println("[Sleep] Replay render: " + e);
+						System.err.println("[Caos] Replay render: " + e);
 						e.printStackTrace();
 					}
 					renderError = String.valueOf(e);
@@ -590,7 +590,7 @@ public final class Replay {
 			}
 		});
 		} catch (Throwable e) {
-			System.err.println("[Sleep] Replay rendering unavailable: " + e);
+			System.err.println("[Caos] Replay rendering unavailable: " + e);
 		}
 	}
 

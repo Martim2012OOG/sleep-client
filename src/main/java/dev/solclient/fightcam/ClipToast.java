@@ -135,7 +135,7 @@ public final class ClipToast {
 		}
 		Gfx.rrectFree(c, x - 1, y - 1, w + 2, h + 2, 9, Gfx.withAlpha(0x05060A, Math.round(a * 0.9F)));
 		Gfx.rrectFree(c, x, y, w, h, 8, Gfx.withAlpha(0x1B1E27, Math.round(a * 0.97F)));
-		// icon: the Sleep logo on the accent colour (red ! when something failed)
+		// icon: the Caos logo on the accent colour (red ! when something failed)
 		int ac = t.error() ? 0xFFE5484D : Theme.accent();
 		Gfx.rrectFree(c, x + 9, y + 10, 28, 28, 6, Gfx.withAlpha(ac, a));
 		Gfx.rrectFree(c, x + 9, y + 10, 28, 3, 1.5F, Gfx.withAlpha(0xFFFFFF, a / 5));

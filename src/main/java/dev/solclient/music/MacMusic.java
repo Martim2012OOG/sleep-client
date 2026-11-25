@@ -217,7 +217,7 @@ final class MacMusic {
 		Sh.Result r = osa(sb.toString());
 		String all = r.out() + "\n" + r.err();
 		if (all.contains("-1743") || all.contains("not authorized") || all.contains("not allowed assistive")) {
-			return "Allow Sleep / Java to control " + app + " (System Settings > Privacy & Security > Automation)";
+			return "Allow Caos / Java to control " + app + " (System Settings > Privacy & Security > Automation)";
 		}
 		for (String line : r.out().split("\n")) {
 			line = line.trim();

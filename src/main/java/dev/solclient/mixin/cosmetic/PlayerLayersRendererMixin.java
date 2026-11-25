@@ -20,17 +20,17 @@ public abstract class PlayerLayersRendererMixin {
 
 	@SuppressWarnings("unchecked")
 	@Inject(method = "<init>(Lnet/minecraft/client/render/entity/EntityRendererFactory$Context;Z)V", at = @At("RETURN"), require = 0)
-	private void sleep$addLayers(EntityRendererFactory.Context ctx, boolean slim, CallbackInfo ci) {
-		((LivingRendererInvoker) this).sleep$addFeature(new SkinLayersFeature((FeatureRendererContext<PlayerEntityRenderState, PlayerEntityModel>) (Object) this));
+	private void caos$addLayers(EntityRendererFactory.Context ctx, boolean slim, CallbackInfo ci) {
+		((LivingRendererInvoker) this).caos$addFeature(new SkinLayersFeature((FeatureRendererContext<PlayerEntityRenderState, PlayerEntityModel>) (Object) this));
 	}
 
 	@Inject(method = "updateRenderState(Lnet/minecraft/entity/PlayerLikeEntity;Lnet/minecraft/client/render/entity/state/PlayerEntityRenderState;F)V", at = @At("TAIL"), require = 0)
-	private void sleep$mask(PlayerLikeEntity player, PlayerEntityRenderState state, float tickProgress, CallbackInfo ci) {
+	private void caos$mask(PlayerLikeEntity player, PlayerEntityRenderState state, float tickProgress, CallbackInfo ci) {
 		int mask = 0;
 		try {
 			mask = SkinLayers3D.maskFor(state);
 		} catch (RuntimeException ignored) {
 		}
-		((LayerMask) state).sleep$setMask(mask);
+		((LayerMask) state).caos$setMask(mask);
 	}
 }

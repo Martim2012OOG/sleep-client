@@ -35,7 +35,7 @@ import net.minecraft.util.math.Vec3d;
 import org.joml.Matrix4f;
 
 /**
- * Sleep Builder: our own Litematica, made simple and light. Load a schematic, it appears where you stand as see-through
+ * Caos Builder: our own Litematica, made simple and light. Load a schematic, it appears where you stand as see-through
  * "ghost" blocks; move it with the arrows / Page Up / Page Down, turn it, mirror it, show one layer at a time, see the
  * materials you need and what is still missing or wrong. Only blocks near you are drawn, all in one batch, and the
  * world is checked a little every tick, so it stays smooth even with huge builds.
@@ -78,7 +78,7 @@ public class KuboBuilderMod extends HudMod {
 	private static boolean hooked;
 
 	public KuboBuilderMod() {
-		super("Sleep Builder", "kubo_builder", "Our own Litematica: load schematics, place them, move them easily and build without lag.", 0.01F, 0.6F);
+		super("Caos Builder", "kubo_builder", "Our own Litematica: load schematics, place them, move them easily and build without lag.", 0.01F, 0.6F);
 		instance = this;
 	}
 
@@ -271,7 +271,7 @@ public class KuboBuilderMod extends HudMod {
 				}
 			});
 		} catch (Throwable t) {
-			System.err.println("[Sleep] Builder render unavailable: " + t);
+			System.err.println("[Caos] Builder render unavailable: " + t);
 		}
 	}
 

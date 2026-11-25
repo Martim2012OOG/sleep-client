@@ -3,7 +3,7 @@ package dev.solclient.addons;
 import net.minecraft.client.gui.screens.Screen;
 
 /**
- * One entry of the "Add-ons" tab (left sidebar of the Sleep menu).
+ * One entry of the "Add-ons" tab (left sidebar of the Caos menu).
  * To add a new one: implement this interface and call {@link Addons#register(Addon)} in {@link Addons#init()}.
  */
 public interface Addon {
@@ -31,7 +31,7 @@ public interface Addon {
 	void open(Screen parent);
 
 	/**
-	 * A screen drawn inside the Sleep menu's panel (like the mods' settings) instead of opening on its own, or null
+	 * A screen drawn inside the Caos menu's panel (like the mods' settings) instead of opening on its own, or null
 	 * to use {@link #open}. Calling {@code dev.solclient.compat.Mc.setScreen(client, back)} from it closes it again.
 	 */
 	default Screen embed(Screen back) {

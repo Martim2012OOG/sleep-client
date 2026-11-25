@@ -13,14 +13,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class ScreenVeilMixin {
 
 	@Inject(method = "extractTransparentBackground(Lnet/minecraft/client/gui/GuiGraphicsExtractor;)V", at = @At("HEAD"), cancellable = true, require = 0)
-	private void sleep$noVeil(GuiGraphicsExtractor ctx, CallbackInfo ci) {
+	private void caos$noVeil(GuiGraphicsExtractor ctx, CallbackInfo ci) {
 		if (ScreenClear.screen == (Object) this) {
 			ci.cancel();
 		}
 	}
 
 	@Inject(method = "extractBlurredBackground(Lnet/minecraft/client/gui/GuiGraphicsExtractor;)V", at = @At("HEAD"), cancellable = true, require = 0)
-	private void sleep$noBlur(GuiGraphicsExtractor ctx, CallbackInfo ci) {
+	private void caos$noBlur(GuiGraphicsExtractor ctx, CallbackInfo ci) {
 		if (ScreenClear.screen == (Object) this) {
 			ci.cancel();
 		}

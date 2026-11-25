@@ -1,6 +1,6 @@
 #version 330
 
-// Sleep's spray / foam / ember particles: one draw for all of them.
+// Caos's spray / foam / ember particles: one draw for all of them.
 #moj_import <minecraft:fog.glsl>
 #moj_import <minecraft:dynamictransforms.glsl>
 #moj_import <minecraft:projection.glsl>

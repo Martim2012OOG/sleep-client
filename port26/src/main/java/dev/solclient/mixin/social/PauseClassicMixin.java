@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * "Classic + Sleep" pause menu: Minecraft's real pause screen (so Essential and Mod Menu keep their buttons) plus Sleep's
+ * "Classic + Caos" pause menu: Minecraft's real pause screen (so Essential and Mod Menu keep their buttons) plus Caos's
  * buttons, your player and the logo. Only when Settings > Menus > Pause Menu Style says so.
  */
 @Mixin(PauseScreen.class)
@@ -28,7 +28,7 @@ public abstract class PauseClassicMixin extends Screen {
 			}
 			PauseClassic.build(this, this.width, this.height, this.children(), b -> this.addRenderableWidget(b), d -> this.addRenderableOnly(d));
 		} catch (Throwable t) {
-			System.err.println("[Sleep] classic pause menu: " + t);
+			System.err.println("[Caos] classic pause menu: " + t);
 		}
 	}
 }

@@ -1,4 +1,4 @@
-# Sleep audio helper (Windows): captures the sound this PC is playing (WASAPI loopback, nothing to install) and writes it to stdout as raw
+# Caos audio helper (Windows): captures the sound this PC is playing (WASAPI loopback, nothing to install) and writes it to stdout as raw
 # 16-bit little-endian mono PCM at 24000 Hz. The game reads it, compresses it and sends it to the friends who listen along.
 # Exits when the game closes (stdin ends).
 $src = @'
@@ -7,7 +7,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 
-public static class SleepAudio {
+public static class CaosAudio {
 	[ComImport, Guid("BCDE0395-E52F-467C-8E3D-C4579291692E")] class MMDeviceEnumeratorCom { }
 
 	[ComImport, Guid("A95664D2-9614-4F35-A746-DE8DB63617E6"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
@@ -129,5 +129,5 @@ public static class SleepAudio {
 }
 '@
 Add-Type -TypeDefinition $src -Language CSharp | Out-Null
-$code = [SleepAudio]::Run()
+$code = [CaosAudio]::Run()
 exit $code

@@ -347,7 +347,7 @@ public class VoiceChatScreen extends UiScreen {
 			shown++;
 		}
 		if (shown == 0) {
-			Gfx.textClip(c, Social.me == null ? Lang.tr("Log in to Sleep to invite friends", "Entra no Sleep para convidar amigos")
+			Gfx.textClip(c, Social.me == null ? Lang.tr("Log in to Caos to invite friends", "Entra no Caos para convidar amigos")
 					: Lang.tr("Every friend is in this group", "Todos os amigos estão neste grupo"), dx + 2, iy + 18, dw, Theme.DIM);
 		}
 	}

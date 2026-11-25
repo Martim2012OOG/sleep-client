@@ -6,7 +6,7 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallba
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Player;
 
-/** /sleep music listen <player> | accept <id> | decline <id> | leave */
+/** /caos music listen <player> | accept <id> | decline <id> | leave */
 public final class MusicShareHooks {
 
 	private MusicShareHooks() {
@@ -15,7 +15,7 @@ public final class MusicShareHooks {
 	public static void register() {
 		try {
 			ClientCommandRegistrationCallback.EVENT.register((dispatcher, access) -> dispatcher.register(
-					ClientCommands.literal("sleep").then(ClientCommands.literal("music")
+					ClientCommands.literal("caos").then(ClientCommands.literal("music")
 							.then(ClientCommands.literal("listen").then(ClientCommands.argument("player", StringArgumentType.word()).executes(c -> {
 								String who = StringArgumentType.getString(c, "player");
 								Minecraft mc = Minecraft.getInstance();
@@ -60,7 +60,7 @@ public final class MusicShareHooks {
 								return 1;
 							})))));
 		} catch (Throwable t) {
-			System.err.println("[Sleep] Music Share commands unavailable: " + t);
+			System.err.println("[Caos] Music Share commands unavailable: " + t);
 		}
 	}
 }

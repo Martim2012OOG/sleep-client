@@ -33,9 +33,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 /**
- * Resource pack browser inside the client with two sources, chosen at the top: Modrinth (filters, install) or the Sleep
+ * Resource pack browser inside the client with two sources, chosen at the top: Modrinth (filters, install) or the Caos
  * site (GET /resource-packs: grid, detail with banner and social links, install with SHA-1 check, update, activate).
- * It is a panel drawn INSIDE the Sleep menu (the middle area, like the shop), not a separate big screen: the menu is the
+ * It is a panel drawn INSIDE the Caos menu (the middle area, like the shop), not a separate big screen: the menu is the
  * {@link Host} and gives it the mouse, the click regions and the text field focus. Opened from the "Resource Packs"
  * button in the top bar of the Right Shift menu.
  */
@@ -61,7 +61,7 @@ public class ResourcePacksPanel {
 	}
 
 	private static final String API = "https://api.modrinth.com/v2";
-	private static final String UA = "Sleep-Client/1.0 (Minecraft client mod)";
+	private static final String UA = "Caos-Client/1.0 (Minecraft client mod)";
 	private static final HttpClient HTTP = HttpClient.newBuilder()
 			.followRedirects(HttpClient.Redirect.NORMAL)
 			.connectTimeout(Duration.ofSeconds(12))
@@ -116,9 +116,9 @@ public class ResourcePacksPanel {
 	private long typedAt;
 	private Hit detail;
 
-	// ---- source: Modrinth or the Sleep site (the choice is kept while the game is open)
+	// ---- source: Modrinth or the Caos site (the choice is kept while the game is open)
 	private static boolean lastKubo = false;
-	private boolean kubo = false; // the Sleep source was removed: only Modrinth
+	private boolean kubo = false; // the Caos source was removed: only Modrinth
 	private final List<KuboPackLogic.Pack> kPacks = new ArrayList<>();
 	private volatile boolean kLoading;
 	private volatile int kGen;
@@ -634,7 +634,7 @@ public class ResourcePacksPanel {
 	}
 
 	private void icon(GuiGraphicsExtractor c, Hit h, int x, int y, int s) {
-		// same loader as the Sleep packs: PNG / JPG / GIF, and WebP (most Modrinth icons) through a PNG conversion
+		// same loader as the Caos packs: PNG / JPG / GIF, and WebP (most Modrinth icons) through a PNG conversion
 		KuboPacks.Img t = h.icon().isEmpty() ? null : KuboPacks.image(h.icon(), 128);
 		if (t != null) {
 			Gfx.tex(c, t.id(), x, y, s, s, t.width(), t.height(), 0xFFFFFFFF);
@@ -731,7 +731,7 @@ public class ResourcePacksPanel {
 		region(x, y, w, 22, run);
 	}
 
-	// ------------------------------------------------------------------ Sleep source
+	// ------------------------------------------------------------------ Caos source
 	private void startKubo() {
 		final int my = ++kGen;
 		kLoading = true;
@@ -758,7 +758,7 @@ public class ResourcePacksPanel {
 					}
 					kPacks.clear();
 					kLoading = false;
-					kError = Lang.tr("Could not reach the Sleep site", "Não foi possível ligar ao site do Sleep");
+					kError = Lang.tr("Could not reach the Caos site", "Não foi possível ligar ao site do Caos");
 				});
 			}
 		});
@@ -771,10 +771,10 @@ public class ResourcePacksPanel {
 
 	private void drawKSidebar(GuiGraphicsExtractor c, int x, int y, int w) {
 		int ix = x + 12, iw = w - 24, yy = y + 40;
-		Gfx.textRaw(c, Lang.tr("Sleep packs", "Packs do Sleep"), ix, yy, Theme.DIM);
+		Gfx.textRaw(c, Lang.tr("Caos packs", "Packs do Caos"), ix, yy, Theme.DIM);
 		yy += 14;
-		String info = Lang.tr("Packs published on the Sleep site. Install downloads the file, checks its SHA-1 and turns the pack on.",
-				"Packs publicados no site do Sleep. Instalar descarrega o ficheiro, verifica o SHA-1 e ativa o pack.");
+		String info = Lang.tr("Packs published on the Caos site. Install downloads the file, checks its SHA-1 and turns the pack on.",
+				"Packs publicados no site do Caos. Instalar descarrega o ficheiro, verifica o SHA-1 e ativa o pack.");
 		for (String l : wrap(info, iw, 12)) {
 			Gfx.textRaw(c, l, ix, yy, Theme.TEXT);
 			yy += 11;
@@ -803,7 +803,7 @@ public class ResourcePacksPanel {
 		drawToggle(c, x + 8, sy0);
 		Gfx.rrectBorder(c, sx0, sy0, sw, 22, 7, 0xFF0A0B0E, Theme.accent());
 		if (search.isEmpty()) {
-			Gfx.textRaw(c, Lang.tr("Search Sleep resource packs...", "Pesquisar packs do Sleep..."), sx0 + 8, sy0 + 7, Theme.DIM);
+			Gfx.textRaw(c, Lang.tr("Search Caos resource packs...", "Pesquisar packs do Caos..."), sx0 + 8, sy0 + 7, Theme.DIM);
 		}
 		search.draw(c, sx0, sy0, sw, 22, sx0 + 8, sw - 16, host.searchFocused(), Theme.accent(), Theme.TEXT);
 		region(sx0, sy0, sw, 22, host::focusSearch);
@@ -1078,7 +1078,7 @@ public class ResourcePacksPanel {
 	public void dispose() {
 		gen++; // drop answers that are still on their way
 		kGen++;
-		KuboPacks.releaseImages(); // free the icon / banner textures of the Sleep packs
+		KuboPacks.releaseImages(); // free the icon / banner textures of the Caos packs
 	}
 
 	private void close() {

@@ -50,7 +50,7 @@ public class HitColourMod extends Mod {
 				}
 			}
 		} catch (ReflectiveOperationException | RuntimeException e) {
-			System.err.println("[Sleep] Hit Colour failed: " + e);
+			System.err.println("[Caos] Hit Colour failed: " + e);
 			applied = argb;
 		}
 	}

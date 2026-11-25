@@ -162,7 +162,7 @@ final class WinMusic {
 			t.start();
 		} catch (Exception e) {
 			hint = "PowerShell is needed to read what is playing (" + e.getMessage() + ")";
-			System.err.println("[Sleep] music: could not start PowerShell: " + e);
+			System.err.println("[Caos] music: could not start PowerShell: " + e);
 		}
 	}
 

@@ -60,7 +60,7 @@ public final class GlobeView {
 				}
 			}
 		} catch (Exception e) {
-			System.err.println("[Sleep] globe: " + e);
+			System.err.println("[Caos] globe: " + e);
 			dots = new double[0][];
 		}
 	}

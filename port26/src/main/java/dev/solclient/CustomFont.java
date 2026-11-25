@@ -24,7 +24,7 @@ import net.minecraft.server.packs.repository.PackRepository;
  *
  * <p>Minecraft only loads fonts from resource packs, so importing a font means: keep a copy in {@code kubo-fonts/},
  * write a tiny resource pack ({@code resourcepacks/kubo-font-<time>.zip}) that holds the font, turn that pack on and
- * reload. Nothing here touches the game's internals: only the same pack calls the Sleep pack updater already uses.
+ * reload. Nothing here touches the game's internals: only the same pack calls the Caos pack updater already uses.
  */
 public final class CustomFont {
 
@@ -313,14 +313,14 @@ public final class CustomFont {
 			pack.remove("pack_format");
 			pack.remove("supported_formats");
 		}
-		pack.addProperty("description", "Sleep custom font: " + name);
+		pack.addProperty("description", "Caos custom font: " + name);
 		JsonObject root = new JsonObject();
 		root.add("pack", pack);
 		return root.toString();
 	}
 
 	/**
-	 * Sleep's own generated packs (kubo-font-*.zip) made before this fix have a pack.mcmeta the game refuses, so they never loaded.
+	 * Caos's own generated packs (kubo-font-*.zip) made before this fix have a pack.mcmeta the game refuses, so they never loaded.
 	 * Rewrites that one file, then lets the game see the pack again and switches the newest one on. Run once, off the game thread.
 	 */
 	public static void repairOldPacks() {
@@ -346,8 +346,8 @@ public final class CustomFont {
 					continue;
 				}
 				String name = "font";
-				if (meta != null && meta.contains("Sleep custom font: ")) {
-					int i = meta.indexOf("Sleep custom font: ") + "Sleep custom font: ".length();
+				if (meta != null && meta.contains("Caos custom font: ")) {
+					int i = meta.indexOf("Caos custom font: ") + "Caos custom font: ".length();
 					int j = meta.indexOf('"', i);
 					name = j > i ? meta.substring(i, j) : name;
 				}
@@ -384,11 +384,11 @@ public final class CustomFont {
 						cachedAt = 0L;
 					}
 				} catch (Throwable t) {
-					System.err.println("[Sleep] font pack repair: " + t);
+					System.err.println("[Caos] font pack repair: " + t);
 				}
 			});
 		} catch (Exception e) {
-			System.err.println("[Sleep] font pack repair: " + e);
+			System.err.println("[Caos] font pack repair: " + e);
 		}
 	}
 

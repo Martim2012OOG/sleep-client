@@ -115,7 +115,7 @@ public class ToolEffectsMod extends Mod {
 				}
 			});
 		} catch (Throwable t) {
-			System.err.println("[Sleep] Tool Effects slash unavailable: " + t);
+			System.err.println("[Caos] Tool Effects slash unavailable: " + t);
 		}
 	}
 

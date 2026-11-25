@@ -168,9 +168,9 @@ public final class AppControl {
 		}
 		ProcessBuilder.Redirect sink = ProcessBuilder.Redirect.DISCARD;
 		if (AppMirror.MAC) {
-			Path logDir = Path.of(System.getProperty("user.home"), "Library", "Logs", "Sleep");
+			Path logDir = Path.of(System.getProperty("user.home"), "Library", "Logs", "Caos");
 			Files.createDirectories(logDir);
-			sink = ProcessBuilder.Redirect.appendTo(logDir.resolve("input.log").toFile()); // ~/Library/Logs/Sleep/input.log
+			sink = ProcessBuilder.Redirect.appendTo(logDir.resolve("input.log").toFile()); // ~/Library/Logs/Caos/input.log
 		}
 		helper = pb.redirectErrorStream(true).redirectOutput(sink).start();
 		out = new BufferedWriter(new OutputStreamWriter(helper.getOutputStream(), StandardCharsets.UTF_8));

@@ -130,7 +130,7 @@ public final class MicrosoftAuth {
 				d.status = e.getMessage() == null ? e.toString() : e.getMessage();
 				d.failed = true;
 			}
-		}, "Sleep Microsoft login");
+		}, "Caos Microsoft login");
 		t.setDaemon(true);
 		t.start();
 		return d;

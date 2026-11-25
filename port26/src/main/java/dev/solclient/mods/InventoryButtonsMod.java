@@ -64,10 +64,6 @@ public class InventoryButtonsMod extends Mod {
 
 	@Override
 	public void tick() {
-		if (dev.solclient.ServerRules.hypixel()) {
-			queue.clear(); // Hypixel: no automatic click sequences
-			return;
-		}
 		if (queue.isEmpty()) {
 			return;
 		}

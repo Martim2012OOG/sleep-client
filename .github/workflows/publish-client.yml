@@ -49,7 +49,7 @@ jobs:
           gh release view mods-src --repo "$REPO" >/dev/null 2>&1 || gh release create mods-src --repo "$REPO" --prerelease --title "Mod sources" --notes "Jars do client, publicados pelo CI do mod."
           gh release upload mods-src out/*.jar --repo "$REPO" --clobber
           gh workflow run mods.yml --repo "$SRC"
-      # Só fica o jar da última run: apaga os "sleep-client-mod" anteriores para não gastar o espaço de artifacts.
+      # Só fica o jar da última run: apaga os "caos-client-mod" anteriores para não gastar o espaço de artifacts.
       - name: Apagar artifacts antigos
         if: always()
         continue-on-error: true
@@ -57,7 +57,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           REPO_SELF: ${{ github.repository }}
         run: |
-          gh api --paginate "repos/$REPO_SELF/actions/artifacts?name=sleep-client-mod&per_page=100" --jq '.artifacts[].id' | while read -r id; do
+          gh api --paginate "repos/$REPO_SELF/actions/artifacts?name=caos-client-mod&per_page=100" --jq '.artifacts[].id' | while read -r id; do
             gh api -X DELETE "repos/$REPO_SELF/actions/artifacts/$id" || true
           done
       # Os jars ficam numa Release deste repositório ("Mod - ultimo build", na coluna da direita da página principal, em Releases).

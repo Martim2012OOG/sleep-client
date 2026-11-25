@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ClientLevel.class)
 public class ClientWorldWaveMixin {
 	@Inject(method = "setServerVerifiedBlockState", at = @At("TAIL"), require = 0)
-	private void sleep$waveBlockUpdate(BlockPos pos, BlockState state, int flags, CallbackInfo ci) {
+	private void caos$waveBlockUpdate(BlockPos pos, BlockState state, int flags, CallbackInfo ci) {
 		WavesMod.blockUpdate(pos, state);
 	}
 }

@@ -59,7 +59,7 @@ public class CosmeticFeatureRenderer extends FeatureRenderer<PlayerEntityRenderS
 		return sb.toString();
 	}
 
-	/** The account a rendered player belongs to (you: your session; others: only Sleep users), or null. */
+	/** The account a rendered player belongs to (you: your session; others: only Caos users), or null. */
 	public static UUID uuidOf(int entityId) {
 		MinecraftClient mc = MinecraftClient.getInstance();
 		if (mc.world == null) {
@@ -153,7 +153,7 @@ public class CosmeticFeatureRenderer extends FeatureRenderer<PlayerEntityRenderS
 		} catch (Throwable t) {
 			// never break player rendering because of a cosmetic (but say why, once)
 			if (lastError == null) {
-				System.err.println("[Sleep] cosmetics: " + t);
+				System.err.println("[Caos] cosmetics: " + t);
 				t.printStackTrace();
 			}
 			lastError = t.toString();

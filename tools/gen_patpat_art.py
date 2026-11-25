@@ -9,7 +9,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import gen_notify_icons as g  # noqa: E402  (shapes + PNG writer)
 
-ASSETS = os.path.join(os.path.dirname(__file__), "..", "src", "main", "resources", "assets", "sleep_client", "textures", "gui")
+ASSETS = os.path.join(os.path.dirname(__file__), "..", "src", "main", "resources", "assets", "sol_client", "textures", "gui")
 
 
 def png_rgba(w, h, pixels):

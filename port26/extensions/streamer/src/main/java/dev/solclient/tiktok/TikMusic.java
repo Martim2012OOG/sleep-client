@@ -196,7 +196,7 @@ public final class TikMusic {
 					return;
 				} catch (Throwable t) {
 					fails++;
-					System.err.println("[Sleep TikTok] background music: " + p.getFileName() + ": " + t);
+					System.err.println("[Caos TikTok] background music: " + p.getFileName() + ": " + t);
 					try {
 						Thread.sleep(500);
 					} catch (InterruptedException e) {

@@ -171,14 +171,14 @@ public final class PetModel {
 		try {
 			Optional<Resource> res = Minecraft.getInstance().getResourceManager().getResource(Gfx.id("pets/" + id + ".json"));
 			if (res.isEmpty()) {
-				System.err.println("[Sleep] pet model missing: " + id);
+				System.err.println("[Caos] pet model missing: " + id);
 				return Optional.empty();
 			}
 			try (BufferedReader r = res.get().openAsReader()) {
 				return Optional.of(new PetModel(JsonParser.parseReader(r).getAsJsonObject()));
 			}
 		} catch (Exception e) {
-			System.err.println("[Sleep] could not load pet " + id + ": " + e);
+			System.err.println("[Caos] could not load pet " + id + ": " + e);
 			return Optional.empty();
 		}
 	}

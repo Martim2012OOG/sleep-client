@@ -13,7 +13,7 @@ Add a new shop item: **Verity**, a special pet.
 - `imageUrl`: the uploaded `images/cosmetics/verity.png` (in this zip)
 
 In the shop, show items with `badge = "SPECIAL"` with a gold animated border and a "SPECIAL PET" ribbon, above the normal pets.
-Buying, owning and equipping work like every other pet (`PUT /wardrobe/equip`, `GET` of a player's cosmetics lists `verity` while equipped), so other Sleep players see him.
+Buying, owning and equipping work like every other pet (`PUT /wardrobe/equip`, `GET` of a player's cosmetics lists `verity` while equipped), so other Caos players see him.
 
 ## Done when
 - The shop lists Verity for 20 000 coins with the SPECIAL ribbon.

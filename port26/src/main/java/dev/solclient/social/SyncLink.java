@@ -171,7 +171,7 @@ public final class SyncLink {
 		return send(server, kx);
 	}
 
-	/** Public profile data for every Sleep player online. */
+	/** Public profile data for every Caos player online. */
 	public static boolean sendLobby(JsonObject kx) {
 		return send(lobby, kx);
 	}

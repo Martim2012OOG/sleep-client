@@ -5,7 +5,7 @@ import dev.solclient.music.MusicShare;
 import dev.solclient.option.Option;
 
 /**
- * Music Share: your song above your head for other Sleep players, and "listen along" with Spotify. Needs the Music mod on (it is what
+ * Music Share: your song above your head for other Caos players, and "listen along" with Spotify. Needs the Music mod on (it is what
  * reads the song you play). See {@link MusicShare}.
  */
 public class MusicShareMod extends Mod {

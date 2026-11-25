@@ -48,7 +48,7 @@ public final class HtmlOverlay {
 			b.frameRate(60);
 			return new HtmlOverlay(b, w, h);
 		} catch (Throwable t) {
-			System.err.println("[Sleep] html overlay: " + t);
+			System.err.println("[Caos] html overlay: " + t);
 			return null;
 		}
 	}

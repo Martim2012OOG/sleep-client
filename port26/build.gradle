@@ -124,7 +124,7 @@ java {
 loom {
 	runs {
 		client {
-			vmArg "-Dsleep.mixinaudit=1"
+			vmArg "-Dcaos.mixinaudit=1"
 		}
 	}
 }

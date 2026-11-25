@@ -44,7 +44,7 @@ public final class PersonaMonitor {
 	private static synchronized void start() {
 		running = true;
 		status = "Opening the microphone...";
-		thread = new Thread(PersonaMonitor::loop, "Sleep-Persona-Monitor");
+		thread = new Thread(PersonaMonitor::loop, "Caos-Persona-Monitor");
 		thread.setDaemon(true);
 		thread.start();
 	}
@@ -93,7 +93,7 @@ public final class PersonaMonitor {
 			Thread.currentThread().interrupt();
 		} catch (Throwable t) {
 			status = "Could not play it back: " + t.getClass().getSimpleName();
-			System.err.println("[Sleep] personas monitor: " + t);
+			System.err.println("[Caos] personas monitor: " + t);
 		} finally {
 			running = false;
 			if (dev != 0) {

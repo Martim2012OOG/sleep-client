@@ -133,7 +133,7 @@ final class Crates {
 				SAVED.put(cat, v);
 				o.set(v * 0.08);
 			} catch (RuntimeException e) {
-				System.err.println("[Sleep] crates duck: " + e);
+				System.err.println("[Caos] crates duck: " + e);
 			}
 		}
 		MusicHub.duck(true);
@@ -153,7 +153,7 @@ final class Crates {
 				mc.options.getSoundSourceOptionInstance(e.getKey()).set(e.getValue());
 			}
 		} catch (RuntimeException e) {
-			System.err.println("[Sleep] crates restore: " + e);
+			System.err.println("[Caos] crates restore: " + e);
 		}
 		SAVED.clear();
 		MusicHub.duck(false);
@@ -291,7 +291,7 @@ final class Crates {
 		m.popMatrix();
 	}
 
-	/** The same flat card as the rest of Sleep: one fill, one thin border, a little lighter under the mouse. */
+	/** The same flat card as the rest of Caos: one fill, one thin border, a little lighter under the mouse. */
 	private static void cardFrame(GuiGraphicsExtractor c, int x, int y, int w, int h, boolean hov, int border) {
 		Gfx.rrectBorder(c, x, y, w, h, 8, hov ? Theme.CARD_HOVER : Theme.CARD, hov ? Theme.CARD_BORDER_HOVER : Theme.CARD_BORDER);
 	}
@@ -735,7 +735,7 @@ final class Crates {
 			}
 			curPack = Math.max(0, pack);
 		} else if (Social.me == null) {
-			Social.say("Log in to Sleep to open crates", true);
+			Social.say("Log in to Caos to open crates", true);
 			return;
 		}
 		cur = d;

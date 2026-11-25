@@ -163,7 +163,7 @@ public final class SkinPreview {
 			return true;
 		} catch (Throwable e) {
 			broken = true;
-			System.err.println("[Sleep] emote card preview unavailable: " + e);
+			System.err.println("[Caos] emote card preview unavailable: " + e);
 			return false;
 		}
 	}
@@ -203,7 +203,7 @@ public final class SkinPreview {
 					Math.round(centerY + half));
 			return true;
 		} catch (Throwable e) {
-			System.err.println("[Sleep] card preview unavailable: " + e);
+			System.err.println("[Caos] card preview unavailable: " + e);
 			return false;
 		}
 	}
@@ -249,7 +249,7 @@ public final class SkinPreview {
 					Math.round(centerY + half));
 			return true;
 		} catch (Throwable e) {
-			System.err.println("[Sleep] kill effect card preview unavailable: " + e);
+			System.err.println("[Caos] kill effect card preview unavailable: " + e);
 			return false;
 		}
 	}
@@ -363,7 +363,7 @@ public final class SkinPreview {
 			return true;
 		} catch (Throwable e) {
 			broken = true;
-			System.err.println("[Sleep] skin preview unavailable: " + e);
+			System.err.println("[Caos] skin preview unavailable: " + e);
 			return false;
 		}
 	}

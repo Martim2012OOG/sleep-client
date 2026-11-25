@@ -49,7 +49,7 @@ public final class PanelInput {
 	/** Called by the mixins: prints one line the first time each hook runs. If a line never shows up, that hook is not installed. */
 	public static void alive(String what) {
 		if (SEEN.add(what)) {
-			System.out.println("[Sleep] input hook active: " + what);
+			System.out.println("[Caos] input hook active: " + what);
 		}
 	}
 

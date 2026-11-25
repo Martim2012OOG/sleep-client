@@ -23,7 +23,7 @@ public final class SkinLayersFeature extends RenderLayer<AvatarRenderState, Play
 
 	@Override
 	public void submit(PoseStack matrices, SubmitNodeCollector queue, int light, AvatarRenderState state, float yaw, float pitch) {
-		int mask = ((LayerMask) state).sleep$getMask();
+		int mask = ((LayerMask) state).caos$getMask();
 		if (mask == 0) {
 			return;
 		}

@@ -81,7 +81,7 @@ public final class SystemVoice {
 		}
 		running = true;
 		status = "Starting...";
-		thread = new Thread(() -> loop(wanted), "Sleep-Persona-System");
+		thread = new Thread(() -> loop(wanted), "Caos-Persona-System");
 		thread.setDaemon(true);
 		thread.setPriority(Thread.MAX_PRIORITY - 1); // audio must never wait
 		thread.start();
@@ -159,7 +159,7 @@ public final class SystemVoice {
 			Thread.currentThread().interrupt();
 		} catch (Throwable t) {
 			status = "Stopped: " + t.getClass().getSimpleName() + (t.getMessage() == null ? "" : " " + t.getMessage());
-			System.err.println("[Sleep] personas whole computer: " + t);
+			System.err.println("[Caos] personas whole computer: " + t);
 		} finally {
 			running = false;
 			PersonaHook.onlyDevice = 0;

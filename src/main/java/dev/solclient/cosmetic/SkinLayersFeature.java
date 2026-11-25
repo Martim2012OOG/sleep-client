@@ -23,7 +23,7 @@ public final class SkinLayersFeature extends FeatureRenderer<PlayerEntityRenderS
 
 	@Override
 	public void render(MatrixStack matrices, OrderedRenderCommandQueue queue, int light, PlayerEntityRenderState state, float yaw, float pitch) {
-		int mask = ((LayerMask) state).sleep$getMask();
+		int mask = ((LayerMask) state).caos$getMask();
 		if (mask == 0) {
 			return;
 		}

@@ -25,11 +25,6 @@ public class InventoryTweaksMod extends Mod {
 
 	@Override
 	public void tick() {
-		if (dev.solclient.ServerRules.hypixel()) {
-			plan.clear(); // Hypixel: no automatic click sequences
-			wasDown = false;
-			return;
-		}
 		if (mc.player == null || mc.gameMode == null || !(dev.solclient.compat.Mc.screen(mc) instanceof InventoryScreen)) {
 			plan.clear();
 			wasDown = false;

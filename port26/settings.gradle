@@ -5,7 +5,7 @@ pluginManagement {
 		gradlePluginPortal()
 	}
 }
-rootProject.name = 'sleep-client-fabric'
+rootProject.name = 'sol-client-fabric'
 
 // Kubo extensions: separate jars for the store (Mods > Extensions). Each builds to extensions/<name>/build/libs/
 include 'extensions:better_f3'

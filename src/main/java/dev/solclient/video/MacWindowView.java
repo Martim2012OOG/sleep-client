@@ -39,7 +39,7 @@ public final class MacWindowView implements LiveView {
 		this.w = w;
 		this.h = h;
 		this.id = id;
-		thread = new Thread(this::loop, "Sleep window " + window);
+		thread = new Thread(this::loop, "Caos window " + window);
 		thread.setDaemon(true);
 		thread.start();
 	}
@@ -53,7 +53,7 @@ public final class MacWindowView implements LiveView {
 				return; // ended normally (closed)
 			}
 		} else if (!WinCapHelper.problem.isEmpty()) {
-			System.out.println("[Sleep] window helper not used: " + WinCapHelper.problem);
+			System.out.println("[Caos] window helper not used: " + WinCapHelper.problem);
 		}
 		if (running) {
 			pollLoop();

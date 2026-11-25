@@ -76,7 +76,7 @@ public final class LimbSplit {
 			job.run(root);
 			TexturedModelData.of(md, 64, 64).createModel(); // would the game be able to use it?
 		} catch (RuntimeException | Error e) {
-			System.err.println("[Sleep] emote joints: keeping the plain model: " + e);
+			System.err.println("[Caos] emote joints: keeping the plain model: " + e);
 			for (int i = 0; i < 4; i++) {
 				root.addChild(names[i], old[i]);
 			}

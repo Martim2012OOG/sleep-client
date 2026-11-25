@@ -8,7 +8,7 @@ import random
 
 from PIL import Image, ImageDraw, ImageFilter
 
-T = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "src", "main", "resources", "assets", "sleep_client", "textures")
+T = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "src", "main", "resources", "assets", "sol_client", "textures")
 random.seed(7)
 
 

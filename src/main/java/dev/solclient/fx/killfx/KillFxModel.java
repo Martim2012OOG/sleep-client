@@ -197,7 +197,7 @@ public final class KillFxModel {
 		try {
 			Optional<Resource> res = MinecraftClient.getInstance().getResourceManager().getResource(Gfx.id("killfx/" + id + ".json"));
 			if (res.isEmpty()) {
-				System.err.println("[Sleep] kill effect missing: " + id);
+				System.err.println("[Caos] kill effect missing: " + id);
 				lastError = "file killfx/" + id + ".json not found";
 				return Optional.empty();
 			}
@@ -205,7 +205,7 @@ public final class KillFxModel {
 				return Optional.of(new KillFxModel(JsonParser.parseReader(r).getAsJsonObject()));
 			}
 		} catch (Exception e) {
-			System.err.println("[Sleep] could not load kill effect " + id + ": " + e);
+			System.err.println("[Caos] could not load kill effect " + id + ": " + e);
 			lastError = String.valueOf(e);
 			return Optional.empty();
 		}

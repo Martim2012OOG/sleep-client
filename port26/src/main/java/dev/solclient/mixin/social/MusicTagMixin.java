@@ -17,7 +17,7 @@ public abstract class MusicTagMixin {
 
 	@Inject(method = "submitNameDisplay(Lnet/minecraft/client/renderer/entity/state/AvatarRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/level/CameraRenderState;)V",
 			at = @At("TAIL"), require = 0)
-	private void sleep$musicTag(AvatarRenderState state, PoseStack matrices, SubmitNodeCollector queue, CameraRenderState camera, CallbackInfo ci) {
+	private void caos$musicTag(AvatarRenderState state, PoseStack matrices, SubmitNodeCollector queue, CameraRenderState camera, CallbackInfo ci) {
 		if (state.nameTagAttachment == null || state.isInvisible) {
 			return;
 		}

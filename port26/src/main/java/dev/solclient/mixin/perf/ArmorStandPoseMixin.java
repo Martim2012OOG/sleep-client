@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ArmorStandRenderer.class)
 public class ArmorStandPoseMixin {
 	@Inject(method = "extractRenderState(Lnet/minecraft/world/entity/decoration/ArmorStand;Lnet/minecraft/client/renderer/entity/state/ArmorStandRenderState;F)V", at = @At("TAIL"), require = 0)
-	private void sleep$pose(ArmorStand stand, ArmorStandRenderState state, float tickProgress, CallbackInfo ci) {
+	private void caos$pose(ArmorStand stand, ArmorStandRenderState state, float tickProgress, CallbackInfo ci) {
 		float[][] p = ArmorStandPosesMod.poseFor(stand.getUUID());
 		if (p == null) {
 			return;

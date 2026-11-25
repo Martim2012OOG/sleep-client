@@ -30,7 +30,7 @@ public abstract class BipedEntityModelMixin {
 		try {
 			dev.solclient.emote.LimbSplit.biped(cir.getReturnValue(), d, off);
 		} catch (Throwable t) {
-			System.err.println("[Sleep] emote joints: " + t);
+			System.err.println("[Caos] emote joints: " + t);
 		}
 	}
 

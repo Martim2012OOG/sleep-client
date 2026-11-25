@@ -268,7 +268,7 @@ public final class VoiceEngine implements Presence.VoiceLink {
 			Thread.currentThread().interrupt();
 		} catch (Throwable t) {
 			error = "Microphone error: " + t.getClass().getSimpleName();
-			System.err.println("[Sleep] voice mic: " + t);
+			System.err.println("[Caos] voice mic: " + t);
 		} finally {
 			talking = false;
 			if (dev != 0) {
@@ -378,7 +378,7 @@ public final class VoiceEngine implements Presence.VoiceLink {
 			Thread.currentThread().interrupt();
 		} catch (Throwable t) {
 			error = "Speaker error: " + t.getClass().getSimpleName();
-			System.err.println("[Sleep] voice out: " + t);
+			System.err.println("[Caos] voice out: " + t);
 		} finally {
 			try {
 				for (Peer p : peers.values()) {

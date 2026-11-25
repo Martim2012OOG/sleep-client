@@ -19,7 +19,7 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Pings (like Apex / Valorant): press the key looking somewhere and your Sleep friends on the same server see a
+ * Pings (like Apex / Valorant): press the key looking somewhere and your Caos friends on the same server see a
  * marker there ("Look here", or "Enemy" when you look at a player / monster). Hold the key to pick the type.
  */
 public class FriendPingMod extends Mod {
@@ -27,7 +27,7 @@ public class FriendPingMod extends Mod {
 	public static FriendPingMod instance;
 	private final Option.Key pingKey = key("Ping Key", 71); // G
 	private final Option.Key dangerKey = key("Danger Ping Key", -1);
-	private final Option.Choice who = choice("Show Pings From", 0, "Friends", "Every Sleep Player");
+	private final Option.Choice who = choice("Show Pings From", 0, "Friends", "Every Caos Player");
 	private final Option.Bool sound = bool("Sound", true);
 	private final Option.Num size = num("Marker Size", 100, 50, 200, 10, "%");
 	private boolean prev, prevDanger;
@@ -73,7 +73,7 @@ public class FriendPingMod extends Mod {
 				}
 			});
 		} catch (Throwable t) {
-			System.err.println("[Sleep] Pings beams unavailable: " + t);
+			System.err.println("[Caos] Pings beams unavailable: " + t);
 		}
 	}
 

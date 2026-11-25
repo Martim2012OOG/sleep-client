@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Makes the Sleep client's auras: the sprite sheet (textures/cosmetics/aura_atlas.png, original pixel art drawn here), one
-thumbnail per aura, the minimes (a small copy of the player, drawn by dev.sleepclient.cosmetic.Minimes: only a thumbnail and an
+Makes the Caos client's auras: the sprite sheet (textures/cosmetics/aura_atlas.png, original pixel art drawn here), one
+thumbnail per aura, the minimes (a small copy of the player, drawn by dev.solclient.cosmetic.Minimes: only a thumbnail and an
 entry are needed), and their entries in cosmetics/index.json and cosmetics-catalogue.json. The motion of each aura is code
-(dev.sleepclient.cosmetic.Auras); the row of the sheet and the motion are picked by "anim": "aura:<style>".
+(dev.solclient.cosmetic.Auras); the row of the sheet and the motion are picked by "anim": "aura:<style>".
 
     python3 tools/gen_auras.py
 """
@@ -13,7 +13,7 @@ import os
 from PIL import Image
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-A = os.path.join(ROOT, "src", "main", "resources", "assets", "sleep_client")
+A = os.path.join(ROOT, "src", "main", "resources", "assets", "sol_client")
 
 # 8x8 sprites: '#' main colour, '+' light, '-' dark, '.' nothing
 SHAPES = {
@@ -134,7 +134,7 @@ def main():
         cid = "aura_" + style
         thumb(style, colours).save(os.path.join(tex, "thumb", cid + ".png"), optimize=True)
         idx.append({"id": cid, "name": name, "category": "Auras", "geometry": "aura", "texture": "aura_atlas", "anim": "aura:" + style,
-                    "credit": "Sleep client (original)", "textureSize": [64, 128]})
+                    "credit": "Caos client (original)", "textureSize": [64, 128]})
         cat["cosmetics"].append({"id": cid, "name": name, "category": "Auras", "price": price, "rarity": rarity, "live_pet": False,
                                  "image": "images/cosmetics/" + cid + ".png"})
     idx = [e for e in idx if e.get("category") != "Minimes"]
@@ -147,7 +147,7 @@ def main():
         img.alpha_composite(small, (mx, my))
         img.save(os.path.join(tex, "thumb", cid + ".png"), optimize=True)
         idx.append({"id": cid, "name": name, "category": "Minimes", "geometry": "minime", "texture": "aura_atlas", "anim": "minime:" + where,
-                    "credit": "Sleep client (original)", "textureSize": [64, 64]})
+                    "credit": "Caos client (original)", "textureSize": [64, 64]})
         cat["cosmetics"].append({"id": cid, "name": name, "category": "Minimes", "price": price, "rarity": rarity, "live_pet": False,
                                  "image": "images/cosmetics/" + cid + ".png"})
     cat["count"] = len(cat["cosmetics"])

@@ -53,11 +53,11 @@ public final class SplashLogo {
 				ends[i] = t;
 			}
 		} catch (Exception e) {
-			System.err.println("[Sleep] splash logo: " + e);
+			System.err.println("[Caos] splash logo: " + e);
 		}
 	}
 
-	/** True while a resource pack reload runs with its loading screen hidden (the Sleep HUD keeps showing). */
+	/** True while a resource pack reload runs with its loading screen hidden (the Caos HUD keeps showing). */
 	public static volatile boolean quietReload;
 
 	/** Should the logo be drawn on this loading screen? reloading = resource pack reload (not the game start). */
@@ -106,7 +106,7 @@ public final class SplashLogo {
 			uploaded = true;
 		} catch (Throwable e) {
 			failed = true;
-			System.err.println("[Sleep] splash logo texture: " + e);
+			System.err.println("[Caos] splash logo texture: " + e);
 		}
 		return uploaded;
 	}

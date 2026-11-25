@@ -141,7 +141,7 @@ public class SessionStatsMod extends HudMod {
 	}
 
 	private String text() {
-		return "Sleep Client - " + Lang.tr("my session", "a minha sessão") + "\n" + Lang.tr("Time: ", "Tempo: ") + time() + "\nKills: " + kills + "  |  "
+		return "Caos Client - " + Lang.tr("my session", "a minha sessão") + "\n" + Lang.tr("Time: ", "Tempo: ") + time() + "\nKills: " + kills + "  |  "
 				+ Lang.tr("Deaths: ", "Mortes: ") + deaths + "  |  K/D: " + kd() + "\nHits: " + hits + "\n" + Lang.tr("Blocks broken: ", "Blocos partidos: ")
 				+ blocks + "\n" + Lang.tr("Walked: ", "Andei: ") + dist();
 	}

@@ -241,7 +241,7 @@ public final class Presence {
 	}
 
 	/** The uuid the backend knows for this world player: their account uuid when bridged, else the entity uuid. */
-	/** Account uuid of a friend who is online in Sleep and plays with this nick, or null. */
+	/** Account uuid of a friend who is online in Caos and plays with this nick, or null. */
 	private static UUID friendAccount(String nick) {
 		if (nick == null) {
 			return null;
@@ -584,10 +584,10 @@ public final class Presence {
 		r.send(o.toString());
 	}
 
-	// ---------------------------------------------------------------- Sleep link (party, pings)
+	// ---------------------------------------------------------------- Caos link (party, pings)
 	private static long lastLink;
 
-	/** Sends Sleep data to the people on this server (merged with my watch-party screen, if I have one). */
+	/** Sends Caos data to the people on this server (merged with my watch-party screen, if I have one). */
 	public static boolean sendLink(JsonObject kx) {
 		Room r = server;
 		long now = System.currentTimeMillis();
@@ -611,7 +611,7 @@ public final class Presence {
 	private static long lastLobbyLink;
 
 	/**
-	 * Badge / name style / flag / cosmetics for EVERY Sleep player online (the global lobby room), not only for the ones whose
+	 * Badge / name style / flag / cosmetics for EVERY Caos player online (the global lobby room), not only for the ones whose
 	 * server room has the same name. Two friends who reached the same server through different addresses (name vs IP, with or
 	 * without a port) sit in different server rooms and never saw each other's crown, badges or name colour. Only public
 	 * profile data goes here: never position, health or pings.
@@ -632,13 +632,13 @@ public final class Presence {
 		return true;
 	}
 
-	/** Account uuids (no dashes) and nicks of the Sleep players in the global lobby right now. */
+	/** Account uuids (no dashes) and nicks of the Caos players in the global lobby right now. */
 	public static Map<String, Player> lobbyPlayers() {
 		Room r = lobby;
 		return r == null ? Map.of() : r.players;
 	}
 
-	/** Account uuids (no dashes) and nicks of the Sleep players on this server right now. */
+	/** Account uuids (no dashes) and nicks of the Caos players on this server right now. */
 	public static Map<String, Player> serverPlayers() {
 		Room r = server;
 		return r == null ? Map.of() : r.players;
@@ -724,14 +724,14 @@ public final class Presence {
 					if (room == server) {
 						String u = norm(Json.str(o, "u"));
 						JsonElement sc = o.get("s");
-						// Sleep party / ping data rides along with the screen message (works with the current Worker)
+						// Caos party / ping data rides along with the screen message (works with the current Worker)
 						if (sc != null && sc.isJsonObject() && sc.getAsJsonObject().has("kx")) {
 							JsonObject kx = Json.obj(sc.getAsJsonObject().get("kx"));
 							if (kx != null && u != null) {
 								Minecraft.getInstance().execute(() -> KuboLink.onRemote(u, kx));
 							}
 							if (!sc.getAsJsonObject().has("v")) {
-								return; // only Sleep data, no watch-party screen
+								return; // only Caos data, no watch-party screen
 							}
 						}
 						long wnow = Json.num(o, "now", 0);
@@ -757,7 +757,7 @@ public final class Presence {
 									continue; // the lobby has no watch-party screens
 								}
 								if (sc != null && sc.isJsonObject() && !sc.getAsJsonObject().has("v")) {
-									continue; // old Sleep data only (pings / party): not a screen
+									continue; // old Caos data only (pings / party): not a screen
 								}
 								Minecraft.getInstance().execute(() -> dev.solclient.video.VideoScreens.onRemote(u, sc, wnow));
 							}

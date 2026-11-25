@@ -96,7 +96,7 @@ public final class ResourceGuard {
 			}
 			names.append(p == null ? id : p.getTitle().getString());
 		}
-		System.err.println("[Sleep] resource pack guard: the letters broke after turning on " + added + " - turning them off again");
+		System.err.println("[Caos] resource pack guard: the letters broke after turning on " + added + " - turning them off again");
 		mc.getResourcePackRepository().setSelected(keep);
 		mc.options.updateResourcePacks(mc.getResourcePackRepository()); // saves the list and reloads
 		Notify.show(Notify.Kind.ERROR, dev.solclient.Lang.tr("Fixed: pack turned off", "Arranjado: pacote desligado"),

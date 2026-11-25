@@ -108,7 +108,7 @@ public final class SkinChanger {
 				}
 			}
 		} catch (Exception e) {
-			System.err.println("[Sleep] could not read skins: " + e);
+			System.err.println("[Caos] could not read skins: " + e);
 		}
 	}
 
@@ -131,7 +131,7 @@ public final class SkinChanger {
 			o.add("active", act);
 			Files.writeString(dir().resolve("index.json"), GSON.toJson(o));
 		} catch (Exception e) {
-			System.err.println("[Sleep] could not save skins: " + e);
+			System.err.println("[Caos] could not save skins: " + e);
 		}
 	}
 
@@ -249,7 +249,7 @@ public final class SkinChanger {
 					return;
 				}
 			} catch (Throwable e) {
-				System.err.println("[Sleep] could not load your account skin: " + e);
+				System.err.println("[Caos] could not load your account skin: " + e);
 			}
 		});
 	}
@@ -318,8 +318,8 @@ public final class SkinChanger {
 
 	/**
 	 * Adds a PNG from disk; with equip = true it is also put on at once ("Upload skin"): Microsoft account -> sent to
-	 * Mojang only (nothing is kept on Sleep's servers); any other account -> sent to the Sleep site, which keeps only a
-	 * link to the picture (imgbb) so every Sleep player sees it.
+	 * Mojang only (nothing is kept on Caos's servers); any other account -> sent to the Caos site, which keeps only a
+	 * link to the picture (imgbb) so every Caos player sees it.
 	 */
 	public static void addFile(Path file, boolean equip) {
 		Social.IO.execute(() -> {
@@ -452,10 +452,10 @@ public final class SkinChanger {
 				}
 				// Mojang failed: still share it with Plegumo players
 				String solar = Social.uploadSkinAndUse(png, s.name);
-				say(err + (solar == null ? " (shared with Sleep players)" : ""), true);
+				say(err + (solar == null ? " (shared with Caos players)" : ""), true);
 			} else {
 				String solar = Social.uploadSkinAndUse(png, s.name);
-				say(solar == null ? "Equipped " + s.name + ". Sleep players see it." : "Equipped for you only: " + solar, solar != null);
+				say(solar == null ? "Equipped " + s.name + ". Caos players see it." : "Equipped for you only: " + solar, solar != null);
 			}
 		});
 	}
@@ -467,7 +467,7 @@ public final class SkinChanger {
 		save();
 		say("Using your account's skin", false);
 		if (Accounts.currentMicrosoftToken() == null && Social.activeSkinId != null) {
-			Social.setActive(Social.activeCapeId, null); // also stop sharing the cloud skin with other Sleep players
+			Social.setActive(Social.activeCapeId, null); // also stop sharing the cloud skin with other Caos players
 		}
 	}
 
@@ -549,7 +549,7 @@ public final class SkinChanger {
 			Minecraft.getInstance().getTextureManager().register(id, tex);
 			s.tex = new RemoteTextures.Tex(id, asset, w, h);
 		} catch (Exception e) {
-			System.err.println("[Sleep] could not load skin " + s.name + ": " + e);
+			System.err.println("[Caos] could not load skin " + s.name + ": " + e);
 		}
 	}
 }

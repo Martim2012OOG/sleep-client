@@ -10,7 +10,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 
-/** Finds keys used by two things at once (two Sleep mods, or a mod and a Minecraft control) and fixes them. */
+/** Finds keys used by two things at once (two Caos mods, or a mod and a Minecraft control) and fixes them. */
 public final class KeyConflicts {
 
 	public record Use(String who, Mod mod, Option.Key opt) {
@@ -64,7 +64,7 @@ public final class KeyConflicts {
 		return f.size() + Lang.tr(" conflict(s) - ", " conflito(s) - ") + first;
 	}
 
-	/** Keeps the first user of each key (Minecraft controls always win) and unbinds the other Sleep mods. */
+	/** Keeps the first user of each key (Minecraft controls always win) and unbinds the other Caos mods. */
 	public static int fix() {
 		int n = 0;
 		for (List<Use> l : find().values()) {

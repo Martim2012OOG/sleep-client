@@ -58,18 +58,18 @@ public final class CapeMedia {
 			try {
 				String p = dev.solclient.fightcam.Ffmpeg.findPath();
 				if (p == null) {
-					System.err.println("[Sleep] cape video: ffmpeg not found, downloading it");
+					System.err.println("[Caos] cape video: ffmpeg not found, downloading it");
 					if (dev.solclient.fightcam.Ffmpeg.install()) {
 						p = dev.solclient.fightcam.Ffmpeg.findPath();
 					}
 				}
 				ffState = p != null ? 2 : 3;
 				if (p == null) {
-					System.err.println("[Sleep] cape video: no ffmpeg (" + dev.solclient.fightcam.Ffmpeg.status + "), using the browser fallback");
+					System.err.println("[Caos] cape video: no ffmpeg (" + dev.solclient.fightcam.Ffmpeg.status + "), using the browser fallback");
 				}
 			} catch (Throwable ex) {
 				ffState = 3;
-				System.err.println("[Sleep] cape video: ffmpeg lookup failed: " + ex);
+				System.err.println("[Caos] cape video: ffmpeg lookup failed: " + ex);
 			}
 		}, "kubo-cape-ffmpeg");
 		t.setDaemon(true);
@@ -122,7 +122,7 @@ public final class CapeMedia {
 		void fail(String why) {
 			failed = true;
 			failedAt = System.currentTimeMillis();
-			System.err.println("[Sleep] cape media failed: " + why);
+			System.err.println("[Caos] cape media failed: " + why);
 		}
 	}
 
@@ -365,7 +365,7 @@ public final class CapeMedia {
 			made.close();
 		} catch (Throwable ex) {
 			e.elytraStamp = stamp;
-			System.err.println("[Sleep] animated elytra: " + ex);
+			System.err.println("[Caos] animated elytra: " + ex);
 		}
 	}
 

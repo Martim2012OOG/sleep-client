@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/** No blur / dark layer / panorama from a settings screen that is shown inside the Sleep menu. */
+/** No blur / dark layer / panorama from a settings screen that is shown inside the Caos menu. */
 @Mixin(Screen.class)
 public abstract class EmbeddedBackgroundMixin {
 

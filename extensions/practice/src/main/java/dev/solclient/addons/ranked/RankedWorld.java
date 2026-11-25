@@ -47,7 +47,7 @@ public final class RankedWorld {
 							box.get(0).getAsInt(), box.get(1).getAsInt(), box.get(2).getAsInt(), box.get(3).getAsInt()));
 				}
 			} catch (Exception e) {
-				System.err.println("[Sleep] ranked arenas: " + e);
+				System.err.println("[Caos] ranked arenas: " + e);
 			}
 			arenas = out;
 		}
@@ -81,7 +81,7 @@ public final class RankedWorld {
 			if (mc.world != null) {
 				Ranked.quit(mc, false);
 			}
-			Thread t = new Thread(() -> install(saves, start), "sleep-arena-install");
+			Thread t = new Thread(() -> install(saves, start), "caos-arena-install");
 			t.setDaemon(true);
 			t.start();
 		});
@@ -92,15 +92,15 @@ public final class RankedWorld {
 		try {
 			deleteTree(saves.resolve(Ranked.WORLD));
 		} catch (Exception e) {
-			System.err.println("[Sleep] old arena copy: " + e);
+			System.err.println("[Caos] old arena copy: " + e);
 		}
 		{
 			try (InputStream in = RankedWorld.class.getResourceAsStream("/kubo_practice/ranked_arenas.zip")) {
-				tmp = Files.createTempFile("sleep-arenas", ".zip");
+				tmp = Files.createTempFile("caos-arenas", ".zip");
 				Files.copy(in, tmp, StandardCopyOption.REPLACE_EXISTING);
 				start.accept(WorldTransfer.unpack(tmp, saves, Ranked.WORLD));
 			} catch (Exception e) {
-				System.err.println("[Sleep] arena install failed: " + e);
+				System.err.println("[Caos] arena install failed: " + e);
 				dev.solclient.social.Social.say("Could not install the arena map: " + e.getMessage(), true);
 			} finally {
 				installing = false;

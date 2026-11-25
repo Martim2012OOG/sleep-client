@@ -44,7 +44,7 @@ public final class Mutes {
 				}
 			}
 		} catch (IOException | RuntimeException e) {
-			System.err.println("[Sleep] muted players: " + e);
+			System.err.println("[Caos] muted players: " + e);
 		}
 	}
 
@@ -56,7 +56,7 @@ public final class Mutes {
 			o.add("muted", a);
 			Files.writeString(file(), GSON.toJson(o));
 		} catch (IOException | RuntimeException e) {
-			System.err.println("[Sleep] could not save muted players: " + e);
+			System.err.println("[Caos] could not save muted players: " + e);
 		}
 	}
 

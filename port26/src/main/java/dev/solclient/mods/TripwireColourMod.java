@@ -75,7 +75,7 @@ public class TripwireColourMod extends Mod {
 			}
 		});
 		} catch (Throwable t) {
-			System.err.println("[Sleep] Tripwire Colour unavailable: " + t);
+			System.err.println("[Caos] Tripwire Colour unavailable: " + t);
 		}
 	}
 

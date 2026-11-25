@@ -42,7 +42,7 @@ public class SpotifyMod extends HudMod {
 	private Option.Choice barsStyle, songAnim;
 	private Option.Num barCount, scrollSpeed, spinSpeed;
 	// lyrics (in the sky + top capsule)
-	private Option.Bool lyricsVideo, lyricsOn, lyricsBar, lyricsWorld, lyricsOnlyPlaying, lyricsScript;
+	private Option.Bool lyricsOn, lyricsBar, lyricsWorld, lyricsOnlyPlaying, lyricsScript;
 	private Option.Choice lyricsBacking;
 	private Option.Num lyricsFrontLift, lyricsWords;
 	private Option.Num lyricsBackingAlpha;
@@ -176,7 +176,6 @@ public class SpotifyMod extends HudMod {
 		// ---------------------------------------------------------------- Lyrics
 		header("Lyrics").showIf(lyr);
 		lyricsOn = bool("Show Lyrics", false);
-		lyricsVideo = bool("Floating Words Look", false).tip("One click: the words hang in the world in front of you, one by one, each in its own colour, thick and glowing, and the top bar writes the line as it is sung. Turns the lyrics on by itself and replaces the lyrics options below while it is on.");
 		lyricsBar = bool("Lyrics Top Bar", true);
 		lyricsWorld = bool("Lyrics In The Sky", true);
 		lyricsOnlyPlaying = bool("Lyrics Only While Playing", true);
@@ -228,7 +227,6 @@ public class SpotifyMod extends HudMod {
 				lyricsHighlight, lyricsText, lyricsColours, lyricsPalette, lyricsText2, lyricsText3, lyricsText4}) {
 			o.visibleIf = lyr;
 		}
-		lyricsVideo.visibleIf = lyr;
 		lyricsBar.visibleIf = () -> lyr.getAsBoolean() && lyricsOn.on();
 		lyricsWorld.visibleIf = lyricsBar.visibleIf;
 		lyricsPlace.visibleIf = () -> lyr.getAsBoolean() && lyricsOn.on() && lyricsWorld.on();
@@ -270,7 +268,7 @@ public class SpotifyMod extends HudMod {
 		lyricsUpper.visibleIf = lyricsBar.visibleIf;
 		lyricsGlow.visibleIf = lyricsSize.visibleIf;
 		lyricsAnim.visibleIf = lyricsSize.visibleIf;
-		action("Lyrics Status", "Search again", Lyrics::retry, () -> lyricsActive() ? Lyrics.status : "Turn on Show Lyrics").showIf(lyr);
+		action("Lyrics Status", "Search again", Lyrics::retry, () -> lyricsOn.on() ? Lyrics.status : "Turn on Show Lyrics").showIf(lyr);
 
 		// ---------------------------------------------------------------- Intro card (who sings it)
 		header("Now Playing Card").showIf(np);
@@ -353,7 +351,7 @@ public class SpotifyMod extends HudMod {
 		SpotifyClient.setClientId(clientId.get());
 		MusicHub.setExtraSites(extraSites.get());
 		// lyrics: look for the ones of the song that is showing (nothing is downloaded while the option is off)
-		Lyrics.follow(lyricsActive() && MusicHub.hasTrack, MusicHub.title, MusicHub.artist, MusicHub.durationMs);
+		Lyrics.follow(lyricsOn.on() && MusicHub.hasTrack, MusicHub.title, MusicHub.artist, MusicHub.durationMs);
 		if (dev.solclient.compat.Mc.screen(mc) != null) {
 			return;
 		}
@@ -496,13 +494,12 @@ public class SpotifyMod extends HudMod {
 			dev.solclient.music.NowPlayingCard.update(q);
 			dev.solclient.music.NowPlayingCard.drawFlat(c);
 		}
-		if (edit || !lyricsActive()) {
+		if (edit || !lyricsOn.on()) {
 			return;
 		}
 		LyricsView.Cfg k = lyricsCfg;
 		k.bar = lyricsBar.on();
-		boolean vid = lyricsVideo.on();
-		boolean sky = vid || (lyricsWorld.on() && lyricsPlace.idx() >= 1);
+		boolean sky = lyricsWorld.on() && lyricsPlace.idx() >= 1;
 		k.world = lyricsWorld.on() && !sky; // the flat screen sheet only when the sky is not used
 		k.onlyPlaying = lyricsOnlyPlaying.on();
 		dev.solclient.music.LyricFonts.apply(k, lyricsFont.idx());
@@ -537,50 +534,12 @@ public class SpotifyMod extends HudMod {
 		k.palette[1] = lyricsText2.c();
 		k.palette[2] = lyricsText3.c();
 		k.palette[3] = lyricsText4.c();
-		if (vid) {
-			videoLook(k);
-		}
 		dev.solclient.music.SkyLyrics.cfg = k;
-		dev.solclient.music.SkyLyrics.behindTerrain = !vid && lyricsBehind.on();
+		dev.solclient.music.SkyLyrics.behindTerrain = lyricsBehind.on();
 		dev.solclient.music.SkyLyrics.active = sky;
 		dev.solclient.music.SkyLyrics.lastSet = System.currentTimeMillis();
 		LyricsView.draw(c, k);
 	}
-
-	/** Is the lyrics feature working (Show Lyrics, or the video look which turns it on by itself)? */
-	private boolean lyricsActive() {
-		return lyricsOn.on() || lyricsVideo.on();
-	}
-
-	/**
-	 * "Floating Words Look": single words hang in the real world in front of you, each in another soft colour, in the game font (italic) with
-	 * thick 3D letters and a glow; the words stay where they were sung while you walk past, and the top bar writes the line as it is sung.
-	 * It overrides the lyrics options below while it is on (nothing is changed or saved there), so turning it off gives your own settings back.
-	 */
-	private static void videoLook(LyricsView.Cfg k) {
-		k.bar = true;
-		k.onlyPlaying = true;
-		k.front = true;
-		k.frontDist = 10F;
-		k.frontFade = 40F;
-		k.frontKeep = 8;
-		k.frontFollow = false;
-		k.frontLift = 1F;
-		k.wordsPerPiece = 1;
-		dev.solclient.music.LyricFonts.apply(k, 1);
-		k.upper = false;
-		k.colourMode = 2;
-		k.size = 1.1F;
-		k.depth = 0.85F;
-		k.backing = 2;
-		k.backingAlpha = 0.7F;
-		k.glow = 1.1F;
-		k.lAnim = 0;
-		k.sway = 0.6F;
-		k.opacity = 0.95F;
-		k.height = 18F;
-	}
-
 
 	// ------------------------------------------------------------------ size
 	@Override

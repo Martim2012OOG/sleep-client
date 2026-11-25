@@ -13,7 +13,7 @@ public abstract class ChatNickMixin {
 
 	@org.spongepowered.asm.mixin.injection.Inject(method = "addPlayerMessage(Lnet/minecraft/network/chat/Component;Lnet/minecraft/network/chat/MessageSignature;Lnet/minecraft/client/multiplayer/chat/GuiMessageTag;)V",
 			at = @At("HEAD"), cancellable = true, require = 0)
-	private void sleep$hideFiltered(Component message, net.minecraft.network.chat.MessageSignature sig, net.minecraft.client.multiplayer.chat.GuiMessageTag ind,
+	private void caos$hideFiltered(Component message, net.minecraft.network.chat.MessageSignature sig, net.minecraft.client.multiplayer.chat.GuiMessageTag ind,
 			org.spongepowered.asm.mixin.injection.callback.CallbackInfo ci) {
 		if (dev.solclient.mods.ChatMod.hide(message)) {
 			ci.cancel();

@@ -55,7 +55,7 @@ public final class PrivateConnection {
 
 	private static final Gson GSON = new Gson();
 	private static final ExecutorService POOL = Executors.newCachedThreadPool(r -> {
-		Thread t = new Thread(r, "Sleep-PrivateConnection");
+		Thread t = new Thread(r, "Caos-PrivateConnection");
 		t.setDaemon(true);
 		t.setPriority(Thread.MIN_PRIORITY); // background work never takes CPU from the game
 		return t;
@@ -118,7 +118,7 @@ public final class PrivateConnection {
 				}
 			}
 		} catch (IOException | RuntimeException e) {
-			System.err.println("[Sleep] private connection config: " + e);
+			System.err.println("[Caos] private connection config: " + e);
 		}
 	}
 
@@ -132,7 +132,7 @@ public final class PrivateConnection {
 			o.add("mine", GSON.toJsonTree(MINE));
 			Files.writeString(file(), GSON.toJson(o));
 		} catch (IOException | RuntimeException e) {
-			System.err.println("[Sleep] could not save private connection: " + e);
+			System.err.println("[Caos] could not save private connection: " + e);
 		}
 	}
 
@@ -201,7 +201,7 @@ public final class PrivateConnection {
 			}
 			return new InetSocketAddress("127.0.0.1", relayPort(host, original.getPort()));
 		} catch (IOException | RuntimeException e) {
-			System.err.println("[Sleep] private connection relay: " + e);
+			System.err.println("[Caos] private connection relay: " + e);
 			return original;
 		}
 	}
@@ -223,7 +223,7 @@ public final class PrivateConnection {
 					return;
 				}
 			}
-		}, "Sleep-Relay");
+		}, "Caos-Relay");
 		t.setDaemon(true);
 		t.start();
 		return ss.getLocalPort();
@@ -238,17 +238,8 @@ public final class PrivateConnection {
 				return;
 			}
 			client.setTcpNoDelay(true);
-			// the game talks first: keep its first bytes, so when a free server dies right after connecting another one is tried with the same bytes
-			byte[] first = readFirst(client);
-			if (first.length == 0) {
-				client.close();
-				return;
-			}
-			Object[] r = connectWithFailover(s, host, port, first);
-			up = (Socket) r[0];
+			up = connectWithFailover(s, host, port);
 			up.setTcpNoDelay(true);
-			client.getOutputStream().write((Integer) r[2]); // the first byte the server answered with
-			client.getOutputStream().flush();
 			final Socket u = up;
 			POOL.execute(() -> pipe(u, client));
 			pipe(client, up);
@@ -259,94 +250,31 @@ public final class PrivateConnection {
 		}
 	}
 
-	/** The first bytes the game sends on a new connection (handshake + login / status request). */
-	private static byte[] readFirst(Socket c) throws IOException {
-		byte[] b = new byte[8192];
-		int n;
-		try {
-			c.setSoTimeout(20000);
-			n = c.getInputStream().read(b);
-			if (n <= 0) {
-				return new byte[0];
-			}
-			c.setSoTimeout(120); // the rest of the same burst (login start often comes right after the handshake)
-			try {
-				int m = c.getInputStream().read(b, n, b.length - n);
-				if (m > 0) {
-					n += m;
-				}
-			} catch (java.net.SocketTimeoutException ignored) {
-				// nothing more yet
-			}
-		} catch (java.net.SocketTimeoutException e) {
-			return new byte[0];
-		}
-		c.setSoTimeout(0);
-		return java.util.Arrays.copyOf(b, n);
-	}
-
 	/**
 	 * Opens the connection through the chosen server; when it is dead or refuses (free servers die all the time) a few others of the
 	 * same country that answered before are tried at the same time, the first that works wins and becomes the chosen one.
 	 */
-	/** One try: connects through c, sends the game's first bytes and waits for the server's first answer byte. Returns {socket, server, firstByte}. */
-	private static Object[] attempt(Server c, String host, int port, byte[] init, int connectMs, int answerMs) throws IOException {
-		Socket sock = openThrough(c, host, port, connectMs);
-		try {
-			sock.setSoTimeout(answerMs);
-			sock.getOutputStream().write(init);
-			sock.getOutputStream().flush();
-			int b = sock.getInputStream().read();
-			if (b < 0) {
-				throw new IOException("the server closed the connection");
-			}
-			sock.setSoTimeout(0);
-			return new Object[] {sock, c, b};
-		} catch (IOException | RuntimeException e) {
-			closeQuietly(sock);
-			throw e instanceof IOException io ? io : new IOException(String.valueOf(e.getMessage()));
-		}
-	}
-
-	private static Object[] connectWithFailover(Server first, String host, int port, byte[] init) throws IOException {
+	private static Socket connectWithFailover(Server first, String host, int port) throws IOException {
 		List<Server> cands = new ArrayList<>();
 		cands.add(first);
 		if (!first.mine) {
 			List<Server> pool = free.get(first.country);
 			if (pool != null) {
 				for (Server c : pool) {
-					if (c != first && c.ping > 0 && cands.size() < 8) {
+					if (c != first && c.ping > 0 && cands.size() < 9) {
 						cands.add(c);
 					}
 				}
 			}
-			// not enough in that country: the fastest working ones anywhere
-			if (cands.size() < 10) {
-				List<Server> any = new ArrayList<>();
-				for (List<Server> l : free.values()) {
-					for (Server c : l) {
-						if (c.ping > 0 && !cands.contains(c)) {
-							any.add(c);
-						}
-					}
-				}
-				any.sort(java.util.Comparator.comparingInt((Server c) -> c.ping));
-				for (Server c : any) {
-					if (cands.size() >= 12) {
-						break;
-					}
-					cands.add(c);
-				}
-			}
 		}
 		if (cands.size() == 1) {
-			return attempt(first, host, port, init, 8000, 10000);
+			return openThrough(first, host, port, 8000);
 		}
 		java.util.concurrent.CompletionService<Object[]> done = new java.util.concurrent.ExecutorCompletionService<>(SCAN);
 		java.util.concurrent.atomic.AtomicBoolean won = new java.util.concurrent.atomic.AtomicBoolean();
 		for (int i = 0; i < cands.size(); i++) {
 			final Server c = cands.get(i);
-			final long delay = i == 0 ? 0 : 400L + 350L * i; // the chosen one gets a head start
+			final long delay = i == 0 ? 0 : 250L + 150L * i; // the chosen one gets a short head start
 			done.submit(() -> {
 				if (delay > 0) {
 					Thread.sleep(delay);
@@ -355,18 +283,18 @@ public final class PrivateConnection {
 					return null;
 				}
 				try {
-					Object[] r = attempt(c, host, port, init, 5000, 6000);
+					Socket sock = openThrough(c, host, port, 5000);
 					if (won.compareAndSet(false, true)) {
-						return r;
+						return new Object[] {sock, c};
 					}
-					closeQuietly((Socket) r[0]);
+					closeQuietly(sock);
 				} catch (IOException e) {
-					c.ping = -1; // dead, or it cuts the game's connection: it goes to the bottom of the list
+					c.ping = -1;
 				}
 				return null;
 			});
 		}
-		long end = System.currentTimeMillis() + 24_000L;
+		long end = System.currentTimeMillis() + 14_000L;
 		for (int i = 0; i < cands.size(); i++) {
 			try {
 				var f = done.poll(Math.max(1, end - System.currentTimeMillis()), TimeUnit.MILLISECONDS);
@@ -382,7 +310,7 @@ public final class PrivateConnection {
 						status = dev.solclient.Lang.tr("Switched to a working server: ", "Mudei para um servidor que funciona: ") + w.label();
 						refreshIp();
 					}
-					return r;
+					return (Socket) r[0];
 				}
 			} catch (InterruptedException e) {
 				Thread.currentThread().interrupt();
@@ -572,10 +500,9 @@ public final class PrivateConnection {
 		}
 	}
 
-	/** Public Minecraft servers used only to check that a free server can really carry the game (one blocking the proxy must not kill every test). */
-	private static final String[] TEST_HOSTS = {"mc.hypixel.net", "play.cubecraft.net", "eu.mineplex.com"};
+	/** A public Minecraft server used only to check that a free server can really carry the game: port 25565 and a real answer. */
+	private static final String TEST_HOST = "mc.hypixel.net";
 	private static final int TEST_PORT = 25565;
-	private static final java.util.concurrent.atomic.AtomicInteger TEST_ROT = new java.util.concurrent.atomic.AtomicInteger();
 
 	private static void varInt(java.io.ByteArrayOutputStream o, int v) {
 		while ((v & ~0x7F) != 0) {
@@ -585,28 +512,12 @@ public final class PrivateConnection {
 		o.write(v);
 	}
 
-	private static int readVarInt(InputStream in) throws IOException {
-		int v = 0, shift = 0, b;
-		do {
-			b = in.read();
-			if (b < 0) {
-				throw new IOException("closed");
-			}
-			v |= (b & 0x7F) << shift;
-			shift += 7;
-			if (shift > 35) {
-				throw new IOException("bad varint");
-			}
-		} while ((b & 0x80) != 0);
-		return v;
-	}
-
 	/** The Minecraft "status" handshake + request: what the game itself sends first. */
-	private static byte[] statusRequest(String testHost) {
+	private static byte[] statusRequest() {
 		java.io.ByteArrayOutputStream d = new java.io.ByteArrayOutputStream();
 		varInt(d, 0); // handshake packet
 		varInt(d, 767);
-		byte[] h = testHost.getBytes(StandardCharsets.UTF_8);
+		byte[] h = TEST_HOST.getBytes(StandardCharsets.UTF_8);
 		varInt(d, h.length);
 		d.write(h, 0, h.length);
 		d.write(TEST_PORT >> 8);
@@ -622,50 +533,27 @@ public final class PrivateConnection {
 
 	/**
 	 * Round trip through the server in ms, or -1. A free server only counts when it carries a real Minecraft connection: it opens a tunnel to a
-	 * Minecraft server on port 25565, the WHOLE status answer comes back and a second round trip (ping/pong) works too. (Testing only the first
-	 * byte let through servers that cut the connection a moment later, so the game failed to join with a "working" server.) If the tunnel opens but
-	 * one test server stays silent, another test server is tried before the proxy is given up on.
+	 * Minecraft server on port 25565 AND the answer comes back. (It used to test port 443 / 80: almost every server passed that and then
+	 * refused the game's port, so nine out of ten "working" servers could not join anything.)
 	 */
 	public static int test(Server s) {
-		int start = Math.floorMod(TEST_ROT.getAndIncrement(), TEST_HOSTS.length);
-		for (int i = 0; i < 2; i++) {
-			long t0 = System.nanoTime();
-			String th = TEST_HOSTS[(start + i) % TEST_HOSTS.length];
-			try (Socket x = openThrough(s, th, TEST_PORT, TEST_MS)) {
-				x.setSoTimeout(TEST_MS);
-				OutputStream out = x.getOutputStream();
-				InputStream in = x.getInputStream();
-				out.write(statusRequest(th));
-				out.flush();
-				int len = readVarInt(in);
-				if (len < 2 || len > 262144) {
-					continue;
-				}
-				byte[] body = in.readNBytes(len); // the whole answer, not only its first byte
-				if (body.length < len || body[0] != 0) {
-					continue;
-				}
-				int ms = (int) ((System.nanoTime() - t0) / 1_000_000L);
-				java.io.ByteArrayOutputStream ping = new java.io.ByteArrayOutputStream();
-				ping.write(9);
-				ping.write(1);
-				ping.write(new byte[8]);
-				out.write(ping.toByteArray());
-				out.flush();
-				if (readVarInt(in) < 1) { // the pong: the connection stays alive and carries data both ways
-					continue;
-				}
-				s.ping = Math.max(1, ms);
-				return s.ping;
-			} catch (IOException e) {
-				String m = String.valueOf(e.getMessage());
-				if (!m.contains("refused") && !m.contains("closed") && !m.contains("reset")) {
-					break; // the proxy itself is dead / too slow: no second try
-				}
+		long t0 = System.nanoTime();
+		try (Socket x = openThrough(s, TEST_HOST, TEST_PORT, TEST_MS)) {
+			x.setSoTimeout(TEST_MS);
+			OutputStream out = x.getOutputStream();
+			out.write(statusRequest());
+			out.flush();
+			int first = x.getInputStream().read(); // the first byte of the answer
+			if (first <= 0) {
+				s.ping = -1;
+				return -1;
 			}
+			int ms = (int) ((System.nanoTime() - t0) / 1_000_000L);
+			s.ping = Math.max(1, ms);
+		} catch (IOException e) {
+			s.ping = -1;
 		}
-		s.ping = -1;
-		return -1;
+		return s.ping;
 	}
 
 	// ------------------------------------------------------------------ your public address
@@ -701,16 +589,16 @@ public final class PrivateConnection {
 	public static volatile int scanDone, scanTotal;
 	private static volatile long scanId;
 	/** Tests run on virtual threads (cheap while they wait for the network); this caps how many at the same time. */
-	private static final ExecutorService SCAN = Executors.newThreadPerTaskExecutor(Thread.ofVirtual().name("Sleep-PrivateConnection-Test", 0).factory());
+	private static final ExecutorService SCAN = Executors.newThreadPerTaskExecutor(Thread.ofVirtual().name("Caos-PrivateConnection-Test", 0).factory());
 	private static final java.util.concurrent.Semaphore PARALLEL = new java.util.concurrent.Semaphore(96); // fewer tests at once: 384 flooded the network (game lag)
 	/** How many servers of each country the background check may try (most free servers are dead)... */
-	private static final int SCAN_PER_COUNTRY = 200;
+	private static final int SCAN_PER_COUNTRY = 80;
 	/** ...it stops for a country once this many answered. */
-	private static final int SCAN_ENOUGH = 5;
+	private static final int SCAN_ENOUGH = 3;
 	/** At most this many servers kept per country (the huge lists are mostly the same few countries). */
 	private static final int MAX_PER_COUNTRY = 4000;
 	/** A test gives up after this long (connect + handshake). */
-	private static final int TEST_MS = 6000;
+	private static final int TEST_MS = 3500;
 
 	/** {kind, list on GitHub (via jsDelivr), format}: csv = proxifly (has the country), txt = host:port per line (country from the IP). */
 	private static final String[][] LISTS = {
@@ -761,58 +649,7 @@ public final class PrivateConnection {
 			{"socks4", "dpangestuw/Free-Proxy@main/socks4_proxies.txt", "txt"},
 			{"socks4", "TuanMinPay/live-proxy@master/socks4.txt", "txt"},
 			{"socks4", "Vann-Dev/proxy-list@main/proxies/socks4.txt", "txt"},
-			{"socks4", "casals-ar/proxy-list@main/socks4", "txt"},
-			// more sources (checked: each answers, and each has servers that really carry a Minecraft connection)
-			{"socks5", "ProxyScraper/ProxyScraper@main/socks5.txt", "txt"},
-			{"http", "ProxyScraper/ProxyScraper@main/http.txt", "txt"},
-			{"socks5", "Skillter/ProxyGather@master/proxies/working-proxies-socks5.txt", "txt"},
-			{"socks5", "ClearProxy/checked-proxy-list@main/socks5/raw/all.txt", "txt"},
-			{"socks5", "https://api.proxyscrape.com/v2/?request=getproxies&protocol=socks5&timeout=10000&country=all", "txt"},
-			{"socks4", "https://api.proxyscrape.com/v2/?request=getproxies&protocol=socks4&timeout=10000&country=all", "txt"},
-			{"http", "https://api.proxyscrape.com/v2/?request=getproxies&protocol=http&timeout=10000&country=all&ssl=all&anonymity=all", "txt"},
-			{"socks5", "https://openproxylist.xyz/socks5.txt", "txt"},
-			// even more public lists (each one answers and holds real servers)
-			{"http", "TuanMinPay/live-proxy@master/http.txt", "txt"},
-			{"http", "Vann-Dev/proxy-list@main/proxies/http.txt", "txt"},
-			{"http", "Anonym0usWork1221/Free-Proxies@main/proxy_files/http_proxies.txt", "txt"},
-			{"http", "r00tee/Proxy-List@main/Https.txt", "txt"},
-			{"http", "dpangestuw/Free-Proxy@main/http_proxies.txt", "txt"},
-			{"http", "B4RC0DE-TM/proxy-list@main/HTTP.txt", "txt"},
-			{"http", "Argh94/Proxy-List@main/HTTP.txt", "txt"},
-			{"http", "sunny9577/proxy-scraper@master/generated/http_proxies.txt", "txt"},
-			{"http", "jetkai/proxy-list@main/online-proxies/txt/proxies-http.txt", "txt"},
-			{"http", "ALIILAPRO/Proxy@main/http.txt", "txt"},
-			{"http", "iplocate/free-proxy-list@main/protocols/http.txt", "txt"},
-			{"http", "rdavydov/proxy-list@main/proxies/http.txt", "txt"},
-			{"http", "mmpx12/proxy-list@master/http.txt", "txt"},
-			{"http", "Zaeem20/FREE_PROXIES_LIST@master/http.txt", "txt"},
-			{"http", "proxylist-to/proxy-list@main/http.txt", "txt"},
-			{"http", "roosterkid/openproxylist@main/HTTPS_RAW.txt", "txt"},
-			{"http", "zloi-user/hideip.me@main/http.txt", "txt"},
-			{"http", "zloi-user/hideip.me@main/https.txt", "txt"},
-			{"http", "ErcinDedeoglu/proxies@main/proxies/https.txt", "txt"},
-			{"http", "prxchk/proxy-list@main/http.txt", "txt"},
-			{"http", "proxifly/free-proxy-list@main/proxies/protocols/http/data.txt", "txt"},
-			{"http", "https://openproxylist.xyz/http.txt", "txt"},
-			{"http", "https://proxyspace.pro/http.txt", "txt"},
-			{"http", "https://api.proxyscrape.com/v4/free-proxy-list/get?request=display_proxies&protocol=http&proxy_format=ipport&format=text", "txt"},
-			{"socks5", "https://api.openproxylist.xyz/socks5.txt", "txt"},
-			{"socks5", "https://proxyspace.pro/socks5.txt", "txt"},
-			{"socks5", "https://api.proxyscrape.com/v4/free-proxy-list/get?request=display_proxies&protocol=socks5&proxy_format=ipport&format=text", "txt"},
-			{"socks5", "https://api.proxyscrape.com/v2/?request=displayproxies&protocol=socks5&timeout=5000&country=all", "txt"},
-			{"socks5", "Argh94/Proxy-List@main/SOCKS5.txt", "txt"},
-			{"socks5", "proxifly/free-proxy-list@main/proxies/protocols/socks5/data.txt", "txt"},
-			{"socks5", "proxylist-to/proxy-list@main/socks5.txt", "txt"},
-			{"socks4", "ErcinDedeoglu/proxies@main/proxies/socks4.txt", "txt"},
-			{"socks4", "https://openproxylist.xyz/socks4.txt", "txt"},
-			{"socks4", "https://proxyspace.pro/socks4.txt", "txt"},
-			{"socks4", "https://api.proxyscrape.com/v4/free-proxy-list/get?request=display_proxies&protocol=socks4&proxy_format=ipport&format=text", "txt"},
-			{"socks4", "Argh94/Proxy-List@main/SOCKS4.txt", "txt"},
-			{"socks4", "proxifly/free-proxy-list@main/proxies/protocols/socks4/data.txt", "txt"},
-			{"socks4", "proxylist-to/proxy-list@main/socks4.txt", "txt"},
-			{"socks4", "zloi-user/hideip.me@main/socks4.txt", "txt"},
-			{"socks4", "vakhov/fresh-proxy-list@master/socks4.txt", "txt"},
-			{"socks4", "sunny9577/proxy-scraper@master/generated/socks4_proxies.txt", "txt"}};
+			{"socks4", "casals-ar/proxy-list@main/socks4", "txt"}};
 
 	private static final java.net.http.HttpClient HTTP = java.net.http.HttpClient.newBuilder()
 			.followRedirects(java.net.http.HttpClient.Redirect.ALWAYS).connectTimeout(java.time.Duration.ofSeconds(6)).build();
@@ -821,7 +658,7 @@ public final class PrivateConnection {
 		Exception last = new IOException("no source");
 		for (String u : urls) {
 			try {
-				var r = HTTP.send(java.net.http.HttpRequest.newBuilder(java.net.URI.create(u)).header("User-Agent", "Mozilla/5.0 SleepClient")
+				var r = HTTP.send(java.net.http.HttpRequest.newBuilder(java.net.URI.create(u)).header("User-Agent", "Mozilla/5.0 CaosClient")
 						.timeout(java.time.Duration.ofSeconds(timeoutS)).build(), java.net.http.HttpResponse.BodyHandlers.ofString());
 				if (r.statusCode() == 200) {
 					return r.body();
@@ -835,9 +672,6 @@ public final class PrivateConnection {
 	}
 
 	private static String[] mirrors(String gh) {
-		if (gh.startsWith("http")) {
-			return new String[] {gh}; // a full address (an API), not a GitHub file
-		}
 		String repo = gh.substring(0, gh.indexOf('@')), rest = gh.substring(gh.indexOf('@') + 1);
 		String branch = rest.substring(0, rest.indexOf('/')), file = rest.substring(rest.indexOf('/') + 1);
 		return new String[] {"https://cdn.jsdelivr.net/gh/" + gh, "https://raw.githubusercontent.com/" + repo + "/" + branch + "/" + file,
@@ -877,7 +711,7 @@ public final class PrivateConnection {
 					body = fetch(40, GEO_URL, "https://fastly.jsdelivr.net/npm/@ip-location-db/geo-whois-asn-country/geo-whois-asn-country-ipv4-num.csv");
 					Files.writeString(f, body);
 				} catch (Exception e) {
-					System.err.println("[Sleep] ip-country list: " + e);
+					System.err.println("[Caos] ip-country list: " + e);
 				}
 			}
 			if (body == null && Files.exists(f)) {
@@ -914,7 +748,7 @@ public final class PrivateConnection {
 			geoCc = java.util.Arrays.copyOf(cc, n);
 			geoStart = java.util.Arrays.copyOf(s, n);
 		} catch (IOException | RuntimeException e) {
-			System.err.println("[Sleep] ip-country list: " + e);
+			System.err.println("[Caos] ip-country list: " + e);
 		}
 	}
 
@@ -1206,7 +1040,7 @@ public final class PrivateConnection {
 				ALL.putIfAbsent(s.type + "://" + s.host + ":" + s.port, s);
 			}
 		} catch (IOException | RuntimeException e) {
-			System.err.println("[Sleep] private connection cache: " + e);
+			System.err.println("[Caos] private connection cache: " + e);
 		}
 	}
 
@@ -1221,7 +1055,7 @@ public final class PrivateConnection {
 		try {
 			Files.writeString(cacheFile(), sb);
 		} catch (IOException e) {
-			System.err.println("[Sleep] private connection cache: " + e);
+			System.err.println("[Caos] private connection cache: " + e);
 		}
 	}
 

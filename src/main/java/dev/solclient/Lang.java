@@ -84,11 +84,11 @@ public final class Lang {
 				ptUpper.putIfAbsent(en.toUpperCase(Locale.ROOT), p.toUpperCase(Locale.ROOT));
 			}
 		} catch (Exception e) {
-			System.err.println("[Sleep] language file: " + e);
+			System.err.println("[Caos] language file: " + e);
 		}
 	}
 
-	/** Extra "English<TAB>Português" lines from a Sleep extension (its own tsv file). */
+	/** Extra "English<TAB>Português" lines from a Caos extension (its own tsv file). */
 	public static synchronized void addFrom(InputStream in) {
 		if (in == null) {
 			return;
@@ -110,7 +110,7 @@ public final class Lang {
 			}
 			CACHE.clear();
 		} catch (Exception e) {
-			System.err.println("[Sleep] extension language file: " + e);
+			System.err.println("[Caos] extension language file: " + e);
 		}
 	}
 

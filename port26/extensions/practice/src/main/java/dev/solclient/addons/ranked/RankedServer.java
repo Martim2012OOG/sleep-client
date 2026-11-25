@@ -301,10 +301,10 @@ public final class RankedServer {
 			run(s, "time set day");
 			run(s, "weather clear");
 			run(s, "difficulty normal");
-			run(s, "scoreboard objectives add sleep_ranked dummy");
-			run(s, "scoreboard objectives modify sleep_ranked displayname {text:\"SLEEP DUELS\",color:\"aqua\",bold:true}");
-			run(s, "scoreboard objectives modify sleep_ranked numberformat blank");
-			run(s, "scoreboard objectives setdisplay sidebar sleep_ranked");
+			run(s, "scoreboard objectives add caos_ranked dummy");
+			run(s, "scoreboard objectives modify caos_ranked displayname {text:\"CAOS DUELS\",color:\"aqua\",bold:true}");
+			run(s, "scoreboard objectives modify caos_ranked numberformat blank");
+			run(s, "scoreboard objectives setdisplay sidebar caos_ranked");
 			RankedWorld.Arena a0 = RankedWorld.arena(mm.arena());
 			if (a0 != null) {
 				run(s, "forceload add " + (a0.x1() - 2) + " " + (a0.z1() - 2) + " " + (a0.x2() + 2) + " " + (a0.z2() + 2));
@@ -480,7 +480,7 @@ public final class RankedServer {
 				stat("Combo", String.valueOf(max(BEST, a)), String.valueOf(max(BEST, b))),
 				stat("Ping", String.valueOf(ping(s, a)), String.valueOf(ping(s, b))),
 				blank,
-				"{text:\"sleep client\",color:\"aqua\"}");
+				"{text:\"caos client\",color:\"aqua\"}");
 		for (int i = 0; i < lines.size(); i++) {
 			String l = lines.get(i);
 			if (l.equals(SIDEBAR.get(i))) {
@@ -488,10 +488,10 @@ public final class RankedServer {
 			}
 			String holder = "sl" + i;
 			if (!SIDEBAR.containsKey(i)) {
-				run(s, "scoreboard players set " + holder + " sleep_ranked " + (lines.size() - i));
+				run(s, "scoreboard players set " + holder + " caos_ranked " + (lines.size() - i));
 			}
 			SIDEBAR.put(i, l);
-			run(s, "scoreboard players display name " + holder + " sleep_ranked " + l);
+			run(s, "scoreboard players display name " + holder + " caos_ranked " + l);
 		}
 	}
 

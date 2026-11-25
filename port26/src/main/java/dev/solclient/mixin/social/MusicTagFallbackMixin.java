@@ -22,7 +22,7 @@ public abstract class MusicTagFallbackMixin {
 
 	@Inject(method = "submit(Lnet/minecraft/client/renderer/entity/state/LivingEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/level/CameraRenderState;)V",
 			at = @At("TAIL"), require = 0)
-	private void sleep$musicTagFallback(LivingEntityRenderState state, PoseStack matrices, SubmitNodeCollector queue, CameraRenderState camera, CallbackInfo ci) {
+	private void caos$musicTagFallback(LivingEntityRenderState state, PoseStack matrices, SubmitNodeCollector queue, CameraRenderState camera, CallbackInfo ci) {
 		if (!(state instanceof AvatarRenderState ps) || ps.nameTagAttachment != null || ps.isInvisible) {
 			return;
 		}

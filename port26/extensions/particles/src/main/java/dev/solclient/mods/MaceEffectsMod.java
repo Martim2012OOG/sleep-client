@@ -131,7 +131,7 @@ public class MaceEffectsMod extends Mod {
 				}
 			});
 		} catch (Throwable t) {
-			System.err.println("[Sleep] Mace Effects unavailable: " + t);
+			System.err.println("[Caos] Mace Effects unavailable: " + t);
 		}
 	}
 

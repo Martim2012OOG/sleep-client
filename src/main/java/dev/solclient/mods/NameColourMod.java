@@ -10,7 +10,7 @@ import net.minecraft.text.Text;
 
 /**
  * Name Colour: only for the Owner and Team badges. Your name as one colour, a gradient, an animated gradient or a moving
- * rainbow (bold if you like). Every Sleep player sees it: the style is sent to them with your badge.
+ * rainbow (bold if you like). Every Caos player sees it: the style is sent to them with your badge.
  */
 public class NameColourMod extends Mod {
 
@@ -35,10 +35,10 @@ public class NameColourMod extends Mod {
 	private final Option.Num speed = num("Speed", 1F, 0.2F, 4F, 0.1F, "x");
 	private final Option.Bool bold = bool("Bold", false);
 	private final Option.Bool chat = bool("In Chat", true);
-	private final Option.Bool share = bool("Show To Other Sleep Players", true);
+	private final Option.Bool share = bool("Show To Other Caos Players", true);
 
 	public NameColourMod() {
-		super("Name Colour", "name_colour", "Owner and Team badge only: your name as a colour, gradient, animated gradient or rainbow. Every Sleep player sees it.", Category.VISUAL);
+		super("Name Colour", "name_colour", "Owner and Team badge only: your name as a colour, gradient, animated gradient or rainbow. Every Caos player sees it.", Category.VISUAL);
 		instance = this;
 		colourA.showIf(() -> look.idx() != 2);
 		colourB.showIf(() -> look.idx() == 1 || look.idx() >= 3);
@@ -80,7 +80,7 @@ public class NameColourMod extends Mod {
 		return l;
 	}
 
-	/** What the other Sleep players are told about your name ("" = nothing). */
+	/** What the other Caos players are told about your name ("" = nothing). */
 	public static String encodeMine() {
 		if (!on() || !instance.share.on()) {
 			return "";

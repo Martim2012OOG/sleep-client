@@ -21,13 +21,13 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.multiplayer.ServerData;
 
 /**
- * Discord Rich Presence: your Discord profile shows "Playing Sleep Client" with the Plegumo logo, what you are doing
+ * Discord Rich Presence: your Discord profile shows "Playing Caos Client" with the Plegumo logo, what you are doing
  * (menus / singleplayer / the server) and for how long. Talks to the Discord app on your computer through its local
  * IPC socket (no internet, no token). The name and logo come from a Discord application: see DISCORD-SETUP.md.
  */
 public class DiscordPresenceMod extends Mod {
 
-	/** Application ID of the "Sleep Client" app on discord.com/developers (can be changed in config/plegumo-discord.json). */
+	/** Application ID of the "Caos Client" app on discord.com/developers (can be changed in config/plegumo-discord.json). */
 	public static final String DEFAULT_CLIENT_ID = "1560746654989160523";
 
 	public final Option.Bool showServer = bool("Show Server Address", true);
@@ -39,7 +39,7 @@ public class DiscordPresenceMod extends Mod {
 	public static volatile String status = "Not connected";
 
 	public DiscordPresenceMod() {
-		super("Discord Status", "discord", "Shows \"Playing Sleep Client\" with the logo on your Discord profile.", Category.UTILITY);
+		super("Discord Status", "discord", "Shows \"Playing Caos Client\" with the logo on your Discord profile.", Category.UTILITY);
 		action("Discord", "Reconnect", this::restart, () -> status);
 	}
 
@@ -79,7 +79,7 @@ public class DiscordPresenceMod extends Mod {
 			return;
 		}
 		running = true;
-		Thread t = new Thread(this::loop, "Sleep Discord presence");
+		Thread t = new Thread(this::loop, "Caos Discord presence");
 		t.setDaemon(true);
 		worker = t;
 		t.start();
@@ -245,13 +245,13 @@ public class DiscordPresenceMod extends Mod {
 			String id = clientId();
 			if (id.isBlank()) {
 				status = "Set your Discord Application ID (see DISCORD-SETUP.md)";
-				sleep(10_000);
+				caos(10_000);
 				continue;
 			}
 			Pipe pipe = open();
 			if (pipe == null) {
 				status = "Discord is not open";
-				sleep(15_000);
+				caos(15_000);
 				continue;
 			}
 			try (pipe) {
@@ -259,7 +259,7 @@ public class DiscordPresenceMod extends Mod {
 				String ready = read(pipe.in());
 				if (ready == null || ready.contains("\"evt\":\"ERROR\"")) {
 					status = "Discord refused the Application ID";
-					sleep(30_000);
+					caos(30_000);
 					continue;
 				}
 				status = "Connected";
@@ -271,18 +271,18 @@ public class DiscordPresenceMod extends Mod {
 						read(pipe.in());
 						last = act;
 					}
-					sleep(5_000);
+					caos(5_000);
 				}
 				// clear the activity when turned off
 				write(pipe.out(), 1, "{\"cmd\":\"SET_ACTIVITY\",\"args\":{\"pid\":" + ProcessHandle.current().pid() + "},\"nonce\":\"" + UUID.randomUUID() + "\"}");
 			} catch (Exception e) {
 				status = "Lost Discord, retrying...";
-				sleep(10_000);
+				caos(10_000);
 			}
 		}
 	}
 
-	private static void sleep(long ms) {
+	private static void caos(long ms) {
 		try {
 			Thread.sleep(ms);
 		} catch (InterruptedException e) {
@@ -295,7 +295,7 @@ public class DiscordPresenceMod extends Mod {
 		String details;
 		String state = null;
 		int[] party = null;
-		String[] slogans = {"Playing above the clouds", "Sleep tight. Play fast."};
+		String[] slogans = {"Playing above the clouds", "Caos tight. Play fast."};
 		String slogan = slogans[(int) ((System.currentTimeMillis() / 60_000L) % slogans.length)];
 		if (mc.level == null) {
 			details = "In the menus";
@@ -349,7 +349,7 @@ public class DiscordPresenceMod extends Mod {
 		}
 		JsonObject assets = new JsonObject();
 		assets.addProperty("large_image", conf("largeImage", "logo"));
-		assets.addProperty("large_text", "Sleep Client");
+		assets.addProperty("large_text", "Caos Client");
 		a.add("assets", assets);
 		String label = conf("buttonLabel", ""), url = conf("buttonUrl", "");
 		if (!label.isBlank() && url.startsWith("https://")) {

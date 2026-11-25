@@ -37,7 +37,7 @@ public final class LagDoctor {
 		}
 		lastTold = now;
 		String why = culprit(mods);
-		System.err.println("[Sleep] Lag Doctor: " + mc.getFps() + " fps. " + why);
+		System.err.println("[Caos] Lag Doctor: " + mc.getFps() + " fps. " + why);
 		dev.solclient.gui.Notify.show(dev.solclient.gui.Notify.Kind.INFO, Lang.tr("The game is slow", "O jogo está lento"), why);
 	}
 
@@ -63,6 +63,6 @@ public final class LagDoctor {
 			return String.format(java.util.Locale.ROOT, Lang.tr("%s uses %.1f ms per frame: turn it off or lower its settings.", "%s gasta %.1f ms por frame: desliga-o ou baixa as definições."),
 					top.get(0).getKey(), top.get(0).getValue());
 		}
-		return Lang.tr("Nothing in Sleep is heavy: lower the render distance or the video settings.", "Nada do Sleep está pesado: baixa a distância de visão ou os gráficos.");
+		return Lang.tr("Nothing in Caos is heavy: lower the render distance or the video settings.", "Nada do Caos está pesado: baixa a distância de visão ou os gráficos.");
 	}
 }

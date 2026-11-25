@@ -2323,7 +2323,7 @@
   "texture": "pet_bee",
   "anim": "pet",
   "pet": "bee",
-  "credit": "Original Sleep art",
+  "credit": "Original Caos art",
   "textureSize": [
    64,
    64
@@ -2338,7 +2338,7 @@
   "texture": "pet_baby_dragon",
   "anim": "pet",
   "pet": "baby_dragon",
-  "credit": "Original Sleep art",
+  "credit": "Original Caos art",
   "textureSize": [
    64,
    64
@@ -2353,7 +2353,7 @@
   "texture": "pet_bat",
   "anim": "pet",
   "pet": "bat",
-  "credit": "Original Sleep art",
+  "credit": "Original Caos art",
   "textureSize": [
    64,
    64
@@ -2368,7 +2368,7 @@
   "texture": "pet_ghost",
   "anim": "pet",
   "pet": "ghost",
-  "credit": "Original Sleep art",
+  "credit": "Original Caos art",
   "textureSize": [
    64,
    64
@@ -2396,7 +2396,7 @@
   "geometry": "aura",
   "texture": "aura_atlas",
   "anim": "aura:flame",
-  "credit": "Sleep client (original)",
+  "credit": "Caos client (original)",
   "textureSize": [
    64,
    128
@@ -2409,7 +2409,7 @@
   "geometry": "aura",
   "texture": "aura_atlas",
   "anim": "aura:frost",
-  "credit": "Sleep client (original)",
+  "credit": "Caos client (original)",
   "textureSize": [
    64,
    128
@@ -2422,7 +2422,7 @@
   "geometry": "aura",
   "texture": "aura_atlas",
   "anim": "aura:heart",
-  "credit": "Sleep client (original)",
+  "credit": "Caos client (original)",
   "textureSize": [
    64,
    128
@@ -2435,7 +2435,7 @@
   "geometry": "aura",
   "texture": "aura_atlas",
   "anim": "aura:star",
-  "credit": "Sleep client (original)",
+  "credit": "Caos client (original)",
   "textureSize": [
    64,
    128
@@ -2448,7 +2448,7 @@
   "geometry": "aura",
   "texture": "aura_atlas",
   "anim": "aura:note",
-  "credit": "Sleep client (original)",
+  "credit": "Caos client (original)",
   "textureSize": [
    64,
    128
@@ -2461,7 +2461,7 @@
   "geometry": "aura",
   "texture": "aura_atlas",
   "anim": "aura:cash",
-  "credit": "Sleep client (original)",
+  "credit": "Caos client (original)",
   "textureSize": [
    64,
    128
@@ -2474,7 +2474,7 @@
   "geometry": "aura",
   "texture": "aura_atlas",
   "anim": "aura:bolt",
-  "credit": "Sleep client (original)",
+  "credit": "Caos client (original)",
   "textureSize": [
    64,
    128
@@ -2487,7 +2487,7 @@
   "geometry": "aura",
   "texture": "aura_atlas",
   "anim": "aura:leaf",
-  "credit": "Sleep client (original)",
+  "credit": "Caos client (original)",
   "textureSize": [
    64,
    128
@@ -2500,7 +2500,7 @@
   "geometry": "aura",
   "texture": "aura_atlas",
   "anim": "aura:bubble",
-  "credit": "Sleep client (original)",
+  "credit": "Caos client (original)",
   "textureSize": [
    64,
    128
@@ -2513,7 +2513,7 @@
   "geometry": "aura",
   "texture": "aura_atlas",
   "anim": "aura:rune",
-  "credit": "Sleep client (original)",
+  "credit": "Caos client (original)",
   "textureSize": [
    64,
    128
@@ -2526,7 +2526,7 @@
   "geometry": "aura",
   "texture": "aura_atlas",
   "anim": "aura:zzz",
-  "credit": "Sleep client (original)",
+  "credit": "Caos client (original)",
   "textureSize": [
    64,
    128
@@ -2539,7 +2539,7 @@
   "geometry": "aura",
   "texture": "aura_atlas",
   "anim": "aura:skull",
-  "credit": "Sleep client (original)",
+  "credit": "Caos client (original)",
   "textureSize": [
    64,
    128
@@ -2552,7 +2552,7 @@
   "geometry": "minime",
   "texture": "aura_atlas",
   "anim": "minime:shoulder",
-  "credit": "Sleep client (original)",
+  "credit": "Caos client (original)",
   "textureSize": [
    64,
    64
@@ -2565,7 +2565,7 @@
   "geometry": "minime",
   "texture": "aura_atlas",
   "anim": "minime:head",
-  "credit": "Sleep client (original)",
+  "credit": "Caos client (original)",
   "textureSize": [
    64,
    64
@@ -2578,7 +2578,7 @@
   "geometry": "minime",
   "texture": "aura_atlas",
   "anim": "minime:buddy",
-  "credit": "Sleep client (original)",
+  "credit": "Caos client (original)",
   "textureSize": [
    64,
    64
@@ -2591,7 +2591,7 @@
   "geometry": "minime",
   "texture": "aura_atlas",
   "anim": "minime:backpack",
-  "credit": "Sleep client (original)",
+  "credit": "Caos client (original)",
   "textureSize": [
    64,
    64

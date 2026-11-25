@@ -73,7 +73,7 @@ public final class PlayerPreview {
 			return true;
 		} catch (Throwable t) {
 			broken = true;
-			System.err.println("[Sleep] 3D preview unavailable, using the simple one: " + t);
+			System.err.println("[Caos] 3D preview unavailable, using the simple one: " + t);
 			return false;
 		}
 	}

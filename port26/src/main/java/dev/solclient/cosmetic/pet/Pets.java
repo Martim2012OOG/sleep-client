@@ -63,7 +63,7 @@ public final class Pets {
 				render(ctx.poseStack(), ctx.submitNodeCollector(), ctx.levelState().cameraRenderState.pos);
 			} catch (Throwable t) {
 				if (lastError == null) {
-					System.err.println("[Sleep] pets render: " + t);
+					System.err.println("[Caos] pets render: " + t);
 					t.printStackTrace();
 				}
 				lastError = String.valueOf(t);
@@ -131,7 +131,7 @@ public final class Pets {
 			interact(mc, world);
 		} catch (Throwable t) {
 			if (lastError == null) {
-				System.err.println("[Sleep] pets: " + t);
+				System.err.println("[Caos] pets: " + t);
 				t.printStackTrace();
 			}
 			lastError = String.valueOf(t);

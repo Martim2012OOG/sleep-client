@@ -156,7 +156,7 @@ public final class VideoScreens {
 		s.on = true;
 		s.base = System.currentTimeMillis();
 		broadcast(s);
-		say("Playing on your screen. Friends with Sleep + Watch Party see it too.", false);
+		say("Playing on your screen. Friends with Caos + Watch Party see it too.", false);
 	}
 
 	/**
@@ -227,7 +227,7 @@ public final class VideoScreens {
 			} finally {
 				s.liveBusy = false;
 			}
-		}, "Sleep live resolve");
+		}, "Caos live resolve");
 		t.setDaemon(true);
 		t.start();
 	}
@@ -590,7 +590,7 @@ public final class VideoScreens {
 		dev.solclient.social.Presence.sendScreen(payload(s));
 	}
 
-	/** My screen as sent to the room right now (null = no screen). Used to carry Sleep party / ping data too. */
+	/** My screen as sent to the room right now (null = no screen). Used to carry Caos party / ping data too. */
 	public static JsonObject currentPayload() {
 		Screen s = mine();
 		return s != null && s.vid != null && !s.live ? payload(s) : null;

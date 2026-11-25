@@ -53,7 +53,7 @@ public final class WorldTransfer {
 			try {
 				addButtons(client, screen, w);
 			} catch (Throwable t) {
-				System.err.println("[Sleep] world import/export buttons failed: " + t);
+				System.err.println("[Caos] world import/export buttons failed: " + t);
 			}
 		});
 	}
@@ -143,12 +143,12 @@ public final class WorldTransfer {
 				toast(mc, Lang.tr("World imported!", "Mundo importado!"), name);
 				reload(mc, screen);
 			} catch (Throwable e) {
-				System.err.println("[Sleep] world import failed: " + e);
+				System.err.println("[Caos] world import failed: " + e);
 				toast(mc, Lang.tr("Could not import the world", "Não deu para importar o mundo"), String.valueOf(e.getMessage()));
 			} finally {
 				BUSY.set(false);
 			}
-		}, "Sleep-world-import");
+		}, "Caos-world-import");
 		t.setDaemon(true);
 		t.start();
 	}
@@ -273,12 +273,12 @@ public final class WorldTransfer {
 				pack(world, safe, Path.of(path));
 				toast(mc, Lang.tr("World exported!", "Mundo exportado!"), Path.of(path).getFileName().toString());
 			} catch (Throwable e) {
-				System.err.println("[Sleep] world export failed: " + e);
+				System.err.println("[Caos] world export failed: " + e);
 				toast(mc, Lang.tr("Could not export the world", "Não deu para exportar o mundo"), String.valueOf(e.getMessage()));
 			} finally {
 				BUSY.set(false);
 			}
-		}, "Sleep-world-export");
+		}, "Caos-world-export");
 		t.setDaemon(true);
 		t.start();
 	}

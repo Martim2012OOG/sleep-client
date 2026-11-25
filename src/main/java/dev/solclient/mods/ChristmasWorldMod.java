@@ -105,7 +105,7 @@ public class ChristmasWorldMod extends Mod {
 	protected void onDisable() {
 		rebuildIfNeeded();
 		packsApplied = null;
-		dev.solclient.gui.XmasChoices.apply(false); // the Christmas packs Sleep turned on go off again
+		dev.solclient.gui.XmasChoices.apply(false); // the Christmas packs Caos turned on go off again
 	}
 
 	private void rebuildIfNeeded() {

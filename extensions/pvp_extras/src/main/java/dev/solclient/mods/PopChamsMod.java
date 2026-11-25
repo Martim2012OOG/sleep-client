@@ -54,7 +54,7 @@ public class PopChamsMod extends Mod {
 				}
 			});
 		} catch (Throwable t) {
-			System.err.println("[Sleep] Pop Chams unavailable: " + t);
+			System.err.println("[Caos] Pop Chams unavailable: " + t);
 		}
 	}
 

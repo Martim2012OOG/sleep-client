@@ -102,7 +102,7 @@ public class ExplosionDebrisMod extends Mod {
 				}
 			});
 		} catch (Throwable t) {
-			System.err.println("[Sleep] Explosion Debris unavailable: " + t);
+			System.err.println("[Caos] Explosion Debris unavailable: " + t);
 		}
 	}
 

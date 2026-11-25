@@ -102,7 +102,7 @@ public final class SkyEffects {
 				beamTex = new Tex("beam", SkyGen.BEAM_W, SkyGen.BEAM_H, SkyGen.beam());
 			} catch (Throwable t) {
 				texFailed = true;
-				System.err.println("[Sleep] sky effects textures: " + t);
+				System.err.println("[Caos] sky effects textures: " + t);
 				return false;
 			}
 		}

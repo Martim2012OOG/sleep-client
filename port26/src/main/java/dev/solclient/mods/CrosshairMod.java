@@ -256,7 +256,7 @@ public class CrosshairMod extends Mod {
 			bakedSize = n;
 			return true;
 		} catch (Throwable e) {
-			System.err.println("[Sleep] crosshair: " + e);
+			System.err.println("[Caos] crosshair: " + e);
 			return false;
 		}
 	}
@@ -277,7 +277,7 @@ public class CrosshairMod extends Mod {
 					return;
 				}
 			} catch (Throwable t) {
-				System.err.println("[Sleep] crosshair texture failed, drawing it with rectangles instead: " + t);
+				System.err.println("[Caos] crosshair texture failed, drawing it with rectangles instead: " + t);
 			}
 			textureFailed = true;
 		}

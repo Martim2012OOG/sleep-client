@@ -9,15 +9,15 @@ import org.spongepowered.asm.mixin.Unique;
 public abstract class PlayerStateMaskMixin implements LayerMask {
 
 	@Unique
-	private int sleep$mask;
+	private int caos$mask;
 
 	@Override
-	public int sleep$getMask() {
-		return sleep$mask;
+	public int caos$getMask() {
+		return caos$mask;
 	}
 
 	@Override
-	public void sleep$setMask(int mask) {
-		sleep$mask = mask;
+	public void caos$setMask(int mask) {
+		caos$mask = mask;
 	}
 }

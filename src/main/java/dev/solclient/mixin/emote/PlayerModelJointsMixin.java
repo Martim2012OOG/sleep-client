@@ -24,7 +24,7 @@ public abstract class PlayerModelJointsMixin {
 		try {
 			LimbSplit.player(cir.getReturnValue(), dilation, slim);
 		} catch (Throwable t) {
-			System.err.println("[Sleep] emote joints: " + t);
+			System.err.println("[Caos] emote joints: " + t);
 		}
 	}
 

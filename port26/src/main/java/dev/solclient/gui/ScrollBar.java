@@ -3,7 +3,7 @@ package dev.solclient.gui;
 import dev.solclient.Gfx;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 
-/** The scrollbar used everywhere in Sleep: a slim rounded thumb on a faint track. */
+/** The scrollbar used everywhere in Caos: a slim rounded thumb on a faint track. */
 public final class ScrollBar {
 
 	private ScrollBar() {

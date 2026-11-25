@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class SkinCaptureMixin {
 
 	@Inject(method = "registerTextureInManager(Lnet/minecraft/core/ClientAsset$Texture;Lcom/mojang/blaze3d/platform/NativeImage;)Ljava/util/concurrent/CompletableFuture;", at = @At("HEAD"), require = 0)
-	private void sleep$capture(ClientAsset.Texture asset, NativeImage image, CallbackInfoReturnable<?> cir) {
+	private void caos$capture(ClientAsset.Texture asset, NativeImage image, CallbackInfoReturnable<?> cir) {
 		try {
 			SkinPixels.put(asset.texturePath(), image);
 		} catch (RuntimeException ignored) {

@@ -4,7 +4,7 @@ import java.lang.reflect.Method;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * Talks to the optional "MCEF Modern" mod (Chromium inside Minecraft) by reflection, so Sleep still works when it is
+ * Talks to the optional "MCEF Modern" mod (Chromium inside Minecraft) by reflection, so Caos still works when it is
  * not installed. MCEF downloads its browser files (~100 MB) the first time it is initialised.
  */
 public final class Mcef {
@@ -39,7 +39,7 @@ public final class Mcef {
 		try {
 			init = apiCls.getMethod("initialize").invoke(null);
 		} catch (Throwable t) {
-			System.err.println("[Sleep] MCEF init failed: " + t);
+			System.err.println("[Caos] MCEF init failed: " + t);
 			present = false;
 		}
 	}
@@ -198,7 +198,7 @@ public final class Mcef {
 			PanelInput.refocus();
 			return br;
 		} catch (Throwable t) {
-			System.err.println("[Sleep] could not create a browser: " + t);
+			System.err.println("[Caos] could not create a browser: " + t);
 			return null;
 		}
 	}
@@ -343,7 +343,7 @@ public final class Mcef {
 				return type == null ? m.invoke(cef) : m.invoke(cef, arg);
 			} catch (Throwable t) {
 				if (LOGGED.add(key)) {
-					System.err.println("[Sleep] browser call " + name + " failed: " + t);
+					System.err.println("[Caos] browser call " + name + " failed: " + t);
 				}
 				return null;
 			}
@@ -385,7 +385,7 @@ public final class Mcef {
 				return true;
 			} catch (Throwable t) {
 				if (LOGGED.add("api:" + name)) {
-					System.err.println("[Sleep] browser " + name + " failed: " + t);
+					System.err.println("[Caos] browser " + name + " failed: " + t);
 				}
 				return false;
 			}
@@ -413,7 +413,7 @@ public final class Mcef {
 				return true;
 			} catch (Throwable t) {
 				if (LOGGED.add("edit:" + command)) {
-					System.err.println("[Sleep] browser " + command + " failed: " + t);
+					System.err.println("[Caos] browser " + command + " failed: " + t);
 				}
 				return false;
 			}
@@ -465,7 +465,7 @@ public final class Mcef {
 				}
 			} catch (Throwable t) {
 				if (LOGGED.add("api:mouse")) {
-					System.err.println("[Sleep] browser mouse: " + t);
+					System.err.println("[Caos] browser mouse: " + t);
 				}
 			}
 			return false;

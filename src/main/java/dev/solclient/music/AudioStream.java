@@ -145,7 +145,7 @@ public final class AudioStream {
 		String src = source == null ? "" : source;
 		if (hosting() && want && !hostWarned && System.currentTimeMillis() - hostStartedAt > 9000L && bytesCaptured == 0) {
 			hostWarned = true;
-			status = "audio: the capture is running but your computer gives it no sound. macOS: System Settings > Privacy & Security > Screen & System Audio Recording, turn it ON for Sleep / Java, restart the game. Also check that the music is playing";
+			status = "audio: the capture is running but your computer gives it no sound. macOS: System Settings > Privacy & Security > Screen & System Audio Recording, turn it ON for Caos / Java, restart the game. Also check that the music is playing";
 		}
 		if (hosting() && want && startedFor != null && !startedFor.equals(src)) {
 			hostStop(); // the song now comes from another player: capture that one instead
@@ -153,7 +153,7 @@ public final class AudioStream {
 		if (want && !hosting() && !hostStarting && System.currentTimeMillis() >= hostRetryAt) {
 			hostStarting = true;
 			startedFor = src;
-			Thread t = new Thread(AudioStream::hostStart, "Sleep audio start");
+			Thread t = new Thread(AudioStream::hostStart, "Caos audio start");
 			t.setDaemon(true);
 			t.start();
 		} else if (!want && (hosting() || hostWs != null)) {
@@ -206,7 +206,7 @@ public final class AudioStream {
 				Path exe;
 				try (InputStream in = AudioStream.class.getResourceAsStream("/kubo/audio-helper")) {
 					if (in == null) {
-						status = "this Sleep has no audio helper";
+						status = "this Caos has no audio helper";
 						return;
 					}
 					byte[] bin = in.readAllBytes();
@@ -214,7 +214,7 @@ public final class AudioStream {
 					for (byte b : java.security.MessageDigest.getInstance("SHA-1").digest(bin)) {
 						hash.append(String.format("%02x", b));
 					}
-					Path hdir = Path.of(System.getProperty("user.home"), "Library", "Application Support", "Sleep", "helper");
+					Path hdir = Path.of(System.getProperty("user.home"), "Library", "Application Support", "Caos", "helper");
 					Files.createDirectories(hdir);
 					exe = hdir.resolve("audio-" + hash.substring(0, 10));
 					if (!Files.isRegularFile(exe) || Files.size(exe) != bin.length) {
@@ -238,7 +238,7 @@ public final class AudioStream {
 				Path ps = dir.resolve("audio.ps1");
 				try (InputStream in = AudioStream.class.getResourceAsStream("/kubo/audio.ps1")) {
 					if (in == null) {
-						status = "this Sleep has no audio helper";
+						status = "this Caos has no audio helper";
 						return;
 					}
 					Files.copy(in, ps, StandardCopyOption.REPLACE_EXISTING);
@@ -270,18 +270,18 @@ public final class AudioStream {
 						} else if (l.startsWith("error")) {
 							hostRetryAt = System.currentTimeMillis() + 120_000L; // refused: ask again in 2 minutes, not every tick
 							status = l.toLowerCase(Locale.ROOT).contains("3801") || l.toLowerCase(Locale.ROOT).contains("declin") || l.toLowerCase(Locale.ROOT).contains("permission")
-									? "macOS has no permission yet: System Settings > Privacy & Security > Screen & System Audio Recording, turn it on for Java / Sleep, then try again"
+									? "macOS has no permission yet: System Settings > Privacy & Security > Screen & System Audio Recording, turn it on for Java / Caos, then try again"
 									: l;
 						}
 					}
 				} catch (Exception ignored) {
 					// ended
 				}
-			}, "Sleep audio helper log");
+			}, "Caos audio helper log");
 			err.setDaemon(true);
 			err.start();
 			connectHost(mc);
-			Thread t = new Thread(() -> pump(p), "Sleep audio send");
+			Thread t = new Thread(() -> pump(p), "Caos audio send");
 			t.setDaemon(true);
 			reader = t;
 			t.start();
@@ -579,7 +579,7 @@ public final class AudioStream {
 				}
 				playing = false;
 			}
-		}, "Sleep audio play");
+		}, "Caos audio play");
 		t.setDaemon(true);
 		player = t;
 		t.start();

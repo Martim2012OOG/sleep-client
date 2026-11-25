@@ -37,40 +37,40 @@ public abstract class ZipPackIndexMixin {
 	protected abstract String appendOverlayPrefix(String path);
 
 	@Unique
-	private static final ThreadLocal<String> sleep$root = new ThreadLocal<>();
+	private static final ThreadLocal<String> caos$root = new ThreadLocal<>();
 	@Unique
-	private volatile Map<String, List<ZipEntry>> sleep$index;
+	private volatile Map<String, List<ZipEntry>> caos$index;
 	@Unique
-	private volatile ZipFile sleep$indexOf;
+	private volatile ZipFile caos$indexOf;
 
 	/** Remembers which folder this call asks for ("assets/namespace/", with the overlay prefix if the pack has one). */
 	@Inject(method = "findResources", at = @At("HEAD"), require = 0)
-	private void sleep$remember(ResourceType type, String namespace, String prefix, @org.spongepowered.asm.mixin.injection.Coerce Object consumer,
+	private void caos$remember(ResourceType type, String namespace, String prefix, @org.spongepowered.asm.mixin.injection.Coerce Object consumer,
 			CallbackInfo ci) {
 		try {
-			sleep$root.set(appendOverlayPrefix(type.getDirectory() + "/" + namespace + "/"));
+			caos$root.set(appendOverlayPrefix(type.getDirectory() + "/" + namespace + "/"));
 		} catch (Throwable t) {
-			sleep$root.remove();
+			caos$root.remove();
 		}
 	}
 
 	/** The entries to look at: only those of the folder asked for (or everything, exactly as before, if anything is not as expected). */
 	@Redirect(method = "findResources", require = 0, at = @At(value = "INVOKE", target = "Ljava/util/zip/ZipFile;entries()Ljava/util/Enumeration;"))
-	private Enumeration<? extends ZipEntry> sleep$entries(ZipFile zip) {
-		String root = sleep$root.get();
-		sleep$root.remove();
+	private Enumeration<? extends ZipEntry> caos$entries(ZipFile zip) {
+		String root = caos$root.get();
+		caos$root.remove();
 		if (root == null) {
 			return zip.entries();
 		}
 		try {
-			Map<String, List<ZipEntry>> idx = sleep$index;
-			if (idx == null || sleep$indexOf != zip) {
+			Map<String, List<ZipEntry>> idx = caos$index;
+			if (idx == null || caos$indexOf != zip) {
 				synchronized (this) {
-					idx = sleep$index;
-					if (idx == null || sleep$indexOf != zip) {
-						idx = sleep$build(zip);
-						sleep$index = idx;
-						sleep$indexOf = zip;
+					idx = caos$index;
+					if (idx == null || caos$indexOf != zip) {
+						idx = caos$build(zip);
+						caos$index = idx;
+						caos$indexOf = zip;
 					}
 				}
 			}
@@ -82,7 +82,7 @@ public abstract class ZipPackIndexMixin {
 	}
 
 	@Unique
-	private Map<String, List<ZipEntry>> sleep$build(ZipFile zip) {
+	private Map<String, List<ZipEntry>> caos$build(ZipFile zip) {
 		// how many "/" the folder key has: "assets/namespace/" = 2, one more when the pack uses an overlay folder
 		int depth = 0;
 		String sample = appendOverlayPrefix("assets/x/");

@@ -1,13 +1,13 @@
 package dev.kuboext.pvp_extras;
 
-import dev.sleepclient.mods.PopChamsMod;
-import dev.sleepclient.mods.TierTaggerMod;
-import dev.sleepclient.mods.CobwebTweaksMod;
-import dev.sleepclient.ext.KuboApi;
-import dev.sleepclient.ext.KuboExtension;
+import dev.solclient.mods.PopChamsMod;
+import dev.solclient.mods.TierTaggerMod;
+import dev.solclient.mods.CobwebTweaksMod;
+import dev.solclient.ext.KuboApi;
+import dev.solclient.ext.KuboExtension;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 
-/** Sleep extension "PvP Extras": Pop Chams (ghost on totem pop), TierTagger (MCTiers tiers on names) and Cobweb Tweaks. */
+/** Caos extension "PvP Extras": Pop Chams (ghost on totem pop), TierTagger (MCTiers tiers on names) and Cobweb Tweaks. */
 public class PvpExtrasExtension implements KuboExtension {
 
 	@Override

@@ -123,7 +123,7 @@ public class TextureStylesMod extends Mod {
 
 	/**
 	 * Builds the generated pack from the choices (in a thread: only the chosen items' files are fetched) and turns it on. While the
-	 * Sleep menu is open in a world the game is not reloaded on every click: the pack waits and is turned on once, when the menu closes.
+	 * Caos menu is open in a world the game is not reloaded on every click: the pack waits and is turned on once, when the menu closes.
 	 */
 	public static void apply() {
 		TextureStyles.load();

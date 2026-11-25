@@ -138,7 +138,7 @@ public class SolMenuScreen extends Screen {
 	}
 
 	public SolMenuScreen() {
-		super(Text.literal("Sleep"));
+		super(Text.literal("Caos"));
 		Social.onMenuOpened();
 		if (savedChat != null && savedFriends) {
 			chatId = savedChat;
@@ -585,7 +585,7 @@ public class SolMenuScreen extends Screen {
 		Gfx.textMid(c, "Edit", left + 32, y, ROW_H, editOpen ? 0xFFFFFFFF : Theme.TEXT);
 		region(left, y, LW, ROW_H, () -> editOpen = !editOpen);
 
-		// (no centre logo: the Sleep logo lives in the left pill below)
+		// (no centre logo: the Caos logo lives in the left pill below)
 		int lx = left, lw = LW;
 
 		// close button + nick pill (top-right)
@@ -608,7 +608,7 @@ public class SolMenuScreen extends Screen {
 			Gfx.circle(c, upX + 16, y + ROW_H / 2F, 8, accent);
 			Gfx.textC(c, user.isEmpty() ? "?" : user.substring(0, 1).toUpperCase(Locale.ROOT), upX + 16, y + 10, 0xFFFFFFFF);
 		}
-		// my status (click: Online / Away / Busy / Invisible); red ring = not connected to Sleep
+		// my status (click: Online / Away / Busy / Invisible); red ring = not connected to Caos
 		if (me != null) {
 			StatusBadge.draw(c, Social.effectiveStatus(), upX + 26, y + ROW_H / 2 + 10, 7, TILE);
 		} else {
@@ -638,7 +638,7 @@ public class SolMenuScreen extends Screen {
 		// "name" pill: what the big panel is showing
 		Gfx.rrectBorder(c, left, y, LW, ROW_H, 9, TILE, Theme.CARD_BORDER);
 		Gfx.tex(c, Theme.icon2("sol_client"), left + 6, y + 4, 20, 20, 64, 64, 0xFFFFFFFF);
-		Gfx.textMid(c, "Sleep", left + 32, y, ROW_H, Theme.TEXT);
+		Gfx.textMid(c, "Caos", left + 32, y, ROW_H, Theme.TEXT);
 
 		// long bar with the four icons on the right
 		int bw = barRight - cx;
@@ -1186,7 +1186,7 @@ public class SolMenuScreen extends Screen {
 		boolean have = st == dev.solclient.ext.Extensions.State.INSTALLED || st == dev.solclient.ext.Extensions.State.UPDATE;
 		Gfx.rrectBorder(c, x, y, w, h, 10, Gfx.blend(TILE, TILE_HOVER, a), have ? Gfx.withAlpha(Theme.GREEN, 0x70)
 				: Gfx.blend(Theme.CARD_BORDER, Theme.CARD_BORDER_HOVER, a));
-		// the same white glyph icons as the mod cards (the store's own picture for extensions Sleep doesn't know yet)
+		// the same white glyph icons as the mod cards (the store's own picture for extensions Caos doesn't know yet)
 		int is = 34, icx = x + w / 2 - is / 2, icy = y + 19;
 		String local = EXT_ICONS.get(it.id);
 		RemoteTextures.Tex t = local != null || it.icon.isEmpty() ? null : RemoteTextures.get(it.icon);
@@ -1336,7 +1336,7 @@ public class SolMenuScreen extends Screen {
 		try {
 			s = a.embed(backProxy());
 		} catch (Throwable t) {
-			System.err.println("[Sleep] add-on " + a.id() + ": " + t);
+			System.err.println("[Caos] add-on " + a.id() + ": " + t);
 		}
 		if (s == null) {
 			a.open(this);
@@ -1405,7 +1405,7 @@ public class SolMenuScreen extends Screen {
 		eY = top;
 		eW = ix1 - ix0;
 		eH = iy1 - top;
-		// another mod's settings: drawn at the game's GUI scale in its own dark box; a Sleep add-on: drawn in the menu's
+		// another mod's settings: drawn at the game's GUI scale in its own dark box; a Caos add-on: drawn in the menu's
 		// own units (same size as everything around it), straight on the panel
 		float es = embScale();
 		if (!embeddedAddon) {
@@ -1431,7 +1431,7 @@ public class SolMenuScreen extends Screen {
 		try {
 			embedded.render(c, Math.round(gmx), Math.round(gmy), 0F);
 		} catch (Throwable t) {
-			System.err.println("[Sleep] embedded settings: " + t);
+			System.err.println("[Caos] embedded settings: " + t);
 		} finally {
 			dev.solclient.gui.EmbedFlag.rendering = false;
 			c.getMatrices().popMatrix();
@@ -1444,7 +1444,7 @@ public class SolMenuScreen extends Screen {
 		return embedOn() && vx >= eX && vx < eX + eW && vy >= eY && vy < eY + eH;
 	}
 
-	/** Embedded-screen units per menu unit: GUI units for other mods' settings, menu units for Sleep add-ons. */
+	/** Embedded-screen units per menu unit: GUI units for other mods' settings, menu units for Caos add-ons. */
 	private float embScale() {
 		return embeddedAddon ? 1F : u;
 	}
@@ -1986,7 +1986,7 @@ public class SolMenuScreen extends Screen {
 		return false;
 	}
 
-	/** Light blue of the Sleep logo. */
+	/** Light blue of the Caos logo. */
 	private static final int LOGO_BLUE = 0xFFA3C3FC;
 
 	private static final int RAIL_W = 128;
@@ -2220,7 +2220,7 @@ public class SolMenuScreen extends Screen {
 		return y;
 	}
 
-	/** One line under each tab of the Sleep settings: what is inside (shown when the mouse is over the button). */
+	/** One line under each tab of the Caos settings: what is inside (shown when the mouse is over the button). */
 	private static final java.util.Map<String, String> SECTION_INFO = java.util.Map.ofEntries(
 			java.util.Map.entry("Language", "Menu language and automatic translation"),
 			java.util.Map.entry("Font", "Pick a font, or import your own .ttf file"),
@@ -2583,7 +2583,7 @@ public class SolMenuScreen extends Screen {
 				region(tx, ty, tw, th, dev.solclient.CustomFont::openFolder);
 				continue;
 			}
-			net.minecraft.text.Text big = Gfx.inFont("Aa Sleep 123", i);
+			net.minecraft.text.Text big = Gfx.inFont("Aa Caos 123", i);
 			int bw = tr.getWidth(big);
 			float sc = Math.min(1.25F, (tw - 12) / (float) Math.max(1, bw));
 			var m = c.getMatrices();
@@ -2917,7 +2917,7 @@ public class SolMenuScreen extends Screen {
 			boolean hg = in(mx, my, gx, gy, 16, 16);
 			Gfx.texSpin(c, Theme.icon2("settings_small"), gx + 2, gy + 2, 12, 12, 64, 64, hg ? 0xFFFFFFFF : Theme.DIM, "gear:" + gx + ":" + gy, hg);
 			if (hg) {
-				tooltipText = selected == null ? "Sleep settings" : "Settings of " + selected.name;
+				tooltipText = selected == null ? "Caos settings" : "Settings of " + selected.name;
 			}
 			region(gx, gy, 16, 16, () -> {
 				if (selected != null) {
@@ -3241,17 +3241,17 @@ public class SolMenuScreen extends Screen {
 					"Mostra a toda a gente que jogas com uma conta Minecraft original.");
 			case PIRATE -> dev.solclient.Lang.tr("A little pirate stone for offline (cracked) accounts.",
 					"Uma pedrinha pirata para contas offline (crackeadas).");
-			case HANDS -> dev.solclient.Lang.tr("For the people who helped build Sleep.", "Para quem ajudou a construir o Sleep.");
-			case BUG_FIXER -> dev.solclient.Lang.tr("For the person who finds and fixes the bugs of Sleep.", "Para quem encontra e corrige os bugs do Sleep.");
-			case BETA_TESTER -> dev.solclient.Lang.tr("For the people who test Sleep before everybody else.", "Para quem testa o Sleep antes de toda a gente.");
-			case VIP -> dev.solclient.Lang.tr("For VIPs: a golden name that every Sleep player sees, and your own cape (drop a 64x32 PNG in Capes & skins).",
-					"Para VIPs: nome dourado que todos os jogadores com Sleep veem, e a tua própria capa (larga um PNG 64x32 em Capas e skins).");
-			case YOUTUBE -> dev.solclient.Lang.tr("For YouTubers: a red name that every Sleep player sees.", "Para YouTubers: nome vermelho que todos os jogadores com Sleep veem.");
-			case TWITCH -> dev.solclient.Lang.tr("For streamers: a purple name that every Sleep player sees.", "Para streamers: nome roxo que todos os jogadores com Sleep veem.");
-			case TIKTOK -> dev.solclient.Lang.tr("For TikTokers: a light blue, white and pink name that every Sleep player sees.", "Para TikTokers: nome azul claro, branco e rosa que todos os jogadores com Sleep veem.");
-			case SON -> dev.solclient.Lang.tr("The meme badge. Other Sleep players on your server see it next to your name.", "A badge do meme. Os outros jogadores com Sleep no teu servidor veem-na ao lado do teu nome.");
-			default -> dev.solclient.Lang.tr("Discord boost badge: it will show that you boosted the Sleep Discord server. It does nothing yet.",
-					"Badge de boost do Discord: vai mostrar que deste boost ao servidor do Sleep. Ainda não faz nada.");
+			case HANDS -> dev.solclient.Lang.tr("For the people who helped build Caos.", "Para quem ajudou a construir o Caos.");
+			case BUG_FIXER -> dev.solclient.Lang.tr("For the person who finds and fixes the bugs of Caos.", "Para quem encontra e corrige os bugs do Caos.");
+			case BETA_TESTER -> dev.solclient.Lang.tr("For the people who test Caos before everybody else.", "Para quem testa o Caos antes de toda a gente.");
+			case VIP -> dev.solclient.Lang.tr("For VIPs: a golden name that every Caos player sees, and your own cape (drop a 64x32 PNG in Capes & skins).",
+					"Para VIPs: nome dourado que todos os jogadores com Caos veem, e a tua própria capa (larga um PNG 64x32 em Capas e skins).");
+			case YOUTUBE -> dev.solclient.Lang.tr("For YouTubers: a red name that every Caos player sees.", "Para YouTubers: nome vermelho que todos os jogadores com Caos veem.");
+			case TWITCH -> dev.solclient.Lang.tr("For streamers: a purple name that every Caos player sees.", "Para streamers: nome roxo que todos os jogadores com Caos veem.");
+			case TIKTOK -> dev.solclient.Lang.tr("For TikTokers: a light blue, white and pink name that every Caos player sees.", "Para TikTokers: nome azul claro, branco e rosa que todos os jogadores com Caos veem.");
+			case SON -> dev.solclient.Lang.tr("The meme badge. Other Caos players on your server see it next to your name.", "A badge do meme. Os outros jogadores com Caos no teu servidor veem-na ao lado do teu nome.");
+			default -> dev.solclient.Lang.tr("Discord boost badge: it will show that you boosted the Caos Discord server. It does nothing yet.",
+					"Badge de boost do Discord: vai mostrar que deste boost ao servidor do Caos. Ainda não faz nada.");
 		};
 	}
 
@@ -3267,7 +3267,7 @@ public class SolMenuScreen extends Screen {
 			case SON -> dev.solclient.Lang.tr("Needs: drown to death. Only then it is yours.", "Precisas de: morrer afogado. Só assim é tua.");
 			case HANDS -> dev.solclient.Lang.tr("Needs: a Microsoft account of one of the team (Itz_Vxiper, Marzox_x, NoOneAboveMe).",
 					"Precisas de: conta Microsoft de alguém da equipa (Itz_Vxiper, Marzox_x, NoOneAboveMe).");
-			default -> dev.solclient.Lang.tr("Needs: boost the Sleep Discord server (coming soon).", "Precisas de: dar boost ao servidor do Discord do Sleep (em breve).");
+			default -> dev.solclient.Lang.tr("Needs: boost the Caos Discord server (coming soon).", "Precisas de: dar boost ao servidor do Discord do Caos (em breve).");
 		};
 	}
 
@@ -4101,7 +4101,7 @@ public class SolMenuScreen extends Screen {
 		pickSkinFileThen(false);
 	}
 
-	/** equip = true: the PNG is also put on at once (Mojang for Microsoft accounts, the Sleep site for the others). */
+	/** equip = true: the PNG is also put on at once (Mojang for Microsoft accounts, the Caos site for the others). */
 	private void pickSkinFileThen(boolean equip) {
 		Thread t = new Thread(() -> {
 			String path;
@@ -4281,7 +4281,7 @@ public class SolMenuScreen extends Screen {
 			}
 		}
 		String acc = dev.solclient.account.Accounts.currentType();
-		Gfx.textFit(c, acc.equals("Microsoft") ? "Everyone sees it after you rejoin" : "Offline: Sleep players see it", x + w / 2, w - 6,
+		Gfx.textFit(c, acc.equals("Microsoft") ? "Everyone sees it after you rejoin" : "Offline: Caos players see it", x + w / 2, w - 6,
 				y + h - (sel == null && active == null ? 16 : sel == null ? 42 : 68), 0x66FFFFFF);
 	}
 
@@ -5541,7 +5541,7 @@ public class SolMenuScreen extends Screen {
 			return;
 		}
 		int bw = Gfx.tw("Upload skin") + 24;
-		// Microsoft account: goes to Mojang (nothing kept on our servers). Any other account: shared with every Sleep player.
+		// Microsoft account: goes to Mojang (nothing kept on our servers). Any other account: shared with every Caos player.
 		button(c, mx, my, ix1 - bw, y + 8, bw, 20, "Upload skin", "upl", accent, Theme.accentHover(), 0xFFFFFFFF, () -> pickSkinFileThen(true));
 		String hint = "or drag a PNG here - skin 64x64";
 		if (tabX + Gfx.tw(hint) + 20 < ix1 - bw - 90) {
@@ -5592,7 +5592,7 @@ public class SolMenuScreen extends Screen {
 	}
 
 	private static int capesTab; // 0 skins, 1 capes
-	private static boolean showCloudSkins; // skins tab: the old list of skins kept on the Sleep site
+	private static boolean showCloudSkins; // skins tab: the old list of skins kept on the Caos site
 
 	/** Capes tab: the capes you own, with your player in 3D wearing the selected one (back view) and Equip / Unequip. */
 	private void drawOwnedCapes(DrawContext c, int mx, int my, int ix0, int ix1, int iy0, int iy1, int barX, int accent) {
@@ -5786,7 +5786,7 @@ public class SolMenuScreen extends Screen {
 					sug.add(new FRow(R_SUGGEST, null, null, null, n));
 				}
 			}
-			out.add(new FRow(R_TITLE, null, null, "SLEEP PLAYERS NEAR YOU", null));
+			out.add(new FRow(R_TITLE, null, null, "CAOS PLAYERS NEAR YOU", null));
 			if (sug.isEmpty()) {
 				out.add(new FRow(R_EMPTY, null, null, mc.world == null ? "Join a server to see them" : "Nobody around right now", null));
 			}
@@ -6232,7 +6232,7 @@ public class SolMenuScreen extends Screen {
 			Gfx.rrectBorder(c, ix, ry, rw, rh, 9, Gfx.blend(TILE, TILE_HOVER, a), Theme.CARD_BORDER);
 			head(c, n, null, ix + 5, ry + 6, 20, 0);
 			Gfx.text(c, fit(n, rw - 62), ix + 31, ry + 7, Theme.TEXT);
-			Gfx.text(c, "Uses Sleep", ix + 31, ry + 18, Theme.DIM);
+			Gfx.text(c, "Uses Caos", ix + 31, ry + 18, Theme.DIM);
 			boolean sent = requested.contains(n.toLowerCase(Locale.ROOT));
 			int bx = ix + rw - 26, by = ry + 7;
 			boolean hb = in(mx, my, bx, by, 20, 18);
@@ -6376,7 +6376,7 @@ public class SolMenuScreen extends Screen {
 			}
 			return;
 		}
-		// the skin they use in Sleep first (cracked / offline names have no Mojang skin: mc-heads would give Steve)
+		// the skin they use in Caos first (cracked / offline names have no Mojang skin: mc-heads would give Steve)
 		String own = Social.friendSkin(u);
 		if (own != null) {
 			t = RemoteTextures.get(own);

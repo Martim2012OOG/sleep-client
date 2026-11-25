@@ -33,7 +33,7 @@ import java.util.regex.Pattern;
  * shown in English for a moment, sent off to be translated (in batches, in the background) and saved in
  * config/kubo/lang/de.tsv, so the next time it is instant and works offline.
  *
- * Where it translates: first the Sleep website (POST /translate, see LOVABLE-PROMPT-TRANSLATE.md); if the site does not
+ * Where it translates: first the Caos website (POST /translate, see LOVABLE-PROMPT-TRANSLATE.md); if the site does not
  * have it yet, Google's public translate endpoint (the same one the Chat Translator extension uses).
  * A file with the same name in assets/sol_client/lang/ (e.g. de.tsv) is read first, so ready-made translations can
  * also ship inside the jar.
@@ -136,7 +136,7 @@ public final class AutoTranslate {
 					}
 				}
 			} catch (Exception e) {
-				System.err.println("[Sleep] translations " + c + ": " + e);
+				System.err.println("[Caos] translations " + c + ": " + e);
 			}
 			return m;
 		});
@@ -180,7 +180,7 @@ public final class AutoTranslate {
 			}
 			Files.writeString(f, b.toString(), StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
 		} catch (Exception e) {
-			System.err.println("[Sleep] could not save translations: " + e);
+			System.err.println("[Caos] could not save translations: " + e);
 		}
 	}
 
@@ -247,7 +247,7 @@ public final class AutoTranslate {
 				return;
 			} catch (Throwable t) {
 				status = "Translation error: " + t.getMessage();
-				System.err.println("[Sleep] translate: " + t);
+				System.err.println("[Caos] translate: " + t);
 			}
 		}
 	}
@@ -301,7 +301,7 @@ public final class AutoTranslate {
 		return out;
 	}
 
-	/** Sleep website: POST {to, from, texts[]} -> {texts[]} (same order). */
+	/** Caos website: POST {to, from, texts[]} -> {texts[]} (same order). */
 	private static List<String> viaSite(String code, List<String> texts) {
 		try {
 			JsonObject body = new JsonObject();
@@ -312,7 +312,7 @@ public final class AutoTranslate {
 			texts.forEach(arr::add);
 			body.add("texts", arr);
 			HttpRequest.Builder b = HttpRequest.newBuilder(URI.create(dev.solclient.social.SolarApi.baseUrl() + "/translate"))
-					.timeout(Duration.ofSeconds(40)).header("Content-Type", "application/json").header("User-Agent", "Sleep-Client")
+					.timeout(Duration.ofSeconds(40)).header("Content-Type", "application/json").header("User-Agent", "Caos-Client")
 					.POST(HttpRequest.BodyPublishers.ofString(body.toString()));
 			String key = dev.solclient.social.SolarApi.clientKeyValue();
 			if (!key.isEmpty()) {

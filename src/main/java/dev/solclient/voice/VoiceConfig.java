@@ -49,7 +49,7 @@ public final class VoiceConfig {
 				o.getAsJsonArray("muted").forEach(e -> MUTED.add(e.getAsString()));
 			}
 		} catch (Exception e) {
-			System.err.println("[Sleep] voice config: " + e);
+			System.err.println("[Caos] voice config: " + e);
 		}
 	}
 
@@ -70,7 +70,7 @@ public final class VoiceConfig {
 		try {
 			Files.writeString(file(), GSON.toJson(o));
 		} catch (Exception e) {
-			System.err.println("[Sleep] voice config: " + e);
+			System.err.println("[Caos] voice config: " + e);
 		}
 	}
 

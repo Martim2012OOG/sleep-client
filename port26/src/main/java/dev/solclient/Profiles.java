@@ -35,7 +35,7 @@ public final class Profiles {
 					.sorted(String.CASE_INSENSITIVE_ORDER)
 					.forEach(out::add);
 		} catch (Exception e) {
-			System.err.println("[Sleep] profiles: " + e);
+			System.err.println("[Caos] profiles: " + e);
 		}
 		return out;
 	}

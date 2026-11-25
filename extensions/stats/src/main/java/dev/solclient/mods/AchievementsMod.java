@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.function.DoubleSupplier;
 
 /**
- * Sleep Achievements: medals for playing with Sleep ("100 kills", "7 days in a row", "10 km walked", minigame
+ * Caos Achievements: medals for playing with Caos ("100 kills", "7 days in a row", "10 km walked", minigame
  * records...). A card pops up when you unlock one; see them all with "Open".
  */
 public class AchievementsMod extends Mod {
@@ -39,21 +39,21 @@ public class AchievementsMod extends Mod {
 			new Ach("blocks10k", "Excavator", "Break 10 000 blocks", 1, 10000, () -> KuboStats.get("blocks")),
 			new Ach("walk10", "Explorer", "Walk 10 km", 0, 10000, () -> KuboStats.get("walked")),
 			new Ach("walk100", "Marathon", "Walk 100 km", 2, 100000, () -> KuboStats.get("walked")),
-			new Ach("time10", "Regular", "Play 10 hours with Sleep", 0, 36000, () -> KuboStats.get("seconds")),
-			new Ach("time100", "No Life", "Play 100 hours with Sleep", 2, 360000, () -> KuboStats.get("seconds")),
+			new Ach("time10", "Regular", "Play 10 hours with Caos", 0, 36000, () -> KuboStats.get("seconds")),
+			new Ach("time100", "No Life", "Play 100 hours with Caos", 2, 360000, () -> KuboStats.get("seconds")),
 			new Ach("streak7", "On Fire", "Play 7 days in a row", 1, 7, () -> KuboStats.get("bestStreak")),
 			new Ach("streak30", "Unstoppable", "Play 30 days in a row", 2, 30, () -> KuboStats.get("bestStreak")),
 			new Ach("clip10", "Content Creator", "Save 10 clips", 1, 10, () -> KuboStats.get("clips")),
 			new Ach("combo10", "Combo King", "Get a 10 hit combo", 1, 10, () -> KuboStats.get("bestCombo")),
-			new Ach("friends5", "Social", "Have 5 Sleep friends", 0, 5, () -> dev.solclient.social.Social.friends.size()),
+			new Ach("friends5", "Social", "Have 5 Caos friends", 0, 5, () -> dev.solclient.social.Social.friends.size()),
 			new Ach("ping25", "Shot Caller", "Ping 25 times", 0, 25, () -> KuboStats.get("pings")),
 			new Ach("g2048", "2048!", "Reach 2048 points in 2048", 1, 2048, () -> best("2048")),
 			new Ach("snake30", "Snake Charmer", "Eat 30 apples in Snake", 1, 30, () -> best("snake")),
 			new Ach("tetris10k", "Line Clearer", "10 000 points in Tetris", 2, 10000, () -> best("tetris")),
-			new Ach("bird20", "Frequent Flyer", "Pass 20 pipes in Sleep Bird", 1, 20, () -> best("bird")));
+			new Ach("bird20", "Frequent Flyer", "Pass 20 pipes in Caos Bird", 1, 20, () -> best("bird")));
 
 	public AchievementsMod() {
-		super("Achievements", "achievements", "Sleep medals for kills, streaks, distance, clips and minigame records.", Category.UTILITY);
+		super("Achievements", "achievements", "Caos medals for kills, streaks, distance, clips and minigame records.", Category.UTILITY);
 		instance = this;
 		action("Your medals", "Open", () -> mc.setScreen(new dev.solclient.gui.AchievementsScreen(mc.currentScreen)), () -> unlocked() + " / " + ALL.size());
 	}

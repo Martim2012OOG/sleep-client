@@ -11,7 +11,7 @@ public class TransparentPlayersMod extends Mod {
 	public static TransparentPlayersMod instance;
 
 	private final Option.Num range = num("Only Closer Than", 6, 1, 64, 1, " blocks");
-	private final Option.Bool friends = bool("Also Sleep Friends", true);
+	private final Option.Bool friends = bool("Also Caos Friends", true);
 
 	public TransparentPlayersMod() {
 		super("Transparent Players", "transparent_players", "Other players are see-through so they never block your view.", Category.VISUAL);

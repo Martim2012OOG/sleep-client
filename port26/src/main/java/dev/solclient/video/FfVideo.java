@@ -105,12 +105,12 @@ public final class FfVideo implements LiveView {
 		try {
 			proc = new ProcessBuilder(cmd).redirectError(ProcessBuilder.Redirect.DISCARD).start();
 		} catch (Exception e) {
-			System.err.println("[Sleep] video: " + e);
+			System.err.println("[Caos] video: " + e);
 			failed = true;
 			return false;
 		}
 		startedAt = System.currentTimeMillis();
-		reader = new Thread(this::read, "Sleep video " + (file == null ? "live" : file.getFileName()));
+		reader = new Thread(this::read, "Caos video " + (file == null ? "live" : file.getFileName()));
 		reader.setDaemon(true);
 		reader.start();
 		return true;

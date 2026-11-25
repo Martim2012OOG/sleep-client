@@ -490,7 +490,7 @@ public final class MapStore {
 				}
 				Files.move(tmp, f, StandardCopyOption.REPLACE_EXISTING);
 			} catch (Exception e) {
-				System.err.println("[Sleep] could not save the map: " + e);
+				System.err.println("[Caos] could not save the map: " + e);
 			}
 		}, "kubo-map-save");
 		t.setDaemon(true);

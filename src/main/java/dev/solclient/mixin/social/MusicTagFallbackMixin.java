@@ -22,7 +22,7 @@ public abstract class MusicTagFallbackMixin {
 
 	@Inject(method = "render(Lnet/minecraft/client/render/entity/state/LivingEntityRenderState;Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/command/OrderedRenderCommandQueue;Lnet/minecraft/client/render/state/CameraRenderState;)V",
 			at = @At("TAIL"), require = 0)
-	private void sleep$musicTagFallback(LivingEntityRenderState state, MatrixStack matrices, OrderedRenderCommandQueue queue, CameraRenderState camera, CallbackInfo ci) {
+	private void caos$musicTagFallback(LivingEntityRenderState state, MatrixStack matrices, OrderedRenderCommandQueue queue, CameraRenderState camera, CallbackInfo ci) {
 		if (!(state instanceof PlayerEntityRenderState ps) || ps.nameLabelPos != null || ps.invisible) {
 			return;
 		}

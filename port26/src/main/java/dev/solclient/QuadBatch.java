@@ -11,7 +11,7 @@ import org.joml.Matrix3x2f;
 /**
  * Many solid quads sent to the GUI as ONE element. Since 1.21.6 every GUI element is checked against all the others already
  * added (to batch draws), so the cost grows with the square of the number of elements: a rounded box made of 7-100 fills
- * made the Sleep menu lose ~200 FPS. One rounded box / circle / outline is now one element. Same pipeline and look as
+ * made the Caos menu lose ~200 FPS. One rounded box / circle / outline is now one element. Same pipeline and look as
  * {@link GuiGraphicsExtractor#fill}.
  */
 final class QuadBatch implements GuiElementRenderState {

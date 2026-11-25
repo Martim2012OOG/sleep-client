@@ -31,7 +31,7 @@ import net.minecraft.util.math.BlockPos;
 
 /**
  * Daily Quests: 3 new little goals every day (walk, mine, build, fight mobs, win fights, jump, play time) shown in a
- * HUD list with progress bars. Finish them for Sleep XP, levels and a daily streak. Counted on your computer only,
+ * HUD list with progress bars. Finish them for Caos XP, levels and a daily streak. Counted on your computer only,
  * on any server or singleplayer.
  */
 public class DailyQuestsMod extends HudMod {
@@ -106,7 +106,7 @@ public class DailyQuestsMod extends HudMod {
 				}
 			}
 		} catch (Exception e) {
-			System.err.println("[Sleep] quests: " + e);
+			System.err.println("[Caos] quests: " + e);
 		}
 		rollIfNewDay();
 	}
@@ -131,7 +131,7 @@ public class DailyQuestsMod extends HudMod {
 			Files.writeString(file(), o.toString(), StandardCharsets.UTF_8);
 			dirty = false;
 		} catch (Exception e) {
-			System.err.println("[Sleep] quests save: " + e);
+			System.err.println("[Caos] quests save: " + e);
 		}
 	}
 

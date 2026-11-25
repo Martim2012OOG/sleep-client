@@ -30,13 +30,13 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Music Share: what you listen to shows above your head for the other Sleep players on the server (a note, the song, a headphones icon),
+ * Music Share: what you listen to shows above your head for the other Caos players on the server (a note, the song, a headphones icon),
  * and anybody can ask to listen along: when the host says yes, the listener's Spotify plays the same song at the same moment and follows
  * the host. Everything travels in the same small "kx" messages as the badges (no site / backend involved), at most a couple per second, and
  * all Spotify calls run on a worker thread: nobody lags. At most 10 listeners per host.
  * <p>
  * Privacy: "nobody" never sends the song, only that something is playing (shown as a note and a scrambled name). "Friends" sends the song
- * and other Sleep clients show it only to the host's friends.
+ * and other Caos clients show it only to the host's friends.
  */
 public final class MusicShare {
 
@@ -44,7 +44,7 @@ public final class MusicShare {
 	private static final FontDescription FONT = new FontDescription.Resource(Identifier.fromNamespaceAndPath("sol_client", "music"));
 	private static final String NOTE = "", PHONES = "";
 	private static final ExecutorService IO = Executors.newSingleThreadExecutor(r -> {
-		Thread t = new Thread(r, "Sleep music share");
+		Thread t = new Thread(r, "Caos music share");
 		t.setDaemon(true);
 		return t;
 	});
@@ -336,10 +336,10 @@ public final class MusicShare {
 					MutableComponent ask = Component.empty().append(Component.literal(nickOf(from)).withStyle(ChatFormatting.AQUA))
 							.append(Component.literal(Lang.tr(" wants to listen along to what you play. ", " quer ouvir contigo o que estás a ouvir. ")).withStyle(ChatFormatting.GRAY))
 							.append(Component.literal("[" + Lang.tr("Accept", "Aceitar") + "]").setStyle(Style.EMPTY.withColor(ChatFormatting.GREEN).withBold(true)
-									.withClickEvent(new ClickEvent.RunCommand("/sleep music accept " + from))))
+									.withClickEvent(new ClickEvent.RunCommand("/caos music accept " + from))))
 							.append(Component.literal(" "))
 							.append(Component.literal("[" + Lang.tr("Decline", "Recusar") + "]").setStyle(Style.EMPTY.withColor(ChatFormatting.RED).withBold(true)
-									.withClickEvent(new ClickEvent.RunCommand("/sleep music decline " + from))));
+									.withClickEvent(new ClickEvent.RunCommand("/caos music decline " + from))));
 					Minecraft mc = Minecraft.getInstance();
 					if (mc.gui != null) {
 						dev.solclient.compat.Mc.chat(mc).addClientSystemMessage(Component.empty().append(Component.literal("[Music] ").withStyle(ChatFormatting.GREEN)).append(ask));
@@ -405,7 +405,7 @@ public final class MusicShare {
 
 	public static void request(String uuid) {
 		if (uuid.equals(following)) {
-			say(Lang.tr("You are already listening along with ", "Já estás a ouvir com ") + nickOf(uuid) + Lang.tr(" (/sleep music leave to stop).", " (/sleep music leave para parar)."), false);
+			say(Lang.tr("You are already listening along with ", "Já estás a ouvir com ") + nickOf(uuid) + Lang.tr(" (/caos music leave to stop).", " (/caos music leave para parar)."), false);
 			return;
 		}
 		if (System.currentTimeMillis() - lastAsk < 4000L) {
@@ -446,11 +446,11 @@ public final class MusicShare {
 			dev.solclient.compat.Mc.chat(mc).addClientSystemMessage(Component.empty().append(Component.literal("[Music] ").withStyle(ChatFormatting.GREEN))
 					.append(Component.literal(nickOf(uuid) + Lang.tr(" is listening along with you now. ", " está a ouvir contigo. ")).withStyle(ChatFormatting.GRAY))
 					.append(Component.literal("[" + Lang.tr("Remove", "Remover") + "]").setStyle(Style.EMPTY.withColor(ChatFormatting.RED).withBold(true)
-							.withClickEvent(new ClickEvent.RunCommand("/sleep music remove " + id)))));
+							.withClickEvent(new ClickEvent.RunCommand("/caos music remove " + id)))));
 		}
 	}
 
-	/** The host takes one listener out (the [Remove] button in the chat, or /sleep music remove). */
+	/** The host takes one listener out (the [Remove] button in the chat, or /caos music remove). */
 	public static void remove(String uuid) {
 		uuid = uuid.replace("-", "").toLowerCase(java.util.Locale.ROOT);
 		if (LISTENERS.remove(uuid) != null) {

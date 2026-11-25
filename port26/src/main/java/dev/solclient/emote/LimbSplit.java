@@ -76,7 +76,7 @@ public final class LimbSplit {
 			job.run(root);
 			LayerDefinition.create(md, 64, 64).bakeRoot(); // would the game be able to use it?
 		} catch (RuntimeException | Error e) {
-			System.err.println("[Sleep] emote joints: keeping the plain model: " + e);
+			System.err.println("[Caos] emote joints: keeping the plain model: " + e);
 			for (int i = 0; i < 4; i++) {
 				root.addOrReplaceChild(names[i], old[i]);
 			}

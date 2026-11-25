@@ -67,7 +67,7 @@ public class AnimatedPacksMod extends Mod {
 		if (!listening) {
 			listening = true;
 			// own listener: also runs in the menus (Mod.tick() only runs inside a world), and also after other mods
-			// finished loading their config (they may load it after Sleep starts)
+			// finished loading their config (they may load it after Caos starts)
 			ClientTickEvents.END_CLIENT_TICK.register(client -> {
 				AnimatedPacksMod m = instance;
 				if (m == null || !m.enabled) {

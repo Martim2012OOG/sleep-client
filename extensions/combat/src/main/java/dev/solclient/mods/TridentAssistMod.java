@@ -67,7 +67,7 @@ public class TridentAssistMod extends Mod {
 				}
 			});
 		} catch (Throwable t) {
-			System.err.println("[Sleep] Trident Assist path unavailable: " + t);
+			System.err.println("[Caos] Trident Assist path unavailable: " + t);
 		}
 	}
 

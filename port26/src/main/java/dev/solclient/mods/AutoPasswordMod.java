@@ -79,7 +79,7 @@ public class AutoPasswordMod extends Mod {
 				}
 			});
 		} catch (Throwable t) {
-			System.err.println("[Sleep] Auto Password: no chat events: " + t);
+			System.err.println("[Caos] Auto Password: no chat events: " + t);
 			status = "Chat events are not available";
 		}
 	}

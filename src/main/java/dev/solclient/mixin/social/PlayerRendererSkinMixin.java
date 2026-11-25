@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * The Sleep cape / skin, put straight into the player's render state after vanilla filled it. This is what both the
+ * The Caos cape / skin, put straight into the player's render state after vanilla filled it. This is what both the
  * world and the 3D preview in the menu draw, so the cape shows everywhere even if getSkin() is not hooked.
  */
 @Mixin(PlayerEntityRenderer.class)

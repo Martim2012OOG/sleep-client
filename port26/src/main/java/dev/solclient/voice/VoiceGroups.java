@@ -60,7 +60,7 @@ public final class VoiceGroups {
 					}
 				}
 			} catch (Exception e) {
-				System.err.println("[Sleep] voice groups: " + e);
+				System.err.println("[Caos] voice groups: " + e);
 			}
 		}
 		return groups;
@@ -72,7 +72,7 @@ public final class VoiceGroups {
 			Files.createDirectories(f.getParent());
 			Files.writeString(f, GSON.toJson(all()), StandardCharsets.UTF_8);
 		} catch (Exception e) {
-			System.err.println("[Sleep] voice groups: " + e);
+			System.err.println("[Caos] voice groups: " + e);
 		}
 	}
 

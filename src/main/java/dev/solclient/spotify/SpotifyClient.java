@@ -209,7 +209,7 @@ public final class SpotifyClient {
 				if (ok) {
 					code = q.get("code");
 				}
-				String page = ok ? "Spotify connected to Sleep Client. You can close this tab and go back to the game."
+				String page = ok ? "Spotify connected to Caos Client. You can close this tab and go back to the game."
 						: "Could not connect: " + q.getOrDefault("error", "unknown error") + ". Close this tab and try again.";
 				byte[] body = ("<html><body style=\"font-family:sans-serif;background:#121212;color:#fff;text-align:center;padding-top:80px\"><h2>" + page + "</h2><script>setTimeout(function(){window.close()},1500)</script></body></html>").getBytes(StandardCharsets.UTF_8);
 				OutputStream out = s.getOutputStream();

@@ -2,12 +2,12 @@
   "schemaVersion": 1,
   "id": "kubo_ext_utilities",
   "version": "${version}",
-  "name": "Sleep – Utilities",
+  "name": "Caos – Utilities",
   "description": "Quick Phrases, Slot Lock, Auto Respawn, Slow Mouse, Hotkeys, Inventory Tweaks, Container Preview, Monsters in the Closet, Tools Optimizer and Chunk Borders.",
   "authors": [
-    "Sleep"
+    "Caos"
   ],
-  "license": "PolyForm-Strict-1.0.0",
+  "license": "GPL-3.0-only",
   "environment": "client",
   "entrypoints": {
     "kubo": [
@@ -15,7 +15,7 @@
     ]
   },
   "depends": {
-    "sleep_client": "*",
+    "sol_client": "*",
     "minecraft": "~1.21.11",
     "fabricloader": ">=0.18.1"
   },

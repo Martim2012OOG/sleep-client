@@ -28,7 +28,7 @@ import net.minecraft.resources.Identifier;
 
 /**
  * Skin Editor: paint your skin pixel by pixel (pencil, eraser, fill, colour picker, mirror, undo), see it on a
- * character from the front, back and sides, then save the PNG or wear it right away (uploaded to your Sleep account).
+ * character from the front, back and sides, then save the PNG or wear it right away (uploaded to your Caos account).
  */
 public class SkinEditorScreen extends Screen {
 
@@ -84,7 +84,7 @@ public class SkinEditorScreen extends Screen {
 				dirty = true;
 			}
 		} catch (Exception e) {
-			System.err.println("[Sleep] skin editor: " + e);
+			System.err.println("[Caos] skin editor: " + e);
 		}
 	}
 
@@ -477,7 +477,7 @@ public class SkinEditorScreen extends Screen {
 					savePng();
 					say(Lang.tr("Uploading...", "A enviar..."));
 					dev.solclient.social.Social.IO.execute(() -> {
-						String err = dev.solclient.social.Social.uploadSkinAndUse(data, "Sleep Editor");
+						String err = dev.solclient.social.Social.uploadSkinAndUse(data, "Caos Editor");
 						Minecraft.getInstance().execute(() -> say(err == null ? Lang.tr("You are wearing it!", "Já a tens vestida!") : err));
 					});
 				}

@@ -18,11 +18,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Sleep Relay client: Host World for friends anywhere, with no router setup and no same Wi-Fi (like Lunar).
+ * Caos Relay client: Host World for friends anywhere, with no router setup and no same Wi-Fi (like Lunar).
  *
  * Host: one WebSocket to the relay Worker; every friend connection arrives as "open id", and its bytes are
  * forwarded to the world's LAN port on this computer.
- * Friend: Sleep opens a tiny server on 127.0.0.1, Minecraft connects to it, and each connection becomes a WebSocket
+ * Friend: Caos opens a tiny server on 127.0.0.1, Minecraft connects to it, and each connection becomes a WebSocket
  * to the relay. The relay only passes bytes along: Minecraft's own login and encryption still run on top.
  * Addresses look like "kubo:AB12CD34".
  */
@@ -149,7 +149,7 @@ public final class KuboRelay {
 			// v118: Mojang said no (expired token, launcher quirk, network...). Voice and friends must still work: go in with
 			// the claim key like any other account instead of failing with "can't verify your Microsoft account".
 			joinProblem = e.getMessage() == null ? e.toString() : e.getMessage();
-			System.err.println("[Sleep] Mojang login proof failed, using the claim key instead: " + joinProblem);
+			System.err.println("[Caos] Mojang login proof failed, using the claim key instead: " + joinProblem);
 			return null;
 		}
 	}
@@ -182,7 +182,7 @@ public final class KuboRelay {
 			java.nio.file.Files.createDirectories(f.getParent());
 			java.nio.file.Files.writeString(f, k, java.nio.charset.StandardCharsets.UTF_8);
 		} catch (Exception e) {
-			System.err.println("[Sleep] could not save claim-key.txt: " + e);
+			System.err.println("[Caos] could not save claim-key.txt: " + e);
 		}
 		return claimKey = k;
 	}
@@ -340,7 +340,7 @@ public final class KuboRelay {
 									} else if (code == 4000 && reason != null && reason.contains("another")) {
 										error = "you are hosting from another place";
 									}
-									System.err.println("[Sleep] relay host closed: " + code + " " + reason);
+									System.err.println("[Caos] relay host closed: " + code + " " + reason);
 									done.complete(null);
 								}
 							}).get(15, TimeUnit.SECONDS);
@@ -360,7 +360,7 @@ public final class KuboRelay {
 					}
 				} catch (Exception e) {
 					error = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
-					System.err.println("[Sleep] relay host: " + error);
+					System.err.println("[Caos] relay host: " + error);
 				}
 				if (connected) {
 					fails = 0;
@@ -406,7 +406,7 @@ public final class KuboRelay {
 				} catch (Exception ignored) {
 				}
 				drop(id, true);
-			}, "Sleep relay host " + id);
+			}, "Caos relay host " + id);
 			t.setDaemon(true);
 			t.start();
 		}
@@ -436,7 +436,7 @@ public final class KuboRelay {
 		stopHost();
 		Host h = new Host(localPort, name);
 		host = h;
-		Thread t = new Thread(h::loop, "Sleep relay host");
+		Thread t = new Thread(h::loop, "Caos relay host");
 		t.setDaemon(true);
 		t.start();
 		return relayHost() + "/" + name;
@@ -485,14 +485,14 @@ public final class KuboRelay {
 				while (!srv.isClosed()) {
 					try {
 						Socket s = srv.accept();
-						Thread c = new Thread(() -> tunnel(address, s), "Sleep relay join");
+						Thread c = new Thread(() -> tunnel(address, s), "Caos relay join");
 						c.setDaemon(true);
 						c.start();
 					} catch (Exception e) {
 						break;
 					}
 				}
-			}, "Sleep relay local " + code);
+			}, "Caos relay local " + code);
 			t.setDaemon(true);
 			t.start();
 			ss = srv;
@@ -521,7 +521,7 @@ public final class KuboRelay {
 							} else if (!gotData[0]) {
 								Social.say(dev.solclient.Lang.tr("Could not reach the world: ", "Não deu para chegar ao mundo: ") + reason, true);
 							}
-							System.err.println("[Sleep] relay join " + address + " closed: " + c + " " + reason);
+							System.err.println("[Caos] relay join " + address + " closed: " + c + " " + reason);
 							done.complete(null);
 							try {
 								s.close();
@@ -541,8 +541,8 @@ public final class KuboRelay {
 			} catch (Exception ignored) {
 			}
 		} catch (Exception e) {
-			System.err.println("[Sleep] relay join " + address + ": " + e);
-			Social.say(dev.solclient.Lang.tr("Could not reach the Sleep relay: ", "Não deu para chegar ao relay do Sleep: ") + e.getMessage(), true);
+			System.err.println("[Caos] relay join " + address + ": " + e);
+			Social.say(dev.solclient.Lang.tr("Could not reach the Caos relay: ", "Não deu para chegar ao relay do Caos: ") + e.getMessage(), true);
 		}
 	}
 }

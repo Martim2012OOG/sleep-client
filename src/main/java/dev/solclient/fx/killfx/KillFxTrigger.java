@@ -69,7 +69,7 @@ public final class KillFxTrigger {
 		}
 		Hit h = HITS.computeIfAbsent(e.getId(), k -> new Hit());
 		if (h.e == null) {
-			System.out.println("[Sleep] kill effect: watching " + e.getName().getString());
+			System.out.println("[Caos] kill effect: watching " + e.getName().getString());
 		}
 		h.e = e;
 		h.at = System.currentTimeMillis();
@@ -270,7 +270,7 @@ public final class KillFxTrigger {
 		}
 		dev.solclient.mods.KillSoundsMod.onKill();
 		String id = equipped();
-		System.out.println("[Sleep] kill effect: " + h.name + " -> " + why + " -> " + id);
+		System.out.println("[Caos] kill effect: " + h.name + " -> " + why + " -> " + id);
 		if (id == null) {
 			return;
 		}

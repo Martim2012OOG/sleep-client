@@ -62,7 +62,7 @@ public class KeystrokesMod extends HudMod {
 		gap = num("Gap", 1, 0, 6, 0.5F, "");
 		radius = num("Corner Radius", 2, 0, 10, 0.5F, "");
 		header("Style");
-		font = choice("Font", 1, "Minecraft", "Sleep");
+		font = choice("Font", 1, "Minecraft", "Caos");
 		shadow = bool("Text Shadow", false);
 		background = bool("Background", true);
 		border = bool("Border", false);

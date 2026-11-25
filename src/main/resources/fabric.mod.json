@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
-  "id": "sleep_client",
+  "id": "sol_client",
   "version": "${version}",
-  "name": "Sleep",
-  "description": "Sleep para Fabric 1.21.11 com a nova GUI (Right Shift).",
+  "name": "Caos",
+  "description": "Caos para Fabric 1.21.11 com a nova GUI (Right Shift).",
   "authors": [
-    "Sleep"
+    "Caos"
   ],
-  "license": "PolyForm-Strict-1.0.0",
-  "icon": "assets/sleep_client/icon.png",
+  "license": "GPL-3.0-only",
+  "icon": "assets/sol_client/icon.png",
   "environment": "client",
   "jars": [
     {
@@ -17,30 +17,22 @@
   ],
   "entrypoints": {
     "client": [
-      "dev.sleepclient.SleepClient",
-      "com.baom5.deathanimation.client.DeathanimationClient"
-    ],
-    "main": [
-      "com.baom5.deathanimation.Deathanimation"
+      "dev.solclient.SolClient"
     ]
   },
   "mixins": [
-    "sleep_client.mixins.json",
-    "sleep_client_overlay.mixins.json",
-    "sleep_client_emote.mixins.json",
-    "sleep_client_social.mixins.json",
-    "sleep_client_splash.mixins.json",
-    "sleep_client_cape.mixins.json",
-    "sleep_client_cosmetics.mixins.json",
-    "sleep_client_fightcam.mixins.json",
-    "sleep_client_extra.mixins.json",
-    "sleep_client_display.mixins.json",
-    "sleep_client_font.mixins.json",
-    "sleep_client_perf.mixins.json",
-    {
-      "config": "deathanimation.client.mixins.json",
-      "environment": "client"
-    }
+    "sol_client.mixins.json",
+    "sol_client_overlay.mixins.json",
+    "sol_client_emote.mixins.json",
+    "sol_client_social.mixins.json",
+    "sol_client_splash.mixins.json",
+    "sol_client_cape.mixins.json",
+    "sol_client_cosmetics.mixins.json",
+    "sol_client_fightcam.mixins.json",
+    "sol_client_extra.mixins.json",
+    "sol_client_display.mixins.json",
+    "sol_client_font.mixins.json",
+    "sol_client_perf.mixins.json"
   ],
   "depends": {
     "fabricloader": ">=0.18.1",

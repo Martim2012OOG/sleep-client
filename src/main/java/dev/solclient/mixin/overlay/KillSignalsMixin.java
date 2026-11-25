@@ -18,48 +18,48 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ClientPlayNetworkHandler.class)
 public abstract class KillSignalsMixin {
 
-	private static boolean sleep$ready() {
+	private static boolean caos$ready() {
 		return MinecraftClient.getInstance().isOnThread();
 	}
 
 	@Inject(method = "onEntityDamage", at = @At("HEAD"), require = 0)
-	private void sleep$damage(EntityDamageS2CPacket p, CallbackInfo ci) {
-		if (sleep$ready()) {
+	private void caos$damage(EntityDamageS2CPacket p, CallbackInfo ci) {
+		if (caos$ready()) {
 			KillFxTrigger.onDamage(p.entityId(), p.sourceCauseId());
 		}
 	}
 
 	@Inject(method = "onGameMessage", at = @At("HEAD"), require = 0)
-	private void sleep$message(GameMessageS2CPacket p, CallbackInfo ci) {
-		if (sleep$ready()) {
+	private void caos$message(GameMessageS2CPacket p, CallbackInfo ci) {
+		if (caos$ready()) {
 			KillFxTrigger.onServerText(p.content().getString());
 		}
 	}
 
 	@Inject(method = "onOverlayMessage", at = @At("HEAD"), require = 0)
-	private void sleep$overlay(OverlayMessageS2CPacket p, CallbackInfo ci) {
-		if (sleep$ready()) {
+	private void caos$overlay(OverlayMessageS2CPacket p, CallbackInfo ci) {
+		if (caos$ready()) {
 			KillFxTrigger.onServerText(p.text().getString());
 		}
 	}
 
 	@Inject(method = "onTitle", at = @At("HEAD"), require = 0)
-	private void sleep$title(TitleS2CPacket p, CallbackInfo ci) {
-		if (sleep$ready()) {
+	private void caos$title(TitleS2CPacket p, CallbackInfo ci) {
+		if (caos$ready()) {
 			KillFxTrigger.onServerText(p.text().getString());
 		}
 	}
 
 	@Inject(method = "onSubtitle", at = @At("HEAD"), require = 0)
-	private void sleep$subtitle(SubtitleS2CPacket p, CallbackInfo ci) {
-		if (sleep$ready()) {
+	private void caos$subtitle(SubtitleS2CPacket p, CallbackInfo ci) {
+		if (caos$ready()) {
 			KillFxTrigger.onServerText(p.text().getString());
 		}
 	}
 
 	@Inject(method = "onPlayerList", at = @At("HEAD"), require = 0)
-	private void sleep$list(PlayerListS2CPacket p, CallbackInfo ci) {
-		if (sleep$ready() && p.getActions().contains(PlayerListS2CPacket.Action.UPDATE_GAME_MODE)) {
+	private void caos$list(PlayerListS2CPacket p, CallbackInfo ci) {
+		if (caos$ready() && p.getActions().contains(PlayerListS2CPacket.Action.UPDATE_GAME_MODE)) {
 			for (var e : p.getEntries()) {
 				if (e.gameMode() == net.minecraft.world.GameMode.SPECTATOR) {
 					KillFxTrigger.onSpectator(e.profileId());

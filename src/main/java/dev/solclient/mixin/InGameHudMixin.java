@@ -26,7 +26,7 @@ public class InGameHudMixin {
 		}
 	}
 
-	/** Safety net: if the Fabric HUD callback does not run on this computer, Sleep's HUD is drawn from here instead. */
+	/** Safety net: if the Fabric HUD callback does not run on this computer, Caos's HUD is drawn from here instead. */
 	@Inject(method = "render", at = @At("TAIL"), require = 0)
 	private void kubo$hudBackup(net.minecraft.client.gui.DrawContext context, net.minecraft.client.render.RenderTickCounter tickCounter, CallbackInfo ci) {
 		var mc = net.minecraft.client.MinecraftClient.getInstance();

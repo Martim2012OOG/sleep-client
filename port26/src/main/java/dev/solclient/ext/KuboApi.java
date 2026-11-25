@@ -73,7 +73,7 @@ public final class KuboApi {
 			try {
 				l.onSound(id, x, y, z);
 			} catch (Throwable t) {
-				System.err.println("[Sleep] extension (sound): " + t);
+				System.err.println("[Caos] extension (sound): " + t);
 			}
 		}
 	}
@@ -106,7 +106,7 @@ public final class KuboApi {
 			try {
 				c.accept(at);
 			} catch (Throwable t) {
-				System.err.println("[Sleep] extension (explosion): " + t);
+				System.err.println("[Caos] extension (explosion): " + t);
 			}
 		}
 	}
@@ -127,7 +127,7 @@ public final class KuboApi {
 					took = true;
 				}
 			} catch (Throwable t) {
-				System.err.println("[Sleep] extension (block break): " + t);
+				System.err.println("[Caos] extension (block break): " + t);
 			}
 		}
 		return took;
@@ -159,13 +159,13 @@ public final class KuboApi {
 		try {
 			dev.solclient.mods.TotemPopsMod.onStatus(e, status);
 		} catch (Throwable t) {
-			System.err.println("[Sleep] totem pops: " + t);
+			System.err.println("[Caos] totem pops: " + t);
 		}
 		for (var c : STATUS) {
 			try {
 				c.accept(e, status);
 			} catch (Throwable t) {
-				System.err.println("[Sleep] extension (status): " + t);
+				System.err.println("[Caos] extension (status): " + t);
 			}
 		}
 	}
@@ -183,7 +183,7 @@ public final class KuboApi {
 					name = r;
 				}
 			} catch (Throwable t) {
-				System.err.println("[Sleep] extension (tab): " + t);
+				System.err.println("[Caos] extension (tab): " + t);
 			}
 		}
 		return name;
@@ -204,7 +204,7 @@ public final class KuboApi {
 			try {
 				c.accept(p);
 			} catch (Throwable t) {
-				System.err.println("[Sleep] extension (ping): " + t);
+				System.err.println("[Caos] extension (ping): " + t);
 			}
 		}
 	}
@@ -293,7 +293,7 @@ public final class KuboApi {
 		HIDE_TOASTS.add(s);
 	}
 
-	/** Called when the Sleep stats (kills, distance, minigame records...) change. */
+	/** Called when the Caos stats (kills, distance, minigame records...) change. */
 	public void onStatsChanged(Runnable r) {
 		STATS_CHANGED.add(r);
 	}
@@ -336,7 +336,7 @@ public final class KuboApi {
 			try {
 				c.accept(e);
 			} catch (Throwable t) {
-				System.err.println("[Sleep] extension (attack): " + t);
+				System.err.println("[Caos] extension (attack): " + t);
 			}
 		}
 	}
@@ -346,7 +346,7 @@ public final class KuboApi {
 			try {
 				d.accept(c);
 			} catch (Throwable t) {
-				System.err.println("[Sleep] extension (f3): " + t);
+				System.err.println("[Caos] extension (f3): " + t);
 			}
 		}
 	}
@@ -365,7 +365,7 @@ public final class KuboApi {
 			try {
 				d.accept(c);
 			} catch (Throwable t) {
-				System.err.println("[Sleep] extension (hud): " + t);
+				System.err.println("[Caos] extension (hud): " + t);
 			}
 		}
 	}
@@ -378,7 +378,7 @@ public final class KuboApi {
 					name = r;
 				}
 			} catch (Throwable t) {
-				System.err.println("[Sleep] extension (name): " + t);
+				System.err.println("[Caos] extension (name): " + t);
 			}
 		}
 		return name;
@@ -427,7 +427,7 @@ public final class KuboApi {
 			try {
 				r.run();
 			} catch (Throwable t) {
-				System.err.println("[Sleep] extension (stats): " + t);
+				System.err.println("[Caos] extension (stats): " + t);
 			}
 		}
 	}

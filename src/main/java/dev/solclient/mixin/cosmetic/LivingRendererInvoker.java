@@ -9,5 +9,5 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 public interface LivingRendererInvoker {
 
 	@Invoker("addFeature")
-	boolean sleep$addFeature(FeatureRenderer<?, ?> feature);
+	boolean caos$addFeature(FeatureRenderer<?, ?> feature);
 }

@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * The small native helper that streams one window (ScreenCaptureKit). Its Swift source is inside the jar; the first time
  * it is needed it is compiled with the Mac's own swiftc (Command Line Tools) and kept in
- * ~/Library/Application Support/Sleep/helper. If anything fails, {@link #ensure()} returns null and the old
+ * ~/Library/Application Support/Caos/helper. If anything fails, {@link #ensure()} returns null and the old
  * screencapture loop is used instead.
  */
 final class WinCapHelper {
@@ -39,7 +39,7 @@ final class WinCapHelper {
 				src = in.readAllBytes();
 			}
 			String hash = hex(MessageDigest.getInstance("SHA-1").digest(src)).substring(0, 10);
-			Path dir = Path.of(System.getProperty("user.home"), "Library", "Application Support", "Sleep", "helper");
+			Path dir = Path.of(System.getProperty("user.home"), "Library", "Application Support", "Caos", "helper");
 			Files.createDirectories(dir);
 			Path bin = dir.resolve("wincap-" + hash);
 			if (Files.isExecutable(bin) && Files.size(bin) > 0) {

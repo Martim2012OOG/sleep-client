@@ -168,8 +168,8 @@ public final class VoiceNet {
 	/** Why the voice server said no (close code 4003). */
 	static String refused(String reason) {
 		if (reason != null && reason.contains("claimed")) {
-			return dev.solclient.Lang.tr("This nick is already used by someone else in Sleep (it frees up after 30 days without use)",
-					"Este nick já está a ser usado por outra pessoa no Sleep (fica livre depois de 30 dias sem uso)");
+			return dev.solclient.Lang.tr("This nick is already used by someone else in Caos (it frees up after 30 days without use)",
+					"Este nick já está a ser usado por outra pessoa no Caos (fica livre depois de 30 dias sem uso)");
 		}
 		// a Worker that is not the new one refuses everybody it can't verify with Mojang: tell the player to publish it again
 		if (!workerIsCurrent()) {

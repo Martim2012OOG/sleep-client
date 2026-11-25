@@ -190,7 +190,7 @@ public class SolClient implements ClientModInitializer {
 		MODS.add(new CrossbowTweaksMod());
 		MODS.add(new CrosshairAddonsMod());
 		MODS.add(new AnimatedPacksMod());
-		// extensions downloaded from the Sleep store (Mods > Extensions): their mods join the list here
+		// extensions downloaded from the Caos store (Mods > Extensions): their mods join the list here
 		dev.solclient.ext.Extensions.loadInstalled();
 		// small mods live inside one card each (fewer cards in the menu; every mod keeps its settings)
 		group(new ModGroup("Info HUD", "info_hud", "Clock, biome, memory, TPS, rotation and other one-line HUDs.", Mod.Category.HUD),
@@ -237,7 +237,7 @@ public class SolClient implements ClientModInitializer {
 			m.enabled = m.locked || (m.enabledByDefault() && !dev.solclient.ext.Extensions.isFromExtension(m));
 		}
 		Config.load(MODS);
-		// Discord "Playing Sleep Client": built in, always on (not a mod in the list)
+		// Discord "Playing Caos Client": built in, always on (not a mod in the list)
 		new dev.solclient.discord.DiscordPresenceMod().startBackground();
 		for (Mod m : MODS) {
 			m.init();
@@ -382,7 +382,7 @@ public class SolClient implements ClientModInitializer {
 		try {
 			ResourceGuard.tick(client);
 		} catch (RuntimeException e) {
-			System.err.println("[Sleep] resource pack guard: " + e);
+			System.err.println("[Caos] resource pack guard: " + e);
 		}
 		if (loadingScreenUp(client)) {
 			// Minecraft is loading: its main thread is busy with the reload, so only what must watch the loading
@@ -397,7 +397,7 @@ public class SolClient implements ClientModInitializer {
 			Thread t = new Thread(() -> {
 				dev.solclient.CustomFont.repairOldPacks();
 				client.execute(dev.solclient.mods.TextureStylesMod::ensureApplied);
-			}, "sleep-startup-fixes");
+			}, "caos-startup-fixes");
 			t.setDaemon(true);
 			t.start();
 		}
@@ -497,7 +497,7 @@ public class SolClient implements ClientModInitializer {
 		}
 	}
 
-	// ---- HUD diagnostics: what the in-game HUD is doing (shown in Sleep settings > HUD status, and printed to the log once)
+	// ---- HUD diagnostics: what the in-game HUD is doing (shown in Caos settings > HUD status, and printed to the log once)
 	private static volatile long hudAt;
 	private static int hudCalls, hudFallbacks, hudSkipHidden, hudSkipLoading, hudSkipF3, hudRan, hudWidgets;
 	private static String hudErr;
@@ -533,7 +533,7 @@ public class SolClient implements ClientModInitializer {
 			// never let the HUD take the frame (or the callback) down with it
 			if (hudErr == null) {
 				hudErr = "HUD: " + t;
-				System.err.println("[Sleep] HUD failed");
+				System.err.println("[Caos] HUD failed");
 				t.printStackTrace();
 			}
 		}
@@ -555,7 +555,7 @@ public class SolClient implements ClientModInitializer {
 			return;
 		}
 		hudWhyTold = true;
-		String m = "[Sleep] HUD did not draw: " + hudDiag() + " | hudHidden=" + mc.options.hudHidden + " F3=" + f3Open(mc) + " overlay="
+		String m = "[Caos] HUD did not draw: " + hudDiag() + " | hudHidden=" + mc.options.hudHidden + " F3=" + f3Open(mc) + " overlay="
 				+ (mc.getOverlay() == null ? "none" : mc.getOverlay().getClass().getName());
 		System.out.println(m);
 		mc.inGameHud.getChatHud().addMessage(net.minecraft.text.Text.literal(m));
@@ -566,7 +566,7 @@ public class SolClient implements ClientModInitializer {
 	/**
 	 * The full F3 screen is open (the key was pressed). Not DebugHud.shouldShowDebugHud(): since 1.21.9 that is also true while
 	 * any single debug line is set to "always shown" (F3 + F6, or a mod / profile that keeps the FPS line on), which hid the
-	 * whole Sleep HUD forever on some computers.
+	 * whole Caos HUD forever on some computers.
 	 */
 	public static boolean f3Open(MinecraftClient mc) {
 		try {
@@ -580,7 +580,7 @@ public class SolClient implements ClientModInitializer {
 		MinecraftClient mc = MinecraftClient.getInstance();
 		int n = ++hudCalls;
 		if (n == 1 || n == 60 || n == 300 || n % 3000 == 0) {
-			System.out.println("[Sleep] HUD status #" + n + " (player " + (mc.player != null) + ", screen " + (mc.currentScreen == null ? "none" : mc.currentScreen.getClass().getName())
+			System.out.println("[Caos] HUD status #" + n + " (player " + (mc.player != null) + ", screen " + (mc.currentScreen == null ? "none" : mc.currentScreen.getClass().getName())
 					+ ", overlay " + (mc.getOverlay() != null) + "): " + hudDiag());
 		}
 		Perf.frame();
@@ -641,7 +641,7 @@ public class SolClient implements ClientModInitializer {
 					// one broken widget must not stop the others
 					if (hudErr == null) {
 						hudErr = m.name + ": " + t;
-						System.err.println("[Sleep] HUD widget failed: " + m.name);
+						System.err.println("[Caos] HUD widget failed: " + m.name);
 						t.printStackTrace();
 					}
 				}
@@ -704,13 +704,13 @@ public class SolClient implements ClientModInitializer {
 							}
 						});
 					}
-					System.out.println("[Sleep] removed the old Verity downloads");
+					System.out.println("[Caos] removed the old Verity downloads");
 				}
 				java.nio.file.Files.deleteIfExists(net.fabricmc.loader.api.FabricLoader.getInstance().getConfigDir().resolve("kubo-verity.json"));
 			} catch (Throwable e) {
-				System.err.println("[Sleep] could not remove the old Verity files: " + e);
+				System.err.println("[Caos] could not remove the old Verity files: " + e);
 			}
-		}, "Sleep-verity-cleanup");
+		}, "Caos-verity-cleanup");
 		t.setDaemon(true);
 		t.start();
 	}

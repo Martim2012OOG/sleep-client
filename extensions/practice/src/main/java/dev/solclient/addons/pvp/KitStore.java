@@ -108,7 +108,7 @@ public final class KitStore {
 					}
 				}
 			} catch (IOException | RuntimeException e) {
-				System.err.println("[Sleep] Could not read custom kits: " + e);
+				System.err.println("[Caos] Could not read custom kits: " + e);
 			}
 		}
 		rebuild();
@@ -141,7 +141,7 @@ public final class KitStore {
 			Files.createDirectories(path().getParent());
 			Files.writeString(path(), GSON.toJson(data));
 		} catch (IOException e) {
-			System.err.println("[Sleep] Could not save custom kits: " + e);
+			System.err.println("[Caos] Could not save custom kits: " + e);
 		}
 	}
 

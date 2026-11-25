@@ -340,7 +340,7 @@ public final class RankedFx {
 			mc.getSoundManager().play(new SimpleSoundInstance(ev.location(), net.minecraft.sounds.SoundSource.MASTER, 1F, 1F,
 					SoundInstance.createUnseededRandom(), false, 0, SoundInstance.Attenuation.NONE, 0, 0, 0, true));
 		} catch (Throwable t) {
-			System.err.println("[Sleep] duel sound " + id + ": " + t);
+			System.err.println("[Caos] duel sound " + id + ": " + t);
 		}
 	}
 

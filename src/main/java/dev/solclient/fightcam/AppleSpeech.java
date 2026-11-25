@@ -8,7 +8,7 @@ import java.security.MessageDigest;
 /**
  * The Mac voice helper: Apple's speech recognition (kubo/speech-helper in the jar, built from kubo/speech.swift by
  * tools/build_speech_helper.sh, universal Apple Silicon + Intel). It comes ready-made, so nothing has to be compiled on
- * the player's Mac. It is copied once into ~/Library/Application Support/Sleep/helper.
+ * the player's Mac. It is copied once into ~/Library/Application Support/Caos/helper.
  */
 final class AppleSpeech {
 
@@ -35,7 +35,7 @@ final class AppleSpeech {
 			for (byte b : MessageDigest.getInstance("SHA-1").digest(bin)) {
 				hash.append(String.format("%02x", b));
 			}
-			Path dir = Path.of(System.getProperty("user.home"), "Library", "Application Support", "Sleep", "helper");
+			Path dir = Path.of(System.getProperty("user.home"), "Library", "Application Support", "Caos", "helper");
 			Files.createDirectories(dir);
 			Path exe = dir.resolve("speech-" + hash.substring(0, 10));
 			if (!Files.isRegularFile(exe) || Files.size(exe) != bin.length) {

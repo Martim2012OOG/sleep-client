@@ -47,7 +47,7 @@ public class ArmorStandPosesMod extends Mod {
 	private static final Map<UUID, Integer> POSE = new ConcurrentHashMap<>();
 
 	private final Option.Key cycleKey = key("Cycle Pose Key", 71); // G
-	private final Option.Bool showOthers = bool("See Other Players' Poses", true).tip("Shows the poses that other Sleep users give to armor stands.");
+	private final Option.Bool showOthers = bool("See Other Players' Poses", true).tip("Shows the poses that other Caos users give to armor stands.");
 	private boolean down;
 	private long lastSend;
 

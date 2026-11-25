@@ -138,7 +138,7 @@ public final class RemoteTextures {
 				READY.put(k, new Tex(id, asset, w, hh));
 				PENDING.remove(k);
 			} catch (Throwable e) {
-				System.err.println("[Sleep] Could not load face " + key + ": " + e);
+				System.err.println("[Caos] Could not load face " + key + ": " + e);
 			}
 		});
 	}
@@ -175,7 +175,7 @@ public final class RemoteTextures {
 						PENDING.remove(k);
 					}
 				} catch (Throwable e) {
-					System.err.println("[Sleep] Could not make the elytra for " + capeUrl + ": " + e);
+					System.err.println("[Caos] Could not make the elytra for " + capeUrl + ": " + e);
 				}
 			});
 		});
@@ -199,7 +199,7 @@ public final class RemoteTextures {
 		// HD capes (2048x1024 and up) are bigger than the 4 MB default
 		byte[] data = SolarApi.download(url, 24 * 1024 * 1024);
 		if (data == null) {
-			System.err.println("[Sleep] could not download " + url + " (error, empty or bigger than 24 MB); retry in 60 s");
+			System.err.println("[Caos] could not download " + url + " (error, empty or bigger than 24 MB); retry in 60 s");
 			return;
 		}
 		final byte[] png = asPng(data);
@@ -216,7 +216,7 @@ public final class RemoteTextures {
 				READY.put(url, new Tex(id, asset, w, hh));
 				PENDING.remove(url);
 			} catch (Throwable e) {
-				System.err.println("[Sleep] Could not load image " + url + ": " + e);
+				System.err.println("[Caos] Could not load image " + url + ": " + e);
 			}
 		});
 	}
@@ -255,7 +255,7 @@ public final class RemoteTextures {
 			try {
 				data = bytes.get();
 			} catch (Throwable e) {
-				System.err.println("[Sleep] Could not make picture " + key + ": " + e);
+				System.err.println("[Caos] Could not make picture " + key + ": " + e);
 				data = null;
 			}
 			if (data == null) {
@@ -275,7 +275,7 @@ public final class RemoteTextures {
 					READY.put(k, new Tex(id, Identifier.fromNamespaceAndPath("sol_client", "solar/" + h), w, hh));
 					LOCAL_TRIES.remove(k);
 				} catch (Throwable e) {
-					System.err.println("[Sleep] Could not load icon " + key + ": " + e);
+					System.err.println("[Caos] Could not load icon " + key + ": " + e);
 					localFailed(k);
 				}
 			});

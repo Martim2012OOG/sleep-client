@@ -134,7 +134,7 @@ public class PerformanceMod extends Mod {
 			o.save();
 			dev.solclient.compat.Mc.allChanged(net.minecraft.client.Minecraft.getInstance());
 		} catch (Throwable t) {
-			System.err.println("[Sleep] best looks mode: " + t);
+			System.err.println("[Caos] best looks mode: " + t);
 		}
 	}, () -> "Smooth lighting, 4 mipmap levels, biome blending and entity shadows (costs very little with Sodium). Does not change render distance.");
 

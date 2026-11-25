@@ -12,7 +12,7 @@ import net.minecraft.util.Identifier;
 
 /**
  * Chat bubble styles for the friends chat (like the bubble styles of phone chat apps). Every style is a picture made by
- * the Sleep owner (textures/chat/bubble/&lt;id&gt;.png, cut from their own artwork). The picture is drawn around the
+ * the Caos owner (textures/chat/bubble/&lt;id&gt;.png, cut from their own artwork). The picture is drawn around the
  * message: the parts with the mascot / decorations keep their size, only a plain band in the middle grows with the
  * text (Minecraft and Fire repeat their texture instead, so it never looks smeared). Every message you send carries your
  * style ("bubble"), so your friends see it too once the site stores it.

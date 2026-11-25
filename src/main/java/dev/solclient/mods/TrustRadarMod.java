@@ -21,7 +21,7 @@ import net.minecraft.util.Formatting;
 
 /**
  * Trust Radar: tells you how much to trust the players around you. It watches how they move and fight (flying, speed, reach, aim,
- * auto clicker), gives each a trust %, warns you before a fight with someone suspicious and can share reports with the Sleep site so
+ * auto clicker), gives each a trust %, warns you before a fight with someone suspicious and can share reports with the Caos site so
  * the whole community gets a better picture. It is a guess, never proof: creative players, lag and knockback are ignored.
  * Commands: /suspect, /suspect &lt;player&gt;, /suspect reset.
  */
@@ -32,8 +32,8 @@ public class TrustRadarMod extends Mod {
 	private final Option.Choice strict = choice("Strictness", 0, "Careful", "Normal", "Strict");
 	private final Option.Bool warn = bool("Warn Me Before A Fight", true).tip("A message when a player near you has a low trust %.");
 	private final Option.Num warnAt = num("Warn Below", 55F, 20F, 85F, 5F, "% trust");
-	private final Option.Bool share = bool("Share Reports With Sleep", true).tip("Sends only the player name and the numbers (no chat, no position) so everyone gets a better picture.");
-	private final Option.Bool community = bool("Use Community Trust", true).tip("Also asks the Sleep site what other players found.");
+	private final Option.Bool share = bool("Share Reports With Caos", true).tip("Sends only the player name and the numbers (no chat, no position) so everyone gets a better picture.");
+	private final Option.Bool community = bool("Use Community Trust", true).tip("Also asks the Caos site what other players found.");
 
 	private final Map<UUID, Long> warned = new HashMap<>();
 	private int clock;
@@ -71,7 +71,7 @@ public class TrustRadarMod extends Mod {
 				}
 			});
 		} catch (Throwable t) {
-			System.err.println("[Sleep] /suspect unavailable: " + t);
+			System.err.println("[Caos] /suspect unavailable: " + t);
 		}
 	}
 

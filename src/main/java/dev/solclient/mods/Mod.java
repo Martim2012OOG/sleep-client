@@ -42,7 +42,7 @@ public abstract class Mod {
 	public boolean favorite;
 	/** Locked mods cannot be toggled (e.g. the Sol Client settings card). */
 	public boolean locked;
-	/** Not a mod in the list: its switch and options are at the end of Sleep Settings (Cinematic Intro...). */
+	/** Not a mod in the list: its switch and options are at the end of Caos Settings (Cinematic Intro...). */
 	public boolean inSettings;
 	/** Not shown in the mods grid or counted: its settings open from elsewhere (Verity: Locker > Edit Verity). */
 	public boolean hiddenFromList;
@@ -171,7 +171,7 @@ public abstract class Mod {
 				// At start the game is not fully built yet (no options, no window...): a mod that needs them must never take the whole
 				// game down with it. It is started again as soon as the game is up (see retryEnable).
 				enablePending = true;
-				System.err.println("[Sleep] " + name + " could not start yet, trying again once the game is up: " + e);
+				System.err.println("[Caos] " + name + " could not start yet, trying again once the game is up: " + e);
 			}
 		}
 	}
@@ -189,7 +189,7 @@ public abstract class Mod {
 		try {
 			onEnable();
 		} catch (RuntimeException | LinkageError e) {
-			System.err.println("[Sleep] " + name + " could not start: " + e);
+			System.err.println("[Caos] " + name + " could not start: " + e);
 		}
 	}
 

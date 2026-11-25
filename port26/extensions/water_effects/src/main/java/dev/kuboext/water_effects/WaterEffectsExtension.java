@@ -1,11 +1,11 @@
 package dev.kuboext.water_effects;
 
-import dev.sleepclient.mods.WaterEffectsMod;
-import dev.sleepclient.ext.KuboApi;
-import dev.sleepclient.ext.KuboExtension;
+import dev.solclient.mods.WaterEffectsMod;
+import dev.solclient.ext.KuboApi;
+import dev.solclient.ext.KuboExtension;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 
-/** Sleep extension "Water Effects": Boat wakes, waterfall foam, ripples and splashes. */
+/** Caos extension "Water Effects": Boat wakes, waterfall foam, ripples and splashes. */
 public class WaterEffectsExtension implements KuboExtension {
 
 	@Override

@@ -5,13 +5,13 @@ import java.util.Base64;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/** Share a theme as a short text ("SLEEP-..."): copy it, send it to a friend, paste it back with one click. */
+/** Share a theme as a short text ("CAOS-..."): copy it, send it to a friend, paste it back with one click. */
 public final class ThemeCode {
 
-	private static final String PREFIX = "SLEEP-";
+	private static final String PREFIX = "CAOS-";
 	private static final int VERSION = 1;
 	private static final int LEN = 1 + 12 * 3 + 5 + 1;
-	private static final Pattern FIND = Pattern.compile("(?:SLEEP|KUBO)-[A-Za-z0-9_-]{20,120}");
+	private static final Pattern FIND = Pattern.compile("(?:CAOS|KUBO)-[A-Za-z0-9_-]{20,120}");
 
 	private ThemeCode() {
 	}

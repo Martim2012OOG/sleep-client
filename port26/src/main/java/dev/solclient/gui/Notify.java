@@ -11,7 +11,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 
 /**
- * Every Sleep notification (v99), drawn exactly like the user's notificacao.html: bottom-left, one card at a time
+ * Every Caos notification (v99), drawn exactly like the user's notificacao.html: bottom-left, one card at a time
  * (a new one replaces the old one), sliding in from the left. Navy card with a dark edge and a dark line under it,
  * a blue square icon, a white title, a grey line and a picture on the right: a player's face (square) or a little
  * pixel landscape / the clip (16:9).
@@ -69,7 +69,7 @@ public final class Notify {
 
 	private static final String ICON_SCENE = "\u0000icon";
 
-	/** A toast whose icon is the real picture of an item (bought / equipped), instead of the blue Sleep square. */
+	/** A toast whose icon is the real picture of an item (bought / equipped), instead of the blue Caos square. */
 	public static void item(Kind kind, String title, String sub, Identifier tex, int w, int h) {
 		put(new Card(kind, title, sub, false, null, ICON_SCENE, tex, w, h, 0));
 	}
@@ -127,7 +127,7 @@ public final class Notify {
 
 	private static long lastPing;
 
-	/** The sound of a card: the Sleep "pling" or the one picked for its kind (Settings > HUD Options > Notifications). */
+	/** The sound of a card: the Caos "pling" or the one picked for its kind (Settings > HUD Options > Notifications). */
 	private static void ping(Kind kind) {
 		var s = dev.solclient.SolClient.settings;
 		long now = System.currentTimeMillis();
@@ -150,7 +150,7 @@ public final class Notify {
 				mc.getSoundManager().play(net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(
 						net.minecraft.sounds.SoundEvent.createVariableRangeEvent(Gfx.id("notify")), 1F, vol));
 			} catch (Throwable t) {
-				System.err.println("[Sleep] notification sound: " + t);
+				System.err.println("[Caos] notification sound: " + t);
 			}
 		});
 	}

@@ -13,8 +13,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * "host.endlock.net/Name" works anywhere you type a server (server list, Direct Connect): Sleep swaps it for its small
- * local tunnel to the Sleep relay, and the server list keeps showing the nice address.
+ * "host.endlock.net/Name" works anywhere you type a server (server list, Direct Connect): Caos swaps it for its small
+ * local tunnel to the Caos relay, and the server list keeps showing the nice address.
  */
 @Mixin(ConnectScreen.class)
 public abstract class HostWorldConnectMixin {
@@ -35,7 +35,7 @@ public abstract class HostWorldConnectMixin {
 				ConnectScreen.connect(screen, client, real, info, quickPlay, cookies);
 			}
 		} catch (Exception e) {
-			System.err.println("[Sleep] host world address: " + e);
+			System.err.println("[Caos] host world address: " + e);
 		}
 	}
 }

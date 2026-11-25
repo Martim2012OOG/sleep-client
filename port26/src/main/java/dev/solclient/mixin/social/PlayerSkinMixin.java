@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
- * Sleep capes / skins through getSkin() (heads in the tab list, etc.). On 1.21.11 getSkin() is declared in
+ * Caos capes / skins through getSkin() (heads in the tab list, etc.). On 1.21.11 getSkin() is declared in
  * ClientPlayerLikeEntity, so the renderer hook ({@link PlayerRendererSkinMixin}) is what makes capes show in game.
  */
 @Mixin(AbstractClientPlayer.class)

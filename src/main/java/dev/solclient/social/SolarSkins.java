@@ -6,7 +6,7 @@ import net.minecraft.entity.player.SkinTextures;
 import net.minecraft.util.AssetInfo;
 
 /**
- * Puts the Sleep cape / skin of a player into their skin textures. Used from two places so it works on 1.21.11 where
+ * Puts the Caos cape / skin of a player into their skin textures. Used from two places so it works on 1.21.11 where
  * getSkin() moved to an interface: the getSkin() hook and the player renderer (world AND the 3D menu preview).
  */
 public final class SolarSkins {
@@ -27,7 +27,7 @@ public final class SolarSkins {
 		return t == null ? Optional.empty() : Optional.of(new AssetInfo.TextureAssetInfo(t.assetId()));
 	}
 
-	/** base with this player's Sleep skin / cape on top (base itself when there is nothing to change). */
+	/** base with this player's Caos skin / cape on top (base itself when there is nothing to change). */
 	public static SkinTextures apply(UUID id, SkinTextures base) {
 		return apply(id, id, base);
 	}
@@ -64,7 +64,7 @@ public final class SolarSkins {
 		return apply(entityId, id, base, true);
 	}
 
-	/** client = this player uses the client; if not, the Sleep cape / skin is never put on them (vanilla stays). */
+	/** client = this player uses the client; if not, the Caos cape / skin is never put on them (vanilla stays). */
 	private static SkinTextures apply(UUID entityId, UUID id, SkinTextures base, boolean client) {
 		if (base == null || id == null) {
 			return base;

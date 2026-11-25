@@ -264,7 +264,7 @@ public final class TikClient {
 	private void handle(String msg) {
 		if (debug && debugLeft > 0) {
 			debugLeft--;
-			System.out.println("[Sleep TikTok] raw: " + (msg.length() > 600 ? msg.substring(0, 600) + "..." : msg));
+			System.out.println("[Caos TikTok] raw: " + (msg.length() > 600 ? msg.substring(0, 600) + "..." : msg));
 		}
 		total.incrementAndGet();
 		String nm = eventName(msg);

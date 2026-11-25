@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(EntityRenderer.class)
 public class KillFxHideMixin {
 	@Inject(method = "shouldRender", at = @At("HEAD"), cancellable = true, require = 0)
-	private void sleep$hideEaten(Entity entity, Frustum frustum, double x, double y, double z, CallbackInfoReturnable<Boolean> cir) {
+	private void caos$hideEaten(Entity entity, Frustum frustum, double x, double y, double z, CallbackInfoReturnable<Boolean> cir) {
 		if (KillFx.hides(entity)) {
 			cir.setReturnValue(false);
 		}

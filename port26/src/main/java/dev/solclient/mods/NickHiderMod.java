@@ -22,7 +22,7 @@ public class NickHiderMod extends Mod {
 	private final Option.Bool hideYourNick = bool("Hide Your Nick", true);
 	private final Option.Choice yourNick = choice("Nickname", 0, "You", "Player", "Me", "Hidden", "Custom");
 	private final Option.Text customNick = text("Custom Nickname", "", 32, "any name you like");
-	private final Option.Bool shareNick = bool("Show My Nickname To Other Sleep Players", true);
+	private final Option.Bool shareNick = bool("Show My Nickname To Other Caos Players", true);
 	private final Option.Bool hideOthers = bool("Hide Others' Names", false);
 	private final Option.Bool hideYourSkin = bool("Hide Your Skin", false);
 	private final Option.Bool hideOthersSkins = bool("Hide Others' Skins", false);
@@ -33,12 +33,12 @@ public class NickHiderMod extends Mod {
 		customNick.showIf(() -> yourNick.idx() == 4);
 	}
 
-	/** Nicknames other Sleep players chose to show instead of their real one (real nick lower case -> shown nick, when it arrived). */
+	/** Nicknames other Caos players chose to show instead of their real one (real nick lower case -> shown nick, when it arrived). */
 	private static final Map<String, Object[]> REMOTE = new java.util.concurrent.ConcurrentHashMap<>();
 	private static String lastWarned = "";
 
 	/**
-	 * What other Sleep players should see instead of your real nick: your Nick Hider name (a custom one has to pass the word /
+	 * What other Caos players should see instead of your real nick: your Nick Hider name (a custom one has to pass the word /
 	 * phone / link filter), or "" to show the real nick.
 	 */
 	public static String publicNick() {
@@ -53,7 +53,7 @@ public class NickHiderMod extends Mod {
 					lastWarned = n;
 					Minecraft mc = Minecraft.getInstance();
 					if (mc.player != null) {
-						mc.player.sendSystemMessage(Component.literal("[Sleep] Other players will not see that custom nick (" + why + " are not allowed). Only you see it.")
+						mc.player.sendSystemMessage(Component.literal("[Caos] Other players will not see that custom nick (" + why + " are not allowed). Only you see it.")
 								.withStyle(net.minecraft.ChatFormatting.YELLOW));
 					}
 				}
@@ -63,7 +63,7 @@ public class NickHiderMod extends Mod {
 		return n.length() > 32 ? n.substring(0, 32) : n;
 	}
 
-	/** A Sleep player told us what to show instead of their nick ("" = back to the real one). */
+	/** A Caos player told us what to show instead of their nick ("" = back to the real one). */
 	public static void onRemote(String realNick, String shown) {
 		if (realNick == null || realNick.isEmpty()) {
 			return;

@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(MinecraftClient.class)
 public class FrameSyncMixin {
 	@Inject(method = "render", at = @At("RETURN"), require = 0)
-	private void sleep$frameSync(boolean tick, CallbackInfo ci) {
+	private void caos$frameSync(boolean tick, CallbackInfo ci) {
 		if (InputOptimizerMod.syncFrames()) GL11.glFinish();
 	}
 }

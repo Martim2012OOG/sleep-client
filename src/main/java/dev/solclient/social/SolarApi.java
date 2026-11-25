@@ -43,7 +43,7 @@ public final class SolarApi {
 	/** Session token (Bearer). Saved in config/plegumo-social.json so you stay logged in. */
 	static volatile String token;
 
-	/** The Sleep session token (for the sync / audio Workers, which ask the site who it belongs to). */
+	/** The Caos session token (for the sync / audio Workers, which ask the site who it belongs to). */
 	public static String tokenValue() {
 		return token == null ? "" : token;
 	}
@@ -52,7 +52,7 @@ public final class SolarApi {
 	private SolarApi() {
 	}
 
-	/** Backend address (for other parts of Sleep, like the extension store). */
+	/** Backend address (for other parts of Caos, like the extension store). */
 	public static String baseUrl() {
 		return base;
 	}
@@ -103,7 +103,7 @@ public final class SolarApi {
 				token = t;
 			}
 		} catch (IOException | RuntimeException e) {
-			System.err.println("[Sleep] Could not read plegumo-social.json: " + e);
+			System.err.println("[Caos] Could not read plegumo-social.json: " + e);
 		}
 	}
 
@@ -117,7 +117,7 @@ public final class SolarApi {
 		try {
 			Files.writeString(file(), GSON.toJson(o));
 		} catch (IOException e) {
-			System.err.println("[Sleep] Could not save plegumo-social.json: " + e);
+			System.err.println("[Caos] Could not save plegumo-social.json: " + e);
 		}
 	}
 
@@ -126,7 +126,7 @@ public final class SolarApi {
 	}
 
 	// ---------------------------------------------------------------- requests
-	/** For extensions (Ranked PvP...): a signed-in call to the Sleep site API. method = GET / POST / PUT / PATCH / DELETE. */
+	/** For extensions (Ranked PvP...): a signed-in call to the Caos site API. method = GET / POST / PUT / PATCH / DELETE. */
 	public static Res call(String method, String path, JsonObject body) {
 		return send(method, path, body, true, 15);
 	}

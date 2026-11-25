@@ -5,7 +5,7 @@ import dev.solclient.SolClient;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 /**
- * The buttons of the Right Shift menu (the shop's Buy / Equip / Unequip...), for every other Sleep screen, so they all
+ * The buttons of the Right Shift menu (the shop's Buy / Equip / Unequip...), for every other Caos screen, so they all
  * look the same: with "Button Style: Classic" the raised slate button with its dark bottom edge, otherwise the soft
  * rounded one. Neutral colours (tiles / off) become the slate colour, coloured ones (accent, green, red) stay.
  */

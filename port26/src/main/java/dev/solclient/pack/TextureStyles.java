@@ -39,7 +39,7 @@ import net.minecraft.world.item.ItemStack;
  * Texture Styles engine. The player picks a community resource pack (Modrinth) PER ITEM / category; this class
  * searches Modrinth, downloads the packs (SHA-1 checked, cached), and builds ONE generated pack
  * (resourcepacks/kubo-styles-HASH.zip) that holds only the files of the chosen categories (plus the models and
- * textures those files point to). The original packs are never changed and nothing is bundled in Sleep.
+ * textures those files point to). The original packs are never changed and nothing is bundled in Caos.
  */
 public final class TextureStyles {
 
@@ -124,7 +124,7 @@ public final class TextureStyles {
 
 	// ------------------------------------------------------------------ http
 	private static final String API = "https://api.modrinth.com/v2";
-	private static final String UA = "Sleep-Client/1.0 (Minecraft client mod)";
+	private static final String UA = "Caos-Client/1.0 (Minecraft client mod)";
 	private static final HttpClient HTTP = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.NORMAL)
 			.connectTimeout(Duration.ofSeconds(12)).build();
 
@@ -875,7 +875,7 @@ public final class TextureStyles {
 		try (OutputStream os = Files.newOutputStream(tmp); ZipOutputStream zos = new ZipOutputStream(os)) {
 			zos.setLevel(1); // fast to write; the game reads it from this computer
 			zos.putNextEntry(new ZipEntry("pack.mcmeta"));
-			zos.write(CustomFont.mcmeta("Texture Styles").replace("Sleep custom font: Texture Styles", "Sleep Texture Styles").getBytes(StandardCharsets.UTF_8));
+			zos.write(CustomFont.mcmeta("Texture Styles").replace("Caos custom font: Texture Styles", "Caos Texture Styles").getBytes(StandardCharsets.UTF_8));
 			zos.closeEntry();
 			for (var e : out.entrySet()) {
 				zos.putNextEntry(new ZipEntry(e.getKey()));

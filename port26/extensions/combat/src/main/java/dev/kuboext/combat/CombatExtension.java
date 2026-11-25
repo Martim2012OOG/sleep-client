@@ -1,21 +1,21 @@
 package dev.kuboext.combat;
 
-import dev.sleepclient.mods.TargetMarkerMod;
-import dev.sleepclient.mods.TargetHudMod;
-import dev.sleepclient.mods.DamageNumbersMod;
-import dev.sleepclient.mods.DamageTintMod;
-import dev.sleepclient.mods.LowHealthMod;
-import dev.sleepclient.mods.HitSoundsMod;
-import dev.sleepclient.mods.KillSoundsMod;
-import dev.sleepclient.mods.AttackCooldownMod;
-import dev.sleepclient.mods.ItemCooldownsMod;
-import dev.sleepclient.mods.TrajectoriesMod;
-import dev.sleepclient.mods.TridentAssistMod;
-import dev.sleepclient.ext.KuboApi;
-import dev.sleepclient.ext.KuboExtension;
+import dev.solclient.mods.TargetMarkerMod;
+import dev.solclient.mods.TargetHudMod;
+import dev.solclient.mods.DamageNumbersMod;
+import dev.solclient.mods.DamageTintMod;
+import dev.solclient.mods.LowHealthMod;
+import dev.solclient.mods.HitSoundsMod;
+import dev.solclient.mods.KillSoundsMod;
+import dev.solclient.mods.AttackCooldownMod;
+import dev.solclient.mods.ItemCooldownsMod;
+import dev.solclient.mods.TrajectoriesMod;
+import dev.solclient.mods.TridentAssistMod;
+import dev.solclient.ext.KuboApi;
+import dev.solclient.ext.KuboExtension;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 
-/** Sleep extension "Combat Extras": Target Marker, Target HUD, Damage Numbers, Damage Tint, Low Health, Hit Sounds, Kill Sounds, Attack Cooldown, Item Cooldowns, Trajectories and Trident Assist. */
+/** Caos extension "Combat Extras": Target Marker, Target HUD, Damage Numbers, Damage Tint, Low Health, Hit Sounds, Kill Sounds, Attack Cooldown, Item Cooldowns, Trajectories and Trident Assist. */
 public class CombatExtension implements KuboExtension {
 
 	@Override

@@ -127,7 +127,7 @@ public final class SkyLyrics {
 					render(ctx.poseStack(), ctx.submitNodeCollector());
 				} catch (RuntimeException e) {
 					if (error == null) {
-						System.err.println("[Sleep] sky lyrics: " + e);
+						System.err.println("[Caos] sky lyrics: " + e);
 						e.printStackTrace();
 					}
 					error = String.valueOf(e);
@@ -137,7 +137,7 @@ public final class SkyLyrics {
 			}
 		});
 		} catch (Throwable t) {
-			System.err.println("[Sleep] sky lyrics unavailable: " + t);
+			System.err.println("[Caos] sky lyrics unavailable: " + t);
 		}
 	}
 

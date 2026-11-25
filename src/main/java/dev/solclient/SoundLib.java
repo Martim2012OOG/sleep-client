@@ -59,7 +59,7 @@ public final class SoundLib {
 				mc.getSoundManager().play(PositionedSoundInstance.ui(SoundEvent.of(id), pitch, volume));
 			}
 		} catch (RuntimeException ex) {
-			System.err.println("[Sleep] sound: " + ex);
+			System.err.println("[Caos] sound: " + ex);
 		}
 	}
 
@@ -82,7 +82,7 @@ public final class SoundLib {
 				});
 				c.start();
 			} catch (Exception ex) {
-				System.err.println("[Sleep] sound (wav): " + ex);
+				System.err.println("[Caos] sound (wav): " + ex);
 			}
 		}, "kubo-sound");
 		t.setDaemon(true);
@@ -107,7 +107,7 @@ public final class SoundLib {
 				game.add(id.toString());
 			}
 		} catch (RuntimeException ex) {
-			System.err.println("[Sleep] sound list: " + ex);
+			System.err.println("[Caos] sound list: " + ex);
 		}
 		java.util.Collections.sort(game);
 		out.addAll(game);

@@ -1,4 +1,4 @@
-// Sleep audio helper (macOS 13+): captures the sound the computer is playing (ScreenCaptureKit) and writes it to stdout as raw
+// Caos audio helper (macOS 13+): captures the sound the computer is playing (ScreenCaptureKit) and writes it to stdout as raw
 // 16-bit little-endian mono PCM at 24000 Hz. The game reads it, compresses it and sends it to the friends who listen along.
 // macOS asks once for "Screen & System Audio Recording" the first time. Exits when the game closes (stdin ends).
 import Foundation
@@ -56,7 +56,7 @@ Task {
 		if !only.isEmpty && !wanted.isEmpty {
 			filter = SCContentFilter(display: display, including: wanted, exceptingWindows: [])
 		} else {
-			let skip = ["java", "minecraft", "discord", "sleep", "zoom", "teams", "facetime", "skype", "slack", "whatsapp", "telegram", "obs", "voicechat", "ts3", "teamspeak"]
+			let skip = ["java", "minecraft", "discord", "caos", "zoom", "teams", "facetime", "skype", "slack", "whatsapp", "telegram", "obs", "voicechat", "ts3", "teamspeak"]
 			let out = content.applications.filter { app in
 				let n = app.applicationName.lowercased(), b = app.bundleIdentifier.lowercased()
 				return skip.contains { n.contains($0) || b.contains($0) }
@@ -72,8 +72,8 @@ Task {
 		cfg.height = 2
 		cfg.minimumFrameInterval = CMTime(value: 1, timescale: 1)
 		let stream = SCStream(filter: filter, configuration: cfg, delegate: tap)
-		try stream.addStreamOutput(tap, type: .audio, sampleHandlerQueue: DispatchQueue(label: "sleep.audio"))
-		try stream.addStreamOutput(tap, type: .screen, sampleHandlerQueue: DispatchQueue(label: "sleep.video"))
+		try stream.addStreamOutput(tap, type: .audio, sampleHandlerQueue: DispatchQueue(label: "caos.audio"))
+		try stream.addStreamOutput(tap, type: .screen, sampleHandlerQueue: DispatchQueue(label: "caos.video"))
 		try await stream.startCapture()
 		FileHandle.standardError.write(Data("capturing\n".utf8))
 	} catch {

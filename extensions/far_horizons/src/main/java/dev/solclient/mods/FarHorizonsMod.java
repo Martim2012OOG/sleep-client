@@ -114,7 +114,7 @@ public class FarHorizonsMod extends Mod {
 			return;
 		}
 		hooked = true;
-		System.out.println("[Sleep] Far Horizons: Sodium=" + net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("sodium") + " Iris=" + net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("iris"));
+		System.out.println("[Caos] Far Horizons: Sodium=" + net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("sodium") + " Iris=" + net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("iris"));
 		try {
 			WorldRenderEvents.BEFORE_ENTITIES.register(ctx -> {
 				long t0 = System.nanoTime();
@@ -128,7 +128,7 @@ public class FarHorizonsMod extends Mod {
 				}
 			});
 		} catch (Throwable t) {
-			System.err.println("[Sleep] Far Horizons rendering unavailable: " + t);
+			System.err.println("[Caos] Far Horizons rendering unavailable: " + t);
 		}
 		try {
 			ClientLifecycleEvents.CLIENT_STOPPING.register(c -> saveNow());

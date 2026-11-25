@@ -342,26 +342,26 @@ public class HostWorldScreen extends UiScreen {
 	// ------------------------------------------------------------------ invite tab
 	private void drawInvite(DrawContext c, int x, int y, int w, int h) {
 		// how friends join (relay code, or the IP when the router port is open)
-		String how = KuboRelay.hostConnected() ? Lang.tr("Friends with Sleep join with the address below", "Os amigos com Sleep entram com o endereço em baixo")
+		String how = KuboRelay.hostConnected() ? Lang.tr("Friends with Caos join with the address below", "Os amigos com Caos entram com o endereço em baixo")
 				: Lang.tr("Share the address below", "Partilha o endereço em baixo");
 		Gfx.textRaw(c, fitRaw(how, w - 4), x + 2, y + 2, Theme.DIM);
 		if (KuboRelay.hostConnected() && HostWorld.routerOk()) {
-			String ip = Lang.tr("Without Sleep: ", "Sem Sleep: ") + HostWorld.ipAddress();
+			String ip = Lang.tr("Without Caos: ", "Sem Caos: ") + HostWorld.ipAddress();
 			Gfx.textRaw(c, fitRaw(ip, w - 4), x + 2, y + 13, 0xFF5E6272);
 		}
 		int ly = y + 28, lh = h - 28;
-		Gfx.textRaw(c, Lang.tr("SLEEP FRIENDS", "AMIGOS DO SLEEP"), x + 2, ly - 2, 0xFF6B7080);
+		Gfx.textRaw(c, Lang.tr("CAOS FRIENDS", "AMIGOS DO CAOS"), x + 2, ly - 2, 0xFF6B7080);
 		ly += 12;
 		lh -= 12;
 		List<Social.User> list = new ArrayList<>(Social.friends);
 		list.sort((a, b) -> Boolean.compare(b.online(), a.online()));
 		if (Social.me == null) {
-			Gfx.textFit(c, Lang.tr("Log in to Sleep (Right Shift > Friends) to invite friends", "Entra no Sleep (Right Shift > Amigos) para convidar"), x + w / 2, w - 6, ly + 24,
+			Gfx.textFit(c, Lang.tr("Log in to Caos (Right Shift > Friends) to invite friends", "Entra no Caos (Right Shift > Amigos) para convidar"), x + w / 2, w - 6, ly + 24,
 					Theme.DIM);
 			return;
 		}
 		if (list.isEmpty()) {
-			Gfx.textFit(c, Lang.tr("No Sleep friends yet - copy the address instead", "Ainda não tens amigos no Sleep - copia o endereço"), x + w / 2, w - 6, ly + 24, Theme.DIM);
+			Gfx.textFit(c, Lang.tr("No Caos friends yet - copy the address instead", "Ainda não tens amigos no Caos - copia o endereço"), x + w / 2, w - 6, ly + 24, Theme.DIM);
 			return;
 		}
 		int rowH = ROW_H + GAP, maxScroll = Math.max(0, list.size() * rowH - lh);

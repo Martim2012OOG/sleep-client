@@ -9,13 +9,13 @@ import java.util.List;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 /**
- * Party HUD: your Sleep friends on the same server, with their head, health, hunger, armour and how far away they
+ * Party HUD: your Caos friends on the same server, with their head, health, hunger, armour and how far away they
  * are (with an arrow pointing to them). Shares your own health the same way so they see you too.
  */
 public class PartyHudMod extends HudMod {
 
 	public static PartyHudMod instance;
-	private final Option.Choice who = choice("Show", 0, "Friends", "Every Sleep Player");
+	private final Option.Choice who = choice("Show", 0, "Friends", "Every Caos Player");
 	private final Option.Bool distance = bool("Distance & Arrow", true);
 	private final Option.Bool hunger = bool("Hunger", true);
 	private final Option.Num max = num("Max Players", 6, 1, 10, 1, "");

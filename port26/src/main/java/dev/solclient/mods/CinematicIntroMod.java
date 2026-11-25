@@ -23,7 +23,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.sounds.SoundSource;
 
 /**
- * Cinematic Intro (like the "Reimagined Intro" mod, built into Sleep with no extra mods): a black loading screen,
+ * Cinematic Intro (like the "Reimagined Intro" mod, built into Caos with no extra mods): a black loading screen,
  * then an intro video when the game opens, and a looping video + music behind the home screen.
  * The videos are files in config/kubo-intro (intro.mp4, main.mp4, audio.wav): use "Import" to take them from the
  * Reimagined Intro jar, or put your own there. Videos play with ffmpeg (the same one Fight Cam uses).
@@ -36,7 +36,7 @@ public class CinematicIntroMod extends Mod {
 	private final Option.Bool homeVideo = bool("Video Behind The Home Screen", true);
 	private final Option.Bool music = bool("Music", true);
 	private final Option.Num volume = num("Volume", 80, 0, 100, 5, "%");
-	private final Option.Bool blackLoading = bool("Black Loading Screen While Intro Plays", false).tip("Paints the game loading screen black before the intro. Off by default: the normal loading screen (with the Sleep logo) shows instead.");
+	private final Option.Bool blackLoading = bool("Black Loading Screen While Intro Plays", false).tip("Paints the game loading screen black before the intro. Off by default: the normal loading screen (with the Caos logo) shows instead.");
 	private final Option.Bool canSkip = bool("Esc / Click Skips The Intro", true);
 	private String importMsg = "";
 
@@ -50,7 +50,7 @@ public class CinematicIntroMod extends Mod {
 		super("Cinematic Intro", "cinematic_intro", "Intro video when the game opens and a video behind the home screen, like Reimagined Intro.",
 				Category.VISUAL);
 		instance = this;
-		inSettings = true; // lives in Sleep Settings now, not in the mods list
+		inSettings = true; // lives in Caos Settings now, not in the mods list
 		action("Videos (intro.mp4, main.mp4, audio.wav)", "Open Folder", () -> {
 			try {
 				Files.createDirectories(dir());
@@ -98,7 +98,7 @@ public class CinematicIntroMod extends Mod {
 		Thread t = new Thread(() -> {
 			ffmpeg = Ffmpeg.findPath();
 			finding = false;
-		}, "Sleep ffmpeg finder");
+		}, "Caos ffmpeg finder");
 		t.setDaemon(true);
 		t.start();
 	}
@@ -145,7 +145,7 @@ public class CinematicIntroMod extends Mod {
 			}
 			return true;
 		} catch (Exception e) {
-			System.err.println("[Sleep] seasonal intro: " + e);
+			System.err.println("[Caos] seasonal intro: " + e);
 			return false;
 		}
 	}
@@ -240,7 +240,7 @@ public class CinematicIntroMod extends Mod {
 			applyVolume();
 			c.start();
 		} catch (Exception e) {
-			System.err.println("[Sleep] intro music: " + e);
+			System.err.println("[Caos] intro music: " + e);
 		}
 	}
 

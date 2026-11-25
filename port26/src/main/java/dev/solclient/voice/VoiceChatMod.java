@@ -33,7 +33,7 @@ public class VoiceChatMod extends Mod {
 	private long lastStateSent;
 
 	public VoiceChatMod() {
-		super("Voice Chat", "voice_chat", "Talk with Sleep players near you on the same server, or with friends in a voice group.", Category.UTILITY);
+		super("Voice Chat", "voice_chat", "Talk with Caos players near you on the same server, or with friends in a voice group.", Category.UTILITY);
 		instance = this;
 		muted = bool("Muted", false).showIf(() -> false);
 		deafened = bool("Deafened", false).showIf(() -> false);

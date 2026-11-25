@@ -4,7 +4,7 @@ import dev.solclient.option.Option;
 
 /**
  * Host World (like Lunar): open your singleplayer world to your friends, even on other networks, choose game mode,
- * difficulty, cheats, slots and who can join, and invite your Sleep friends with Shift + Tab.
+ * difficulty, cheats, slots and who can join, and invite your Caos friends with Shift + Tab.
  * The settings here are the ones the Host World screen uses.
  */
 public class HostWorldMod extends Mod {
@@ -20,7 +20,7 @@ public class HostWorldMod extends Mod {
 	public final Option.Bool nonPremium = bool("Allow Non-Premium Accounts", true)
 			.tip("Friends whose Minecraft account is not an original (Microsoft) one can join too. Names are then not checked with Mojang, so keep World Privacy on Whitelist if you don't trust everyone with the address.");
 	public final Option.Text port = text("Custom Port", "", 5, "Automatic");
-	public final Option.Bool anywhere = bool("Friends From Anywhere (Sleep Relay)", true);
+	public final Option.Bool anywhere = bool("Friends From Anywhere (Caos Relay)", true);
 	public final Option.Bool openRouter = bool("Also Open The Router Port (UPnP)", true);
 	public final Option.Text relay = text("Relay Server", "", 120, "host.endlock.net");
 	/** Names allowed in (Whitelist): edited in the Host World screen, comma separated. */

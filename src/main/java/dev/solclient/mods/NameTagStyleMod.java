@@ -2,7 +2,7 @@ package dev.solclient.mods;
 
 import dev.solclient.option.Option;
 
-/** How name tags look (background darkness) and whether Sleep forces them to show when the server hides them. */
+/** How name tags look (background darkness) and whether Caos forces them to show when the server hides them. */
 public class NameTagStyleMod extends Mod {
 
 	public static NameTagStyleMod instance;

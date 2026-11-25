@@ -213,12 +213,12 @@ public final class Persona {
 						out.add(new Persona("custom_" + base, name, tag, "custom", v, Gfx.id("generated/persona_" + base.toLowerCase(java.util.Locale.ROOT).replaceAll("[^a-z0-9_]", "_") + ".png"),
 								Files.isRegularFile(img) ? img : null, true));
 					} catch (Exception e) {
-						System.err.println("[Sleep] persona " + fn + ": " + e);
+						System.err.println("[Caos] persona " + fn + ": " + e);
 					}
 				}
 			}
 		} catch (Exception e) {
-			System.err.println("[Sleep] personas folder: " + e);
+			System.err.println("[Caos] personas folder: " + e);
 		}
 		customCache = out;
 		return out;

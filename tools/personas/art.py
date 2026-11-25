@@ -934,7 +934,7 @@ if __name__ == "__main__":
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     from voices import V
     root = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..")
-    out = sys.argv[1] if len(sys.argv) > 1 else os.path.join(root, "src/main/resources/assets/sleep_client/textures/persona")
+    out = sys.argv[1] if len(sys.argv) > 1 else os.path.join(root, "src/main/resources/assets/sol_client/textures/persona")
     os.makedirs(out, exist_ok=True)
     missing = []
     for vid, name, tag, cat, emoji, vals in V:

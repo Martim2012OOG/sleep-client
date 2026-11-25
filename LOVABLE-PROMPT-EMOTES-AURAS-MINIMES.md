@@ -1,10 +1,10 @@
 # Lovable prompt: 30 new emotes (replace the old 12) + new shop categories "Auras" and "Minimes"
 
-Paste everything below the line into Lovable, in the project that hosts the Sleep API (`https://pal-connect-plaza.lovable.app`, base `/api/public/gc`). Attach `emotes-catalogue.json`, `cosmetics-catalogue.json` and the folder `images/cosmetics/` from this zip.
+Paste everything below the line into Lovable, in the project that hosts the Caos API (`https://pal-connect-plaza.lovable.app`, base `/api/public/gc`). Attach `emotes-catalogue.json`, `cosmetics-catalogue.json` and the folder `images/cosmetics/` from this zip.
 
 ---
 
-The Sleep client was updated. Please change the shop data to match it. Nothing else about the API changes (same endpoints, same fields).
+The Caos client was updated. Please change the shop data to match it. Nothing else about the API changes (same endpoints, same fields).
 
 ## 1. Emotes: replace the old list with these 30
 

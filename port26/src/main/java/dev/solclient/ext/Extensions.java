@@ -16,7 +16,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.entrypoint.EntrypointContainer;
 
 /**
- * Sleep extensions. They all ship inside the Sleep jar (nested jars), but an extension does nothing until the player
+ * Caos extensions. They all ship inside the Caos jar (nested jars), but an extension does nothing until the player
  * installs it in Mods > Extensions: before that its mods are not even created, so it costs no FPS and no memory.
  * Installing / removing works straight away, no restart, and nothing is downloaded: no website is involved.
  * The installed ones are remembered in config/kubo-extensions.txt (one mod id per line).
@@ -82,7 +82,7 @@ public final class Extensions {
 		try {
 			Files.writeString(file(), String.join("\n", installed) + "\n", StandardCharsets.UTF_8);
 		} catch (IOException e) {
-			System.err.println("[Sleep] could not save the installed extensions: " + e);
+			System.err.println("[Caos] could not save the installed extensions: " + e);
 		}
 	}
 
@@ -99,7 +99,7 @@ public final class Extensions {
 		try {
 			list = FabricLoader.getInstance().getEntrypointContainers("kubo", KuboExtension.class);
 		} catch (Throwable t) {
-			System.err.println("[Sleep] extensions: " + t);
+			System.err.println("[Caos] extensions: " + t);
 			return;
 		}
 		try {
@@ -111,7 +111,7 @@ public final class Extensions {
 				}
 			}
 		} catch (IOException e) {
-			System.err.println("[Sleep] extensions: " + e);
+			System.err.println("[Caos] extensions: " + e);
 		}
 		installed.add(PRACTICE); // Ranked PvP, PvP / Bridge practice: always installed
 		for (EntrypointContainer<KuboExtension> c : list) {
@@ -120,7 +120,7 @@ public final class Extensions {
 			it.modId = md.getId();
 			it.id = shortId(it.modId);
 			String n = md.getName();
-			for (String p : new String[] {"Sleep – ", "Sleep - ", "Sleep: "}) {
+			for (String p : new String[] {"Caos – ", "Caos - ", "Caos: "}) {
 				if (n.startsWith(p)) {
 					n = n.substring(p.length());
 				}
@@ -166,10 +166,10 @@ public final class Extensions {
 				}
 				dev.solclient.Config.save();
 			}
-			System.out.println("[Sleep] extension started: " + it.modId + " (" + added.size() + " mods)");
+			System.out.println("[Caos] extension started: " + it.modId + " (" + added.size() + " mods)");
 			return added;
 		} catch (Throwable t) {
-			System.err.println("[Sleep] extension " + it.modId + " failed: " + t);
+			System.err.println("[Caos] extension " + it.modId + " failed: " + t);
 			status = it.name + ": error";
 			return null;
 		}
@@ -271,7 +271,7 @@ public final class Extensions {
 				try {
 					e.unload();
 				} catch (Throwable t) {
-					System.err.println("[Sleep] unload " + it.modId + ": " + t);
+					System.err.println("[Caos] unload " + it.modId + ": " + t);
 				}
 			}
 		}

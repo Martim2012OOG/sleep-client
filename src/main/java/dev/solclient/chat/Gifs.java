@@ -444,7 +444,7 @@ public final class Gifs {
 			});
 		} catch (Throwable t) {
 			FAILED.add(url);
-			System.err.println("[Sleep] GIF failed " + url + ": " + t);
+			System.err.println("[Caos] GIF failed " + url + ": " + t);
 		} finally {
 			if (pixels != null) {
 				STBImage.stbi_image_free(pixels);

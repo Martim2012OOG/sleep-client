@@ -56,7 +56,7 @@ public final class Panels {
 				} catch (RuntimeException e) {
 					if (!logged) {
 						logged = true;
-						System.err.println("[Sleep] floating panels: " + e);
+						System.err.println("[Caos] floating panels: " + e);
 						e.printStackTrace();
 					}
 				}
@@ -65,12 +65,12 @@ public final class Panels {
 			}
 		});
 		} catch (Throwable t) {
-			System.err.println("[Sleep] floating panels rendering unavailable: " + t);
+			System.err.println("[Caos] floating panels rendering unavailable: " + t);
 		}
 		try {
 			ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> client.execute(Panels::clear));
 		} catch (Throwable t) {
-			System.err.println("[Sleep] floating panels: could not hook disconnect: " + t);
+			System.err.println("[Caos] floating panels: could not hook disconnect: " + t);
 		}
 	}
 
@@ -178,7 +178,7 @@ public final class Panels {
 					}
 				}
 			} catch (Exception e) {
-				System.err.println("[Sleep] open in browser: " + e);
+				System.err.println("[Caos] open in browser: " + e);
 			}
 		}, "kubo-real-browser");
 		t.setDaemon(true);
@@ -353,7 +353,7 @@ public final class Panels {
 			if (!p.videoHint && (low.contains("instagram.com") || low.contains("tiktok.com") || low.contains("facebook.com") || low.contains("twitter.com") || low.contains("://x.com"))) {
 				p.videoHint = true;
 				dev.solclient.gui.Notify.show(dev.solclient.gui.Notify.Kind.INFO,
-						dev.solclient.Lang.tr("Videos here don't play in the built-in browser", "Os vídeos daqui não dão no browser do Sleep"),
+						dev.solclient.Lang.tr("Videos here don't play in the built-in browser", "Os vídeos daqui não dão no browser do Caos"),
 						AppMirror.MAC ? dev.solclient.Lang.tr("Press the share button on the bar: it opens in your browser", "Carrega no botão de partilhar da barra: abre no teu browser")
 								: dev.solclient.Lang.tr("Use Open Apps (O) with your browser", "Usa o Open Apps (O) com o teu browser"));
 			}
@@ -520,7 +520,7 @@ public final class Panels {
 		} catch (Throwable t) {
 			if (!logged) {
 				logged = true;
-				System.err.println("[Sleep] browser bar: " + t);
+				System.err.println("[Caos] browser bar: " + t);
 			}
 			return false;
 		}
@@ -646,7 +646,7 @@ public final class Panels {
 		}
 		if (!Mcef.installed()) {
 			text(p, cam, m, q, mc, "Browser engine missing", 0, cy + 0.08, sc, 0xFFFF8A8A, 0, mw, off);
-			text(p, cam, m, q, mc, "Rebuild Sleep with MCEF included", 0, cy - 0.08, 0.014, 0xFF8A8FA0, 0, mw, off);
+			text(p, cam, m, q, mc, "Rebuild Caos with MCEF included", 0, cy - 0.08, 0.014, 0xFF8A8FA0, 0, mw, off);
 			return;
 		}
 		if (Mcef.failed()) {

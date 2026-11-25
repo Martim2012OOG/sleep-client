@@ -84,7 +84,7 @@ public final class KillFx {
 				render(ctx.matrices(), ctx.commandQueue(), ctx.worldState().cameraRenderState.pos);
 			} catch (Throwable t) {
 				if (lastError == null) {
-					System.err.println("[Sleep] kill effect render: " + t);
+					System.err.println("[Caos] kill effect render: " + t);
 					t.printStackTrace();
 				}
 				lastError = String.valueOf(t);
@@ -124,7 +124,7 @@ public final class KillFx {
 			return false;
 		}
 		init();
-		System.out.println("[Sleep] kill effect: playing " + id + " at " + Math.round(x) + " " + Math.round(y) + " " + Math.round(z) + (skin != null ? " with skin" : ""));
+		System.out.println("[Caos] kill effect: playing " + id + " at " + Math.round(x) + " " + Math.round(y) + " " + Math.round(z) + (skin != null ? " with skin" : ""));
 		// model +Z points at you, so the creature crosses your screen from the side
 		Vec3d eye = mc.gameRenderer != null && mc.gameRenderer.getCamera() != null ? mc.gameRenderer.getCamera().getCameraPos()
 				: mc.player != null ? mc.player.getEyePos() : new Vec3d(x, y, z + 1);
@@ -309,7 +309,7 @@ public final class KillFx {
 				} // unknown commands are ignored
 			}
 		} catch (RuntimeException e) {
-			System.err.println("[Sleep] kill effect event '" + cmd + "': " + e);
+			System.err.println("[Caos] kill effect event '" + cmd + "': " + e);
 		}
 	}
 

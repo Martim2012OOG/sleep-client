@@ -484,7 +484,7 @@ Esc / Click Skips The Intro	Esc / clique salta a intro
 Esc to cancel	Esc para cancelar
 Events	Eventos
 Events that arrived (diagnose)	Eventos que chegaram (diagnóstico)
-Every Sleep Player	Todos os jogadores Sleep
+Every Caos Player	Todos os jogadores Caos
 Every clip also saved in vertical 9:16 for TikTok, Reels and Shorts.	Cada clip também guardado em vertical 9:16 para TikTok, Reels e Shorts.
 Every key on a keyboard: change, combos, reset	Todas as teclas num teclado: mudar, combinações, repor
 Everyone	Todos
@@ -568,7 +568,7 @@ Friend requests	Pedidos de amizade
 Friends	Amigos
 Friends & Chat	Amigos e Chat
 Friends Can See And Join My Server	Os amigos podem ver e entrar no meu servidor
-Friends From Anywhere (Sleep Relay)	Amigos De Qualquer Lado (Relay Sleep)
+Friends From Anywhere (Caos Relay)	Amigos De Qualquer Lado (Relay Caos)
 Friends Online	Amigos online
 Friends Only	Só amigos
 Front	Frente
@@ -613,7 +613,7 @@ HUD Options	Opções do HUD
 Hand	Mão
 Handle Colour	Cor da pega
 Hard	Difícil
-Have 5 Sleep friends	Tem 5 amigos no Sleep
+Have 5 Caos friends	Tem 5 amigos no Caos
 Hay Bale	Fardo de palha
 Haze colour	Cor da neblina
 Haze strength	Força da neblina
@@ -650,7 +650,7 @@ Hide GL	Esconder GL
 Hide HUD	Esconder HUD
 Hide IP, coordinates and messages	Esconde IP, coordenadas e mensagens
 Hide In First Person	Esconder em primeira pessoa
-Hide Sleep HUD While Loading	Esconder o HUD Sleep ao carregar
+Hide Caos HUD While Loading	Esconder o HUD Caos ao carregar
 Hide Message Previews	Esconder pré-visualização das mensagens
 Hide Others' Names	Esconder nomes dos outros
 Hide Others' Skins	Esconder skins dos outros
@@ -764,17 +764,17 @@ Kills	Kills
 Kills, deaths, K/D, time, blocks and distance this session, with a summary card.	Kills, mortes, K/D, tempo, blocos e distância nesta sessão, com um cartão de resumo.
 Kit Editor	Editor de kits
 Kit name	Nome do kit
-Sleep Builder	Sleep Builder
-Sleep Dark	Sleep Escuro
-Sleep Home Screen	Menu inicial Sleep
-Sleep Label	Etiqueta Sleep
-Sleep Logo On Loading Screen	Logo Sleep no ecrã de carregamento
-Sleep Pause Menu	Menu de pausa Sleep
-Sleep Settings	Definições do Sleep
-Sleep Style For Minecraft Menus	Estilo Sleep nos menus do Minecraft
-Sleep capture	Captura Sleep
-Sleep custom sky	Céu Sleep
-Sleep medals for kills, streaks, distance, clips and minigame records.	Medalhas do Sleep por kills, dias seguidos, distância, clips e recordes nos minijogos.
+Caos Builder	Caos Builder
+Caos Dark	Caos Escuro
+Caos Home Screen	Menu inicial Caos
+Caos Label	Etiqueta Caos
+Caos Logo On Loading Screen	Logo Caos no ecrã de carregamento
+Caos Pause Menu	Menu de pausa Caos
+Caos Settings	Definições do Caos
+Caos Style For Minecraft Menus	Estilo Caos nos menus do Minecraft
+Caos capture	Captura Caos
+Caos custom sky	Céu Caos
+Caos medals for kills, streaks, distance, clips and minigame records.	Medalhas do Caos por kills, dias seguidos, distância, clips e recordes nos minijogos.
 LEVEL	NÍVEL
 LINES	LINHAS
 LOD Brightness	Brilho do LOD
@@ -808,7 +808,7 @@ Length	Comprimento
 Level Head	Level Head
 Light	Luz
 Light Level	Nível de luz
-Lighter. Faster. Sleep.	Mais leve. Mais rápido. Sleep.
+Lighter. Faster. Caos.	Mais leve. Mais rápido. Caos.
 Lightning	Relâmpago
 Like (add to favourites)	Like (pôr nos favoritos)
 Line Clearer	Limpa-linhas
@@ -832,8 +832,8 @@ Loading your skin...	A carregar a tua skin...
 Loading...	A carregar...
 Lock / Unlock Key	Tecla bloquear / desbloquear
 Lock a hotbar slot (L) so Q can't drop it.	Bloqueia um slot da hotbar (L) para o Q não o largar.
-Log in to Sleep (Right Shift > Friends) to invite friends	Entra no Sleep (Right Shift > Amigos) para convidar amigos
-Log in to Sleep first	Entra primeiro na tua conta Sleep
+Log in to Caos (Right Shift > Friends) to invite friends	Entra no Caos (Right Shift > Amigos) para convidar amigos
+Log in to Caos first	Entra primeiro na tua conta Caos
 Log in with Microsoft	Entrar com a Microsoft
 Logo On Nametags	Logo nas name tags
 Look	Visual
@@ -965,7 +965,7 @@ Night top	Topo da noite
 No Bobbing	Sem balançar
 No Fluid Overlay	Sem overlay de líquidos
 No Hurt Cam	Sem tremer ao levar dano
-No Sleep friends yet - share the address instead	Ainda não tens amigos no Sleep - partilha o endereço
+No Caos friends yet - share the address instead	Ainda não tens amigos no Caos - partilha o endereço
 No Life	Sem vida
 No Render	Não renderizar
 No blue water overlay on your screen.	Sem a camada azul da água no ecrã.
@@ -1060,7 +1060,7 @@ Particles Around You (in-game)	Partículas à tua volta (no jogo)
 Particles circling around your player.	Partículas a girar à volta do teu jogador.
 Party	Festa
 Party HUD	HUD do grupo
-Pass 20 pipes in Sleep Bird	Passa 20 canos no Sleep Bird
+Pass 20 pipes in Caos Bird	Passa 20 canos no Caos Bird
 Paste	Colar
 Paste Code	Colar código
 Paste sky code	Colar código do céu
@@ -1103,8 +1103,8 @@ Placing & Breaking	Pôr e partir blocos
 Play	Jogar
 Play %d minutes	Joga %d minutos
 Play / Pause	Tocar / Pausa
-Play 10 hours with Sleep	Joga 10 horas com o Sleep
-Play 100 hours with Sleep	Joga 100 horas com o Sleep
+Play 10 hours with Caos	Joga 10 horas com o Caos
+Play 100 hours with Caos	Joga 100 horas com o Caos
 Play 30 days in a row	Joga 30 dias seguidos
 Play 7 days in a row	Joga 7 dias seguidos
 Play Sounds	Tocar sons
@@ -1144,7 +1144,7 @@ Pro recordings (hardware encoder, no lag), fight replays with a spectator camera
 Profiles	Perfis
 Progress Bar	Barra de progresso
 Progress Track Colour	Cor do fundo da barra
-Proximity voice chat with other Sleep players on the same server.	Chat de voz por proximidade com outros jogadores Sleep no mesmo servidor.
+Proximity voice chat with other Caos players on the same server.	Chat de voz por proximidade com outros jogadores Caos no mesmo servidor.
 Public	Público
 Pulse	Pulsar
 Pulse Glow	Brilho a pulsar
@@ -1310,7 +1310,7 @@ Set up	Configurar
 Set up the recorder (Clip Events > Recorder)	Configura o gravador (Eventos de clip > Gravador)
 Set up the recorder in FightCam > Recording	Configura o gravador em FightCam > Gravação
 Settings	Definições
-Settings for Sleep.	Definições do Sleep.
+Settings for Caos.	Definições do Caos.
 Settings loaded from the cloud	Definições carregadas da nuvem
 Shadow	Sombra
 Shape	Forma
@@ -1376,7 +1376,7 @@ Show Screens From	Mostrar ecrãs de
 Show Seconds	Mostrar segundos
 Show Server Address	Mostrar endereço do servidor
 Show Server Separator	Mostrar separador de servidor
-Show Solar Capes & Skins	Mostrar capas e skins Sleep
+Show Solar Capes & Skins	Mostrar capas e skins Caos
 Show Space Bar	Mostrar barra de espaço
 Show Stuck Arrows	Mostrar flechas espetadas
 Show Through Walls	Mostrar através das paredes
@@ -1384,7 +1384,7 @@ Show When Standing	Mostrar quando parado
 Show Wrong Blocks	Mostrar blocos errados
 Show an effect when something you hit dies.	Mostra um efeito quando algo em que acertaste morre.
 Show in chat	Mostrar no chat
-Shows "Playing Sleep Client" with the logo on your Discord profile.	Mostra "A jogar Sleep Client" com o logo no teu perfil do Discord.
+Shows "Playing Caos Client" with the logo on your Discord profile.	Mostra "A jogar Caos Client" com o logo no teu perfil do Discord.
 Shows how charged your next hit is.	Mostra quão carregado está o teu próximo golpe.
 Shows how many in-game days have passed in this world.	Mostra quantos dias passaram neste mundo.
 Shows how much RAM the game is using.	Mostra quanta RAM o jogo está a usar.
@@ -1437,7 +1437,7 @@ Smooth Progress	Progresso suave
 Smooth, cinematic mouse movement all the time.	Movimento do rato suave e cinematográfico o tempo todo.
 Smoothness	Suavidade
 Snake Charmer	Encantador de serpentes
-Snake, 2048, Sleep Bird, Breakout, Stack and Tetris	Snake, 2048, Sleep Bird, Breakout, Stack e Tetris
+Snake, 2048, Caos Bird, Breakout, Stack and Tetris	Snake, 2048, Caos Bird, Breakout, Stack e Tetris
 Snow	Neve
 Snowdrop	Gota de neve
 Snowflakes	Flocos de neve
@@ -1626,7 +1626,7 @@ Use a HUD code	Usar um código de HUD
 Use layout	Usar layout
 Use this set	Usar este conjunto
 Used / Max	Usado / Máximo
-Uses Sleep	Usa Sleep
+Uses Caos	Usa Caos
 Utility	Utilidade
 VICTORY	VITÓRIA
 Vanilla Blending	Mistura vanilla
@@ -1719,8 +1719,8 @@ You Can Use This	Podes usar isto
 You have	Tens
 You have 	Tens 
 Your Deaths	As tuas mortes
-Your Sleep medals	As tuas medalhas do Sleep
-Your Sleep settings saved on your account, the same on every computer.	As tuas definições do Sleep guardadas na conta, iguais em qualquer computador.
+Your Caos medals	As tuas medalhas do Caos
+Your Caos settings saved on your account, the same on every computer.	As tuas definições do Caos guardadas na conta, iguais em qualquer computador.
 What is playing on your computer, from any player: Spotify, YouTube Music, Apple Music, SoundCloud... in an app or in the browser. Keys to pause / skip.	O que está a tocar no teu computador, de qualquer player: Spotify, YouTube Music, Apple Music, SoundCloud... numa app ou no browser. Teclas para pausar / saltar.
 Your TikTok live chat in the game, gift alerts, your own donation sounds and big screen effects.	O chat do teu live do TikTok no jogo, alertas de presentes, os teus sons de doação e grandes efeitos no ecrã.
 Your best: 	O teu melhor: 
@@ -1783,7 +1783,7 @@ Smooth Fishing Line	Linha de pesca suave
 Draws the fishing line as a smooth curve.	Desenha a linha de pesca como uma curva suave.
  segments	 segmentos
 A coloured ghost where a player popped a totem.	Um fantasma colorido onde um jogador usou um totem.
-Also Sleep Friends	Também amigos do Sleep
+Also Caos Friends	Também amigos do Caos
 Armor HUD	Armor HUD
 Box Height	Altura da caixa
 Box Width	Largura da caixa
@@ -1842,7 +1842,7 @@ Loading the store...	A carregar a loja...
 No connection to the store	Sem ligação à loja
 The store is empty for now	A loja ainda está vazia
 The download was damaged - try again	O download veio estragado - tenta outra vez
-That file is not a Sleep extension	Esse ficheiro não é uma extensão do Sleep
+That file is not a Caos extension	Esse ficheiro não é uma extensão do Caos
 Hypixel	Hypixel
 Stats & Missions	Estatísticas e Missões
 Extra Particles	Partículas Extra
@@ -1856,7 +1856,7 @@ Aura, Trails, Jump Circles, Fireflies, Cave Dust, Falling Leaves, Kill Effect an
 Streamer Mode (hide IP, coordinates, messages) and TikTok Live (chat, gifts, sounds).	Modo Streamer (esconde IP, coordenadas, mensagens) e TikTok Live (chat, presentes, sons).
 Baby Mode, Dynamic Island and Skin Totem.	Modo Bebé, Dynamic Island e Skin Totem.
 See terrain far beyond your render distance (like Distant Horizons). Uses more memory.	Vê terreno muito para lá da render distance (tipo Distant Horizons). Usa mais memória.
-Sleep Builder (schematics), Litematica Helper and Ruler.	Sleep Builder (schematics), Litematica Helper e Régua.
+Caos Builder (schematics), Litematica Helper and Ruler.	Caos Builder (schematics), Litematica Helper e Régua.
 Party HUD, Pings (mark places for friends) and Sonar.	Party HUD, Pings (marcar sítios para os amigos) e Sonar.
 Pop Chams (ghost on totem pop), TierTagger (MCTiers tiers on names) and Cobweb Tweaks.	Pop Chams (fantasma quando usam totem), TierTagger (tiers do MCTiers nos nomes) e Teias de Aranha.
 Info HUD	Info HUD
@@ -1901,7 +1901,7 @@ Setup	Configuração
 Performance Preset	Predefinição de desempenho
 HUD Preset	Predefinição do HUD
 Balanced	Equilibrado
-Sleep (Original)	Sleep (Original)
+Caos (Original)	Caos (Original)
 Open Extensions	Abrir Extensões
 PvP Practice, the Kit Editor and Bridge Practice are in the Practice extension.	O Treino de PvP, o Editor de Kits e o Treino de Bridge estão na extensão Treino.
 Minecraft in this language too	Minecraft também nesta língua
@@ -1937,7 +1937,7 @@ Join a server or make a group to talk	Entra num servidor ou cria um grupo para f
 Join a server or a group to talk	Entra num servidor ou num grupo para falar
 Your microphone sends no sound (Mac: System Settings > Privacy > Microphone)	O microfone não envia som (Mac: Definições do Sistema > Privacidade > Microfone)
 this server	este servidor
-Talk with Sleep players near you on the same server, or with friends in a voice group.	Fala com jogadores do Sleep perto de ti no mesmo servidor, ou com amigos num grupo de voz.
+Talk with Caos players near you on the same server, or with friends in a voice group.	Fala com jogadores do Caos perto de ti no mesmo servidor, ou com amigos num grupo de voz.
 Show all	Mostrar tudo
 Click again to reset everything	Clica outra vez para repor tudo
 Nothing on this key	Nada nesta tecla
@@ -2002,8 +2002,8 @@ Extra sites	Sites extra
 browser sites to watch, e.g. radio.example.com	sites do browser a vigiar, ex.: radio.exemplo.com
 Spotify account (optional)	Conta do Spotify (opcional)
 Pause Menu Style	Estilo do menu de pausa
-Sleep (simple)	Sleep (simples)
-Classic + Sleep	Clássico + Sleep
+Caos (simple)	Caos (simples)
+Classic + Caos	Clássico + Caos
 Your Player In The Pause Menu	O teu jogador no menu de pausa
 Mods Screen	Ecrã de mods
 Mod Menu (original)	Mod Menu (original)
@@ -2151,31 +2151,31 @@ Put a .ttf file in the folder, then click Apply	Mete um ficheiro .ttf na pasta e
 Back to the normal fonts	De volta às letras normais
 Custom font on	Letra personalizada ativa
 The game did not find the font pack	O jogo não encontrou o pack da letra
-The language of Sleep's menus.	O idioma dos menus do Sleep.
-The font of all Sleep menus and HUD text.	A letra de todos os menus e textos do HUD do Sleep.
+The language of Caos's menus.	O idioma dos menus do Caos.
+The font of all Caos menus and HUD text.	A letra de todos os menus e textos do HUD do Caos.
 A ready-made look. You can still change every colour in Custom Colours.	Um estilo pronto. Podes mudar cada cor em Cores personalizadas.
 The main colour: selected items, sliders, highlights.	A cor principal: itens selecionados, sliders, destaques.
 Makes every menu see-through.	Deixa todos os menus transparentes.
-How solid the Sleep window is (lower = see the game behind it).	Quão sólida é a janela do Sleep (menos = vês o jogo por trás).
+How solid the Caos window is (lower = see the game behind it).	Quão sólida é a janela do Caos (menos = vês o jogo por trás).
 Behind everything in the menu.	Por trás de tudo no menu.
 The boxes that hold each mod.	As caixas onde está cada mod.
 Search box and other places where you type.	Caixa de pesquisa e outros sítios onde escreves.
 Descriptions and small grey text.	Descrições e texto pequeno cinzento.
 Delete / reset buttons and warnings.	Botões de apagar / repor e avisos.
 Makes this whole menu bigger or smaller.	Faz este menu todo maior ou mais pequeno.
-Replaces Minecraft's title screen with Sleep's.	Troca o ecrã inicial do Minecraft pelo do Sleep.
-Replaces the pause menu (Esc) with Sleep's.	Troca o menu de pausa (Esc) pelo do Sleep.
-Classic keeps Minecraft's own pause menu and adds Sleep's buttons.	Clássico mantém o menu de pausa do Minecraft e junta os botões do Sleep.
+Replaces Minecraft's title screen with Caos's.	Troca o ecrã inicial do Minecraft pelo do Caos.
+Replaces the pause menu (Esc) with Caos's.	Troca o menu de pausa (Esc) pelo do Caos.
+Classic keeps Minecraft's own pause menu and adds Caos's buttons.	Clássico mantém o menu de pausa do Minecraft e junta os botões do Caos.
 Halloween / Christmas decorations on the home screen.	Decorações de Halloween / Natal no ecrã inicial.
-Gives Minecraft's own menus (options, worlds, servers) Sleep's look.	Dá aos menus do Minecraft (opções, mundos, servidores) o visual do Sleep.
+Gives Minecraft's own menus (options, worlds, servers) Caos's look.	Dá aos menus do Minecraft (opções, mundos, servidores) o visual do Caos.
 Smooth hover animations on buttons (a little heavier).	Animações suaves nos botões (um pouco mais pesadas).
-How round the corners of Sleep's menus are.	Quão redondos são os cantos dos menus do Sleep.
+How round the corners of Caos's menus are.	Quão redondos são os cantos dos menus do Caos.
 Keep your HUD on screen while the F3 debug screen is open.	Mantém o HUD no ecrã enquanto o F3 está aberto.
-See the emotes other Sleep players do.	Vê os emotes que outros jogadores do Sleep fazem.
-Your Sleep friends see which server you are on and can join you.	Os teus amigos do Sleep veem em que servidor estás e podem entrar.
-Other Sleep players see the emotes you do.	Outros jogadores do Sleep veem os emotes que fazes.
-See the capes and skins that other Sleep players picked.	Vê as capas e skins que outros jogadores do Sleep escolheram.
-A small Sleep logo next to the name of Sleep players.	Um pequeno logótipo do Sleep ao lado do nome dos jogadores do Sleep.
+See the emotes other Caos players do.	Vê os emotes que outros jogadores do Caos fazem.
+Your Caos friends see which server you are on and can join you.	Os teus amigos do Caos veem em que servidor estás e podem entrar.
+Other Caos players see the emotes you do.	Outros jogadores do Caos veem os emotes que fazes.
+See the capes and skins that other Caos players picked.	Vê as capas e skins que outros jogadores do Caos escolheram.
+A small Caos logo next to the name of Caos players.	Um pequeno logótipo do Caos ao lado do nome dos jogadores do Caos.
 3D accessories (hats, wings...) on players.	Acessórios 3D (chapéus, asas...) nos jogadores.
 Opens this menu in game.	Abre este menu no jogo.
 Lets you drag the HUD elements to a new place.	Deixa-te arrastar os elementos do HUD para outro sítio.
@@ -2346,7 +2346,7 @@ Keep Flat Particles Too	Manter partículas planas
 Also keep the normal flat vanilla break particles.	Mantém também as partículas planas normais ao partir.
 Fewer pieces automatically when your FPS drops. No lag.	Menos pedaços automaticamente quando os FPS descem. Sem lag.
 3D Screens	Ecrãs 3D
-Inventory, crafting table, furnace and the other workstations lean towards your cursor like a 3D slab. Never the Sleep menu, the pause menu or chests.	O inventário, a mesa de criação, a fornalha e as outras bancadas inclinam-se para o cursor como uma placa 3D. Nunca o menu do Sleep, o menu de pausa ou baús.
+Inventory, crafting table, furnace and the other workstations lean towards your cursor like a 3D slab. Never the Caos menu, the pause menu or chests.	O inventário, a mesa de criação, a fornalha e as outras bancadas inclinam-se para o cursor como uma placa 3D. Nunca o menu do Caos, o menu de pausa ou baús.
 Crafting Table	Mesa de criação
 Furnaces	Fornalhas
 Anvil, Enchanting, Brewing, Smithing...	Bigorna, Encantamentos, Poções, Ferraria...
@@ -2361,7 +2361,7 @@ Rename	Renomear
 Player Number	Nº do jogador
 A star button next to Join in the Multiplayer list: favourite a server and keep it at the top.	Um botão de estrela ao lado de Entrar na lista Multijogador: favorita um servidor e mantém-no no topo.
 Black Loading Screen While Intro Plays	Ecrã de carregamento preto durante a intro
-Paints the game loading screen black before the intro. Off by default: the normal loading screen (with the Sleep logo) shows instead.	Pinta o ecrã de carregamento de preto antes da intro. Desligado por defeito: aparece o ecrã de carregamento normal (com o logo do Sleep).
+Paints the game loading screen black before the intro. Off by default: the normal loading screen (with the Caos logo) shows instead.	Pinta o ecrã de carregamento de preto antes da intro. Desligado por defeito: aparece o ecrã de carregamento normal (com o logo do Caos).
 Install more mods (Hypixel, stats, particles...)	Instalar mais mods (Hypixel, estatísticas, partículas...)
 Better Search	Better Search
 Smarter, better search in the creative tab, recipe book and chat commands (typos, other languages, tooltips).	Pesquisa mais inteligente no separador criativo, livro de receitas e comandos do chat (erros de escrita, outras línguas, tooltips).
@@ -2402,7 +2402,7 @@ Common	Comum
 Rare	Raro
 Epic	Épico
 Legendary	Lendário
-Log in to Sleep to open crates	Inicia sessão no Sleep para abrir caixas
+Log in to Caos to open crates	Inicia sessão no Caos para abrir caixas
 HALLOWEEN	HALLOWEEN
 CHRISTMAS	NATAL
 Store	Loja
@@ -2437,16 +2437,16 @@ Forget After	Esquecer depois de
 Tiny Tools	Ferramentas pequeninas
 Tool Size	Tamanho das ferramentas
 Your own cape is for VIPs: get capes in the shop instead	A tua própria capa é para VIPs: arranja capas na loja
-Owner and Team badge only: your name as a colour, gradient, animated gradient or rainbow. Every Sleep player sees it.	Só para a badge de Dono e de Equipa: o teu nome numa cor, degradé, degradé animado ou arco-íris. Todos os jogadores com Sleep veem.
+Owner and Team badge only: your name as a colour, gradient, animated gradient or rainbow. Every Caos player sees it.	Só para a badge de Dono e de Equipa: o teu nome numa cor, degradé, degradé animado ou arco-íris. Todos os jogadores com Caos veem.
 Animated Gradient	Degradé animado
-Show To Other Sleep Players	Mostrar aos outros jogadores com Sleep
+Show To Other Caos Players	Mostrar aos outros jogadores com Caos
 Custom Gradient (Owner)	Degradé personalizado (Dono)
 Custom Colours	Cores do degradé
 Custom Colour 3	Cor 3
 Custom Colour 4	Cor 4
 Custom Colour 5	Cor 5
 Player Card	Cartão de jogador
-Look at a player who uses Sleep and hold the key: his badge, cape and name style in a small card.	Olha para um jogador que usa Sleep e carrega na tecla: a badge, a capa e o estilo do nome dele num cartão pequeno.
+Look at a player who uses Caos and hold the key: his badge, cape and name style in a small card.	Olha para um jogador que usa Caos e carrega na tecla: a badge, a capa e o estilo do nome dele num cartão pequeno.
 Card Key	Tecla do cartão
 Show Whenever I Look At Him	Mostrar sempre que olho para ele
 Private Connection	Ligação Privada
@@ -2705,8 +2705,8 @@ Pauses new waves while the game is below 30 fps.	Pára de criar ondas novas enqu
 Water Colour Status	Estado da Cor da Água
 Refresh	Atualizar
 Install	Instalar
-Fast Sleep Menu Background	Fundo Rápido do Menu Sleep
-The Sleep menu uses a flat dark backdrop instead of blurring the whole game every frame. No fps drop when it is open.	O menu Sleep usa um fundo escuro simples em vez de desfocar o jogo todo a cada frame. Sem quebra de fps quando está aberto.
+Fast Caos Menu Background	Fundo Rápido do Menu Caos
+The Caos menu uses a flat dark backdrop instead of blurring the whole game every frame. No fps drop when it is open.	O menu Caos usa um fundo escuro simples em vez de desfocar o jogo todo a cada frame. Sem quebra de fps quando está aberto.
 Better Visual	Melhor Visual
 Cinematic light, shadows, reflections and bloom with one click (installs a shader pack). Heavy on weak computers.	Luz cinematográfica, sombras, reflexos e bloom com um clique (instala um shader). Pesado em computadores fracos.
 Look	Estilo
@@ -2727,7 +2727,7 @@ Armor Stand Poses	Poses de Armor Stand
 Bedrock armor stand poses on Java. Look at an armor stand and press the key. Other players with the client see them too.	Poses de armor stand do Bedrock no Java. Olha para um armor stand e carrega na tecla. Os outros jogadores com o client também as veem.
 Cycle Pose Key	Tecla de Mudar Pose
 See Other Players' Poses	Ver Poses de Outros Jogadores
-Shows the poses that other Sleep users give to armor stands.	Mostra as poses que outros utilizadores do Sleep dão aos armor stands.
+Shows the poses that other Caos users give to armor stands.	Mostra as poses que outros utilizadores do Caos dão aos armor stands.
 Test Effect	Testar Efeito
 Test	Testar
 Pac-Man (3D)	Pac-Man (3D)
@@ -3042,11 +3042,11 @@ Changes the size of your throat and mouth without changing the pitch: below 0 = 
 Mac: Sharp Text and Menus (Retina)	Mac: Texto e menus nítidos (Retina)
 On = sharp text and menus. Off = the whole game, text included, is drawn at half resolution: more FPS on a Mac, but blurry / pixelated text. Restart the game after changing it.	Ligado = texto e menus nítidos. Desligado = o jogo todo, incluindo o texto, é desenhado a metade da resolução: mais FPS no Mac, mas texto desfocado / pixelado. Reinicia o jogo depois de mudar.
 Pause Menu Look	Aspeto do menu de pausa
-Simple = Sleep's small pause menu. Classic = Minecraft's own pause menu with Sleep's buttons and your player.	Simples = o menu de pausa pequeno do Sleep. Clássico = o menu de pausa do Minecraft com os botões do Sleep e o teu jogador.
+Simple = Caos's small pause menu. Classic = Minecraft's own pause menu with Caos's buttons and your player.	Simples = o menu de pausa pequeno do Caos. Clássico = o menu de pausa do Minecraft com os botões do Caos e o teu jogador.
 Essential's Pause Menu When Installed	Menu de pausa do Essential quando instalado
-With Essential installed, its own pause menu and player preview are used; Sleep only adds its small row of buttons.	Com o Essential instalado, usa-se o menu de pausa e a pré-visualização do jogador dele; o Sleep só junta a sua pequena fila de botões.
-Sleep Water Renderer	Renderizador de água do Sleep
-Sleep's own liquid renderer (no Iris, no shader pack): glossy water that reflects the sky, moving waves, sun glints, foam, spray from waterfalls and splashes, molten lava.	O renderizador de líquidos do próprio Sleep (sem Iris, sem shader pack): água brilhante que reflete o céu, ondas, reflexos do sol, espuma, salpicos de cascatas e mergulhos, lava derretida.
+With Essential installed, its own pause menu and player preview are used; Caos only adds its small row of buttons.	Com o Essential instalado, usa-se o menu de pausa e a pré-visualização do jogador dele; o Caos só junta a sua pequena fila de botões.
+Caos Water Renderer	Renderizador de água do Caos
+Caos's own liquid renderer (no Iris, no shader pack): glossy water that reflects the sky, moving waves, sun glints, foam, spray from waterfalls and splashes, molten lava.	O renderizador de líquidos do próprio Caos (sem Iris, sem shader pack): água brilhante que reflete o céu, ondas, reflexos do sol, espuma, salpicos de cascatas e mergulhos, lava derretida.
 Spray, Splashes And Foam	Salpicos e espuma
 Water Renderer Status	Estado do renderizador de água
 Your personal helper friend (special pet): talks with AI, hears you in voice chat, has moods... don't make him angry.	O teu amigo ajudante pessoal (pet especial): fala com IA, ouve-te no voice chat, tem humores... não o deixes zangado.
@@ -3057,7 +3057,7 @@ Model	Modelo
 Verity Status	Estado do Verity
 Talking to Verity	Falar com o Verity
 Listen In Voice Chat	Ouvir no voice chat
-Verity hears you through your voice chat (Simple Voice Chat, Plasmo, Sleep's voice chat...). Say "Verity" to call him.	O Verity ouve-te pelo teu voice chat (Simple Voice Chat, Plasmo, o voice chat do Sleep...). Diz "Verity" para o chamar.
+Verity hears you through your voice chat (Simple Voice Chat, Plasmo, Caos's voice chat...). Say "Verity" to call him.	O Verity ouve-te pelo teu voice chat (Simple Voice Chat, Plasmo, o voice chat do Caos...). Diz "Verity" para o chamar.
 Only When You Say "Verity"	Só quando dizes "Verity"
 In voice chat he only answers when you say his name, then keeps listening for 20 seconds. Off = he answers everything you say.	No voice chat só responde quando dizes o nome dele, e depois continua a ouvir 20 segundos. Desligado = responde a tudo o que dizes.
 Talk Key (hold to speak, tap to type)	Tecla para falar (segura para falar, toca para escrever)
@@ -3309,9 +3309,7 @@ Medium	Média
 High	Alta
 Import settings from other clients (Lunar, Badlion, Feather / Dawn)	Importar definições de outros clients (Lunar, Badlion, Feather / Dawn)
 Import	Importar
-Show My Nickname To Other Sleep Players	Mostrar o meu nick aos outros jogadores Sleep
+Show My Nickname To Other Caos Players	Mostrar o meu nick aos outros jogadores Caos
 Best Looks Mode (smooth, sharp far away)	Modo Melhor Visual (suave, nítido ao longe)
 Height Limit	Limite de altura
 Horse Stats	Estatísticas do cavalo
-Floating Words Look	Aspeto de palavras flutuantes
-One click: the words hang in the world in front of you, one by one, each in its own colour, thick and glowing, and the top bar writes the line as it is sung. Turns the lyrics on by itself and replaces the lyrics options below while it is on.	Um clique: as palavras ficam penduradas no mundo à tua frente, uma a uma, cada uma com a sua cor, grossas e com brilho, e a barra de cima escreve a frase à medida que é cantada. Liga as letras sozinho e substitui as opções de letras abaixo enquanto está ligado.

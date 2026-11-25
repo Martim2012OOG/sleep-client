@@ -171,7 +171,7 @@ public class ClipEventsMod extends Mod {
 				}
 			});
 		} catch (Throwable t) {
-			System.err.println("[Sleep] Clip Events: no chat events: " + t);
+			System.err.println("[Caos] Clip Events: no chat events: " + t);
 		}
 	}
 

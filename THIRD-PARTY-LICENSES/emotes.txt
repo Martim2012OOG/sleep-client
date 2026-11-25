@@ -1,8 +1,8 @@
-Emotes (assets/sleep_client/emotes): community animations made for Emotecraft
+Emotes (assets/sol_client/emotes): community animations made for Emotecraft
 
 KosmX/Emotecraft-emotes, https://github.com/KosmX/Emotecraft-emotes
   Licensed under CC0 1.0 Universal (public domain dedication): https://creativecommons.org/publicdomain/zero/1.0/legalcode
-  The authors of the single emotes are listed in assets/sleep_client/emotes/CREDITS.md.
+  The authors of the single emotes are listed in assets/sol_client/emotes/CREDITS.md.
 
 JustARoy/Emotecraft-Emotes (kneel, squats), https://github.com/JustARoy/Emotecraft-Emotes
   MIT License - Copyright (c) 2024 JustARoy

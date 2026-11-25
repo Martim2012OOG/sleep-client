@@ -10,13 +10,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.client.Minecraft;
 
 /**
- * Small live link between Sleep players on the same server (through the presence room): your health / hunger /
+ * Small live link between Caos players on the same server (through the presence room): your health / hunger /
  * position for the Party HUD, and pings ("enemy here", "come here"). Sent about once a second while something
  * needs it, and only to people in that server's room.
  */
 public final class KuboLink {
 
-	/** What we know about another Sleep player on this server. */
+	/** What we know about another Caos player on this server. */
 	public static final class State {
 		public String uuid, nick = "", dim = "";
 		public float hp = 20, maxHp = 20, food = 20, armor;
@@ -221,7 +221,7 @@ public final class KuboLink {
 			try {
 				dev.solclient.music.MusicShare.onRemote(uuid, nick, kx); // Music Share: the song above the head, listen-along messages
 			} catch (Throwable t) { // um pedido estranho de outro jogador nunca pode deitar o jogo abaixo
-				System.err.println("[Sleep] Music Share ignored a message: " + t);
+				System.err.println("[Caos] Music Share ignored a message: " + t);
 			}
 		}
 		if (kx.has("dn") && nick != null) {
@@ -294,7 +294,7 @@ public final class KuboLink {
 		}
 	}
 
-	/** True if this account uuid (no dashes) belongs to one of your Sleep friends. */
+	/** True if this account uuid (no dashes) belongs to one of your Caos friends. */
 	public static boolean isFriend(String uuid, String nick) {
 		for (Social.User u : Social.friends) {
 			if (u.mcUuid != null && u.mcUuid.replace("-", "").equalsIgnoreCase(uuid)) {

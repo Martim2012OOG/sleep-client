@@ -38,13 +38,13 @@ import net.minecraft.resource.ResourcePackManager;
 import net.minecraft.util.Identifier;
 
 /**
- * Resource packs of the Sleep site: list (GET /resource-packs), install (download + SHA-1 + activate) and the
+ * Resource packs of the Caos site: list (GET /resource-packs), install (download + SHA-1 + activate) and the
  * pictures (icons / banners). The decisions (file names, SHA-1, install state, links) live in {@link KuboPackLogic},
  * which is unit tested. Everything that blocks runs on {@link Social#IO}, never on the render thread.
  */
 public final class KuboPacks {
 
-	private static final String UA = "Sleep-Client/1.0 (Minecraft client mod)";
+	private static final String UA = "Caos-Client/1.0 (Minecraft client mod)";
 	private static final long MAX_PACK_BYTES = 1_500_000_000L;
 	private static final HttpClient HTTP = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.NORMAL)
 			.connectTimeout(Duration.ofSeconds(12)).build();

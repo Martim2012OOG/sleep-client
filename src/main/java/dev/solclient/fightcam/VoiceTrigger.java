@@ -103,7 +103,7 @@ public final class VoiceTrigger {
 			if (live(g)) {
 				run(l, g);
 			}
-		}, "Sleep-Voice");
+		}, "Caos-Voice");
 		thread.setDaemon(true);
 		thread.setPriority(Thread.MIN_PRIORITY + 1);
 		thread.start();
@@ -193,7 +193,7 @@ public final class VoiceTrigger {
 		if (ready && appleProblem.isEmpty()) {
 			appleProblem = "Apple voice recognition stopped";
 		}
-		System.err.println("[Sleep] Apple voice: " + appleProblem + " - using the offline engine");
+		System.err.println("[Caos] Apple voice: " + appleProblem + " - using the offline engine");
 		return false;
 	}
 
@@ -257,7 +257,7 @@ public final class VoiceTrigger {
 		} catch (Throwable t) {
 			status = t instanceof javax.sound.sampled.LineUnavailableException || t instanceof IllegalArgumentException
 					? "No microphone (Mac: System Settings > Privacy > Microphone > allow the launcher)" : "Voice error: " + t.getMessage();
-			System.err.println("[Sleep] own voice: " + t);
+			System.err.println("[Caos] own voice: " + t);
 		} finally {
 			if (gen == g) {
 				running = false;
@@ -370,7 +370,7 @@ public final class VoiceTrigger {
 						? "No microphone (Mac: System Settings > Privacy > Microphone > allow the launcher)"
 						: t instanceof java.io.IOException ? "Could not download the voice model: " + t.getMessage() + " (press Restart)"
 								: "Voice error: " + t.getClass().getSimpleName() + " " + t.getMessage();
-			System.err.println("[Sleep] Voice trigger: " + t);
+			System.err.println("[Caos] Voice trigger: " + t);
 		} finally {
 			if (gen == g) {
 				running = false;
@@ -637,7 +637,7 @@ public final class VoiceTrigger {
 					status = "Downloading the voice engine for Mac...";
 					Path zip = nat.resolve("vosk-osx.zip.part");
 					HttpClient http = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.ALWAYS).connectTimeout(Duration.ofSeconds(20)).build();
-					HttpResponse<Path> r = http.send(HttpRequest.newBuilder(URI.create(OSX_LIB)).header("User-Agent", "SleepClient").timeout(Duration.ofMinutes(5)).build(),
+					HttpResponse<Path> r = http.send(HttpRequest.newBuilder(URI.create(OSX_LIB)).header("User-Agent", "CaosClient").timeout(Duration.ofMinutes(5)).build(),
 							HttpResponse.BodyHandlers.ofFile(zip));
 					if (r.statusCode() != 200) {
 						throw new java.io.IOException("HTTP " + r.statusCode());
@@ -672,7 +672,7 @@ public final class VoiceTrigger {
 			return true;
 		} catch (Exception e) {
 			status = "Could not get the voice engine for Mac: " + e.getMessage() + " (press Restart)";
-			System.err.println("[Sleep] vosk native: " + e);
+			System.err.println("[Caos] vosk native: " + e);
 			return false;
 		}
 	}
@@ -723,7 +723,7 @@ public final class VoiceTrigger {
 				break;
 			} catch (Exception e) {
 				last = e;
-				System.err.println("[Sleep] voice model from " + url + ": " + e);
+				System.err.println("[Caos] voice model from " + url + ": " + e);
 				if (!running && !external) {
 					Files.deleteIfExists(zip);
 					return;
@@ -850,7 +850,7 @@ public final class VoiceTrigger {
 	private static void fetch(String url, Path to) throws Exception {
 		status = "Downloading voice model...";
 		HttpClient http = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.ALWAYS).connectTimeout(Duration.ofSeconds(20)).build();
-		HttpResponse<InputStream> r = http.send(HttpRequest.newBuilder(URI.create(url)).header("User-Agent", "SleepClient").timeout(Duration.ofMinutes(15)).build(),
+		HttpResponse<InputStream> r = http.send(HttpRequest.newBuilder(URI.create(url)).header("User-Agent", "CaosClient").timeout(Duration.ofMinutes(15)).build(),
 				HttpResponse.BodyHandlers.ofInputStream());
 		if (r.statusCode() != 200) {
 			r.body().close();

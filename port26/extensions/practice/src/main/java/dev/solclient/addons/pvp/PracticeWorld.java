@@ -23,8 +23,8 @@ import net.minecraft.server.MinecraftServer;
  */
 public final class PracticeWorld {
 
-	public static final String PVP = "Sleep PvP Practice";
-	public static final String BRIDGE = "Sleep Bridge Practice";
+	public static final String PVP = "Caos PvP Practice";
+	public static final String BRIDGE = "Caos Bridge Practice";
 
 	/** True from the moment the world is being opened until the add-on session has begun (or was cancelled). */
 	public static volatile boolean launching;

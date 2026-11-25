@@ -116,7 +116,7 @@ public class TimersMod extends HudMod {
 				default:
 			}
 		} catch (RuntimeException e) {
-			System.err.println("[Sleep] Bad timers message: " + e);
+			System.err.println("[Caos] Bad timers message: " + e);
 		}
 	}
 

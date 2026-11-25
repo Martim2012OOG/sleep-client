@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
  * Vanilla refuses "host.endlock.net/Name" as a server address (the Join / Done button stays grey). Relay addresses are
- * valid for Sleep: the connection itself is swapped for the local tunnel by HostWorldConnectMixin.
+ * valid for Caos: the connection itself is swapped for the local tunnel by HostWorldConnectMixin.
  */
 @Mixin(ServerAddress.class)
 public abstract class ServerAddressValidMixin {

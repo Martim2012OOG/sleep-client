@@ -10,7 +10,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Player Card: look at a player who uses Sleep and hold the key (or just look, if you choose) to see a small card with his
+ * Player Card: look at a player who uses Caos and hold the key (or just look, if you choose) to see a small card with his
  * head, name (with his name style), badge and cape. Can be turned off like any other mod.
  */
 public class PlayerCardMod extends HudMod {
@@ -24,7 +24,7 @@ public class PlayerCardMod extends HudMod {
 	private long lastSeen;
 
 	public PlayerCardMod() {
-		super("Player Card", "player_card", "Look at a player who uses Sleep and hold the key: his badge, cape and name style in a small card.", 0.5F, 0.12F);
+		super("Player Card", "player_card", "Look at a player who uses Caos and hold the key: his badge, cape and name style in a small card.", 0.5F, 0.12F);
 	}
 
 	@Override

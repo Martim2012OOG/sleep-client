@@ -108,8 +108,8 @@ public class ImportClientsScreen extends Screen {
 
 	private void choose(Found f) {
 		if (f.profiles().isEmpty()) {
-			result = Lang.tr("Nothing to import: ", "Nada para importar: ") + f.label() + Lang.tr(" was not found on this computer, or it has no settings Sleep can read yet.",
-					" não foi encontrado neste computador, ou não tem definições que o Sleep consiga ler ainda.");
+			result = Lang.tr("Nothing to import: ", "Nada para importar: ") + f.label() + Lang.tr(" was not found on this computer, or it has no settings Caos can read yet.",
+					" não foi encontrado neste computador, ou não tem definições que o Caos consiga ler ainda.");
 			return;
 		}
 		if (f.profiles().size() == 1) {

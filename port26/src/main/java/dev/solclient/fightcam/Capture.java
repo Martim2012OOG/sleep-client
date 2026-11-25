@@ -44,7 +44,7 @@ public final class Capture {
 
 	private static final Minecraft mc = Minecraft.getInstance();
 	private static final ExecutorService IO = Executors.newSingleThreadExecutor(r -> {
-		Thread t = new Thread(r, "Sleep-Capture-IO");
+		Thread t = new Thread(r, "Caos-Capture-IO");
 		t.setDaemon(true);
 		return t;
 	});
@@ -140,7 +140,7 @@ public final class Capture {
 			// shrink on the GPU: 2-6x less memory to copy and feed to ffmpeg (the main cause of lag on Retina Macs)
 			try {
 				int w = Math.max(2, Math.round((float) srcW * wantH / srcH) & ~1);
-				small = dev.solclient.compat.Gpu.newTarget("Sleep capture", w, wantH, false);
+				small = dev.solclient.compat.Gpu.newTarget("Caos capture", w, wantH, false);
 				capW = w;
 				capH = wantH;
 			} catch (RuntimeException e) {
@@ -199,7 +199,7 @@ public final class Capture {
 		gpuBusy = new boolean[3];
 		for (int i = 0; i < 3; i++) {
 			// usage 9 = map for reading (1) + copy destination (8), the same as vanilla screenshots
-			gpu[i] = RenderSystem.getDevice().createBuffer(() -> "Sleep capture", 9, (long) frameBytes);
+			gpu[i] = RenderSystem.getDevice().createBuffer(() -> "Caos capture", 9, (long) frameBytes);
 		}
 		intervalNs = 1_000_000_000L / s.fps();
 		startNs = System.nanoTime();
@@ -208,11 +208,11 @@ public final class Capture {
 		lastError = "";
 		running = true;
 		final Process p = proc;
-		writer = new Thread(() -> writeLoop(p), "Sleep-Capture-Writer");
+		writer = new Thread(() -> writeLoop(p), "Caos-Capture-Writer");
 		writer.setDaemon(true);
 		writer.setPriority(Thread.NORM_PRIORITY - 1);
 		writer.start();
-		logger = new Thread(() -> logLoop(p), "Sleep-Capture-Log");
+		logger = new Thread(() -> logLoop(p), "Caos-Capture-Log");
 		logger.setDaemon(true);
 		logger.start();
 		status = "Buffering (" + Ffmpeg.encoder.label() + ", " + capW + "x" + capH + " " + s.fps() + " fps)";
@@ -247,12 +247,12 @@ public final class Capture {
 					}
 				}
 				if (killed > 0) {
-					System.err.println("[Sleep] stopped " + killed + " leftover ffmpeg program(s) from earlier runs");
+					System.err.println("[Caos] stopped " + killed + " leftover ffmpeg program(s) from earlier runs");
 				}
 			} catch (RuntimeException e) {
-				System.err.println("[Sleep] leftover ffmpeg check: " + e);
+				System.err.println("[Caos] leftover ffmpeg check: " + e);
 			}
-		}, "Sleep-ReapStrays");
+		}, "Caos-ReapStrays");
 		t.setDaemon(true);
 		t.start();
 	}
@@ -268,7 +268,7 @@ public final class Capture {
 			if (p != null) {
 				p.destroyForcibly();
 			}
-		}, "Sleep-Capture-Shutdown"));
+		}, "Caos-Capture-Shutdown"));
 	}
 
 	/**
@@ -297,10 +297,10 @@ public final class Capture {
 				}
 			}
 			if (killed > 0) {
-				System.err.println("[Sleep] FightCam: stopped " + killed + " leftover ffmpeg recorder(s) from an earlier run");
+				System.err.println("[Caos] FightCam: stopped " + killed + " leftover ffmpeg recorder(s) from an earlier run");
 			}
 		} catch (RuntimeException e) {
-			System.err.println("[Sleep] FightCam: could not look for leftover recorders: " + e);
+			System.err.println("[Caos] FightCam: could not look for leftover recorders: " + e);
 		}
 	}
 

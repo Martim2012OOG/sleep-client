@@ -3,7 +3,7 @@ package dev.solclient;
 import net.minecraft.util.Identifier;
 
 /**
- * Settings > Font > "Whole Game Font". Holds which Sleep font replaces the vanilla font everywhere in the game
+ * Settings > Font > "Whole Game Font". Holds which Caos font replaces the vanilla font everywhere in the game
  * (see FontManagerMixin). Index 0 = Off (normal Minecraft font).
  */
 public final class GameFont {
@@ -11,7 +11,7 @@ public final class GameFont {
 	/** The font that replaces minecraft:default, or null for the normal one. Read on the render thread. */
 	public static volatile Identifier target;
 
-	/** "Off" followed by every Sleep font except "Minecraft" (that one is the vanilla font itself). */
+	/** "Off" followed by every Caos font except "Minecraft" (that one is the vanilla font itself). */
 	public static final String[] NAMES;
 	private static final String[] IDS;
 

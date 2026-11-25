@@ -76,7 +76,7 @@ public final class CosmeticModels {
 					}
 				}
 			} catch (Exception e) {
-				System.err.println("[Sleep] could not read the cosmetics index: " + e);
+				System.err.println("[Caos] could not read the cosmetics index: " + e);
 			}
 		}
 		return defs;
@@ -184,7 +184,7 @@ public final class CosmeticModels {
 				}
 			}
 		} catch (Exception e) {
-			System.err.println("[Sleep] could not load cosmetic " + d.geometry() + ": " + e);
+			System.err.println("[Caos] could not load cosmetic " + d.geometry() + ": " + e);
 		}
 		GEOMETRY.put(d.geometry(), g);
 		return g;

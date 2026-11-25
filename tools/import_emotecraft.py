@@ -11,7 +11,7 @@ Depois: ./gradlew build   (e gera-se o catalogo para o site com tools/make_emote
 import glob, json, os, re, shutil, struct, sys
 
 root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-res = os.path.join(root, "src/main/resources/assets/sleep_client")
+res = os.path.join(root, "src/main/resources/assets/sol_client")
 PARTS_ORDER = ["head", "torso", "rightArm", "leftArm", "rightLeg", "leftLeg", "rightItem", "leftItem"]
 # Emotecraft (ids 6..35) -> nomes que o client conhece
 EASE = {0: "LINEAR", 1: "CONSTANT", 36: "LINEAR", 37: "CONSTANT"}

@@ -273,7 +273,7 @@ public class ScoreboardMod extends Mod {
 			broken = true;
 			if (!warned) {
 				warned = true;
-				System.err.println("[Sleep] Scoreboard failed, using the vanilla scoreboard instead: " + t);
+				System.err.println("[Caos] Scoreboard failed, using the vanilla scoreboard instead: " + t);
 			}
 		}
 	}

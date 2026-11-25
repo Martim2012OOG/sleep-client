@@ -26,11 +26,11 @@ public final class WatchPartyHooks {
 			}
 		});
 		} catch (Throwable t) {
-			System.err.println("[Sleep] Watch Party rendering unavailable: " + t);
+			System.err.println("[Caos] Watch Party rendering unavailable: " + t);
 		}
 		try {
 			ClientCommandRegistrationCallback.EVENT.register((dispatcher, access) -> dispatcher.register(
-					ClientCommands.literal("sleep").then(ClientCommands.literal("video")
+					ClientCommands.literal("caos").then(ClientCommands.literal("video")
 							.then(ClientCommands.literal("pause").executes(c -> {
 								VideoScreens.pause(true);
 								return 1;
@@ -73,7 +73,7 @@ public final class WatchPartyHooks {
 							})))
 							)));
 		} catch (Throwable t) {
-			System.err.println("[Sleep] Watch Party commands unavailable: " + t);
+			System.err.println("[Caos] Watch Party commands unavailable: " + t);
 		}
 	}
 }

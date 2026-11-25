@@ -26,7 +26,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 
 /**
- * Sleep Builder menu: Schematics (your files, one click to load), Place (big buttons to move, turn, mirror, layers),
+ * Caos Builder menu: Schematics (your files, one click to load), Place (big buttons to move, turn, mirror, layers),
  * Materials (what you need / have / placed) and Find (search schematic websites; what you download there is
  * imported here by itself).
  */
@@ -53,7 +53,7 @@ public class BuilderScreen extends Screen {
 	private long filesAt;
 
 	public BuilderScreen(Screen parent) {
-		super(Text.literal("Sleep Builder"));
+		super(Text.literal("Caos Builder"));
 		this.parent = parent;
 	}
 
@@ -154,7 +154,7 @@ public class BuilderScreen extends Screen {
 		c.fill(0, 0, width, height, 0x88000000);
 		Gfx.rrectBorder(c, px, py, pw, ph, 12, 0xF4121318, Theme.PANEL_BORDER);
 		Gfx.tex(c, Theme.icon2("kubo_builder"), px + 10, py + 8, 16, 16, 64, 64, Theme.accent());
-		Gfx.text(c, "Sleep Builder", px + 31, py + 12, 0xFFFFFFFF);
+		Gfx.text(c, "Caos Builder", px + 31, py + 12, 0xFFFFFFFF);
 		// tabs
 		int tx = px + pw - 10;
 		for (int i = TABS.length - 1; i >= 0; i--) {

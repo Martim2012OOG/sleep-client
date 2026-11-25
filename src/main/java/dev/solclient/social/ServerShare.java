@@ -11,8 +11,8 @@ import net.minecraft.client.network.ServerAddress;
 import net.minecraft.client.network.ServerInfo;
 
 /**
- * "Join your friend": tells your Sleep friends which server you are on (your activity says "Playing on <address>")
- * and lets you join theirs with one click from the friends list. Turn it off in Sleep settings > Players.
+ * "Join your friend": tells your Caos friends which server you are on (your activity says "Playing on <address>")
+ * and lets you join theirs with one click from the friends list. Turn it off in Caos settings > Players.
  */
 public final class ServerShare {
 
@@ -80,7 +80,7 @@ public final class ServerShare {
 		}
 		String name = address;
 		if (KuboRelay.isRelayAddress(address)) {
-			// a friend's hosted world through the Sleep relay: connect to the small local tunnel
+			// a friend's hosted world through the Caos relay: connect to the small local tunnel
 			try {
 				address = KuboRelay.localFor(address);
 			} catch (Exception e) {

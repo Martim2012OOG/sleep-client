@@ -129,7 +129,7 @@ public abstract class UiScreen extends Screen {
 		} catch (Throwable t) {
 			if (!loadWarned) {
 				loadWarned = true;
-				System.err.println("[Sleep] menu while loading (skipped a frame): " + t);
+				System.err.println("[Caos] menu while loading (skipped a frame): " + t);
 			}
 		}
 	}
@@ -312,9 +312,9 @@ public abstract class UiScreen extends Screen {
 		Gfx.tex(c, Gfx.id("icon.png"), cx - size / 2, cy - size / 2, size, size, 256, 256, 0xFFFFFFFF);
 	}
 
-	/** Logo + "SLEEP" (bottom-right corner in the pause menu, top in the title). */
+	/** Logo + "CAOS" (bottom-right corner in the pause menu, top in the title). */
 	protected void brand(GuiGraphicsExtractor c, int x, int y) {
 		Gfx.tex(c, Theme.icon2("sol_client"), x, y, 16, 16, 64, 64, 0xFFFFFFFF);
-		Gfx.text(c, "SLEEP", x + 21, y + 4, Theme.TEXT);
+		Gfx.text(c, "CAOS", x + 21, y + 4, Theme.TEXT);
 	}
 }

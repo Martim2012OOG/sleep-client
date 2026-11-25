@@ -35,13 +35,13 @@ public abstract class SplashOverlayMixin {
 	}
 
 	@Inject(method = "<init>", at = @At("TAIL"), require = 0)
-	private void sleep$passive(CallbackInfo ci) {
+	private void caos$passive(CallbackInfo ci) {
 		dev.solclient.FastReload.overlay = fast(fadeIn) ? this : null;
 	}
 
 	/** Instant reload: the game keeps running behind it (no pause in singleplayer). */
 	@Inject(method = "isPauseScreen", at = @At("HEAD"), cancellable = true, require = 0)
-	private void sleep$noPause(CallbackInfoReturnable<Boolean> cir) {
+	private void caos$noPause(CallbackInfoReturnable<Boolean> cir) {
 		if (fast(fadeIn)) {
 			cir.setReturnValue(false);
 		}
@@ -101,7 +101,7 @@ public abstract class SplashOverlayMixin {
 			// never crash the loading screen (e.g. maximising the window while it loads)
 			if (!warned) {
 				warned = true;
-				System.err.println("[Sleep] loading screen logo: " + t);
+				System.err.println("[Caos] loading screen logo: " + t);
 			}
 		}
 	}

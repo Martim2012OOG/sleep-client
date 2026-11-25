@@ -1,14 +1,14 @@
 package dev.kuboext.friends;
 
-import dev.sleepclient.mods.PartyHudMod;
-import dev.sleepclient.mods.FriendPingMod;
-import dev.sleepclient.mods.SonarMod;
-import dev.sleepclient.ext.KuboApi;
-import dev.sleepclient.ext.KuboExtension;
+import dev.solclient.mods.PartyHudMod;
+import dev.solclient.mods.FriendPingMod;
+import dev.solclient.mods.SonarMod;
+import dev.solclient.ext.KuboApi;
+import dev.solclient.ext.KuboExtension;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.MinecraftClient;
 
-/** Sleep extension "Friends": Party HUD, Pings (mark places for friends) and Sonar. */
+/** Caos extension "Friends": Party HUD, Pings (mark places for friends) and Sonar. */
 public class FriendsExtension implements KuboExtension {
 
 	@Override

@@ -19,7 +19,7 @@ import net.minecraft.client.input.KeyInput;
 public class PlegumoTitleScreen extends UiScreen {
 
 	public PlegumoTitleScreen() {
-		super("Sleep");
+		super("Caos");
 	}
 
 	@Override
@@ -82,7 +82,7 @@ public class PlegumoTitleScreen extends UiScreen {
 		int n = mm ? 5 : 4;
 		int ix = cx - (n * is + (n - 1) * ig) / 2;
 		iconButton(c, "set", ix, iy, is, "settings", "Settings", () -> mc.setScreen(new OptionsScreen(this, mc.options)));
-		iconButton(c, "mods", ix + is + ig, iy, is, "sol_client", "Sleep menu", () -> mc.setScreen(SolMenuScreen.open(SolMenuScreen.VIEW_MODS)));
+		iconButton(c, "mods", ix + is + ig, iy, is, "sol_client", "Caos menu", () -> mc.setScreen(SolMenuScreen.open(SolMenuScreen.VIEW_MODS)));
 		iconButton(c, "shop", ix + 2 * (is + ig), iy, is, "shop", "Shop", () -> mc.setScreen(SolMenuScreen.open(SolMenuScreen.VIEW_SHOP)));
 		iconButton(c, "pconn", ix + 3 * (is + ig), iy, is, "private_connection", "Private Connection", () -> mc.setScreen(new PrivateConnectionScreen(this)));
 		if (mm) {

@@ -25,7 +25,7 @@ import net.minecraft.client.Minecraft;
 /**
  * Import settings from other clients (Settings > Setup & Reset). It finds the other client on this computer and brings over what can be read
  * safely: which mods were on (Feather / Dawn, whose profile files are read for real), and the game's own options of that client: the key
- * bindings, the mouse sensitivity and the field of view. Your Sleep settings for everything else stay as they are.
+ * bindings, the mouse sensitivity and the field of view. Your Caos settings for everything else stay as they are.
  */
 public final class ClientImport {
 
@@ -38,7 +38,7 @@ public final class ClientImport {
 	private static final boolean WIN = System.getProperty("os.name", "").toLowerCase(Locale.ROOT).contains("win");
 	private static final boolean MAC = System.getProperty("os.name", "").toLowerCase(Locale.ROOT).contains("mac");
 
-	/** Feather's mod key -> the id of the same mod in Sleep. */
+	/** Feather's mod key -> the id of the same mod in Caos. */
 	private static final Map<String, String> FEATHER = new LinkedHashMap<>();
 
 	static {

@@ -74,7 +74,7 @@ public class IntroScreen extends Screen {
 		} catch (Throwable t) {
 			// e.g. the window was resized / maximised while the game was still loading: never crash the game for
 			// the intro, just go on to the home screen
-			System.err.println("[Sleep] intro: " + t);
+			System.err.println("[Caos] intro: " + t);
 			try {
 				finish();
 			} catch (Throwable ignored) {

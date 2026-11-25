@@ -69,7 +69,7 @@ public final class HostedSkins {
 			}
 			mc.getSkinProvider().fetchSkinTextures(result.profile()).thenAccept(o -> CACHE.put(offlineId, o.isPresent() ? o.get() : NONE));
 		} catch (Exception e) {
-			System.err.println("[Sleep] skin of " + name + ": " + e);
+			System.err.println("[Caos] skin of " + name + ": " + e);
 		}
 	}
 }

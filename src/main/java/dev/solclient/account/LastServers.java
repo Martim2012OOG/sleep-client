@@ -53,7 +53,7 @@ public final class LastServers {
 				LIST.add(new Entry(o.get("name").getAsString(), o.get("address").getAsString(), o.has("at") ? o.get("at").getAsLong() : 0));
 			}
 		} catch (Exception e) {
-			System.err.println("[Sleep] Could not read last servers: " + e);
+			System.err.println("[Caos] Could not read last servers: " + e);
 		}
 	}
 
@@ -69,7 +69,7 @@ public final class LastServers {
 		try {
 			Files.writeString(file(), GSON.toJson(a));
 		} catch (Exception e) {
-			System.err.println("[Sleep] Could not save last servers: " + e);
+			System.err.println("[Caos] Could not save last servers: " + e);
 		}
 	}
 

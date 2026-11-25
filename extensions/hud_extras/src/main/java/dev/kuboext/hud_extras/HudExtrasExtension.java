@@ -1,20 +1,20 @@
 package dev.kuboext.hud_extras;
 
-import dev.sleepclient.mods.SpeedometerMod;
-import dev.sleepclient.mods.StopwatchMod;
-import dev.sleepclient.mods.InventoryHudMod;
-import dev.sleepclient.mods.PickupNotificationsMod;
-import dev.sleepclient.mods.NewItemMarkMod;
-import dev.sleepclient.mods.DeathPointMod;
-import dev.sleepclient.mods.MinimapMod;
-import dev.sleepclient.mods.CompassBarMod;
-import dev.sleepclient.mods.AutoHideHudMod;
-import dev.sleepclient.ext.KuboApi;
-import dev.sleepclient.ext.KuboExtension;
+import dev.solclient.mods.SpeedometerMod;
+import dev.solclient.mods.StopwatchMod;
+import dev.solclient.mods.InventoryHudMod;
+import dev.solclient.mods.PickupNotificationsMod;
+import dev.solclient.mods.NewItemMarkMod;
+import dev.solclient.mods.DeathPointMod;
+import dev.solclient.mods.MinimapMod;
+import dev.solclient.mods.CompassBarMod;
+import dev.solclient.mods.AutoHideHudMod;
+import dev.solclient.ext.KuboApi;
+import dev.solclient.ext.KuboExtension;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.MinecraftClient;
 
-/** Sleep extension "HUD Extras": Speedometer, Stopwatch, Inventory HUD, Pickup Notifications, New Item Mark, Death Point, Minimap, Compass Bar and Auto-hide HUD. */
+/** Caos extension "HUD Extras": Speedometer, Stopwatch, Inventory HUD, Pickup Notifications, New Item Mark, Death Point, Minimap, Compass Bar and Auto-hide HUD. */
 public class HudExtrasExtension implements KuboExtension {
 
 	@Override
@@ -31,7 +31,7 @@ public class HudExtrasExtension implements KuboExtension {
 		// the minimap is a normal movable HUD mod now; this only saves the explored map when you leave a world
 		ClientTickEvents.END_CLIENT_TICK.register(mc -> {
 			if (mc.world == null) {
-				dev.sleepclient.map.MapStore.I.flush();
+				dev.solclient.map.MapStore.I.flush();
 			}
 		});
 		api.onHudLast(c -> {

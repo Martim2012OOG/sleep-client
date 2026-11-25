@@ -56,7 +56,7 @@ public class KillEffectMod extends Mod {
 			return;
 		}
 		if (!hit.containsKey(e.getId())) {
-			System.out.println("[Sleep] kill effect: watching " + e.getName().getString());
+			System.out.println("[Caos] kill effect: watching " + e.getName().getString());
 		}
 		Target t = hit.computeIfAbsent(e.getId(), k -> new Target());
 		t.e = e;
@@ -100,7 +100,7 @@ public class KillEffectMod extends Mod {
 		t.x = e.getX();
 		t.y = e.getY();
 		t.z = e.getZ();
-		System.out.println("[Sleep] kill effect: " + t.name + " -> death signal");
+		System.out.println("[Caos] kill effect: " + t.name + " -> death signal");
 		kill(t);
 	}
 
@@ -123,7 +123,7 @@ public class KillEffectMod extends Mod {
 			if (e instanceof LivingEntity l && (l.isDeadOrDying() || l.getHealth() <= 0F)) {
 				it.remove();
 				if (!hitByOther(l)) {
-					System.out.println("[Sleep] kill effect: " + t.name + " -> health 0");
+					System.out.println("[Caos] kill effect: " + t.name + " -> health 0");
 					kill(t);
 				}
 				continue;
@@ -226,7 +226,7 @@ public class KillEffectMod extends Mod {
 		}
 		int idx = effect.idx();
 		String fx = victim == null ? null : ownedFx3d();
-		System.out.println("[Sleep] kill effect: choice=" + effect.label() + ", equipped in shop=" + dev.solclient.social.Social.equippedKillEffect()
+		System.out.println("[Caos] kill effect: choice=" + effect.label() + ", equipped in shop=" + dev.solclient.social.Social.equippedKillEffect()
 				+ ", owned=" + dev.solclient.social.Social.ownedKillEffects() + " -> " + (fx == null ? "classic effect " + idx : fx));
 		if (fx != null && dev.solclient.fx.killfx.KillFx.play(fx, x, y, z, skin, hideId)) {
 			status = "kill " + kills + ": " + fx;

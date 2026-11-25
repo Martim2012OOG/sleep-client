@@ -13,11 +13,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class ChatSmoothMixin {
 
 	@org.spongepowered.asm.mixin.Unique
-	private boolean sleep$pushed;
+	private boolean caos$pushed;
 
 	@Inject(method = "render(Lnet/minecraft/client/gui/DrawContext;Lnet/minecraft/client/font/TextRenderer;IIIZZ)V", at = @At("HEAD"), require = 0)
-	private void sleep$slideIn(DrawContext context, TextRenderer font, int tick, int mx, int my, boolean focused, boolean other, CallbackInfo ci) {
-		sleep$pushed = false;
+	private void caos$slideIn(DrawContext context, TextRenderer font, int tick, int mx, int my, boolean focused, boolean other, CallbackInfo ci) {
+		caos$pushed = false;
 		var s = dev.solclient.SolClient.settings;
 		if (s != null && !s.buttonAnimations.on()) {
 			return;
@@ -30,13 +30,13 @@ public abstract class ChatSmoothMixin {
 		float dy = k * k * k * 10F; // one line height, easing out
 		context.getMatrices().pushMatrix();
 		context.getMatrices().translate(0F, dy);
-		sleep$pushed = true;
+		caos$pushed = true;
 	}
 
 	@Inject(method = "render(Lnet/minecraft/client/gui/DrawContext;Lnet/minecraft/client/font/TextRenderer;IIIZZ)V", at = @At("RETURN"), require = 0)
-	private void sleep$slideOut(DrawContext context, TextRenderer font, int tick, int mx, int my, boolean focused, boolean other, CallbackInfo ci) {
-		if (sleep$pushed) {
-			sleep$pushed = false;
+	private void caos$slideOut(DrawContext context, TextRenderer font, int tick, int mx, int my, boolean focused, boolean other, CallbackInfo ci) {
+		if (caos$pushed) {
+			caos$pushed = false;
 			context.getMatrices().popMatrix();
 		}
 	}

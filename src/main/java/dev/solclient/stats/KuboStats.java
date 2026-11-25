@@ -39,7 +39,7 @@ public final class KuboStats {
 				}
 			}
 		} catch (Exception e) {
-			System.err.println("[Sleep] stats: " + e);
+			System.err.println("[Caos] stats: " + e);
 		}
 		touchDay();
 	}
@@ -98,7 +98,7 @@ public final class KuboStats {
 			TOTAL.forEach(o::addProperty);
 			Files.writeString(file(), o.toString(), StandardCharsets.UTF_8);
 		} catch (Exception e) {
-			System.err.println("[Sleep] stats: " + e);
+			System.err.println("[Caos] stats: " + e);
 		}
 	}
 }

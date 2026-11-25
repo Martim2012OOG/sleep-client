@@ -1,26 +1,26 @@
 package dev.kuboext.particles;
 
-import dev.sleepclient.mods.AuraMod;
-import dev.sleepclient.mods.TrailsMod;
-import dev.sleepclient.mods.JumpCirclesMod;
-import dev.sleepclient.mods.KillEffectMod;
-import dev.sleepclient.mods.HitBubblesMod;
-import dev.sleepclient.mods.PickupBurstMod;
-import dev.sleepclient.mods.FirefliesMod;
-import dev.sleepclient.mods.CaveDustMod;
-import dev.sleepclient.mods.FallingLeavesMod;
-import dev.sleepclient.mods.WaterSplashesMod;
-import dev.sleepclient.mods.WorldParticlesMod;
-import dev.sleepclient.mods.MaterialFootstepsMod;
-import dev.sleepclient.mods.ExplosionDebrisMod;
-import dev.sleepclient.mods.MaceEffectsMod;
-import dev.sleepclient.mods.ToolEffectsMod;
-import dev.sleepclient.mods.Physics3DMod;
-import dev.sleepclient.ext.KuboApi;
-import dev.sleepclient.ext.KuboExtension;
+import dev.solclient.mods.AuraMod;
+import dev.solclient.mods.TrailsMod;
+import dev.solclient.mods.JumpCirclesMod;
+import dev.solclient.mods.KillEffectMod;
+import dev.solclient.mods.HitBubblesMod;
+import dev.solclient.mods.PickupBurstMod;
+import dev.solclient.mods.FirefliesMod;
+import dev.solclient.mods.CaveDustMod;
+import dev.solclient.mods.FallingLeavesMod;
+import dev.solclient.mods.WaterSplashesMod;
+import dev.solclient.mods.WorldParticlesMod;
+import dev.solclient.mods.MaterialFootstepsMod;
+import dev.solclient.mods.ExplosionDebrisMod;
+import dev.solclient.mods.MaceEffectsMod;
+import dev.solclient.mods.ToolEffectsMod;
+import dev.solclient.mods.Physics3DMod;
+import dev.solclient.ext.KuboApi;
+import dev.solclient.ext.KuboExtension;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 
-/** Sleep extension "Extra Particles": Aura, Trails, Jump Circles, Fireflies, Cave Dust, Falling Leaves, Kill Effect, Mace Effects, Tool Effects, 3D Physics and more. */
+/** Caos extension "Extra Particles": Aura, Trails, Jump Circles, Fireflies, Cave Dust, Falling Leaves, Kill Effect, Mace Effects, Tool Effects, 3D Physics and more. */
 public class ParticlesExtension implements KuboExtension {
 
 	@Override

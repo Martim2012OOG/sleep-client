@@ -118,7 +118,7 @@ public final class EmoteLibrary {
 				}
 			}
 		} catch (Exception e) {
-			System.err.println("[Sleep] emote cache: " + e);
+			System.err.println("[Caos] emote cache: " + e);
 		}
 	}
 
@@ -174,7 +174,7 @@ public final class EmoteLibrary {
 			java.nio.file.Files.createDirectories(remoteDir());
 			java.nio.file.Files.writeString(remoteDir().resolve("list.json"), out.toString());
 		} catch (Exception e) {
-			System.err.println("[Sleep] emote cache: " + e);
+			System.err.println("[Caos] emote cache: " + e);
 		}
 	}
 
@@ -210,7 +210,7 @@ public final class EmoteLibrary {
 				}
 				CACHE.put(info.id() + "|" + url, a);
 			} catch (Exception e) {
-				System.err.println("[Sleep] could not load emote " + info.id() + ": " + e);
+				System.err.println("[Caos] could not load emote " + info.id() + ": " + e);
 			} finally {
 				FETCHING.remove(info.id());
 			}
@@ -262,7 +262,7 @@ public final class EmoteLibrary {
 				}
 			}
 		} catch (Exception e) {
-			System.err.println("[Sleep] could not read the emote index: " + e);
+			System.err.println("[Caos] could not read the emote index: " + e);
 		}
 		all = out;
 		raw = every;
@@ -293,7 +293,7 @@ public final class EmoteLibrary {
 				CACHE.put(info.id(), a);
 			}
 		} catch (Exception e) {
-			System.err.println("[Sleep] could not load emote " + info.id() + ": " + e);
+			System.err.println("[Caos] could not load emote " + info.id() + ": " + e);
 		}
 		return a;
 	}

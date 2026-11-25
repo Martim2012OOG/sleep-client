@@ -65,14 +65,14 @@ public final class Recorder {
 		this.writer = new Mp4Writer(file, this.outW, this.outH, fps, probe.sps(), probe.pps());
 		this.maxPending = Math.max(3, workers * 3);
 		this.pool = new ThreadPoolExecutor(workers, workers, 30, TimeUnit.SECONDS, new LinkedBlockingQueue<>(), r -> {
-			Thread t = new Thread(r, "Sleep-FightCam-Encoder");
+			Thread t = new Thread(r, "Caos-FightCam-Encoder");
 			t.setDaemon(true);
 			t.setPriority(Thread.NORM_PRIORITY - 1);
 			return t;
 		});
 		this.encoder = ThreadLocal.withInitial(() -> new H264Encoder(this.outW, this.outH, this.fps, this.qp));
 		this.pixels = ThreadLocal.withInitial(() -> new int[this.outW * this.outH]);
-		this.writerThread = new Thread(this::writeLoop, "Sleep-FightCam-Writer");
+		this.writerThread = new Thread(this::writeLoop, "Caos-FightCam-Writer");
 		this.writerThread.setDaemon(true);
 		this.writerThread.start();
 	}

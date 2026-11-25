@@ -126,7 +126,7 @@ public final class PersonaPanel {
 		return picturesDir().getParent().resolve("cache");
 	}
 
-	private static final String UA = "SleepClient/1.0 (Minecraft mod; voice changer pictures)";
+	private static final String UA = "CaosClient/1.0 (Minecraft mod; voice changer pictures)";
 	private static Map<String, String> thumbs;
 	/** Wikipedia said "too many requests": no more downloads until the game restarts (the bundled pictures are used). */
 	private static volatile boolean slowDown;
@@ -198,7 +198,7 @@ public final class PersonaPanel {
 			out.forEach(o::addProperty);
 			Files.writeString(f, o.toString());
 		} catch (Throwable e) {
-			System.err.println("[Sleep] voice pictures: " + e);
+			System.err.println("[Caos] voice pictures: " + e);
 		}
 		return thumbs = out;
 	}
@@ -276,7 +276,7 @@ public final class PersonaPanel {
 					pic.px = round(img);
 					pic.state = 2;
 				} catch (Throwable e) {
-					System.err.println("[Sleep] persona picture " + p.id + ": " + e);
+					System.err.println("[Caos] persona picture " + p.id + ": " + e);
 					pic.state = 4;
 				}
 			});
@@ -772,7 +772,7 @@ public final class PersonaPanel {
 				Files.createDirectories(picturesDir());
 				net.minecraft.util.Util.getOperatingSystem().open(picturesDir().getParent().toFile());
 			} catch (java.io.IOException e) {
-				System.err.println("[Sleep] personas folder: " + e);
+				System.err.println("[Caos] personas folder: " + e);
 			}
 		});
 		y += 18;

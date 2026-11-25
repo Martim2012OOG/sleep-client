@@ -31,7 +31,7 @@ public class RankedScreen extends Screen {
 	private static final String OVERALL = "overall";
 
 	private final Screen parent;
-	/** Drawn inside the Sleep menu's panel: no own window, fills the area it gets. */
+	/** Drawn inside the Caos menu's panel: no own window, fills the area it gets. */
 	private final boolean embedded;
 	private final Map<String, Float> hover = new HashMap<>();
 	private int tab;
@@ -85,7 +85,7 @@ public class RankedScreen extends Screen {
 		return mx >= x && mx < x + w && my >= y && my < y + h;
 	}
 
-	/** Smooth 0..1 hover amount per element (like the Sleep menu). */
+	/** Smooth 0..1 hover amount per element (like the Caos menu). */
 	private float anim(String key, boolean on) {
 		float v = hover.getOrDefault(key, 0F);
 		v += ((on ? 1F : 0F) - v) * 0.35F;
@@ -93,7 +93,7 @@ public class RankedScreen extends Screen {
 		return v;
 	}
 
-	/** A small toggle button: the same neutral / pressed button as the Sleep menu. */
+	/** A small toggle button: the same neutral / pressed button as the Caos menu. */
 	private void chip(DrawContext c, int mx, int my, int x, int y, int w, int h, String label, boolean sel, Runnable run) {
 		boolean hov = in(mx, my, x, y, w, h);
 		KuboButton.bg(c, x, y, w, h, anim("c" + x + "," + y, hov), sel);
@@ -165,7 +165,7 @@ public class RankedScreen extends Screen {
 		float k = Math.min(1F, (System.currentTimeMillis() - openedAt) / 220F);
 		int w, h, x, y, ix, iw;
 		if (embedded) {
-			// inside the Sleep menu's panel: use all of it, the menu already shows the title and "< Back"
+			// inside the Caos menu's panel: use all of it, the menu already shows the title and "< Back"
 			w = width;
 			h = height;
 			x = 0;
@@ -183,7 +183,7 @@ public class RankedScreen extends Screen {
 			Gfx.text(c, "Ranked PvP", ix, y + 10, Theme.TEXT);
 		}
 		if (Ranked.siteMissing) {
-			Gfx.text(c, Lang.tr("The Sleep site doesn't have Ranked PvP yet (Lovable prompt).", "O site do Sleep ainda não tem o Ranked PvP (prompt do Lovable)."), ix, y + h - 14, 0xFFFF8A8A);
+			Gfx.text(c, Lang.tr("The Caos site doesn't have Ranked PvP yet (Lovable prompt).", "O site do Caos ainda não tem o Ranked PvP (prompt do Lovable)."), ix, y + h - 14, 0xFFFF8A8A);
 		}
 		String[] tabs = {"Ranked", Lang.tr("Duel", "Duelo"), "Bots", "Leaderboard", Lang.tr("My tiers", "Os meus tiers")};
 		tabs(c, mx, my, ix + 2, y + 28, tabs);

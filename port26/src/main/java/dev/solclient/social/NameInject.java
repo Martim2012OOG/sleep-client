@@ -13,7 +13,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 
 /**
- * The Sleep logo for nametags that are NOT the player's own vanilla nametag: servers (PvPHQ...) often hide it and show a
+ * The Caos logo for nametags that are NOT the player's own vanilla nametag: servers (PvPHQ...) often hide it and show a
  * text display / armor stand with the rank, name and flag instead. Finds the nick of a player who uses the client inside
  * that text and puts the logo right before it. Texts that already have the logo are left alone.
  */
@@ -80,7 +80,7 @@ public final class NameInject {
 			CACHE.put(s, new Hit(out, now));
 			if (out != null && !logged) {
 				logged = true;
-				System.out.println("[Sleep] logo added to a custom nametag: " + s.replace('\n', ' '));
+				System.out.println("[Caos] logo added to a custom nametag: " + s.replace('\n', ' '));
 			}
 			return out == null ? in : out;
 		} catch (RuntimeException e) {

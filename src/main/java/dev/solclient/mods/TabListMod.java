@@ -285,7 +285,7 @@ public class TabListMod extends Mod {
 			broken = true;
 			if (!warned) {
 				warned = true;
-				System.err.println("[Sleep] Tab List failed, using the vanilla tab list instead: " + t);
+				System.err.println("[Caos] Tab List failed, using the vanilla tab list instead: " + t);
 			}
 		}
 	}
@@ -420,7 +420,7 @@ public class TabListMod extends Mod {
 			} catch (Throwable t) { // a bug in the card must never take the whole tab list down
 				selected = null;
 				popValid = false;
-				System.err.println("[Sleep] Tab List player card failed: " + t);
+				System.err.println("[Caos] Tab List player card failed: " + t);
 			}
 		}
 	}
@@ -483,7 +483,7 @@ public class TabListMod extends Mod {
 			lines.add("Friend");
 			colours.add(Theme.GREEN);
 		} else if (SolarBadge.uses(selected, name)) {
-			lines.add("Uses Sleep");
+			lines.add("Uses Caos");
 			colours.add(Theme.accent());
 		}
 		String gm = "?";
@@ -599,7 +599,7 @@ public class TabListMod extends Mod {
 			return true;
 		} catch (Throwable t) {
 			bodyBroken = true;
-			System.err.println("[Sleep] Tab List 3D model unavailable, using the face: " + t);
+			System.err.println("[Caos] Tab List 3D model unavailable, using the face: " + t);
 			return false;
 		}
 	}

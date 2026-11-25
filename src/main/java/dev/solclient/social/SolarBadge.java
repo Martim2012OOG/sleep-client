@@ -46,7 +46,7 @@ public final class SolarBadge {
 			return true; // the lobby is the global room: it also finds players who joined this server by another address
 		}
 		if (onlineFriend(nick)) {
-			return true; // a friend online in Sleep with this nick: they use it even when the presence rooms missed them
+			return true; // a friend online in Caos with this nick: they use it even when the presence rooms missed them
 		}
 		// you: always (you ARE using Plegumo), even while the presence connection is down
 		MinecraftClient mc = MinecraftClient.getInstance();
@@ -86,7 +86,7 @@ public final class SolarBadge {
 		return r;
 	}
 
-	/** A friend of yours who is online in Sleep right now and plays with this nick. */
+	/** A friend of yours who is online in Caos right now and plays with this nick. */
 	public static boolean onlineFriend(String nick) {
 		if (nick == null || nick.isEmpty()) {
 			return false;

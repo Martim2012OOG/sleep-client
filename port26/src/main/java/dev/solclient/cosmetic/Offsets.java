@@ -14,7 +14,7 @@ import net.fabricmc.loader.api.FabricLoader;
 /**
  * How a cosmetic sits on the player, tweaked in the Locker ("Edit"): up/down, left/right and forward/back in 1/16 of a block
  * (max {@value #MAX}), a small turn (max {@value #ROT_MAX} degrees) and an optional colour tint. Limited so a piece can never end
- * up far from the body. Kept on this computer, and sent to the other Sleep players on your server so they see it the same.
+ * up far from the body. Kept on this computer, and sent to the other Caos players on your server so they see it the same.
  */
 public final class Offsets {
 
@@ -60,7 +60,7 @@ public final class Offsets {
 				}
 			}
 		} catch (IOException | RuntimeException e) {
-			System.err.println("[Sleep] cosmetic offsets: " + e);
+			System.err.println("[Caos] cosmetic offsets: " + e);
 		}
 	}
 
@@ -132,7 +132,7 @@ public final class Offsets {
 			MAP.forEach((k, v) -> o.add(k, arr(v)));
 			Files.writeString(file(), GSON.toJson(o));
 		} catch (IOException | RuntimeException e) {
-			System.err.println("[Sleep] could not save the position: " + e);
+			System.err.println("[Caos] could not save the position: " + e);
 		}
 	}
 
